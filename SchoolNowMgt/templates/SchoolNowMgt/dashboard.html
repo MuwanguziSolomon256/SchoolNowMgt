@@ -1,0 +1,235 @@
+{% extends 'SchoolNowMgt/base.html' %}
+{% load humanize %}
+
+{% block content %}
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- SECTION 1: STUDENTS                                                -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+
+<section class="section">
+    <h2 class="section-heading">Students</h2>
+    
+    <div class="cards-grid">
+        <div class="stat-card border-green">
+            <div class="stat-card-metric">{{ total_students }}</div>
+            <div class="stat-card-label">Total active students</div>
+        </div>
+        <div class="stat-card border-green">
+            <div class="stat-card-metric">{{ new_students_this_month }}</div>
+            <div class="stat-card-label">New enrolments this month</div>
+        </div>
+        <div class="stat-card border-amber">
+            <div class="stat-card-metric">{{ new_enquiries_count }}</div>
+            <div class="stat-card-label">Open enquiries</div>
+        </div>
+    </div>
+    
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Class</th>
+                    <th>Students</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in students_by_class %}
+                    <tr>
+                        <td>{{ c.name }}</td>
+                        <td>{{ c.student_count }}</td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="2" class="no-data">No classes configured.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- SECTION 2: ATTENDANCE TODAY                                         -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+
+<section class="section">
+    <h2 class="section-heading">Attendance Today</h2>
+    <p class="section-subheading">{{ today|date:"d M Y" }}</p>
+    
+    {% if not attendance_marked_today %}
+        <div class="alert alert-amber">
+            <div>Attendance has not been marked today.</div>
+            <a href="{% url 'SchoolNowMgt:mark_attendance' %}">Mark now →</a>
+        </div>
+    {% endif %}
+    
+    <div class="cards-grid">
+        <div class="stat-card border-green">
+            <div class="stat-card-metric">{{ students_present_today }}</div>
+            <div class="stat-card-label">Present today</div>
+        </div>
+        <div class="stat-card border-amber">
+            <div class="stat-card-metric">{{ students_absent_today }}</div>
+            <div class="stat-card-label">Absent today</div>
+        </div>
+        <div class="stat-card border-amber">
+            <div class="stat-card-metric">{{ students_late_today }}</div>
+            <div class="stat-card-label">Late today</div>
+        </div>
+        <div class="stat-card border-green">
+            <div class="stat-card-metric">{{ staff_present_today }}</div>
+            <div class="stat-card-label">Staff present</div>
+        </div>
+        <div class="stat-card border-amber">
+            <div class="stat-card-metric">{{ staff_absent_today }}</div>
+            <div class="stat-card-label">Staff absent</div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- SECTION 3: RETENTION ALERTS                                        -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+
+<section class="section">
+    <h2 class="section-heading">Retention Alerts</h2>
+    
+    <div class="cards-grid">
+        <div class="stat-card {% if open_alerts_count > 0 %}border-amber{% else %}border-green{% endif %}">
+            <div class="stat-card-metric">{{ open_alerts_count }}</div>
+            <div class="stat-card-label">Open alerts</div>
+        </div>
+        <div class="stat-card {% if high_severity_count > 0 %}border-red{% else %}border-green{% endif %}">
+            <div class="stat-card-metric">{{ high_severity_count }}</div>
+            <div class="stat-card-label">High severity</div>
+        </div>
+    </div>
+    
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Student</th>
+                    <th>Reason</th>
+                    <th>Severity</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for alert in open_alerts %}
+                    <tr>
+                        <td>{{ alert.student.full_name }}</td>
+                        <td>{{ alert.get_reason_type_display }}</td>
+                        <td class="severity-{{ alert.severity }}">{{ alert.severity }}</td>
+                        <td>{{ alert.created_at|date:"d M Y" }}</td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="4" class="no-data">No open alerts.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- SECTION 4: FINANCE                                                 -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+
+<section class="section">
+    <h2 class="section-heading">Finance</h2>
+    
+    <div class="cards-grid">
+        <div class="stat-card border-green">
+            <div class="stat-card-metric">UGX {{ fees_collected_this_month|intcomma }}</div>
+            <div class="stat-card-label">Collected this month</div>
+        </div>
+        <div class="stat-card border-amber">
+            <div class="stat-card-metric">{{ pending_sms_count }}</div>
+            <div class="stat-card-label">SMS pending</div>
+        </div>
+        <div class="stat-card {% if failed_sms_count > 0 %}border-red{% else %}border-green{% endif %}">
+            <div class="stat-card-metric">{{ failed_sms_count }}</div>
+            <div class="stat-card-label">SMS failed</div>
+        </div>
+    </div>
+    
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Student</th>
+                    <th>Amount (UGX)</th>
+                    <th>Method</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in recent_payments %}
+                    <tr>
+                        <td>{{ p.student.full_name }}</td>
+                        <td>{{ p.amount_paid|floatformat:0|intcomma }}</td>
+                        <td>{{ p.get_payment_method_display }}</td>
+                        <td>{{ p.payment_date|date:"d M Y" }}</td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="4" class="no-data">No payments recorded this month.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- SECTION 5: NEW ENQUIRIES                                            -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+
+<section class="section">
+    <h2 class="section-heading">New Enquiries</h2>
+    
+    <div class="cards-grid">
+        <div class="stat-card border-green">
+            <div class="stat-card-metric">{{ enquiries_this_month }}</div>
+            <div class="stat-card-label">Enquiries this month</div>
+        </div>
+        <div class="stat-card border-green">
+            <div class="stat-card-metric">{{ average_score_this_year }}</div>
+            <div class="stat-card-label">Avg score this year</div>
+        </div>
+    </div>
+    
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Child Name</th>
+                    <th>Parent</th>
+                    <th>Phone</th>
+                    <th>Class Interested</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for e in recent_enquiries %}
+                    <tr>
+                        <td>{{ e.child_name }}</td>
+                        <td>{{ e.parent_name }}</td>
+                        <td>{{ e.parent_phone }}</td>
+                        <td>{{ e.interested_class }}</td>
+                        <td>{{ e.enquiry_date|date:"d M Y" }}</td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="5" class="no-data">No new enquiries.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+{% endblock %}

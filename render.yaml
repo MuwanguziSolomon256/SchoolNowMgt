@@ -1,0 +1,47 @@
+services:
+  - type: web
+    name: school-mgmt
+    env: python
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
+    startCommand: bash startup.sh
+    envVars:
+      - key: PORT
+        value: "10000"
+      - key: DJANGO_SETTINGS_MODULE
+        value: schoolmgmt_project.settings.prod
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ALLOWED_HOSTS
+        value: schoolnowmgt.onrender.com,www.schoolnowmgt.onrender.com
+      - key: AT_USERNAME
+        sync: false
+      - key: AT_API_KEY
+        sync: false
+      - key: AT_SANDBOX
+        value: "False"
+      - key: DB_NAME
+        fromDatabase:
+          name: school-db
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: school-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: school-db
+          property: password
+      - key: DB_HOST
+        fromDatabase:
+          name: school-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: school-db
+          property: port
+
+databases:
+  - name: school-db
+    databaseName: school_db
+    user: school_user
+    plan: free
