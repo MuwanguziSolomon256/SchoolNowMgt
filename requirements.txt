@@ -1,0 +1,36 @@
+# ============================================================================
+# SCHOOL MANAGEMENT SYSTEM - PYTHON DEPENDENCIES
+# ============================================================================
+# Installation: pip install -r requirements.txt
+# To regenerate after installing new packages: pip freeze > requirements.txt
+# ============================================================================
+
+# Django Web Framework
+Django>=4.2
+
+# WSGI HTTP Server (production)
+gunicorn>=21.2
+
+# Static files serving (production efficiency)
+whitenoise>=6.6
+
+# PostgreSQL database driver
+psycopg2-binary>=2.9
+
+# Environment variable management (.env file support)
+python-decouple>=3.8
+
+# Africa's Talking SMS API integration
+africastalking>=1.5.5
+
+# Image processing and manipulation
+Pillow>=10.0
+
+# Django form enhancement
+django-crispy-forms>=2.1
+
+# ============================================================================
+# NOTE: After adding new packages, regenerate this file with:
+#   pip freeze > requirements.txt
+# This will lock exact versions of all transitive dependencies.
+# ============================================================================
