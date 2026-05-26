@@ -22,16 +22,7 @@ class CustomUserManager(BaseUserManager):
         if not email:
             raise ValueError('The Email field must be set')
         if not school:
-            # Try to get or create a default school
-            school, _ = School.objects.get_or_create(
-                name='Default School',
-                defaults={
-                    'registration_number': 'DEFAULT-001',
-                    'address': 'Not specified',
-                    'phone': '0000000000',
-                    'email': 'default@school.com',
-                }
-            )
+            raise ValueError('School field is required')
         
         email = self.normalize_email(email)
         user = self.model(username=username, email=email, school=school, **extra_fields)
