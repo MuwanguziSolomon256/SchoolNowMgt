@@ -9,6 +9,18 @@ from .models import ClassGrade, Student, StudentAttendance, Enquiry, School
 from .forms import EnquiryForm, AttendanceMarkingForm
 
 
+def home(request):
+    """
+    Landing page showing the system and role-based entry points.
+    Accessible to both authenticated and unauthenticated users.
+    """
+    school = School.objects.first()
+    context = {
+        'school': school,
+    }
+    return render(request, 'SchoolNowMgt/home.html', context)
+
+
 def enquiry_form(request):
     """
     Public view for school enquiry form.

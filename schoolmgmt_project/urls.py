@@ -7,11 +7,19 @@ from django.shortcuts import redirect
 from django.conf import settings
 from django.conf.urls.static import static
 
+# Import home view
+from SchoolNowMgt.views import home
+
 urlpatterns = [
-    path('', lambda request: redirect('SchoolNowMgt:dashboard')),
+    path('', home, name='home'),
     path('admin/', admin.site.urls),
-    path('accounts/', include('django.contrib.auth.urls')),
+    path('teacher/', include('teacher.urls', namespace='teacher')),
+    path('accounts/', include([
+        path('teacher/', include('teacher_auth.urls', namespace='teacher_auth')),
+        path('', include('django.contrib.auth.urls')),
+    ])),
     path('school/', include('SchoolNowMgt.urls')),
+    path('register/', include('SchoolNowMgt.registration.urls', namespace='registration')),
 ]
 
 # Serve media files in development

@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.humanize',
     'SchoolNowMgt',
+    'teacher',
 ]
 
 MIDDLEWARE = [
@@ -116,8 +117,24 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'SchoolNowMgt.CustomUser'
 
 # Authentication
-LOGIN_URL = '/accounts/login/'
-LOGIN_REDIRECT_URL = '/school/'
+LOGIN_URL = '/teacher/login/'
+LOGIN_REDIRECT_URL = '/teacher/'
+LOGOUT_REDIRECT_URL = '/teacher/login/'
+
+# --- PASSWORD RESET TIMEOUT ---
+PASSWORD_RESET_TIMEOUT = 86400  # 24 hours
+
+# --- EMAIL CONFIGURATION (for password reset) ---
+# Development (console output):
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# Production (SMTP):
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = 'smtp.gmail.com'
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+# EMAIL_HOST_USER = config('EMAIL_HOST_USER')
+# EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+# DEFAULT_FROM_EMAIL = 'School Name <noreply@yourschool.com>'
 
 # Africa's Talking SMS Configuration
 AT_USERNAME = " sandbox"

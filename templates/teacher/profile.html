@@ -1,0 +1,261 @@
+{% extends "teacher/base.html" %}
+
+{% block title %}Teacher Profile{% endblock %}
+
+{% block content %}
+<div class="profile-container" style="max-width: 900px; margin: 0 auto; padding: 20px;">
+  
+  <!-- SECTION 1: Identity Card (Read-Only) -->
+  <section class="identity-card" style="background: #f9f9f9; border: 1px solid #ddd; border-radius: 8px; padding: 30px; margin-bottom: 40px;">
+    
+    <!-- Profile Photo or Initials Placeholder -->
+    <div style="display: flex; align-items: flex-start; gap: 30px; margin-bottom: 30px;">
+      <div class="profile-photo" style="flex-shrink: 0;">
+        {% if request.user.profile_picture %}
+          <img src="{{ request.user.profile_picture.url }}" 
+               alt="Profile" 
+               style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 2px solid #ccc;">
+        {% else %}
+          <div class="initials-placeholder" 
+               style="width: 100px; height: 100px; border-radius: 50%; background: #e0e0e0; display: flex; align-items: center; justify-content: center; font-size: 36px; font-weight: bold; color: #666; border: 2px solid #ccc;">
+            {{ request.user.first_name|first }}{{ request.user.last_name|first }}
+          </div>
+        {% endif %}
+      </div>
+      
+      <!-- Identity Information -->
+      <div class="identity-info" style="flex: 1;">
+        <h1 style="margin: 0 0 10px 0; font-size: 28px; color: #333;">
+          {{ request.user.first_name }} {{ request.user.last_name }}
+        </h1>
+        
+        <div style="margin-bottom: 15px;">
+          <strong>Employee ID:</strong> {{ staff_profile.employee_id }}
+        </div>
+        
+        <div style="margin-bottom: 15px;">
+          <strong>Position:</strong> {{ staff_profile.position }}
+        </div>
+        
+        <div style="margin-bottom: 15px;">
+          <strong>School:</strong> {{ request.user.school.name }}
+        </div>
+        
+        <div style="margin-bottom: 15px;">
+          <strong>Date Joined:</strong> {{ staff_profile.date_joined|date:"d M Y" }}
+        </div>
+        
+        <div>
+          {% if staff_profile.is_full_time %}
+            <span style="display: inline-block; background: #28a745; color: white; padding: 4px 12px; border-radius: 4px; font-size: 12px; font-weight: bold;">
+              Full time
+            </span>
+          {% else %}
+            <span style="display: inline-block; background: #ffc107; color: #333; padding: 4px 12px; border-radius: 4px; font-size: 12px; font-weight: bold;">
+              Part time
+            </span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  <!-- Success Message (if present) -->
+  {% if messages %}
+    {% for message in messages %}
+      {% if message.tags == 'success' %}
+        <div class="success-message" style="background: #d4edda; border: 1px solid #c3e6cb; color: #155724; padding: 12px 16px; border-radius: 4px; margin-bottom: 20px;">
+          {{ message }}
+        </div>
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+  
+  <!-- SECTION 2: Edit Profile Form -->
+  <section class="edit-profile" style="background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 30px; margin-bottom: 40px;">
+    <h2 style="margin-top: 0; margin-bottom: 20px; font-size: 20px; color: #333;">
+      Edit your profile
+    </h2>
+    
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      
+      <!-- Personal Information (TeacherProfileForm) -->
+      <div style="margin-bottom: 20px;">
+        <label for="{{ profile_form.first_name.id_for_label }}" style="display: block; margin-bottom: 6px; font-weight: bold; color: #333;">
+          First name
+        </label>
+        {{ profile_form.first_name }}
+        {% if profile_form.first_name.errors %}
+          <div style="color: #dc3545; font-size: 12px; margin-top: 4px;">
+            {{ profile_form.first_name.errors.0 }}
+          </div>
+        {% endif %}
+        <style>
+          input[type="text"], input[type="email"], input[type="tel"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-family: inherit;
+            box-sizing: border-box;
+          }
+        </style>
+      </div>
+      
+      <div style="margin-bottom: 20px;">
+        <label for="{{ profile_form.last_name.id_for_label }}" style="display: block; margin-bottom: 6px; font-weight: bold; color: #333;">
+          Last name
+        </label>
+        {{ profile_form.last_name }}
+        {% if profile_form.last_name.errors %}
+          <div style="color: #dc3545; font-size: 12px; margin-top: 4px;">
+            {{ profile_form.last_name.errors.0 }}
+          </div>
+        {% endif %}
+      </div>
+      
+      <div style="margin-bottom: 20px;">
+        <label for="{{ profile_form.phone.id_for_label }}" style="display: block; margin-bottom: 6px; font-weight: bold; color: #333;">
+          Phone
+        </label>
+        {{ profile_form.phone }}
+        {% if profile_form.phone.errors %}
+          <div style="color: #dc3545; font-size: 12px; margin-top: 4px;">
+            {{ profile_form.phone.errors.0 }}
+          </div>
+        {% endif %}
+      </div>
+      
+      <div style="margin-bottom: 20px;">
+        <label for="{{ profile_form.profile_picture.id_for_label }}" style="display: block; margin-bottom: 6px; font-weight: bold; color: #333;">
+          Profile photo
+        </label>
+        {{ profile_form.profile_picture }}
+        <div style="font-size: 12px; color: #666; margin-top: 4px;">
+          {{ profile_form.profile_picture.help_text }}
+        </div>
+        {% if profile_form.profile_picture.errors %}
+          <div style="color: #dc3545; font-size: 12px; margin-top: 4px;">
+            {{ profile_form.profile_picture.errors.0 }}
+          </div>
+        {% endif %}
+      </div>
+      
+      <!-- Qualification Information (TeacherQualificationForm) -->
+      <div style="margin-bottom: 20px;">
+        <label for="{{ qualification_form.qualification.id_for_label }}" style="display: block; margin-bottom: 6px; font-weight: bold; color: #333;">
+          Qualification
+        </label>
+        {{ qualification_form.qualification }}
+        {% if qualification_form.qualification.errors %}
+          <div style="color: #dc3545; font-size: 12px; margin-top: 4px;">
+            {{ qualification_form.qualification.errors.0 }}
+          </div>
+        {% endif %}
+        <style>
+          textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-family: inherit;
+            box-sizing: border-box;
+            resize: vertical;
+          }
+        </style>
+      </div>
+      
+      <div style="margin-bottom: 20px;">
+        <label for="{{ qualification_form.position.id_for_label }}" style="display: block; margin-bottom: 6px; font-weight: bold; color: #333;">
+          Position
+        </label>
+        {{ qualification_form.position }}
+        <div style="font-size: 12px; color: #999; margin-top: 4px;">
+          {{ qualification_form.position.help_text }}
+        </div>
+        {% if qualification_form.position.errors %}
+          <div style="color: #dc3545; font-size: 12px; margin-top: 4px;">
+            {{ qualification_form.position.errors.0 }}
+          </div>
+        {% endif %}
+      </div>
+      
+      <!-- Submit Button -->
+      <button type="submit" style="background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; font-size: 16px; font-weight: bold; cursor: pointer;">
+        Save changes
+      </button>
+    </form>
+  </section>
+  
+  <!-- SECTION 3: My Classes (Read-Only) -->
+  <section class="my-classes" style="background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 30px; margin-bottom: 40px;">
+    <h2 style="margin-top: 0; margin-bottom: 20px; font-size: 20px; color: #333;">
+      My classes
+    </h2>
+    
+    {% if my_classes %}
+      <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+          <tr style="border-bottom: 2px solid #ddd; background: #f9f9f9;">
+            <th style="padding: 12px; text-align: left; font-weight: bold;">Class</th>
+            <th style="padding: 12px; text-align: left; font-weight: bold;">Level</th>
+            <th style="padding: 12px; text-align: left; font-weight: bold;">Students</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for class_grade in my_classes %}
+            <tr style="border-bottom: 1px solid #eee;">
+              <td style="padding: 12px;">{{ class_grade.name }}</td>
+              <td style="padding: 12px;">P{{ class_grade.level }}</td>
+              <td style="padding: 12px;">—</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p style="color: #666; font-style: italic;">No class assigned yet.</p>
+    {% endif %}
+  </section>
+  
+  <!-- SECTION 4: My Timetable (Read-Only) -->
+  <section class="my-timetable" style="background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 30px;">
+    <h2 style="margin-top: 0; margin-bottom: 20px; font-size: 20px; color: #333;">
+      My timetable
+    </h2>
+    
+    {% if my_timetable %}
+      <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+          <tr style="border-bottom: 2px solid #ddd; background: #f9f9f9;">
+            <th style="padding: 12px; text-align: left; font-weight: bold;">Day</th>
+            <th style="padding: 12px; text-align: left; font-weight: bold;">Time</th>
+            <th style="padding: 12px; text-align: left; font-weight: bold;">Class</th>
+            <th style="padding: 12px; text-align: left; font-weight: bold;">Subject</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% regroup my_timetable by day_of_week as timetable_by_day %}
+          {% for day_group in timetable_by_day %}
+            {% for entry in day_group.list %}
+              <tr style="border-bottom: 1px solid #eee;">
+                {% if forloop.first %}
+                  <td rowspan="{{ day_group.list|length }}" style="padding: 12px; font-weight: bold; vertical-align: top;">
+                    {{ entry.get_day_of_week_display|title }}
+                  </td>
+                {% endif %}
+                <td style="padding: 12px;">{{ entry.start_time|time:"H:i" }} – {{ entry.end_time|time:"H:i" }}</td>
+                <td style="padding: 12px;">{{ entry.class_grade.name }}</td>
+                <td style="padding: 12px;">{{ entry.subject.name }}</td>
+              </tr>
+            {% endfor %}
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p style="color: #666; font-style: italic;">No timetable assigned yet.</p>
+    {% endif %}
+  </section>
+
+</div>
+{% endblock %}
