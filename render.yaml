@@ -4,10 +4,21 @@ services:
     env: python
     buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput && mkdir -p staticfiles
     startCommand: |
-      python manage.py migrate --no-input
-      python manage.py ensure_default_school
-      python manage.py loaddata data.json 2>/dev/null || true
-      gunicorn schoolmgmt_project.wsgi:application --workers 1 --bind 0.0.0.0:10000 --timeout 60 --access-logfile - --error-logfile -
+      echo "Starting Django application..."
+      echo "Step 1: Running database migrations..."
+      python manage.py migrate --no-input || { echo "Migrations failed!"; exit 1; }
+      echo "Step 2: Ensuring default school exists..."
+      python manage.py ensure_default_school || echo "Warning: Could not create default school, but continuing..."
+      echo "Step 3: Loading initial data..."
+      python manage.py loaddata data.json 2>/dev/null || echo "Note: No data.json to load or already loaded"
+      echo "Step 4: Starting Gunicorn server..."
+      exec gunicorn schoolmgmt_project.wsgi:application \
+        --workers 1 \
+        --bind 0.0.0.0:10000 \
+        --timeout 120 \
+        --access-logfile - \
+        --error-logfile - \
+        --log-level info
     envVars:
       - key: PORT
         value: "10000"

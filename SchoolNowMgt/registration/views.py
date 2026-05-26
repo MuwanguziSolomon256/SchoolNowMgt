@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import login
-from django.db import transaction
+from django.db import transaction, ProgrammingError
 from django.contrib import messages
 
 from SchoolNowMgt.models import CustomUser, StaffProfile, School
@@ -13,6 +13,18 @@ from SchoolNowMgt.registration.forms import (
 from SchoolNowMgt.registration.utils import generate_employee_id
 
 
+def get_school_safe():
+    """
+    Safely get the first school from the database.
+    Returns None if the table doesn't exist yet (during initial deployment).
+    """
+    try:
+        return School.objects.first()
+    except ProgrammingError:
+        # School table doesn't exist yet - migrations haven't run
+        return None
+
+
 def register_teacher(request):
     """
     Teacher self-registration view.
@@ -23,7 +35,7 @@ def register_teacher(request):
     
     No login required. No email verification for MVP.
     """
-    school = School.objects.first()
+    school = get_school_safe()
     
     if request.method == 'GET':
         form = TeacherRegistrationForm()
@@ -109,7 +121,7 @@ def register_admin(request):
     
     No login required. No email verification for MVP.
     """
-    school = School.objects.first()
+    school = get_school_safe()
     
     if request.method == 'GET':
         form = AdminRegistrationForm()
@@ -194,7 +206,7 @@ def register_non_teaching_staff(request):
     POST: Process registration, create CustomUser and StaffProfile in atomic transaction,
           log in user, and redirect to dashboard.
     """
-    school = School.objects.first()
+    school = get_school_safe()
     
     if request.method == 'GET':
         form = NonTeachingStaffRegistrationForm()
@@ -278,7 +290,7 @@ def register_parent(request):
     POST: Process registration, create CustomUser in atomic transaction,
           log in user, and redirect to dashboard.
     """
-    school = School.objects.first()
+    school = get_school_safe()
     
     if request.method == 'GET':
         form = ParentRegistrationForm()

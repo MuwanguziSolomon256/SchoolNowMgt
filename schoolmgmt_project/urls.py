@@ -4,13 +4,23 @@ URL configuration for schoolmgmt_project project.
 from django.contrib import admin
 from django.urls import path, include
 from django.shortcuts import redirect
+from django.http import HttpResponse
 from django.conf import settings
 from django.conf.urls.static import static
+from django.views.decorators.http import require_http_methods
 
 # Import home view
 from SchoolNowMgt.views import home
 
+
+@require_http_methods(["GET", "HEAD"])
+def health_check(request):
+    """Simple health check endpoint that doesn't access the database."""
+    return HttpResponse("OK", status=200)
+
+
 urlpatterns = [
+    path('health/', health_check, name='health_check'),
     path('', home, name='home'),
     path('admin/', admin.site.urls),
     path('teacher/', include('teacher.urls', namespace='teacher')),

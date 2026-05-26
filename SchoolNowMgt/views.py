@@ -3,10 +3,23 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
 from django.contrib import messages
 from django.utils import timezone
+from django.db import ProgrammingError
 from datetime import datetime
 
 from .models import ClassGrade, Student, StudentAttendance, Enquiry, School
 from .forms import EnquiryForm, AttendanceMarkingForm
+
+
+def get_school_safe():
+    """
+    Safely get the first school from the database.
+    Returns None if the table doesn't exist yet (during initial deployment).
+    """
+    try:
+        return School.objects.first()
+    except ProgrammingError:
+        # School table doesn't exist yet - migrations haven't run
+        return None
 
 
 def home(request):
@@ -14,7 +27,7 @@ def home(request):
     Landing page showing the system and role-based entry points.
     Accessible to both authenticated and unauthenticated users.
     """
-    school = School.objects.first()
+    school = get_school_safe()
     context = {
         'school': school,
     }
@@ -27,7 +40,7 @@ def enquiry_form(request):
     GET: Display the enquiry form with school name.
     POST: Save enquiry and redirect to success page.
     """
-    school = School.objects.first()
+    school = get_school_safe()
 
     if request.method == 'POST':
         form = EnquiryForm(request.POST)
