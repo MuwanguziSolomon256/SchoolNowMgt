@@ -19,11 +19,15 @@ services:
       python manage.py ensure_default_school || echo "⚠ Warning: Could not create default school, but continuing..."
       echo "✓ School initialization complete"
       
-      echo "Step 3: Loading initial data..."
+      echo "Step 3: Creating admin user..."
+      python manage.py create_admin --username admin --email admin@schoolnowmgt.com --password ${ADMIN_PASSWORD:-ChangeMe123!} || echo "⚠ Warning: Admin user creation failed (may already exist)"
+      echo "✓ Admin user check complete"
+      
+      echo "Step 4: Loading initial data..."
       python manage.py loaddata data.json 2>/dev/null || echo "ℹ Note: No data.json to load or already loaded"
       echo "✓ Data loading complete"
       
-      echo "Step 4: Starting Gunicorn server..."
+      echo "Step 5: Starting Gunicorn server..."
       exec gunicorn schoolmgmt_project.wsgi:application \
         --workers 1 \
         --worker-class sync \
@@ -41,6 +45,12 @@ services:
         generateValue: true
       - key: ALLOWED_HOSTS
         value: schoolnowmgt.onrender.com,www.schoolnowmgt.onrender.com
+      - key: ADMIN_USERNAME
+        value: admin
+      - key: ADMIN_EMAIL
+        value: admin@schoolnowmgt.com
+      - key: ADMIN_PASSWORD
+        sync: false
       - key: AT_USERNAME
         sync: false
       - key: AT_API_KEY
