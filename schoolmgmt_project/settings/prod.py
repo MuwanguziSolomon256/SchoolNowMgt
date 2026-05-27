@@ -74,6 +74,12 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER     = config('EMAIL_HOST_USER',     default='')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 
+# WhiteNoise configuration for serving static files efficiently
+# This allows WhiteNoise to compress files on-the-fly
+WHITENOISE_AUTOREFRESH = False
+WHITENOISE_USE_FINDERS = True
+WHITENOISE_COMPRESSION_QUALITY = 80
+
 # ────────────────────────────────────────────────────────────────────────────
 # PRE-LAUNCH CHECKLIST
 # ────────────────────────────────────────────────────────────────────────────

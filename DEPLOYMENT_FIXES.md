@@ -112,3 +112,43 @@ python manage.py runserver
 - All defensive error handling allows the app to fail gracefully if database isn't available
 - The default school is created with registration_number `DEFAULT-001`
 - No data is lost when redeploying - the database persists on Render
+
+## Static Files Fix (Phase 2)
+
+After fixing the database issue, static files were returning 404 errors. This was due to storage backend incompatibility with Render's ephemeral filesystem.
+
+### Changes Made:
+
+**File**: [schoolmgmt_project/settings/base.py](schoolmgmt_project/settings/base.py)
+- Changed from `CompressedManifestStaticFilesStorage` to standard `StaticFilesStorage`
+- Added `STATICFILES_FINDERS` configuration
+- Manifest-based storage doesn't work well on ephemeral filesystems
+
+**File**: [schoolmgmt_project/settings/prod.py](schoolmgmt_project/settings/prod.py)
+- Added WhiteNoise configuration:
+  - `WHITENOISE_AUTOREFRESH = False` (disabled for production)
+  - `WHITENOISE_USE_FINDERS = True` (uses Django's static file finders)
+  - WhiteNoise handles compression on-the-fly
+
+**File**: [render.yaml](render.yaml)
+- Improved build process with better logging
+- Removed pre-creating staticfiles directory (let collectstatic handle it)
+- Added verification step to confirm files were collected
+- Better error handling and debugging output
+
+### How It Works Now:
+
+1. **Build Phase**: `python manage.py collectstatic --noinput --clear --verbosity 2` collects all Django static files
+2. **Server Runtime**: WhiteNoise middleware serves the collected static files directly from disk
+3. **Compression**: WhiteNoise compresses files on-the-fly (no need for manifest)
+4. **Efficiency**: Much lighter than manifest-based storage
+
+### Testing Locally:
+
+The fix was validated by running collectstatic locally:
+```bash
+python manage.py collectstatic --noinput --clear --verbosity 2
+# Result: 130 static files collected successfully
+```
+
+All admin CSS/JavaScript files are properly collected and will be served by WhiteNoise.

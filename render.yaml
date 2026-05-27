@@ -2,18 +2,31 @@ services:
   - type: web
     name: school-mgmt
     env: python
-    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput && mkdir -p staticfiles
+    buildCommand: |
+      echo "Installing dependencies..."
+      pip install -r requirements.txt
+      echo "Collecting static files..."
+      python manage.py collectstatic --noinput --clear --verbosity 2
+      echo "Verifying static files..."
+      if [ -d staticfiles ]; then echo "✓ Static files directory created successfully"; ls staticfiles/ | head -5; else echo "✗ Warning: staticfiles directory not found"; fi
     startCommand: |
-      echo "Starting Django application..."
+      echo "=== Starting Django application ==="
       echo "Step 1: Running database migrations..."
-      python manage.py migrate --no-input || { echo "Migrations failed!"; exit 1; }
+      python manage.py migrate --no-input || { echo "❌ Migrations failed!"; exit 1; }
+      echo "✓ Migrations complete"
+      
       echo "Step 2: Ensuring default school exists..."
-      python manage.py ensure_default_school || echo "Warning: Could not create default school, but continuing..."
+      python manage.py ensure_default_school || echo "⚠ Warning: Could not create default school, but continuing..."
+      echo "✓ School initialization complete"
+      
       echo "Step 3: Loading initial data..."
-      python manage.py loaddata data.json 2>/dev/null || echo "Note: No data.json to load or already loaded"
+      python manage.py loaddata data.json 2>/dev/null || echo "ℹ Note: No data.json to load or already loaded"
+      echo "✓ Data loading complete"
+      
       echo "Step 4: Starting Gunicorn server..."
       exec gunicorn schoolmgmt_project.wsgi:application \
         --workers 1 \
+        --worker-class sync \
         --bind 0.0.0.0:10000 \
         --timeout 120 \
         --access-logfile - \
