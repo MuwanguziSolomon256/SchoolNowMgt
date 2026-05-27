@@ -75,9 +75,9 @@ class SchoolAdmin(admin.ModelAdmin):
 
 @admin.register(CustomUser)
 class CustomUserAdmin(UserAdmin):
-    list_display = ['username', 'get_full_name', 'role', 'school',
-                    'is_active']
-    list_filter = ['role', 'school', 'is_active']
+    list_display = ['username', 'email', 'get_user_full_name', 'role', 
+                    'get_school_name', 'is_active']
+    list_filter = ['role', 'is_active']
     search_fields = ['username', 'first_name', 'last_name', 'email']
 
     fieldsets = UserAdmin.fieldsets + (
@@ -90,6 +90,23 @@ class CustomUserAdmin(UserAdmin):
             'fields': ('role', 'school', 'phone')
         }),
     )
+    
+    def get_user_full_name(self, obj):
+        """Safely get full name of user."""
+        try:
+            full_name = obj.get_full_name()
+            return full_name if full_name.strip() else obj.username
+        except Exception:
+            return obj.username
+    get_user_full_name.short_description = 'Full Name'
+    
+    def get_school_name(self, obj):
+        """Safely get school name."""
+        try:
+            return obj.school.name if obj.school else '-'
+        except Exception:
+            return '-'
+    get_school_name.short_description = 'School'
 
 
 # ============================================================================
