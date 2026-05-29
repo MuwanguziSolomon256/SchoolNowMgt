@@ -1,7 +1,6 @@
 from django.urls import path
-from registration.views import register_teacher
-from auth.views import teacher_login, teacher_logout
-from auth.password_views import (
+from teacher_auth.views import teacher_login, teacher_logout, teacher_register
+from teacher_auth.password_views import (
     teacher_password_reset,
     teacher_password_reset_done,
     teacher_password_reset_confirm,
@@ -16,7 +15,7 @@ app_name = 'teacher'
 
 urlpatterns = [
     path('',             teacher_dashboard,    name='dashboard'),
-    path('register/',    register_teacher,     name='register'),
+    path('register/',    teacher_register,     name='register'),
     path('login/',       teacher_login,        name='login'),
     path('logout/',      teacher_logout,       name='logout'),
     path('profile/',     teacher_profile,      name='profile'),

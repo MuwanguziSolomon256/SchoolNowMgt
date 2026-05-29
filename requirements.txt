@@ -29,6 +29,9 @@ Pillow>=10.0
 # Django form enhancement
 django-crispy-forms>=2.1
 
+# OAuth and social authentication (Google, Microsoft, Apple)
+django-allauth>=0.57.0
+
 # ============================================================================
 # NOTE: After adding new packages, regenerate this file with:
 #   pip freeze > requirements.txt

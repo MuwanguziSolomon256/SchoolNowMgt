@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>EduVision Pro | Maintenance Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Hanken+Grotesk:wght@600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "error-container": "#ffdad6",
+                        "surface-dim": "#d9dadd",
+                        "on-primary-fixed": "#121643",
+                        "on-primary-container": "#868abd",
+                        "surface-container-highest": "#e1e2e5",
+                        "tertiary": "#2b0400",
+                        "outline-variant": "#c7c5d0",
+                        "primary-fixed-dim": "#bfc2fa",
+                        "on-secondary": "#ffffff",
+                        "on-primary-fixed-variant": "#3f4371",
+                        "secondary-container": "#feb700",
+                        "inverse-primary": "#bfc2fa",
+                        "secondary-fixed-dim": "#ffba20",
+                        "on-error": "#ffffff",
+                        "on-background": "#191c1e",
+                        "inverse-on-surface": "#f0f1f4",
+                        "surface-bright": "#f8f9fc",
+                        "surface": "#f8f9fc",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface-variant": "#46464f",
+                        "on-secondary-fixed-variant": "#5e4200",
+                        "outline": "#777680",
+                        "primary-container": "#1e224f",
+                        "error": "#ba1a1a",
+                        "background": "#f8f9fc",
+                        "surface-container-low": "#f2f3f6",
+                        "on-secondary-fixed": "#271900",
+                        "tertiary-fixed-dim": "#ffb4a2",
+                        "on-tertiary-fixed-variant": "#881f01",
+                        "on-primary": "#ffffff",
+                        "secondary-fixed": "#ffdea8",
+                        "surface-tint": "#565a8b",
+                        "on-surface": "#191c1e",
+                        "on-tertiary-container": "#e96442",
+                        "surface-container": "#edeef1",
+                        "on-secondary-container": "#6b4b00",
+                        "primary": "#080b3a",
+                        "tertiary-container": "#500d00",
+                        "secondary": "#7c5800",
+                        "on-error-container": "#93000a",
+                        "surface-variant": "#e1e2e5",
+                        "on-tertiary": "#ffffff",
+                        "inverse-surface": "#2e3133",
+                        "surface-container-high": "#e7e8eb",
+                        "on-tertiary-fixed": "#3c0800",
+                        "primary-fixed": "#e0e0ff",
+                        "tertiary-fixed": "#ffdbd2"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "16px",
+                        "card-gap": "12px",
+                        "base": "8px",
+                        "section-margin": "32px",
+                        "container-padding": "20px"
+                    },
+                    "fontFamily": {
+                        "label-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-md": ["Hanken Grotesk"],
+                        "headline-lg": ["Hanken Grotesk"],
+                        "display-lg": ["Hanken Grotesk"],
+                        "body-md": ["Inter"],
+                        "headline-lg-mobile": ["Hanken Grotesk"]
+                    },
+                    "fontSize": {
+                        "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-md": ["22px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "headline-lg": ["28px", {"lineHeight": "36px", "fontWeight": "600"}],
+                        "display-lg": ["36px", {"lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 8px 32px 0 rgba(30, 34, 79, 0.08);
+        }
+        .inner-glow {
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.8);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .active-tab-glow {
+            box-shadow: 0 0 15px rgba(254, 183, 0, 0.3);
+        }
+        body {
+            background: radial-gradient(circle at top left, #f8f9fc 0%, #edeef1 100%);
+        }
+    </style>
+</head>
+<body class="font-body-md text-on-surface antialiased overflow-x-hidden">
+<!-- Sidebar Navigation (SideNavBar) -->
+<aside class="h-screen w-64 fixed left-0 top-0 bg-primary flex flex-col py-base gap-2 shadow-xl shadow-primary/20 z-50">
+<div class="px-6 py-8 flex flex-col gap-1">
+<h1 class="font-headline-lg text-headline-lg font-black text-secondary-container">Legacy Academy</h1>
+<p class="font-label-md text-label-md text-on-primary/60 uppercase tracking-widest">Admin Portal</p>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="bg-secondary-container text-on-secondary-container rounded-lg font-bold flex items-center gap-3 px-4 py-3 mx-2 group cursor-pointer active-tab-glow" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="text-on-primary/70 flex items-center gap-3 px-4 py-3 mx-2 hover:bg-white/10 rounded-lg transition-all group cursor-pointer hover:translate-x-1 duration-300" href="#">
+<span class="material-symbols-outlined" data-icon="event_seat">event_seat</span>
+<span class="font-label-md text-label-md">Facility Booking</span>
+</a>
+<a class="text-on-primary/70 flex items-center gap-3 px-4 py-3 mx-2 hover:bg-white/10 rounded-lg transition-all group cursor-pointer hover:translate-x-1 duration-300" href="#">
+<span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
+<span class="font-label-md text-label-md">Inventory</span>
+</a>
+<a class="text-on-primary/70 flex items-center gap-3 px-4 py-3 mx-2 hover:bg-white/10 rounded-lg transition-all group cursor-pointer hover:translate-x-1 duration-300" href="#">
+<span class="material-symbols-outlined" data-icon="assignment">assignment</span>
+<span class="font-label-md text-label-md">Task Logs</span>
+</a>
+<a class="text-on-primary/70 flex items-center gap-3 px-4 py-3 mx-2 hover:bg-white/10 rounded-lg transition-all group cursor-pointer hover:translate-x-1 duration-300" href="#">
+<span class="material-symbols-outlined" data-icon="report_problem">report_problem</span>
+<span class="font-label-md text-label-md">Issues</span>
+</a>
+</nav>
+<div class="px-4 py-4">
+<button class="w-full py-3 bg-secondary-container text-on-secondary-container font-bold rounded-xl shadow-lg hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined" data-icon="add_circle">add_circle</span>
+                New Admission
+            </button>
+</div>
+<div class="mt-auto border-t border-white/10 pt-4 pb-6">
+<a class="text-on-primary/70 flex items-center gap-3 px-4 py-3 mx-2 hover:bg-white/10 rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="contact_support">contact_support</span>
+<span class="font-label-md text-label-md">Support</span>
+</a>
+<a class="text-on-primary/70 flex items-center gap-3 px-4 py-3 mx-2 hover:bg-white/10 rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+<span class="font-label-md text-label-md">Logout</span>
+</a>
+</div>
+</aside>
+<!-- Main Canvas -->
+<main class="ml-64 min-h-screen p-container-padding">
+<!-- Top Nav Bar -->
+<header class="flex justify-between items-center w-full mb-8 h-16 bg-surface/70 backdrop-blur-2xl px-6 rounded-2xl shadow-sm shadow-primary/5 sticky top-4 z-40 border border-white/40">
+<div class="flex items-center gap-4">
+<div class="relative">
+<span class="absolute inset-y-0 left-3 flex items-center text-outline">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+</span>
+<input class="pl-10 pr-4 py-2 bg-surface-container-low border-none rounded-full text-body-md focus:ring-2 focus:ring-primary w-64 transition-all" placeholder="Search facilities, tasks, staff..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex gap-4">
+<button class="material-symbols-outlined text-outline hover:text-primary transition-colors cursor-pointer" data-icon="notifications">notifications</button>
+<button class="material-symbols-outlined text-outline hover:text-primary transition-colors cursor-pointer" data-icon="help">help</button>
+<button class="material-symbols-outlined text-outline hover:text-primary transition-colors cursor-pointer" data-icon="settings">settings</button>
+</div>
+<div class="h-10 w-10 rounded-full overflow-hidden border-2 border-secondary-container">
+<img alt="Administrator Profile" class="w-full h-full object-cover" data-alt="A professional headshot of a middle-aged male administrator with a warm and focused expression. He is wearing a sharp navy blue suit in a brightly lit modern office environment. The background shows soft architectural details and blurred greenery, maintaining a high-key, professional light-mode aesthetic with clean lines and balanced lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBR0OJa7aUJrY4fPIY5BsObHrLS9RdLX5ZNKOHSvJDtAbz6ixtZycDo9t-K5yQW8QafIPq3vvsJcFV783N4x-cdBlDM6AmmyoMJdMF6c9FmBvr54pYcuDgw6aIpijRABgugUZzFf9Jhwh3kDyfnh2Fv1D2KE_FTUSkFcwDMR50Q3_MtOWsOth5K0_yqN3oJdqWzQWpH8WtlVqci5d2Lb3Qi-_yhMgMJ098b6faRqKMI5f5gTzTPxaORxJhj5cDAUse2_q7l-kuTUWFi"/>
+</div>
+</div>
+</header>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-12 gap-card-gap">
+<!-- Clock In/Out Status Card -->
+<section class="col-span-12 lg:col-span-4 glass-card rounded-3xl p-6 flex flex-col justify-between overflow-hidden relative inner-glow">
+<div class="absolute -top-12 -right-12 w-48 h-48 bg-secondary-container/10 rounded-full blur-3xl"></div>
+<div class="flex justify-between items-start z-10">
+<div>
+<h2 class="font-headline-md text-headline-md text-primary mb-1">Shift Status</h2>
+<p class="text-on-surface-variant font-body-md">Active since 08:00 AM</p>
+</div>
+<span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-label-md font-bold flex items-center gap-1">
+<span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                        ON DUTY
+                    </span>
+</div>
+<div class="mt-8 z-10 text-center">
+<div class="font-display-lg text-display-lg text-primary tracking-tight font-black tabular-nums" id="digital-clock">14:45:02</div>
+<p class="font-label-md text-label-md text-outline mt-2">Monday, October 23, 2023</p>
+</div>
+<div class="mt-8 flex gap-3 z-10">
+<button class="flex-1 py-4 bg-primary text-on-primary rounded-2xl font-bold hover:bg-primary-container transition-all shadow-md flex items-center justify-center gap-2" id="clock-btn" onclick="toggleClock()">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+                        Clock Out
+                    </button>
+<button class="w-16 py-4 glass-card text-primary rounded-2xl flex items-center justify-center hover:bg-white transition-all">
+<span class="material-symbols-outlined" data-icon="coffee">coffee</span>
+</button>
+</div>
+</section>
+<!-- Pending Maintenance Task Queue -->
+<section class="col-span-12 lg:col-span-8 glass-card rounded-3xl p-6 inner-glow">
+<div class="flex justify-between items-center mb-6">
+<h2 class="font-headline-md text-headline-md text-primary">Pending Maintenance</h2>
+<a class="text-primary font-label-md hover:underline" href="#">View All Tasks</a>
+</div>
+<div class="space-y-4 max-h-[320px] overflow-y-auto pr-2 custom-scrollbar">
+<!-- Task Item 1 -->
+<div class="flex items-center gap-4 p-4 rounded-2xl bg-surface-container-low hover:bg-surface-container-high transition-all group">
+<div class="h-12 w-12 rounded-xl bg-error-container text-error flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="plumbing">plumbing</span>
+</div>
+<div class="flex-1">
+<h3 class="font-label-md text-body-lg font-bold text-on-surface">Clogged Drain - Block B, Room 402</h3>
+<p class="text-on-surface-variant font-body-md">Reported by: Housekeeping • 2h ago</p>
+</div>
+<div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="px-4 py-2 bg-primary text-on-primary rounded-lg text-label-md font-bold hover:scale-105 transition-transform">Accept</button>
+<button class="px-4 py-2 border border-outline-variant text-on-surface-variant rounded-lg text-label-md font-bold hover:bg-white transition-all">Delegate</button>
+</div>
+</div>
+<!-- Task Item 2 -->
+<div class="flex items-center gap-4 p-4 rounded-2xl bg-surface-container-low hover:bg-surface-container-high transition-all group border-l-4 border-secondary-container">
+<div class="h-12 w-12 rounded-xl bg-secondary-fixed text-on-secondary-fixed flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="electric_bolt">electric_bolt</span>
+</div>
+<div class="flex-1">
+<h3 class="font-label-md text-body-lg font-bold text-on-surface">Generator Inspection - Main Campus</h3>
+<p class="text-on-surface-variant font-body-md">Scheduled Task • Due in 1h</p>
+</div>
+<div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="px-4 py-2 bg-primary text-on-primary rounded-lg text-label-md font-bold hover:scale-105 transition-transform">Accept</button>
+<button class="px-4 py-2 border border-outline-variant text-on-surface-variant rounded-lg text-label-md font-bold hover:bg-white transition-all">Delegate</button>
+</div>
+</div>
+<!-- Task Item 3 -->
+<div class="flex items-center gap-4 p-4 rounded-2xl bg-surface-container-low hover:bg-surface-container-high transition-all group">
+<div class="h-12 w-12 rounded-xl bg-primary-fixed text-on-primary-fixed flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="meeting_room">meeting_room</span>
+</div>
+<div class="flex-1">
+<h3 class="font-label-md text-body-lg font-bold text-on-surface">Door Handle Fix - Staff Lounge</h3>
+<p class="text-on-surface-variant font-body-md">Reported by: Security • 5h ago</p>
+</div>
+<div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="px-4 py-2 bg-primary text-on-primary rounded-lg text-label-md font-bold hover:scale-105 transition-transform">Accept</button>
+<button class="px-4 py-2 border border-outline-variant text-on-surface-variant rounded-lg text-label-md font-bold hover:bg-white transition-all">Delegate</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Schedule Timeline -->
+<section class="col-span-12 lg:col-span-5 glass-card rounded-3xl p-6 inner-glow">
+<div class="flex items-center gap-2 mb-6">
+<span class="material-symbols-outlined text-primary" data-icon="calendar_today">calendar_today</span>
+<h2 class="font-headline-md text-headline-md text-primary">Daily Schedule</h2>
+</div>
+<div class="space-y-6 relative before:absolute before:left-3 before:top-2 before:bottom-2 before:w-0.5 before:bg-outline-variant/30">
+<div class="relative pl-10">
+<div class="absolute left-[7px] top-1.5 w-2.5 h-2.5 rounded-full bg-secondary-container"></div>
+<div class="font-label-md text-on-secondary-fixed-variant mb-1">09:00 AM - 10:30 AM</div>
+<div class="p-4 bg-white rounded-2xl shadow-sm">
+<p class="font-bold text-primary">Biometric System Upgrade</p>
+<p class="text-on-surface-variant text-body-md">IT Wing - All Access Points</p>
+</div>
+</div>
+<div class="relative pl-10">
+<div class="absolute left-[7px] top-1.5 w-2.5 h-2.5 rounded-full bg-primary/40"></div>
+<div class="font-label-md text-outline mb-1">11:00 AM - 12:00 PM</div>
+<div class="p-4 glass-card/50 rounded-2xl">
+<p class="font-bold text-on-surface-variant">Weekly Staff Briefing</p>
+<p class="text-outline text-body-md">Conference Room B</p>
+</div>
+</div>
+<div class="relative pl-10">
+<div class="absolute left-[7px] top-1.5 w-2.5 h-2.5 rounded-full bg-secondary-container animate-pulse shadow-[0_0_8px_rgba(254,183,0,0.8)]"></div>
+<div class="font-label-md text-on-secondary-fixed-variant mb-1">02:00 PM - 04:00 PM</div>
+<div class="p-4 bg-secondary-container/5 rounded-2xl border border-secondary-container/20">
+<p class="font-bold text-primary">HVAC Filter Replacement</p>
+<p class="text-on-surface-variant text-body-md">Auditorium &amp; Gym (Ongoing)</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Inventory Overview Grid -->
+<section class="col-span-12 lg:col-span-7 glass-card rounded-3xl p-6 inner-glow">
+<div class="flex justify-between items-center mb-6">
+<h2 class="font-headline-md text-headline-md text-primary">Inventory Overview</h2>
+<button class="flex items-center gap-1 text-primary font-label-md bg-primary-fixed px-3 py-1.5 rounded-full hover:bg-primary-fixed-dim transition-colors">
+<span class="material-symbols-outlined text-[18px]" data-icon="download">download</span>
+                        Reports
+                    </button>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+<!-- Supply Item 1 -->
+<div class="flex flex-col items-center p-4 bg-surface-container rounded-2xl hover:scale-105 transition-transform duration-300">
+<div class="relative w-20 h-20 mb-3">
+<svg class="w-full h-full transform -rotate-90">
+<circle class="text-primary/10" cx="40" cy="40" fill="transparent" r="34" stroke="currentColor" stroke-width="6"></circle>
+<circle class="text-secondary-container" cx="40" cy="40" fill="transparent" r="34" stroke="currentColor" stroke-dasharray="213.6" stroke-dashoffset="42.7" stroke-width="6"></circle>
+</svg>
+<div class="absolute inset-0 flex items-center justify-center font-bold text-primary">80%</div>
+</div>
+<p class="font-label-md text-on-surface text-center">Electrical Fittings</p>
+<p class="text-outline text-[11px] uppercase mt-1">Status: Healthy</p>
+</div>
+<!-- Supply Item 2 -->
+<div class="flex flex-col items-center p-4 bg-surface-container rounded-2xl hover:scale-105 transition-transform duration-300">
+<div class="relative w-20 h-20 mb-3">
+<svg class="w-full h-full transform -rotate-90">
+<circle class="text-primary/10" cx="40" cy="40" fill="transparent" r="34" stroke="currentColor" stroke-width="6"></circle>
+<circle class="text-error" cx="40" cy="40" fill="transparent" r="34" stroke="currentColor" stroke-dasharray="213.6" stroke-dashoffset="170.8" stroke-width="6"></circle>
+</svg>
+<div class="absolute inset-0 flex items-center justify-center font-bold text-error">20%</div>
+</div>
+<p class="font-label-md text-on-surface text-center">Plumbing Spares</p>
+<p class="text-error text-[11px] font-bold uppercase mt-1">Low Stock</p>
+</div>
+<!-- Supply Item 3 -->
+<div class="flex flex-col items-center p-4 bg-surface-container rounded-2xl hover:scale-105 transition-transform duration-300">
+<div class="relative w-20 h-20 mb-3">
+<svg class="w-full h-full transform -rotate-90">
+<circle class="text-primary/10" cx="40" cy="40" fill="transparent" r="34" stroke="currentColor" stroke-width="6"></circle>
+<circle class="text-secondary-container" cx="40" cy="40" fill="transparent" r="34" stroke="currentColor" stroke-dasharray="213.6" stroke-dashoffset="106.8" stroke-width="6"></circle>
+</svg>
+<div class="absolute inset-0 flex items-center justify-center font-bold text-primary">50%</div>
+</div>
+<p class="font-label-md text-on-surface text-center">Lighting Bulbs</p>
+<p class="text-outline text-[11px] uppercase mt-1">Reorder soon</p>
+</div>
+<!-- Supply Item 4 -->
+<div class="flex flex-col items-center p-4 bg-surface-container rounded-2xl hover:scale-105 transition-transform duration-300">
+<div class="relative w-20 h-20 mb-3">
+<svg class="w-full h-full transform -rotate-90">
+<circle class="text-primary/10" cx="40" cy="40" fill="transparent" r="34" stroke="currentColor" stroke-width="6"></circle>
+<circle class="text-secondary-container" cx="40" cy="40" fill="transparent" r="34" stroke="currentColor" stroke-dasharray="213.6" stroke-dashoffset="10.6" stroke-width="6"></circle>
+</svg>
+<div class="absolute inset-0 flex items-center justify-center font-bold text-primary">95%</div>
+</div>
+<p class="font-label-md text-on-surface text-center">Cleaning Agents</p>
+<p class="text-outline text-[11px] uppercase mt-1">Status: Optimal</p>
+</div>
+</div>
+<div class="mt-6 flex items-center gap-4 bg-primary-container p-4 rounded-2xl text-on-primary">
+<span class="material-symbols-outlined text-secondary-container text-4xl" data-icon="local_shipping">local_shipping</span>
+<div>
+<h4 class="font-bold">Next Delivery Scheduled</h4>
+<p class="text-on-primary-container text-body-md">Plumbing &amp; Hardware supplies arriving tomorrow at 10:00 AM.</p>
+</div>
+</div>
+</section>
+</div>
+</main>
+<script>
+        // Real-time Clock logic
+        function updateClock() {
+            const now = new Date();
+            const h = String(now.getHours()).padStart(2, '0');
+            const m = String(now.getMinutes()).padStart(2, '0');
+            const s = String(now.getSeconds()).padStart(2, '0');
+            document.getElementById('digital-clock').textContent = `${h}:${m}:${s}`;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Simple Clock-In/Out Interaction
+        let isClockedIn = true;
+        function toggleClock() {
+            const btn = document.getElementById('clock-btn');
+            const statusLabel = document.querySelector('.bg-green-100');
+            
+            if (isClockedIn) {
+                btn.innerHTML = '<span class="material-symbols-outlined">login</span> Clock In';
+                btn.classList.replace('bg-primary', 'bg-secondary-container');
+                btn.classList.replace('text-on-primary', 'text-on-secondary-container');
+                statusLabel.classList.replace('bg-green-100', 'bg-red-100');
+                statusLabel.classList.replace('text-green-700', 'text-red-700');
+                statusLabel.innerHTML = '<span class="w-2 h-2 bg-red-500 rounded-full"></span> OFF DUTY';
+            } else {
+                btn.innerHTML = '<span class="material-symbols-outlined">logout</span> Clock Out';
+                btn.classList.replace('bg-secondary-container', 'bg-primary');
+                btn.classList.replace('text-on-secondary-container', 'text-on-primary');
+                statusLabel.classList.replace('bg-red-100', 'bg-green-100');
+                statusLabel.classList.replace('text-red-700', 'text-green-700');
+                statusLabel.innerHTML = '<span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span> ON DUTY';
+            }
+            isClockedIn = !isClockedIn;
+        }
+
+        // Add subtle hover effect for glass cards
+        document.querySelectorAll('.glass-card').forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                card.style.setProperty('--mouse-x', `${x}px`);
+                card.style.setProperty('--mouse-y', `${y}px`);
+            });
+        });
+    </script>
+</body></html>

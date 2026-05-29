@@ -157,3 +157,48 @@ def custom_logout(request):
     
     # GET: Show logout confirmation page
     return render(request, 'registration/logout_confirm.html')
+
+
+@login_required(login_url='SchoolNowMgt:login')
+def live_analytics(request):
+    """
+    Live analytics dashboard showing key performance indicators.
+    Requires admin/staff authentication.
+    """
+    from django.db.models import Count, Q, Avg
+    from decimal import Decimal
+    from SchoolNowMgt.models import RetentionAlert, CustomUser
+    
+    school = get_school_safe()
+    
+    # Get basic statistics
+    total_students = Student.objects.filter(status='active').count()
+    total_teachers = CustomUser.objects.filter(role='teacher').count()
+    total_staff = CustomUser.objects.filter(role__in=['admin', 'non_teaching_staff']).count()
+    
+    # Get attendance statistics for today
+    today = timezone.now().date()
+    today_attendance = StudentAttendance.objects.filter(date=today)
+    attendance_present = today_attendance.filter(status='present').count()
+    attendance_total = today_attendance.count()
+    attendance_percentage = (attendance_present / attendance_total * 100) if attendance_total > 0 else 0
+    
+    # Get class information
+    total_classes = ClassGrade.objects.count()
+    
+    # Get retention alerts
+    active_alerts = RetentionAlert.objects.filter(status='open').count()
+    
+    context = {
+        'school': school,
+        'total_students': total_students,
+        'total_teachers': total_teachers,
+        'total_staff': total_staff,
+        'total_classes': total_classes,
+        'attendance_present': attendance_present,
+        'attendance_total': attendance_total,
+        'attendance_percentage': round(attendance_percentage, 1),
+        'active_alerts': active_alerts,
+    }
+    
+    return render(request, 'SchoolNowMgt/analytics.html', context)

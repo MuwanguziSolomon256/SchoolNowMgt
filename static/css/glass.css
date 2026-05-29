@@ -1,0 +1,319 @@
+/* ============================================
+   Ethos Glass Morphism Effects
+   ============================================ */
+
+:root {
+  /* Ethos Glass Color Palette */
+  --surface: #f8f9fc;
+  --surface-dim: #d9dadd;
+  --surface-bright: #f8f9fc;
+  --surface-container-lowest: #ffffff;
+  --surface-container-low: #f2f3f6;
+  --surface-container: #edeef1;
+  --surface-container-high: #e7e8eb;
+  --surface-container-highest: #e1e2e5;
+  --on-surface: #191c1e;
+  --on-surface-variant: #46464f;
+  --inverse-surface: #2e3133;
+  --inverse-on-surface: #f0f1f4;
+  
+  /* Outline & Borders */
+  --outline: #777680;
+  --outline-variant: #c7c5d0;
+  
+  /* Tint */
+  --surface-tint: #565a8b;
+  
+  /* Primary */
+  --primary: #080b3a;
+  --on-primary: #ffffff;
+  --primary-container: #1e224f;
+  --on-primary-container: #868abd;
+  --inverse-primary: #bfc2fa;
+  --primary-fixed: #e0e0ff;
+  --primary-fixed-dim: #bfc2fa;
+  --on-primary-fixed: #121643;
+  --on-primary-fixed-variant: #3f4371;
+  
+  /* Secondary */
+  --secondary: #7c5800;
+  --on-secondary: #ffffff;
+  --secondary-container: #feb700;
+  --on-secondary-container: #6b4b00;
+  --secondary-fixed: #ffdea8;
+  --secondary-fixed-dim: #ffba20;
+  --on-secondary-fixed: #271900;
+  --on-secondary-fixed-variant: #5e4200;
+  
+  /* Tertiary */
+  --tertiary: #2b0400;
+  --on-tertiary: #ffffff;
+  --tertiary-container: #500d00;
+  --on-tertiary-container: #e96442;
+  --tertiary-fixed: #ffdbd2;
+  --tertiary-fixed-dim: #ffb4a2;
+  --on-tertiary-fixed: #3c0800;
+  --on-tertiary-fixed-variant: #881f01;
+  
+  /* Error */
+  --error: #ba1a1a;
+  --on-error: #ffffff;
+  --error-container: #ffdad6;
+  --on-error-container: #93000a;
+  
+  /* Background */
+  --background: #f8f9fc;
+  --on-background: #191c1e;
+  --surface-variant: #e1e2e5;
+}
+
+/* Glass Panel - Primary Frosted Effect */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 10px 30px -5px rgba(30, 34, 79, 0.08);
+}
+
+/* Glass Panel - Variant (Deeper Shadow) */
+.glass-panel-deep {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 10px 30px -10px rgba(30, 34, 79, 0.08);
+}
+
+/* Glass Edge - Top & Left Border Highlight */
+.glass-edge {
+  border-top: 1px solid rgba(255, 255, 255, 0.8);
+  border-left: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+/* Ethos Gradient Background */
+.ethos-gradient {
+  background: linear-gradient(135deg, #080b3a 0%, #1e224f 100%);
+}
+
+/* Ethos Gradient Variant - Radial */
+.ethos-gradient-radial {
+  background: radial-gradient(circle at top right, #ffdea8 0%, transparent 40%),
+              radial-gradient(circle at bottom left, #e0e0ff 0%, transparent 40%);
+}
+
+/* Pattern Background - Subtle Geometric */
+.pattern-bg {
+  background-image: radial-gradient(rgba(254, 183, 0, 0.1) 1px, transparent 0);
+  background-size: 24px 24px;
+  opacity: 0.2;
+}
+
+/* Pattern Background - Grid (for register page) */
+.pattern-bg-grid {
+  background-color: #f8f9fc;
+  background-image:  
+    linear-gradient(30deg, #080b3a 12%, transparent 12.5%, transparent 87%, #080b3a 87.5%, #080b3a),
+    linear-gradient(150deg, #080b3a 12%, transparent 12.5%, transparent 87%, #080b3a 87.5%, #080b3a),
+    linear-gradient(30deg, #080b3a 12%, transparent 12.5%, transparent 87%, #080b3a 87.5%, #080b3a),
+    linear-gradient(150deg, #080b3a 12%, transparent 12.5%, transparent 87%, #080b3a 87.5%, #080b3a),
+    linear-gradient(60deg, #080b3a77 25%, transparent 25.5%, transparent 75%, #080b3a77 75%, #080b3a77),
+    linear-gradient(60deg, #080b3a77 25%, transparent 25.5%, transparent 75%, #080b3a77 75%, #080b3a77);
+  background-size: 80px 140px;
+  background-position: 0 0, 0 0, 40px 70px, 40px 70px, 0 0, 40px 70px;
+  opacity: 0.03;
+}
+
+/* Accent Glow - Hover Effects */
+.sun-glow:hover {
+  box-shadow: 0 0 20px rgba(254, 183, 0, 0.4);
+}
+
+/* Material Symbols Icon Styling */
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  vertical-align: middle;
+  line-height: 1;
+}
+
+/* Material Symbols - Filled Variant */
+.material-symbols-outlined.filled {
+  font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* Material Symbols - Small Size */
+.material-symbols-outlined.small {
+  font-size: 18px;
+}
+
+/* Material Symbols - Large Size */
+.material-symbols-outlined.large {
+  font-size: 32px;
+}
+
+/* Smooth Focus Ring for Form Elements */
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(8, 11, 58, 0.1);
+}
+
+/* Floating Label Animation Support */
+.floating-label {
+  position: relative;
+}
+
+.floating-label input,
+.floating-label textarea {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid var(--outline-variant);
+  transition: border-color 0.3s ease;
+  padding: 12px 0;
+  font-size: 14px;
+  width: 100%;
+}
+
+.floating-label input:focus,
+.floating-label textarea:focus {
+  border-bottom-color: var(--primary);
+}
+
+.floating-label label {
+  position: absolute;
+  top: 12px;
+  left: 0;
+  font-size: 14px;
+  color: var(--on-surface-variant);
+  transition: all 0.3s ease;
+  pointer-events: none;
+}
+
+.floating-label input:focus ~ label,
+.floating-label input:not(:placeholder-shown) ~ label,
+.floating-label textarea:focus ~ label,
+.floating-label textarea:not(:placeholder-shown) ~ label {
+  top: -18px;
+  font-size: 12px;
+  color: var(--primary);
+  font-weight: 600;
+}
+
+/* Role Card Interactive States */
+.role-card {
+  padding: 16px;
+  border-radius: 24px;
+  border: 2px solid transparent;
+  background: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.role-card:hover {
+  background: rgba(255, 255, 255, 0.7);
+  border-color: var(--secondary-container);
+}
+
+.role-card.active {
+  background: rgba(254, 183, 0, 0.2);
+  border-color: var(--secondary-container);
+}
+
+.role-card.active .material-symbols-outlined {
+  color: var(--primary);
+}
+
+/* Button Styles - Primary */
+.btn-primary {
+  background: var(--primary);
+  color: var(--on-primary);
+  border: none;
+  border-radius: 12px;
+  padding: 16px 32px;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 24px rgba(8, 11, 58, 0.12);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary:hover {
+  box-shadow: 0 12px 32px rgba(8, 11, 58, 0.2);
+  transform: translateY(-2px);
+}
+
+.btn-primary:active {
+  transform: scale(0.95);
+}
+
+.btn-primary::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 1s ease;
+}
+
+.btn-primary:hover::after {
+  left: 100%;
+}
+
+/* Button Styles - Secondary */
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.2);
+  color: var(--primary);
+  border: 1px solid var(--outline-variant);
+  border-radius: 12px;
+  padding: 12px 24px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.4);
+  border-color: var(--primary);
+}
+
+/* Loading State */
+.btn-loading {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+/* Responsive Utilities */
+@media (max-width: 768px) {
+  .glass-panel,
+  .glass-panel-deep {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+  
+  .hidden-mobile {
+    display: none !important;
+  }
+}
+
+@media (min-width: 769px) {
+  .hidden-desktop {
+    display: none !important;
+  }
+}
+
+/* Accessibility - Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

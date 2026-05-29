@@ -26,8 +26,20 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.humanize',
+    'django.contrib.sites',  # Required for allauth
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
+    'allauth.socialaccount.providers.microsoft',
     'SchoolNowMgt',
     'teacher',
+    'authentication',
+    'curriculum',
+    'dashboard',
+    'profile',
+    'registration',
+    'teacher_auth',
 ]
 
 MIDDLEWARE = [
@@ -36,6 +48,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -53,6 +66,10 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.media',
+                'django.template.context_processors.static',
+                # Allauth context processors
+                'allauth.socialaccount.context_processors.socialaccount',
             ],
         },
     },
@@ -140,3 +157,71 @@ PASSWORD_RESET_TIMEOUT = 86400  # 24 hours
 AT_USERNAME = " sandbox"
 AT_API_KEY = "atsk_ee190c611b22425e83414e08bdf503355fa5d238fda75d9c07a825aedc081a5afa068921"   # Optional shortcode; blank='' in sandbox
 AT_SANDBOX = True 
+
+# ============================================================================
+# DJANGO-ALLAUTH AND OAUTH CONFIGURATION
+# ============================================================================
+
+# Site Framework (required for allauth)
+SITE_ID = 1
+
+# Authentication Backends
+AUTHENTICATION_BACKENDS = [
+    # Needed to login by username in Django admin, regardless of `allauth`
+    'django.contrib.auth.backends.ModelBackend',
+    
+    # `allauth` specific authentication methods, such as login by e-mail
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+
+# Allauth Account Configuration
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_UNIQUE_EMAIL = True
+ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
+ACCOUNT_EMAIL_VERIFICATION = 'optional'  # 'mandatory', 'optional', or 'none'
+
+# Social Account Configuration
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'SCOPE': [
+            'profile',
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+        },
+        'FIELDS': [
+            'id',
+            'email',
+            'name',
+            'picture',
+        ],
+    },
+    'microsoft': {
+        'TENANT': 'common',  # Use 'common' for multi-tenant
+        'SCOPE': [
+            'User.Read',
+        ],
+        'FIELDS': [
+            'id',
+            'mail',
+            'displayName',
+            'picture',
+        ],
+    },
+}
+
+# Auto-connect provider accounts (optional)
+SOCIALACCOUNT_AUTO_SIGNUP = True
+
+# Adapter for customizing social account behavior
+SOCIALACCOUNT_ADAPTER = 'allauth.socialaccount.adapter.DefaultSocialAccountAdapter'
+
+# Allauth Redirect Settings
+SOCIALACCOUNT_LOGIN_ON_GET = False
+SOCIALACCOUNT_LOGIN_REDIRECT_URL = '/auth/role-selector/'
+
+# ============================================================================
+# CONTEXT PROCESSORS
+# ============================================================================

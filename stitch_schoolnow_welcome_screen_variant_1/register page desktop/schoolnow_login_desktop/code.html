@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SchoolNow | Admin Portal Login</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700;900&amp;family=Inter:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface": "#f8f9fc",
+                        "primary-fixed": "#e0e0ff",
+                        "on-primary-fixed": "#121643",
+                        "primary-fixed-dim": "#bfc2fa",
+                        "on-error": "#ffffff",
+                        "secondary-container": "#feb700",
+                        "on-primary-container": "#868abd",
+                        "error": "#ba1a1a",
+                        "inverse-on-surface": "#f0f1f4",
+                        "inverse-primary": "#bfc2fa",
+                        "secondary-fixed-dim": "#ffba20",
+                        "on-secondary-fixed-variant": "#5e4200",
+                        "surface-container": "#edeef1",
+                        "surface-container-high": "#e7e8eb",
+                        "error-container": "#ffdad6",
+                        "surface-bright": "#f8f9fc",
+                        "on-tertiary": "#ffffff",
+                        "primary": "#080b3a",
+                        "on-secondary": "#ffffff",
+                        "outline": "#777680",
+                        "tertiary": "#2b0400",
+                        "on-tertiary-fixed": "#3c0800",
+                        "tertiary-container": "#500d00",
+                        "surface-dim": "#d9dadd",
+                        "on-error-container": "#93000a",
+                        "surface-variant": "#e1e2e5",
+                        "surface-tint": "#565a8b",
+                        "on-background": "#191c1e",
+                        "on-primary": "#ffffff",
+                        "surface-container-low": "#f2f3f6",
+                        "on-surface": "#191c1e",
+                        "on-primary-fixed-variant": "#3f4371",
+                        "secondary-fixed": "#ffdea8",
+                        "on-tertiary-container": "#e96442",
+                        "on-secondary-container": "#6b4b00",
+                        "secondary": "#7c5800",
+                        "surface-container-highest": "#e1e2e5",
+                        "primary-container": "#1e224f",
+                        "background": "#f8f9fc",
+                        "on-secondary-fixed": "#271900",
+                        "outline-variant": "#c7c5d0",
+                        "on-surface-variant": "#46464f",
+                        "inverse-surface": "#2e3133",
+                        "tertiary-fixed": "#ffdbd2",
+                        "tertiary-fixed-dim": "#ffb4a2",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-fixed-variant": "#881f01"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "base": "8px",
+                        "section-margin": "32px",
+                        "gutter": "16px",
+                        "container-padding": "20px",
+                        "card-gap": "12px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Hanken Grotesk"],
+                        "body-lg": ["Inter"],
+                        "headline-lg-mobile": ["Hanken Grotesk"],
+                        "display-lg": ["Hanken Grotesk"],
+                        "body-md": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-md": ["Hanken Grotesk"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["28px", {"lineHeight": "36px", "fontWeight": "600"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "display-lg": ["36px", {"lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "headline-md": ["22px", {"lineHeight": "28px", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 10px 30px -5px rgba(30, 34, 79, 0.08);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .ethos-gradient {
+            background: linear-gradient(135deg, #080b3a 0%, #1e224f 100%);
+        }
+        .sun-glow:hover {
+            box-shadow: 0 0 20px rgba(254, 183, 0, 0.4);
+        }
+        .pattern-bg {
+            background-image: radial-gradient(rgba(254, 183, 0, 0.1) 1px, transparent 0);
+            background-size: 24px 24px;
+        }
+    </style>
+</head>
+<body class="bg-surface font-body-md text-on-surface overflow-hidden">
+<div class="flex h-screen w-full">
+<!-- Visual Side Panel (Desktop Only) -->
+<div class="hidden lg:flex lg:w-3/5 ethos-gradient relative items-center justify-center p-20 overflow-hidden">
+<!-- Background Decoration -->
+<div class="absolute inset-0 opacity-20 pattern-bg"></div>
+<div class="absolute -top-40 -left-40 w-96 h-96 bg-secondary-container rounded-full blur-[120px] opacity-20"></div>
+<div class="absolute -bottom-40 -right-40 w-96 h-96 bg-primary-fixed-dim rounded-full blur-[120px] opacity-20"></div>
+<div class="relative z-10 w-full max-w-2xl">
+<div class="mb-12">
+<span class="text-secondary-fixed font-headline-md text-headline-md tracking-widest uppercase mb-4 block">Illuminating Education</span>
+<h1 class="text-white font-display-lg text-display-lg leading-tight mb-6">Empowering the next generation of African scholars.</h1>
+<p class="text-primary-fixed-dim font-body-lg text-body-lg max-w-lg leading-relaxed">
+                        SchoolNow provides administrators and teachers with the tools to manage curriculum, track student progress, and streamline finances with modern precision.
+                    </p>
+</div>
+<div class="grid grid-cols-2 gap-6">
+<div class="glass-panel p-6 rounded-xl border-white/10 bg-white/5">
+<span class="material-symbols-outlined text-secondary-fixed text-3xl mb-4" data-icon="school">school</span>
+<h3 class="text-white font-headline-md text-headline-md mb-2">500+</h3>
+<p class="text-primary-fixed-dim font-label-md text-label-md">Partner Institutions</p>
+</div>
+<div class="glass-panel p-6 rounded-xl border-white/10 bg-white/5">
+<span class="material-symbols-outlined text-secondary-fixed text-3xl mb-4" data-icon="analytics">analytics</span>
+<h3 class="text-white font-headline-md text-headline-md mb-2">Real-time</h3>
+<p class="text-primary-fixed-dim font-label-md text-label-md">Insights &amp; Reporting</p>
+</div>
+</div>
+<!-- Abstract Image Integration -->
+<div class="mt-16 rounded-2xl overflow-hidden shadow-2xl ring-1 ring-white/20">
+<img class="w-full h-64 object-cover" data-alt="A diverse group of university students in a modern, glass-walled library, collaborating around high-tech tablets. The lighting is soft and golden, reflecting off the glass surfaces to create a premium, academic atmosphere consistent with a high-end educational management platform. The background is a mix of deep indigos and warm amber highlights." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA5B4yfPVdPzAqmf1eMxXh0F_Xkzkl9EEkrLZRg9j8oA3-cEShslNJeE2T9noUWc5cNyyY06Ezm7wF8BFuXw9DpZCYakiG2fAE3RD7SOuU9I0sn69LYSCiX3qZq1X-xmRJowgQJSzwnShBWmV1QuU-EDhUtFqzBpV1bZjraHkQIRUhxk9d62uzPe4nKNPAZ3znBy1JwvRQmCpGlBLA0gh-lbRkF2WB5roGOx927jEDJmmC8nmxUhtc0JzPCJiSWvX4a9O8ba2rFlDQq"/>
+</div>
+</div>
+</div>
+<!-- Login Form Section -->
+<div class="w-full lg:w-2/5 flex flex-col justify-center items-center px-container-padding bg-surface-bright relative">
+<div class="w-full max-w-md">
+<!-- Brand Identity -->
+<div class="mb-10 text-center lg:text-left">
+<div class="flex items-center justify-center lg:justify-start gap-3 mb-2">
+<div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center shadow-lg">
+<span class="material-symbols-outlined text-secondary-container" data-icon="school" style="font-variation-settings: 'FILL' 1;">school</span>
+</div>
+<span class="font-headline-md text-headline-md font-black text-primary tracking-tight">SchoolNow</span>
+</div>
+<h2 class="font-headline-lg text-headline-lg text-primary mb-2">Welcome back, Administrator</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Please enter your credentials to access the portal.</p>
+</div>
+<!-- Login Form -->
+<form class="space-y-6" id="loginForm">
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider ml-1" for="email">Email or Username</label>
+<div class="relative group">
+<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-outline">
+<span class="material-symbols-outlined text-xl" data-icon="mail">mail</span>
+</div>
+<input class="w-full bg-surface-container-low border-b-2 border-transparent focus:border-primary focus:ring-0 rounded-xl py-4 pl-12 pr-4 transition-all duration-300 outline-none placeholder:text-outline-variant font-body-md text-primary" id="email" name="email" placeholder="name@schoolnow.edu" required="" type="text"/>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between items-center px-1">
+<label class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider" for="password">Password</label>
+<a class="font-label-md text-label-md text-primary font-bold hover:underline" href="#">Forgot Password?</a>
+</div>
+<div class="relative group">
+<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-outline">
+<span class="material-symbols-outlined text-xl" data-icon="lock">lock</span>
+</div>
+<input class="w-full bg-surface-container-low border-b-2 border-transparent focus:border-primary focus:ring-0 rounded-xl py-4 pl-12 pr-12 transition-all duration-300 outline-none placeholder:text-outline-variant font-body-md text-primary" id="password" name="password" placeholder="••••••••" required="" type="password"/>
+<button class="absolute inset-y-0 right-0 pr-4 flex items-center text-outline hover:text-primary transition-colors" id="togglePassword" type="button">
+<span class="material-symbols-outlined text-xl" data-icon="visibility">visibility</span>
+</button>
+</div>
+</div>
+<div class="flex items-center gap-3 px-1">
+<input class="w-5 h-5 rounded border-outline-variant text-primary focus:ring-primary/20" id="remember" type="checkbox"/>
+<label class="font-body-md text-body-md text-on-surface-variant cursor-pointer select-none" for="remember">Keep me logged in for 30 days</label>
+</div>
+<button class="w-full py-4 bg-primary text-on-primary font-headline-md text-headline-md rounded-xl shadow-xl hover:scale-[1.01] active:scale-95 transition-all duration-200 sun-glow relative overflow-hidden group" type="submit">
+<span class="relative z-10 flex items-center justify-center gap-2">
+                            Login to Portal
+                            <span class="material-symbols-outlined" data-icon="arrow_forward">arrow_forward</span>
+</span>
+<div class="absolute inset-0 bg-secondary-container opacity-0 group-hover:opacity-10 transition-opacity"></div>
+</button>
+</form>
+<!-- Divider -->
+<div class="my-8 flex items-center gap-4">
+<div class="h-[1px] flex-grow bg-outline-variant/30"></div>
+<span class="font-label-md text-label-md text-outline uppercase tracking-widest">Or continue with</span>
+<div class="h-[1px] flex-grow bg-outline-variant/30"></div>
+</div>
+<!-- Social Logins -->
+<div class="grid grid-cols-2 gap-4">
+<button class="flex items-center justify-center gap-3 py-3 px-4 glass-panel rounded-xl hover:bg-white transition-all duration-200 group">
+<img alt="Google" class="w-5 h-5" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD4RLNzZ1uD98mYnq491EzDaAEYfkEiPfHkGuictoRvTkOr7wxWAIse38hVnjxFBfRK2J3Ue10k9SAwlBhrrmn5lbZ7fnXPtTxoLS-R9a4seNkS3f6ciWxoqBUjscgEw5Cr4Xn0in1PsW-HXtngI6sbzU-wZ4doyFCtvxUablKL3R1cIRFUt95qkpVVDz2lt-fSkrVBeDpMbChTWfI8g1ClUWgnmrtNwjjzJeGO2eZz2bKsFRij-8A4YIJIBhJ6IJSHcM2vrFB9sJUg"/>
+<span class="font-body-md text-body-md text-primary font-semibold">Google</span>
+</button>
+<button class="flex items-center justify-center gap-3 py-3 px-4 glass-panel rounded-xl hover:bg-white transition-all duration-200 group">
+<span class="material-symbols-outlined text-xl text-primary" data-icon="apple" style="font-variation-settings: 'FILL' 1;">ios</span>
+<span class="font-body-md text-body-md text-primary font-semibold">Apple</span>
+</button>
+</div>
+<!-- Footer Links -->
+<div class="mt-10 text-center">
+<p class="font-body-md text-body-md text-on-surface-variant">
+                        Don't have an institutional account? 
+                        <a class="text-primary font-bold hover:underline" href="#">Create an Account</a>
+</p>
+</div>
+<!-- Legal/Support Links -->
+<div class="mt-12 flex justify-center gap-6 text-outline font-label-md text-label-md">
+<a class="hover:text-primary transition-colors" href="#">Support Center</a>
+<span class="text-outline-variant">•</span>
+<a class="hover:text-primary transition-colors" href="#">Privacy Policy</a>
+<span class="text-outline-variant">•</span>
+<a class="hover:text-primary transition-colors" href="#">Terms of Service</a>
+</div>
+</div>
+</div>
+</div>
+<!-- Notification Toast (Hidden) -->
+<div class="fixed bottom-8 left-1/2 -translate-x-1/2 glass-panel px-6 py-4 rounded-full border-primary/10 shadow-2xl translate-y-20 opacity-0 transition-all duration-500 z-50 flex items-center gap-3" id="toast">
+<span class="material-symbols-outlined text-secondary-container" data-icon="check_circle">check_circle</span>
+<span class="text-primary font-body-md font-semibold" id="toastMessage">Success! Logging you in...</span>
+</div>
+<script>
+        // Password Toggle Logic
+        const togglePassword = document.getElementById('togglePassword');
+        const passwordInput = document.getElementById('password');
+
+        togglePassword.addEventListener('click', () => {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            togglePassword.querySelector('span').innerText = type === 'password' ? 'visibility' : 'visibility_off';
+        });
+
+        // Form Submit Simulation
+        const loginForm = document.getElementById('loginForm');
+        const toast = document.getElementById('toast');
+
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            // Show toast micro-interaction
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            // Redirect simulation
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                console.log('Redirecting to dashboard...');
+            }, 3000);
+        });
+
+        // Add subtle mouse move effect to the side panel
+        const sidePanel = document.querySelector('.ethos-gradient');
+        sidePanel.addEventListener('mousemove', (e) => {
+            const { clientX, clientY } = e;
+            const x = (clientX / window.innerWidth) * 10;
+            const y = (clientY / window.innerHeight) * 10;
+            sidePanel.style.backgroundPosition = `${x}% ${y}%`;
+        });
+    </script>
+</body></html>

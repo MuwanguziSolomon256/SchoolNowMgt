@@ -102,12 +102,13 @@ def teacher_dashboard(request):
     staff = get_object_or_404(StaffProfile, user=request.user)
     
     # Get today's date
-    today = timezone.localdate()
+    today = timezone.localtime()
+    current_time = timezone.now()
     
     # Determine first login (banner display logic)
     is_first_login = (
         request.user.last_login is None or 
-        request.user.date_joined.date() == today
+        request.user.date_joined.date() == today.date()
     )
     
     # Convert today to lowercase day name (e.g., "monday")
@@ -119,11 +120,19 @@ def teacher_dashboard(request):
         day_of_week=day_of_week
     ).select_related('subject', 'class_grade').order_by('start_time')
     
+    # Get current lesson (first class today)
+    current_lesson = todays_classes.first()
+    
     # ===== MY STUDENTS =====
     my_student_count = Student.objects.filter(
         class_grade__class_teacher=staff,
         status='active'
     ).count()
+    
+    my_students = Student.objects.filter(
+        class_grade__class_teacher=staff,
+        status='active'
+    )[:4]
     
     my_classes = ClassGrade.objects.filter(
         class_teacher=staff
@@ -134,18 +143,18 @@ def teacher_dashboard(request):
     # ===== ATTENDANCE — MY CLASSES TODAY =====
     attendance_marked_today = StudentAttendance.objects.filter(
         student__class_grade__class_teacher=staff,
-        date=today
+        date=today.date()
     ).exists()
     
     present_today = StudentAttendance.objects.filter(
         student__class_grade__class_teacher=staff,
-        date=today,
+        date=today.date(),
         status='present'
     ).count()
     
     absent_today = StudentAttendance.objects.filter(
         student__class_grade__class_teacher=staff,
-        date=today,
+        date=today.date(),
         status='absent'
     ).count()
     
@@ -165,13 +174,40 @@ def teacher_dashboard(request):
         recorded_by=request.user
     ).select_related('student', 'subject').order_by('-created_at')[:5]
     
+    # ===== TASK PRIORITY WIDGET =====
+    priority_tasks = [
+        {'title': 'Mark Attendance', 'subject': 'Daily Task', 'due_date': 'Today', 'priority': 'high', 'completed': attendance_marked_today},
+        {'title': 'Input Grades', 'subject': 'Assessment', 'due_date': 'Tomorrow', 'priority': 'high', 'completed': False},
+        {'title': 'Review At-Risk Students', 'subject': 'Monitoring', 'due_date': 'This Week', 'priority': 'medium', 'completed': False},
+    ]
+    
+    # ===== RECENT ACTIVITY =====
+    recent_activity = [
+        {'title': 'Student submitted assignment', 'type': 'submission', 'time_ago': '2 hours ago'},
+        {'title': 'Grade entered for Math test', 'type': 'grade', 'time_ago': '4 hours ago'},
+        {'title': 'Alert: Low attendance in Class 2B', 'type': 'alert', 'time_ago': '1 day ago'},
+    ]
+    
+    # ===== PERFORMANCE STATS =====
+    performance_stats = [
+        {'height': 60},
+        {'height': 75},
+        {'height': 85},
+        {'height': 95},
+        {'height': 70},
+    ]
+    performance_metric = "18% average"
+    
     # Build context
     context = {
         'today': today,
+        'current_time': current_time,
         'is_first_login': is_first_login,
         'employee_id': staff.employee_id,
         'todays_classes': todays_classes,
+        'current_lesson': current_lesson if current_lesson else {'subject': 'No Lesson', 'description': 'No active lesson at this time'},
         'my_student_count': my_student_count,
+        'students': my_students,
         'my_classes': my_classes,
         'attendance_marked_today': attendance_marked_today,
         'present_today': present_today,
@@ -179,6 +215,10 @@ def teacher_dashboard(request):
         'at_risk_alerts': at_risk_alerts,
         'at_risk_count': at_risk_count,
         'recent_grades': recent_grades,
+        'priority_tasks': priority_tasks,
+        'recent_activity': recent_activity,
+        'performance_stats': performance_stats,
+        'performance_metric': performance_metric,
     }
     
-    return render(request, 'teacher/dashboard.html', context)
+    return render(request, 'teacher/dashboard_new.html', context)

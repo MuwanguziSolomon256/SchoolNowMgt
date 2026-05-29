@@ -324,6 +324,9 @@
         <div class="top-bar-user">
             {{ request.user.first_name }} {{ request.user.last_name }}
         </div>
+        {% if request.user.is_superuser %}
+        <a href="/admin/" class="top-bar-link" style="background-color: #ff9800; padding: 6px 12px; border-radius: 4px; font-weight: 600;">Admin Dashboard</a>
+        {% endif %}
         <a href="{% url 'home' %}" class="top-bar-link">Home</a>
         <a href="{% url 'teacher:profile' %}" class="top-bar-link">My profile</a>
         <form method="post" action="{% url 'teacher:logout' %}" class="logout-form">

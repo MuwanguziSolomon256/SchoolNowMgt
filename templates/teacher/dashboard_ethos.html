@@ -1,0 +1,169 @@
+{% extends "SchoolNowMgt/base_ethos.html" %}
+{% load static %}
+
+{% block title %}Teacher Dashboard - EduVision Pro{% endblock %}
+
+{% block content %}
+
+<style>
+    .glass-card {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        box-shadow: 0 8px 32px 0 rgba(30, 34, 79, 0.08);
+    }
+    .sun-gold-glow:hover {
+        box-shadow: 0 10px 15px -3px rgba(254, 183, 0, 0.3);
+    }
+    .inner-stroke {
+        border-top: 1px solid rgba(255, 255, 255, 0.6);
+        border-left: 1px solid rgba(255, 255, 255, 0.6);
+    }
+    body {
+        background-color: #f8f9fc;
+        background-image: radial-gradient(at 0% 0%, rgba(254, 183, 0, 0.05) 0px, transparent 50%),
+                          radial-gradient(at 100% 100%, rgba(8, 11, 58, 0.03) 0px, transparent 50%);
+    }
+</style>
+
+<div class="p-container-padding space-y-gutter">
+    <!-- Hero Bento Section -->
+    <div class="grid grid-cols-12 gap-gutter">
+        <!-- Current Class Card (Glassmorphic) -->
+        <div class="col-span-8 glass-card rounded-3xl p-8 relative overflow-hidden group">
+            <div class="absolute top-0 right-0 w-64 h-64 bg-secondary-container/10 rounded-full blur-3xl -mr-20 -mt-20 group-hover:bg-secondary-container/20 transition-colors"></div>
+            <div class="relative z-10 flex flex-col h-full justify-between">
+                <div>
+                    <div class="flex items-center gap-3 mb-6">
+                        <span class="bg-primary/10 text-primary px-3 py-1 rounded-full font-label-md text-[10px] uppercase tracking-widest border border-primary/10">In Progress</span>
+                        <span class="text-outline font-label-md text-label-md">09:45 AM - 10:30 AM</span>
+                    </div>
+                    <h2 class="font-display-lg text-display-lg text-primary mb-2">Advanced Astrophysics</h2>
+                    <p class="font-body-lg text-body-lg text-on-surface-variant max-w-md">Unit 4: Galactic Evolution and Dark Matter Distribution. Exploring the Hubble sequence and cosmic structures.</p>
+                </div>
+                <div class="flex items-center gap-6 mt-8">
+                    <div class="flex -space-x-3">
+                        <img class="w-10 h-10 rounded-full border-2 border-white object-cover" src="https://via.placeholder.com/40" alt="Student"/>
+                        <img class="w-10 h-10 rounded-full border-2 border-white object-cover" src="https://via.placeholder.com/40" alt="Student"/>
+                        <img class="w-10 h-10 rounded-full border-2 border-white object-cover" src="https://via.placeholder.com/40" alt="Student"/>
+                        <div class="w-10 h-10 rounded-full border-2 border-white bg-surface-container-highest flex items-center justify-center text-[10px] font-bold">+24</div>
+                    </div>
+                    <div class="h-10 w-[1px] bg-outline-variant/30"></div>
+                    <button class="bg-primary text-on-primary px-8 py-3 rounded-2xl font-bold flex items-center gap-3 sun-gold-glow transition-all hover:-translate-y-1 active:translate-y-0">
+                        Launch Lesson
+                        <span class="material-symbols-outlined" data-icon="rocket_launch">rocket_launch</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Task Management Widget -->
+        <div class="col-span-4 glass-card rounded-3xl p-6 border-l-4 border-l-secondary-container">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="font-headline-md text-headline-md text-primary">Task Priority</h3>
+                <button class="text-primary hover:bg-primary/5 p-1 rounded-lg transition-colors">
+                    <span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+                </button>
+            </div>
+            <div class="space-y-4">
+                <div class="flex gap-4 group cursor-pointer">
+                    <div class="w-1 h-12 bg-error rounded-full group-hover:scale-y-110 transition-transform"></div>
+                    <div class="flex-1">
+                        <p class="font-label-md text-label-md text-primary">Grade Term Papers</p>
+                        <p class="text-xs text-outline">Physics Grade 12 • 4 hours left</p>
+                    </div>
+                    <input class="rounded border-outline-variant text-primary focus:ring-primary" type="checkbox"/>
+                </div>
+                <div class="flex gap-4 group cursor-pointer">
+                    <div class="w-1 h-12 bg-secondary-container rounded-full group-hover:scale-y-110 transition-transform"></div>
+                    <div class="flex-1">
+                        <p class="font-label-md text-label-md text-primary">Upload Lecture Slides</p>
+                        <p class="text-xs text-outline">Astrophysics • Due Tomorrow</p>
+                    </div>
+                    <input class="rounded border-outline-variant text-primary focus:ring-primary" type="checkbox"/>
+                </div>
+            </div>
+            <button class="w-full mt-6 py-3 border-2 border-dashed border-outline-variant rounded-2xl text-outline font-label-md hover:border-primary hover:text-primary transition-all flex items-center justify-center gap-2">
+                <span class="material-symbols-outlined text-sm" data-icon="add">add</span>
+                Quick Task
+            </button>
+        </div>
+    </div>
+
+    <!-- Secondary Grid -->
+    <div class="grid grid-cols-12 gap-gutter">
+        <!-- Recent Activity Feed -->
+        <div class="col-span-4 flex flex-col gap-gutter">
+            <div class="glass-card rounded-3xl p-6 flex-1">
+                <h3 class="font-headline-md text-headline-md text-primary mb-6">Recent Activity</h3>
+                <div class="relative border-l-2 border-outline-variant/30 ml-2 pl-6 space-y-8">
+                    <div class="relative">
+                        <span class="absolute -left-[33px] top-0 bg-primary w-4 h-4 rounded-full border-4 border-white"></span>
+                        <p class="font-label-md text-label-md text-primary">Lesson completed successfully</p>
+                        <p class="text-[10px] text-outline font-bold uppercase tracking-widest">12 minutes ago</p>
+                    </div>
+                    <div class="relative">
+                        <span class="absolute -left-[33px] top-0 bg-secondary-container w-4 h-4 rounded-full border-4 border-white"></span>
+                        <p class="font-label-md text-label-md text-primary">New assignment submitted</p>
+                        <p class="text-[10px] text-outline font-bold uppercase tracking-widest">45 minutes ago</p>
+                    </div>
+                </div>
+                <button class="w-full mt-6 text-primary font-label-md text-label-md hover:underline decoration-secondary-container decoration-2 underline-offset-4">View All Logs</button>
+            </div>
+        </div>
+
+        <!-- Quick Actions Grid -->
+        <div class="col-span-8">
+            <div class="grid grid-cols-3 gap-gutter h-full">
+                <div class="glass-card rounded-3xl p-6 group cursor-pointer hover:bg-primary transition-all duration-300">
+                    <div class="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-white/20 transition-colors">
+                        <span class="material-symbols-outlined text-primary group-hover:text-white" data-icon="assignment_ind">assignment_ind</span>
+                    </div>
+                    <h4 class="font-headline-md text-headline-md text-primary group-hover:text-white transition-colors">Attendance</h4>
+                    <p class="text-on-surface-variant group-hover:text-on-primary/70 text-sm mt-2 transition-colors">Mark today's presence for Grade 12-B.</p>
+                </div>
+                <div class="glass-card rounded-3xl p-6 group cursor-pointer hover:bg-secondary-container transition-all duration-300">
+                    <div class="w-12 h-12 rounded-2xl bg-secondary-container/10 flex items-center justify-center mb-4 group-hover:bg-white/20 transition-colors">
+                        <span class="material-symbols-outlined text-secondary group-hover:text-on-secondary-container" data-icon="draw">draw</span>
+                    </div>
+                    <h4 class="font-headline-md text-headline-md text-primary group-hover:text-on-secondary-container transition-colors">Gradebook</h4>
+                    <p class="text-on-surface-variant group-hover:text-on-secondary-container/70 text-sm mt-2 transition-colors">Input mid-term evaluation scores.</p>
+                </div>
+                <div class="glass-card rounded-3xl p-6 group cursor-pointer hover:bg-primary-container transition-all duration-300">
+                    <div class="w-12 h-12 rounded-2xl bg-primary-container/10 flex items-center justify-center mb-4 group-hover:bg-white/20 transition-colors">
+                        <span class="material-symbols-outlined text-primary-container group-hover:text-white" data-icon="chat">chat</span>
+                    </div>
+                    <h4 class="font-headline-md text-headline-md text-primary group-hover:text-white transition-colors">Circulars</h4>
+                    <p class="text-on-surface-variant group-hover:text-on-primary/70 text-sm mt-2 transition-colors">Broadcast announcement to all parents.</p>
+                </div>
+                <div class="col-span-3 glass-card rounded-3xl p-6 flex items-center justify-between group overflow-hidden relative">
+                    <div class="absolute inset-0 bg-gradient-to-r from-secondary-container/5 to-transparent"></div>
+                    <div class="relative z-10">
+                        <h4 class="font-headline-md text-headline-md text-primary">Classroom Performance</h4>
+                        <p class="text-on-surface-variant text-sm mt-1">Overall average up by 8.4% this semester</p>
+                    </div>
+                    <div class="relative z-10 flex items-end gap-2 h-16">
+                        <div class="w-6 bg-primary-container/20 rounded-t-lg h-[40%]"></div>
+                        <div class="w-6 bg-primary-container/20 rounded-t-lg h-[60%]"></div>
+                        <div class="w-6 bg-primary-container/20 rounded-t-lg h-[50%]"></div>
+                        <div class="w-6 bg-secondary-container rounded-t-lg h-[90%] shadow-lg shadow-secondary-container/40"></div>
+                        <div class="w-6 bg-primary-container/20 rounded-t-lg h-[70%]"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.querySelectorAll('.group').forEach(el => {
+        el.addEventListener('mousedown', () => {
+            el.style.transform = 'scale(0.98)';
+        });
+        el.addEventListener('mouseup', () => {
+            el.style.transform = 'scale(1)';
+        });
+    });
+</script>
+
+{% endblock %}

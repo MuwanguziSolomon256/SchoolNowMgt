@@ -1,0 +1,211 @@
+{% extends 'SchoolNowMgt/base.html' %}
+{% load humanize %}
+
+{% block extra_css %}
+<style>
+  .glass-card {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(255, 255, 255, 0.8);
+    border-left: 1px solid rgba(255, 255, 255, 0.8);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Main Container -->
+<div class="max-w-7xl mx-auto px-container-padding py-section-margin">
+
+  <!-- Header Section -->
+  <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-section-margin">
+    <div>
+      <h2 class="font-display-lg text-display-lg text-primary">School Overview</h2>
+      <p class="font-body-lg text-body-lg text-on-surface-variant">Welcome back. Here is what's happening at {{ school.name }} today.</p>
+    </div>
+    <div class="flex gap-3">
+      <button class="glass-card px-6 py-3 rounded-xl text-primary font-bold shadow-sm flex items-center gap-2 hover:bg-white/40 transition-all">
+        <span class="material-symbols-outlined">download</span>
+        Export Report
+      </button>
+      <button class="bg-primary text-on-primary px-6 py-3 rounded-xl font-bold shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all active:scale-95">
+        Generate Invoices
+      </button>
+    </div>
+  </div>
+
+  <!-- Bento Grid - Key Analytics -->
+  <div class="grid grid-cols-12 gap-gutter mb-section-margin">
+    
+    <!-- Total Students Card -->
+    <div class="col-span-12 md:col-span-4 glass-card p-6 rounded-3xl shadow-sm relative overflow-hidden group">
+      <div class="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition-opacity">
+        <span class="material-symbols-outlined text-[120px]">school</span>
+      </div>
+      <div class="relative z-10">
+        <div class="flex justify-between items-start mb-4">
+          <div class="p-3 bg-primary/5 rounded-2xl">
+            <span class="material-symbols-outlined text-primary">school</span>
+          </div>
+          <span class="text-green-600 font-bold text-label-md flex items-center gap-1">
+            <span class="material-symbols-outlined text-sm">trending_up</span>
+            +12%
+          </span>
+        </div>
+        <h3 class="text-on-surface-variant font-label-md uppercase tracking-wider">Total Students</h3>
+        <p class="font-display-lg text-display-lg text-primary mt-1">{{ total_students }}</p>
+      </div>
+    </div>
+
+    <!-- Revenue Card -->
+    <div class="col-span-12 md:col-span-8 glass-card p-6 rounded-3xl shadow-sm relative overflow-hidden group">
+      <div class="relative z-10 flex flex-col md:flex-row justify-between">
+        <div class="space-y-4">
+          <div class="flex items-center gap-3">
+            <div class="p-3 bg-secondary-container/10 rounded-2xl">
+              <span class="material-symbols-outlined text-secondary">payments</span>
+            </div>
+            <div>
+              <h3 class="text-on-surface-variant font-label-md uppercase tracking-wider">Monthly Revenue</h3>
+              <p class="font-display-lg text-display-lg text-primary">${{ total_revenue|floatformat:2 }}</p>
+            </div>
+          </div>
+          <div class="flex gap-6 mt-4">
+            <div>
+              <p class="text-label-md text-on-surface-variant">Collected</p>
+              <p class="font-headline-md text-headline-md text-primary">${{ collected_fees|floatformat:0 }}</p>
+            </div>
+            <div>
+              <p class="text-label-md text-on-surface-variant">Outstanding</p>
+              <p class="font-headline-md text-headline-md text-error">${{ outstanding_fees|floatformat:0 }}</p>
+            </div>
+          </div>
+        </div>
+        <div class="flex-grow md:max-w-xs pt-6 md:pt-0">
+          <!-- Progress Ring -->
+          <div class="relative w-32 h-32 mx-auto">
+            <svg class="w-full h-full" viewBox="0 0 36 36">
+              <path class="text-primary/5 stroke-current" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-width="3"></path>
+              <path class="text-secondary-container stroke-current" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-dasharray="85, 100" stroke-linecap="round" stroke-width="3"></path>
+            </svg>
+            <div class="absolute inset-0 flex flex-col items-center justify-center">
+              <span class="text-headline-md font-bold text-primary">{{ fee_collection_percentage }}%</span>
+              <span class="text-[10px] uppercase text-on-surface-variant">Goal</span>
+            </div>
+          </div>
+          <p class="text-center mt-2 font-label-md text-on-surface-variant">Fee Collection Target</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Priority Alerts -->
+    <div class="col-span-12 md:col-span-5 glass-card rounded-3xl p-6 shadow-sm">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="font-headline-md text-headline-md text-primary">Priority Alerts</h3>
+        <span class="bg-error-container text-on-error-container px-3 py-1 rounded-full font-label-md text-label-md">{{ open_alerts_count }} Alert{{ open_alerts_count|pluralize }}</span>
+      </div>
+      <div class="space-y-4">
+        {% for alert in open_alerts %}
+          <div class="p-4 {% if alert.severity == 'high' %}bg-error-container/20 border-l-4 border-l-error{% elif alert.severity == 'medium' %}bg-secondary-container/10 border-l-4 border-l-secondary-container{% else %}bg-primary/5 border-l-4 border-l-primary{% endif %} rounded-2xl flex gap-4">
+            <span class="material-symbols-outlined {% if alert.severity == 'high' %}text-error{% elif alert.severity == 'medium' %}text-secondary{% else %}text-primary{% endif %}">
+              {% if alert.severity == 'high' %}report_problem{% elif alert.severity == 'medium' %}error{% else %}info{% endif %}
+            </span>
+            <div>
+              <p class="font-bold text-primary text-body-md">{{ alert.reason_type|title }}</p>
+              <p class="text-body-md text-on-surface-variant">{{ alert.detail }}</p>
+            </div>
+          </div>
+        {% empty %}
+          <p class="text-center text-on-surface-variant py-4">No pending alerts</p>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Quick Management -->
+    <div class="col-span-12 md:col-span-7 grid grid-cols-2 gap-gutter">
+      <div class="glass-card p-6 rounded-3xl shadow-sm hover:translate-y-[-4px] transition-all cursor-pointer group">
+        <div class="flex flex-col items-center text-center gap-2">
+          <div class="w-16 h-16 bg-primary/5 rounded-full flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors duration-300">
+            <span class="material-symbols-outlined text-3xl">person_add</span>
+          </div>
+          <h4 class="font-headline-md text-headline-md text-primary">Add Staff</h4>
+          <p class="text-body-md text-on-surface-variant">Onboard new educators</p>
+        </div>
+      </div>
+      <div class="glass-card p-6 rounded-3xl shadow-sm hover:translate-y-[-4px] transition-all cursor-pointer group">
+        <div class="flex flex-col items-center text-center gap-2">
+          <div class="w-16 h-16 bg-primary/5 rounded-full flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors duration-300">
+            <span class="material-symbols-outlined text-3xl">event</span>
+          </div>
+          <h4 class="font-headline-md text-headline-md text-primary">Events</h4>
+          <p class="text-body-md text-on-surface-variant">Manage school calendar</p>
+        </div>
+      </div>
+      <div class="col-span-2 glass-card p-6 rounded-3xl shadow-sm relative overflow-hidden">
+        <div class="relative z-10 flex justify-between items-center">
+          <div>
+            <h4 class="font-headline-md text-headline-md text-primary">Campus Status: Active</h4>
+            <p class="text-body-md text-on-surface-variant">{{ school.name }} is operational</p>
+          </div>
+          <button class="bg-primary-container text-on-primary-container px-6 py-2 rounded-full font-bold">View Details</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Activity -->
+  <div class="glass-card rounded-3xl p-8 shadow-sm">
+    <div class="flex justify-between items-center mb-8">
+      <h3 class="font-headline-md text-headline-md text-primary">Recent Transactions & Activities</h3>
+      <button class="text-primary font-bold hover:underline flex items-center gap-1">
+        View All
+        <span class="material-symbols-outlined">arrow_forward</span>
+      </button>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-left">
+        <thead>
+          <tr class="border-b border-outline-variant/30">
+            <th class="pb-4 font-label-md text-on-surface-variant uppercase tracking-wider">Entity</th>
+            <th class="pb-4 font-label-md text-on-surface-variant uppercase tracking-wider">Description</th>
+            <th class="pb-4 font-label-md text-on-surface-variant uppercase tracking-wider">Date</th>
+            <th class="pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-right">Amount / Status</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-outline-variant/10">
+          {% for transaction in recent_transactions %}
+            <tr class="group hover:bg-surface-container-low/50 transition-colors">
+              <td class="py-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary">
+                    {{ transaction.initials }}
+                  </div>
+                  <div>
+                    <p class="font-bold text-primary">{{ transaction.name }}</p>
+                    <p class="text-[10px] text-on-surface-variant">ID: #{{ transaction.id }}</p>
+                  </div>
+                </div>
+              </td>
+              <td class="py-4 text-on-surface-variant">{{ transaction.description }}</td>
+              <td class="py-4 text-on-surface-variant">{{ transaction.date|date:"M d, Y" }}</td>
+              <td class="py-4 text-right">
+                {% if transaction.amount %}
+                  <span class="text-primary font-bold">${{ transaction.amount|floatformat:2 }}</span>
+                {% else %}
+                  <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">{{ transaction.status }}</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="4" class="py-8 text-center text-on-surface-variant">No recent transactions</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}

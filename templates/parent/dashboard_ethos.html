@@ -1,0 +1,248 @@
+{% extends "SchoolNowMgt/base_ethos.html" %}
+{% load static %}
+
+{% block title %}Parent Portal - EduVision Pro{% endblock %}
+
+{% block content %}
+
+<style>
+    .glass-card {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        box-shadow: 0 8px 32px 0 rgba(30, 34, 79, 0.08);
+    }
+    .glass-edge {
+        border-top: 1px solid rgba(255, 255, 255, 0.8);
+        border-left: 1px solid rgba(255, 255, 255, 0.8);
+    }
+</style>
+
+<div class="p-8 space-y-8">
+    <!-- Student Switcher & Welcome -->
+    <section class="flex justify-between items-end">
+        <div>
+            <h3 class="font-display-lg text-display-lg text-primary">Good Morning, {{ user.first_name }}</h3>
+            <p class="font-body-lg text-body-lg text-on-surface-variant">Here is an overview of your children's progress at {{ school.name|default:"Your School" }}.</p>
+        </div>
+        <div class="flex gap-4 bg-surface-container-high/50 p-1.5 rounded-2xl glass-card">
+            {% if children %}
+            <button class="flex items-center gap-3 px-6 py-3 rounded-xl bg-primary text-white shadow-lg transition-all scale-100 active:scale-95">
+                {% if children.0.photo %}
+                <img class="w-8 h-8 rounded-full border border-white/20" src="{{ children.0.photo.url }}" alt="Student"/>
+                {% endif %}
+                <div class="text-left">
+                    <p class="font-label-md text-label-md leading-none">{{ children.0.first_name }} {{ children.0.last_name }}</p>
+                    <p class="text-[10px] text-white/60">{{ children.0.class_grade }}</p>
+                </div>
+            </button>
+            {% if children|length > 1 %}
+            {% for child in children|slice:"1:" %}
+            <button class="flex items-center gap-3 px-6 py-3 rounded-xl hover:bg-surface-container-highest transition-all group">
+                {% if child.photo %}
+                <img class="w-8 h-8 rounded-full grayscale group-hover:grayscale-0 transition-all" src="{{ child.photo.url }}" alt="Student"/>
+                {% endif %}
+                <div class="text-left">
+                    <p class="font-label-md text-label-md leading-none text-on-surface-variant">{{ child.first_name }} {{ child.last_name }}</p>
+                    <p class="text-[10px] text-outline">{{ child.class_grade }}</p>
+                </div>
+            </button>
+            {% endfor %}
+            {% endif %}
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- Bento Grid Content -->
+    <div class="grid grid-cols-12 gap-6">
+        <!-- Academic Performance Card -->
+        <div class="col-span-8 glass-card rounded-[32px] p-8 glass-edge">
+            <div class="flex justify-between items-start mb-8">
+                <div>
+                    <h4 class="font-headline-lg text-headline-lg text-primary">Academic Performance</h4>
+                    <p class="text-body-md text-outline">{{ children.0.class_grade }} Summary</p>
+                </div>
+                <div class="flex flex-col items-end">
+                    <span class="text-display-lg font-black text-primary leading-none">3.82</span>
+                    <span class="font-label-md text-label-md text-secondary tracking-widest uppercase">Current GPA</span>
+                </div>
+            </div>
+            <div class="space-y-6">
+                <div class="group">
+                    <div class="flex justify-between items-center mb-2">
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary-container">functions</span>
+                            <span class="font-label-md text-label-md text-primary">Advanced Mathematics</span>
+                        </div>
+                        <span class="font-bold text-primary">92%</span>
+                    </div>
+                    <div class="h-3 w-full bg-primary/10 rounded-full overflow-hidden">
+                        <div class="h-full bg-secondary-container rounded-full transition-all duration-1000 shadow-[0_0_12px_rgba(254,183,0,0.4)]" style="width: 92%"></div>
+                    </div>
+                </div>
+                <div class="group">
+                    <div class="flex justify-between items-center mb-2">
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary-container">biotech</span>
+                            <span class="font-label-md text-label-md text-primary">Physics &amp; Chemistry</span>
+                        </div>
+                        <span class="font-bold text-primary">88%</span>
+                    </div>
+                    <div class="h-3 w-full bg-primary/10 rounded-full overflow-hidden">
+                        <div class="h-full bg-secondary-container rounded-full transition-all duration-1000" style="width: 88%"></div>
+                    </div>
+                </div>
+                <div class="group">
+                    <div class="flex justify-between items-center mb-2">
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary-container">history_edu</span>
+                            <span class="font-label-md text-label-md text-primary">Modern Literature</span>
+                        </div>
+                        <span class="font-bold text-primary">76%</span>
+                    </div>
+                    <div class="h-3 w-full bg-primary/10 rounded-full overflow-hidden">
+                        <div class="h-full bg-secondary-container rounded-full transition-all duration-1000" style="width: 76%"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-8 pt-8 border-t border-outline-variant/20 flex gap-12">
+                <div>
+                    <p class="text-[10px] text-outline uppercase font-bold tracking-tighter">Attendance</p>
+                    <p class="font-headline-md text-headline-md text-primary">98.4%</p>
+                </div>
+                <div>
+                    <p class="text-[10px] text-outline uppercase font-bold tracking-tighter">Assignments</p>
+                    <p class="font-headline-md text-headline-md text-primary">24/26</p>
+                </div>
+                <div>
+                    <p class="text-[10px] text-outline uppercase font-bold tracking-tighter">Class Rank</p>
+                    <p class="font-headline-md text-headline-md text-primary">4th <span class="text-body-md font-normal text-outline">of 32</span></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Financial Status Card -->
+        <div class="col-span-4 glass-card rounded-[32px] p-8 glass-edge bg-primary text-white flex flex-col">
+            <div class="flex justify-between items-center mb-12">
+                <div class="p-3 bg-white/10 rounded-2xl">
+                    <span class="material-symbols-outlined text-secondary-container">account_balance_wallet</span>
+                </div>
+                <span class="bg-secondary-container/20 text-secondary-container px-3 py-1 rounded-full text-[10px] font-bold uppercase">Due in 4 days</span>
+            </div>
+            <p class="text-on-primary/60 font-label-md text-label-md mb-2">Outstanding Balance</p>
+            <h4 class="text-[44px] font-black leading-tight tracking-tight mb-8">₦452,000.00</h4>
+            <div class="mt-auto space-y-4">
+                <button class="w-full py-4 bg-secondary-container text-on-secondary-container font-bold rounded-2xl flex items-center justify-center gap-2 shadow-[0_8px_24px_rgba(254,183,0,0.3)] hover:scale-[1.02] active:scale-[0.98] transition-all">
+                    <span>Pay Now</span>
+                    <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                </button>
+                <button class="w-full py-4 bg-white/10 text-white font-bold rounded-2xl border border-white/10 hover:bg-white/20 transition-all">
+                    Download Invoice
+                </button>
+            </div>
+        </div>
+
+        <!-- School Calendar -->
+        <div class="col-span-12 glass-card rounded-[32px] p-8 glass-edge">
+            <div class="flex justify-between items-center mb-8">
+                <div>
+                    <h4 class="font-headline-md text-headline-md text-primary">School Calendar</h4>
+                    <p class="text-body-md text-outline">October 2023</p>
+                </div>
+                <div class="flex gap-2">
+                    <button class="p-2 border border-outline-variant/30 rounded-xl hover:bg-surface-container-high transition-all">
+                        <span class="material-symbols-outlined text-primary">chevron_left</span>
+                    </button>
+                    <button class="p-2 border border-outline-variant/30 rounded-xl hover:bg-surface-container-high transition-all">
+                        <span class="material-symbols-outlined text-primary">chevron_right</span>
+                    </button>
+                </div>
+            </div>
+            <div class="grid grid-cols-7 gap-4">
+                <!-- Calendar Grid -->
+                <div class="space-y-4">
+                    <p class="text-center font-label-md text-label-md text-outline uppercase">Mon</p>
+                    <div class="h-24 rounded-2xl border border-outline-variant/20 p-2 flex flex-col items-center justify-center relative overflow-hidden bg-surface-container-low/30">
+                        <span class="text-body-lg text-outline">23</span>
+                    </div>
+                </div>
+                <div class="space-y-4">
+                    <p class="text-center font-label-md text-label-md text-outline uppercase">Tue</p>
+                    <div class="h-24 rounded-2xl border border-outline-variant/20 p-2 flex flex-col items-center justify-center relative overflow-hidden bg-surface-container-low/30">
+                        <span class="text-body-lg text-outline">24</span>
+                    </div>
+                </div>
+                <div class="space-y-4">
+                    <p class="text-center font-label-md text-label-md text-outline uppercase">Wed</p>
+                    <div class="h-24 rounded-2xl border-2 border-primary/20 bg-primary/5 p-2 flex flex-col items-center justify-center relative overflow-hidden">
+                        <span class="text-body-lg text-primary font-bold">25</span>
+                        <div class="mt-1 w-1.5 h-1.5 rounded-full bg-secondary-container"></div>
+                        <div class="absolute inset-0 bg-secondary-container/5 pointer-events-none"></div>
+                    </div>
+                    <div class="bg-secondary-container/10 p-3 rounded-xl border border-secondary-container/20">
+                        <p class="text-[10px] font-bold text-secondary uppercase leading-none mb-1">Upcoming</p>
+                        <p class="text-body-md text-primary font-semibold leading-tight">Science Fair</p>
+                    </div>
+                </div>
+                <div class="space-y-4">
+                    <p class="text-center font-label-md text-label-md text-outline uppercase">Thu</p>
+                    <div class="h-24 rounded-2xl border border-outline-variant/20 p-2 flex flex-col items-center justify-center relative overflow-hidden bg-surface-container-low/30">
+                        <span class="text-body-lg text-outline">26</span>
+                    </div>
+                </div>
+                <div class="space-y-4">
+                    <p class="text-center font-label-md text-label-md text-outline uppercase">Fri</p>
+                    <div class="h-24 rounded-2xl border border-outline-variant/20 p-2 flex flex-col items-center justify-center relative overflow-hidden bg-surface-container-low/30">
+                        <span class="text-body-lg text-outline">27</span>
+                        <div class="mt-1 w-1.5 h-1.5 rounded-full bg-error"></div>
+                    </div>
+                    <div class="bg-error-container/20 p-3 rounded-xl border border-error/10">
+                        <p class="text-[10px] font-bold text-error uppercase leading-none mb-1">Exam</p>
+                        <p class="text-body-md text-primary font-semibold leading-tight">Math Quiz</p>
+                    </div>
+                </div>
+                <div class="space-y-4">
+                    <p class="text-center font-label-md text-label-md text-outline uppercase">Sat</p>
+                    <div class="h-24 rounded-2xl border border-outline-variant/20 p-2 flex flex-col items-center justify-center relative overflow-hidden bg-surface-container-low/30">
+                        <span class="text-body-lg text-outline/30">28</span>
+                    </div>
+                </div>
+                <div class="space-y-4">
+                    <p class="text-center font-label-md text-label-md text-outline uppercase">Sun</p>
+                    <div class="h-24 rounded-2xl border border-outline-variant/20 p-2 flex flex-col items-center justify-center relative overflow-hidden bg-surface-container-low/30">
+                        <span class="text-body-lg text-outline/30">29</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Micro-interactions and effects
+    document.querySelectorAll('.glass-card').forEach(card => {
+        card.addEventListener('mousemove', (e) => {
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            card.style.setProperty('--mouse-x', `${x}px`);
+            card.style.setProperty('--mouse-y', `${y}px`);
+        });
+    });
+
+    // Add a subtle entrance animation
+    document.addEventListener('DOMContentLoaded', () => {
+        const cards = document.querySelectorAll('.glass-card');
+        cards.forEach((card, index) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            setTimeout(() => {
+                card.style.transition = 'all 0.6s cubic-bezier(0.22, 1, 0.36, 1)';
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, index * 100);
+        });
+    });
+</script>
+
+{% endblock %}

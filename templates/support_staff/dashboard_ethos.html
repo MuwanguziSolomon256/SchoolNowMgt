@@ -1,0 +1,267 @@
+{% extends "SchoolNowMgt/base_ethos.html" %}
+{% load static %}
+
+{% block title %}Support Staff Dashboard - EduVision Pro{% endblock %}
+
+{% block content %}
+
+<style>
+    .glass-card {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        box-shadow: 0 8px 32px 0 rgba(30, 34, 79, 0.08);
+    }
+    .inner-glow {
+        box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.8);
+    }
+    .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .active-tab-glow {
+        box-shadow: 0 0 15px rgba(254, 183, 0, 0.3);
+    }
+    body {
+        background: radial-gradient(circle at top left, #f8f9fc 0%, #edeef1 100%);
+    }
+</style>
+
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-12 gap-card-gap p-container-padding">
+    <!-- Clock In/Out Status Card -->
+    <section class="col-span-12 lg:col-span-4 glass-card rounded-3xl p-6 flex flex-col justify-between overflow-hidden relative inner-glow">
+        <div class="absolute -top-12 -right-12 w-48 h-48 bg-secondary-container/10 rounded-full blur-3xl"></div>
+        <div class="flex justify-between items-start z-10">
+            <div>
+                <h2 class="font-headline-md text-headline-md text-primary mb-1">Shift Status</h2>
+                <p class="text-on-surface-variant font-body-md">Active since 08:00 AM</p>
+            </div>
+            <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-label-md font-bold flex items-center gap-1">
+                <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                ON DUTY
+            </span>
+        </div>
+        <div class="mt-8 z-10 text-center">
+            <div class="font-display-lg text-display-lg text-primary tracking-tight font-black tabular-nums" id="digital-clock">14:45:02</div>
+            <p class="font-label-md text-label-md text-outline mt-2">Monday, October 23, 2023</p>
+        </div>
+        <div class="mt-8 flex gap-3 z-10">
+            <button class="flex-1 py-4 bg-primary text-on-primary rounded-2xl font-bold hover:bg-primary-container transition-all shadow-md flex items-center justify-center gap-2" id="clock-btn" onclick="toggleClock()">
+                <span class="material-symbols-outlined" data-icon="logout">logout</span>
+                Clock Out
+            </button>
+            <button class="w-16 py-4 glass-card text-primary rounded-2xl flex items-center justify-center hover:bg-white transition-all">
+                <span class="material-symbols-outlined" data-icon="coffee">coffee</span>
+            </button>
+        </div>
+    </section>
+
+    <!-- Pending Maintenance Task Queue -->
+    <section class="col-span-12 lg:col-span-8 glass-card rounded-3xl p-6 inner-glow">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="font-headline-md text-headline-md text-primary">Pending Maintenance</h2>
+            <a class="text-primary font-label-md hover:underline" href="#">View All Tasks</a>
+        </div>
+        <div class="space-y-4 max-h-[320px] overflow-y-auto pr-2">
+            <!-- Task Item 1 -->
+            <div class="flex items-center gap-4 p-4 rounded-2xl bg-surface-container-low hover:bg-surface-container-high transition-all group">
+                <div class="h-12 w-12 rounded-xl bg-error-container text-error flex items-center justify-center">
+                    <span class="material-symbols-outlined" data-icon="plumbing">plumbing</span>
+                </div>
+                <div class="flex-1">
+                    <h3 class="font-label-md text-body-lg font-bold text-on-surface">Clogged Drain - Block B, Room 402</h3>
+                    <p class="text-on-surface-variant font-body-md">Reported by: Housekeeping • 2h ago</p>
+                </div>
+                <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button class="px-4 py-2 bg-primary text-on-primary rounded-lg text-label-md font-bold hover:scale-105 transition-transform">Accept</button>
+                    <button class="px-4 py-2 border border-outline-variant text-on-surface-variant rounded-lg text-label-md font-bold hover:bg-white transition-all">Delegate</button>
+                </div>
+            </div>
+
+            <!-- Task Item 2 -->
+            <div class="flex items-center gap-4 p-4 rounded-2xl bg-surface-container-low hover:bg-surface-container-high transition-all group border-l-4 border-secondary-container">
+                <div class="h-12 w-12 rounded-xl bg-secondary-fixed text-on-secondary-fixed flex items-center justify-center">
+                    <span class="material-symbols-outlined" data-icon="electric_bolt">electric_bolt</span>
+                </div>
+                <div class="flex-1">
+                    <h3 class="font-label-md text-body-lg font-bold text-on-surface">Generator Inspection - Main Campus</h3>
+                    <p class="text-on-surface-variant font-body-md">Scheduled Task • Due in 1h</p>
+                </div>
+                <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button class="px-4 py-2 bg-primary text-on-primary rounded-lg text-label-md font-bold hover:scale-105 transition-transform">Accept</button>
+                    <button class="px-4 py-2 border border-outline-variant text-on-surface-variant rounded-lg text-label-md font-bold hover:bg-white transition-all">Delegate</button>
+                </div>
+            </div>
+
+            <!-- Task Item 3 -->
+            <div class="flex items-center gap-4 p-4 rounded-2xl bg-surface-container-low hover:bg-surface-container-high transition-all group">
+                <div class="h-12 w-12 rounded-xl bg-primary-fixed text-on-primary-fixed flex items-center justify-center">
+                    <span class="material-symbols-outlined" data-icon="meeting_room">meeting_room</span>
+                </div>
+                <div class="flex-1">
+                    <h3 class="font-label-md text-body-lg font-bold text-on-surface">Door Handle Fix - Staff Lounge</h3>
+                    <p class="text-on-surface-variant font-body-md">Reported by: Security • 5h ago</p>
+                </div>
+                <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button class="px-4 py-2 bg-primary text-on-primary rounded-lg text-label-md font-bold hover:scale-105 transition-transform">Accept</button>
+                    <button class="px-4 py-2 border border-outline-variant text-on-surface-variant rounded-lg text-label-md font-bold hover:bg-white transition-all">Delegate</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Schedule Timeline -->
+    <section class="col-span-12 lg:col-span-5 glass-card rounded-3xl p-6 inner-glow">
+        <div class="flex items-center gap-2 mb-6">
+            <span class="material-symbols-outlined text-primary" data-icon="calendar_today">calendar_today</span>
+            <h2 class="font-headline-md text-headline-md text-primary">Daily Schedule</h2>
+        </div>
+        <div class="space-y-6 relative before:absolute before:left-3 before:top-2 before:bottom-2 before:w-0.5 before:bg-outline-variant/30">
+            <div class="relative pl-10">
+                <div class="absolute left-[7px] top-1.5 w-2.5 h-2.5 rounded-full bg-secondary-container"></div>
+                <div class="font-label-md text-on-secondary-fixed-variant mb-1">09:00 AM - 10:30 AM</div>
+                <div class="p-4 bg-white rounded-2xl shadow-sm">
+                    <p class="font-bold text-primary">Biometric System Upgrade</p>
+                    <p class="text-on-surface-variant text-body-md">IT Wing - All Access Points</p>
+                </div>
+            </div>
+            <div class="relative pl-10">
+                <div class="absolute left-[7px] top-1.5 w-2.5 h-2.5 rounded-full bg-primary/40"></div>
+                <div class="font-label-md text-outline mb-1">11:00 AM - 12:00 PM</div>
+                <div class="p-4 glass-card/50 rounded-2xl">
+                    <p class="font-bold text-on-surface-variant">Weekly Staff Briefing</p>
+                    <p class="text-outline text-body-md">Conference Room B</p>
+                </div>
+            </div>
+            <div class="relative pl-10">
+                <div class="absolute left-[7px] top-1.5 w-2.5 h-2.5 rounded-full bg-secondary-container animate-pulse shadow-[0_0_8px_rgba(254,183,0,0.8)]"></div>
+                <div class="font-label-md text-on-secondary-fixed-variant mb-1">02:00 PM - 04:00 PM</div>
+                <div class="p-4 bg-secondary-container/5 rounded-2xl border border-secondary-container/20">
+                    <p class="font-bold text-primary">HVAC Filter Replacement</p>
+                    <p class="text-on-surface-variant text-body-md">Auditorium &amp; Gym (Ongoing)</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Inventory Overview Grid -->
+    <section class="col-span-12 lg:col-span-7 glass-card rounded-3xl p-6 inner-glow">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="font-headline-md text-headline-md text-primary">Inventory Overview</h2>
+            <button class="flex items-center gap-1 text-primary font-label-md bg-primary-fixed px-3 py-1.5 rounded-full hover:bg-primary-fixed-dim transition-colors">
+                <span class="material-symbols-outlined text-[18px]" data-icon="download">download</span>
+                Reports
+            </button>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <!-- Supply Item 1 -->
+            <div class="flex flex-col items-center p-4 bg-surface-container rounded-2xl hover:scale-105 transition-transform duration-300">
+                <div class="relative w-20 h-20 mb-3">
+                    <svg class="w-full h-full transform -rotate-90">
+                        <circle class="text-primary/10" cx="40" cy="40" fill="transparent" r="34" stroke="currentColor" stroke-width="6"></circle>
+                        <circle class="text-secondary-container" cx="40" cy="40" fill="transparent" r="34" stroke="currentColor" stroke-dasharray="213.6" stroke-dashoffset="42.7" stroke-width="6"></circle>
+                    </svg>
+                    <div class="absolute inset-0 flex items-center justify-center font-bold text-primary">80%</div>
+                </div>
+                <p class="font-label-md text-on-surface text-center">Electrical Fittings</p>
+                <p class="text-outline text-[11px] uppercase mt-1">Status: Healthy</p>
+            </div>
+
+            <!-- Supply Item 2 -->
+            <div class="flex flex-col items-center p-4 bg-surface-container rounded-2xl hover:scale-105 transition-transform duration-300">
+                <div class="relative w-20 h-20 mb-3">
+                    <svg class="w-full h-full transform -rotate-90">
+                        <circle class="text-primary/10" cx="40" cy="40" fill="transparent" r="34" stroke="currentColor" stroke-width="6"></circle>
+                        <circle class="text-error" cx="40" cy="40" fill="transparent" r="34" stroke="currentColor" stroke-dasharray="213.6" stroke-dashoffset="170.8" stroke-width="6"></circle>
+                    </svg>
+                    <div class="absolute inset-0 flex items-center justify-center font-bold text-error">20%</div>
+                </div>
+                <p class="font-label-md text-on-surface text-center">Plumbing Spares</p>
+                <p class="text-error text-[11px] font-bold uppercase mt-1">Low Stock</p>
+            </div>
+
+            <!-- Supply Item 3 -->
+            <div class="flex flex-col items-center p-4 bg-surface-container rounded-2xl hover:scale-105 transition-transform duration-300">
+                <div class="relative w-20 h-20 mb-3">
+                    <svg class="w-full h-full transform -rotate-90">
+                        <circle class="text-primary/10" cx="40" cy="40" fill="transparent" r="34" stroke="currentColor" stroke-width="6"></circle>
+                        <circle class="text-secondary-container" cx="40" cy="40" fill="transparent" r="34" stroke="currentColor" stroke-dasharray="213.6" stroke-dashoffset="106.8" stroke-width="6"></circle>
+                    </svg>
+                    <div class="absolute inset-0 flex items-center justify-center font-bold text-primary">50%</div>
+                </div>
+                <p class="font-label-md text-on-surface text-center">Lighting Bulbs</p>
+                <p class="text-outline text-[11px] uppercase mt-1">Reorder soon</p>
+            </div>
+
+            <!-- Supply Item 4 -->
+            <div class="flex flex-col items-center p-4 bg-surface-container rounded-2xl hover:scale-105 transition-transform duration-300">
+                <div class="relative w-20 h-20 mb-3">
+                    <svg class="w-full h-full transform -rotate-90">
+                        <circle class="text-primary/10" cx="40" cy="40" fill="transparent" r="34" stroke="currentColor" stroke-width="6"></circle>
+                        <circle class="text-secondary-container" cx="40" cy="40" fill="transparent" r="34" stroke="currentColor" stroke-dasharray="213.6" stroke-dashoffset="10.6" stroke-width="6"></circle>
+                    </svg>
+                    <div class="absolute inset-0 flex items-center justify-center font-bold text-primary">95%</div>
+                </div>
+                <p class="font-label-md text-on-surface text-center">Cleaning Agents</p>
+                <p class="text-outline text-[11px] uppercase mt-1">Status: Optimal</p>
+            </div>
+        </div>
+        <div class="mt-6 flex items-center gap-4 bg-primary-container p-4 rounded-2xl text-on-primary">
+            <span class="material-symbols-outlined text-secondary-container text-4xl" data-icon="local_shipping">local_shipping</span>
+            <div>
+                <h4 class="font-bold">Next Delivery Scheduled</h4>
+                <p class="text-on-primary-container text-body-md">Plumbing &amp; Hardware supplies arriving tomorrow at 10:00 AM.</p>
+            </div>
+        </div>
+    </section>
+</div>
+
+<script>
+    // Real-time Clock logic
+    function updateClock() {
+        const now = new Date();
+        const h = String(now.getHours()).padStart(2, '0');
+        const m = String(now.getMinutes()).padStart(2, '0');
+        const s = String(now.getSeconds()).padStart(2, '0');
+        document.getElementById('digital-clock').textContent = `${h}:${m}:${s}`;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // Simple Clock-In/Out Interaction
+    let isClockedIn = true;
+    function toggleClock() {
+        const btn = document.getElementById('clock-btn');
+        const statusLabel = document.querySelector('.bg-green-100');
+        
+        if (isClockedIn) {
+            btn.innerHTML = '<span class="material-symbols-outlined">login</span> Clock In';
+            btn.classList.replace('bg-primary', 'bg-secondary-container');
+            btn.classList.replace('text-on-primary', 'text-on-secondary-container');
+            statusLabel.classList.replace('bg-green-100', 'bg-red-100');
+            statusLabel.classList.replace('text-green-700', 'text-red-700');
+            statusLabel.innerHTML = '<span class="w-2 h-2 bg-red-500 rounded-full"></span> OFF DUTY';
+        } else {
+            btn.innerHTML = '<span class="material-symbols-outlined">logout</span> Clock Out';
+            btn.classList.replace('bg-secondary-container', 'bg-primary');
+            btn.classList.replace('text-on-secondary-container', 'text-on-primary');
+            statusLabel.classList.replace('bg-red-100', 'bg-green-100');
+            statusLabel.classList.replace('text-red-700', 'text-green-700');
+            statusLabel.innerHTML = '<span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span> ON DUTY';
+        }
+        isClockedIn = !isClockedIn;
+    }
+
+    // Add subtle hover effect for glass cards
+    document.querySelectorAll('.glass-card').forEach(card => {
+        card.addEventListener('mousemove', (e) => {
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            card.style.setProperty('--mouse-x', `${x}px`);
+            card.style.setProperty('--mouse-y', `${y}px`);
+        });
+    });
+</script>
+
+{% endblock %}

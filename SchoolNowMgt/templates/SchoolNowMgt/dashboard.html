@@ -3,45 +3,57 @@
 
 {% block content %}
 
+<!-- Dashboard Header -->
+<div class="mb-section-margin">
+    <h1 class="text-display-lg font-display-lg text-primary mb-2">Dashboard</h1>
+    <p class="text-body-lg text-on-surface-variant">{{ today|date:"l, d F Y" }}</p>
+</div>
+
 <!-- ═══════════════════════════════════════════════════════════════════ -->
 <!-- SECTION 1: STUDENTS                                                -->
 <!-- ═══════════════════════════════════════════════════════════════════ -->
 
-<section class="section">
-    <h2 class="section-heading">Students</h2>
+<section class="space-y-gutter mb-section-margin">
+    <h2 class="text-headline-lg font-headline-lg text-primary border-b-2 border-secondary-container pb-2">Students</h2>
     
-    <div class="cards-grid">
-        <div class="stat-card border-green">
-            <div class="stat-card-metric">{{ total_students }}</div>
-            <div class="stat-card-label">Total active students</div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-card-gap">
+        <!-- Total Students -->
+        <div class="glass-card rounded-[24px] p-6 border-l-4 border-l-green-500 hover:translate-y-[-2px] transition-all">
+            <div class="text-headline-lg font-headline-lg text-primary mb-2">{{ total_students }}</div>
+            <div class="text-label-md font-label-md text-on-surface-variant uppercase">Total active students</div>
         </div>
-        <div class="stat-card border-green">
-            <div class="stat-card-metric">{{ new_students_this_month }}</div>
-            <div class="stat-card-label">New enrolments this month</div>
+        
+        <!-- New Enrolments -->
+        <div class="glass-card rounded-[24px] p-6 border-l-4 border-l-green-500 hover:translate-y-[-2px] transition-all">
+            <div class="text-headline-lg font-headline-lg text-primary mb-2">{{ new_students_this_month }}</div>
+            <div class="text-label-md font-label-md text-on-surface-variant uppercase">New enrolments this month</div>
         </div>
-        <div class="stat-card border-amber">
-            <div class="stat-card-metric">{{ new_enquiries_count }}</div>
-            <div class="stat-card-label">Open enquiries</div>
+        
+        <!-- Open Enquiries -->
+        <div class="glass-card rounded-[24px] p-6 border-l-4 border-l-secondary-fixed-dim hover:translate-y-[-2px] transition-all">
+            <div class="text-headline-lg font-headline-lg text-primary mb-2">{{ new_enquiries_count }}</div>
+            <div class="text-label-md font-label-md text-on-surface-variant uppercase">Open enquiries</div>
         </div>
     </div>
     
-    <div class="table-container">
-        <table>
-            <thead>
+    <!-- Students by Class Table -->
+    <div class="overflow-x-auto rounded-[16px] border border-surface-variant">
+        <table class="w-full bg-white">
+            <thead class="bg-surface-container-low border-b border-surface-variant">
                 <tr>
-                    <th>Class</th>
-                    <th>Students</th>
+                    <th class="px-6 py-4 text-left text-label-md font-label-md text-primary">Class</th>
+                    <th class="px-6 py-4 text-left text-label-md font-label-md text-primary">Students</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody class="divide-y divide-surface-variant">
                 {% for c in students_by_class %}
-                    <tr>
-                        <td>{{ c.name }}</td>
-                        <td>{{ c.student_count }}</td>
+                    <tr class="hover:bg-surface-container-low transition-colors">
+                        <td class="px-6 py-4 text-body-md text-on-surface">{{ c.name }}</td>
+                        <td class="px-6 py-4 text-body-md text-on-surface font-semibold">{{ c.student_count }}</td>
                     </tr>
                 {% empty %}
                     <tr>
-                        <td colspan="2" class="no-data">No classes configured.</td>
+                        <td colspan="2" class="px-6 py-8 text-center text-on-surface-variant">No classes configured.</td>
                     </tr>
                 {% endfor %}
             </tbody>
@@ -53,37 +65,48 @@
 <!-- SECTION 2: ATTENDANCE TODAY                                         -->
 <!-- ═══════════════════════════════════════════════════════════════════ -->
 
-<section class="section">
-    <h2 class="section-heading">Attendance Today</h2>
-    <p class="section-subheading">{{ today|date:"d M Y" }}</p>
+<section class="space-y-gutter mb-section-margin">
+    <div class="flex items-center justify-between mb-gutter">
+        <h2 class="text-headline-lg font-headline-lg text-primary border-b-2 border-secondary-container pb-2">Attendance Today</h2>
+        <p class="text-label-md font-label-md text-on-surface-variant">{{ today|date:"d M Y" }}</p>
+    </div>
     
     {% if not attendance_marked_today %}
-        <div class="alert alert-amber">
-            <div>Attendance has not been marked today.</div>
-            <a href="{% url 'SchoolNowMgt:mark_attendance' %}">Mark now →</a>
+        <div class="bg-secondary-fixed-dim/20 border-l-4 border-l-secondary-fixed-dim rounded-lg p-4 flex items-center justify-between">
+            <div class="text-body-md text-on-surface">Attendance has not been marked today.</div>
+            <a href="{% url 'SchoolNowMgt:mark_attendance' %}" class="px-4 py-2 bg-secondary-container text-on-secondary-container rounded-lg font-bold text-label-md hover:opacity-90">Mark now →</a>
         </div>
     {% endif %}
     
-    <div class="cards-grid">
-        <div class="stat-card border-green">
-            <div class="stat-card-metric">{{ students_present_today }}</div>
-            <div class="stat-card-label">Present today</div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-card-gap">
+        <!-- Present Today -->
+        <div class="glass-card rounded-[24px] p-6 border-l-4 border-l-green-500 hover:translate-y-[-2px] transition-all">
+            <div class="text-headline-lg font-headline-lg text-primary mb-2">{{ students_present_today }}</div>
+            <div class="text-label-md font-label-md text-on-surface-variant uppercase">Present today</div>
         </div>
-        <div class="stat-card border-amber">
-            <div class="stat-card-metric">{{ students_absent_today }}</div>
-            <div class="stat-card-label">Absent today</div>
+        
+        <!-- Absent Today -->
+        <div class="glass-card rounded-[24px] p-6 border-l-4 border-l-secondary-fixed-dim hover:translate-y-[-2px] transition-all">
+            <div class="text-headline-lg font-headline-lg text-primary mb-2">{{ students_absent_today }}</div>
+            <div class="text-label-md font-label-md text-on-surface-variant uppercase">Absent today</div>
         </div>
-        <div class="stat-card border-amber">
-            <div class="stat-card-metric">{{ students_late_today }}</div>
-            <div class="stat-card-label">Late today</div>
+        
+        <!-- Late Today -->
+        <div class="glass-card rounded-[24px] p-6 border-l-4 border-l-secondary-fixed-dim hover:translate-y-[-2px] transition-all">
+            <div class="text-headline-lg font-headline-lg text-primary mb-2">{{ students_late_today }}</div>
+            <div class="text-label-md font-label-md text-on-surface-variant uppercase">Late today</div>
         </div>
-        <div class="stat-card border-green">
-            <div class="stat-card-metric">{{ staff_present_today }}</div>
-            <div class="stat-card-label">Staff present</div>
+        
+        <!-- Staff Present -->
+        <div class="glass-card rounded-[24px] p-6 border-l-4 border-l-green-500 hover:translate-y-[-2px] transition-all">
+            <div class="text-headline-lg font-headline-lg text-primary mb-2">{{ staff_present_today }}</div>
+            <div class="text-label-md font-label-md text-on-surface-variant uppercase">Staff present</div>
         </div>
-        <div class="stat-card border-amber">
-            <div class="stat-card-metric">{{ staff_absent_today }}</div>
-            <div class="stat-card-label">Staff absent</div>
+        
+        <!-- Staff Absent -->
+        <div class="glass-card rounded-[24px] p-6 border-l-4 border-l-secondary-fixed-dim hover:translate-y-[-2px] transition-all">
+            <div class="text-headline-lg font-headline-lg text-primary mb-2">{{ staff_absent_today }}</div>
+            <div class="text-label-md font-label-md text-on-surface-variant uppercase">Staff absent</div>
         </div>
     </div>
 </section>
@@ -92,41 +115,49 @@
 <!-- SECTION 3: RETENTION ALERTS                                        -->
 <!-- ═══════════════════════════════════════════════════════════════════ -->
 
-<section class="section">
-    <h2 class="section-heading">Retention Alerts</h2>
+<section class="space-y-gutter mb-section-margin">
+    <h2 class="text-headline-lg font-headline-lg text-primary border-b-2 border-secondary-container pb-2">Retention Alerts</h2>
     
-    <div class="cards-grid">
-        <div class="stat-card {% if open_alerts_count > 0 %}border-amber{% else %}border-green{% endif %}">
-            <div class="stat-card-metric">{{ open_alerts_count }}</div>
-            <div class="stat-card-label">Open alerts</div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-card-gap">
+        <!-- Open Alerts -->
+        <div class="glass-card rounded-[24px] p-6 {% if open_alerts_count > 0 %}border-l-4 border-l-secondary-fixed-dim{% else %}border-l-4 border-l-green-500{% endif %} hover:translate-y-[-2px] transition-all">
+            <div class="text-headline-lg font-headline-lg text-primary mb-2">{{ open_alerts_count }}</div>
+            <div class="text-label-md font-label-md text-on-surface-variant uppercase">Open alerts</div>
         </div>
-        <div class="stat-card {% if high_severity_count > 0 %}border-red{% else %}border-green{% endif %}">
-            <div class="stat-card-metric">{{ high_severity_count }}</div>
-            <div class="stat-card-label">High severity</div>
+        
+        <!-- High Severity -->
+        <div class="glass-card rounded-[24px] p-6 {% if high_severity_count > 0 %}border-l-4 border-l-error{% else %}border-l-4 border-l-green-500{% endif %} hover:translate-y-[-2px] transition-all">
+            <div class="text-headline-lg font-headline-lg text-primary mb-2">{{ high_severity_count }}</div>
+            <div class="text-label-md font-label-md text-on-surface-variant uppercase">High severity</div>
         </div>
     </div>
     
-    <div class="table-container">
-        <table>
-            <thead>
+    <!-- Retention Alerts Table -->
+    <div class="overflow-x-auto rounded-[16px] border border-surface-variant">
+        <table class="w-full bg-white">
+            <thead class="bg-surface-container-low border-b border-surface-variant">
                 <tr>
-                    <th>Student</th>
-                    <th>Reason</th>
-                    <th>Severity</th>
-                    <th>Date</th>
+                    <th class="px-6 py-4 text-left text-label-md font-label-md text-primary">Student</th>
+                    <th class="px-6 py-4 text-left text-label-md font-label-md text-primary">Reason</th>
+                    <th class="px-6 py-4 text-left text-label-md font-label-md text-primary">Severity</th>
+                    <th class="px-6 py-4 text-left text-label-md font-label-md text-primary">Date</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody class="divide-y divide-surface-variant">
                 {% for alert in open_alerts %}
-                    <tr>
-                        <td>{{ alert.student.full_name }}</td>
-                        <td>{{ alert.get_reason_type_display }}</td>
-                        <td class="severity-{{ alert.severity }}">{{ alert.severity }}</td>
-                        <td>{{ alert.created_at|date:"d M Y" }}</td>
+                    <tr class="hover:bg-surface-container-low transition-colors">
+                        <td class="px-6 py-4 text-body-md text-on-surface">{{ alert.student.full_name }}</td>
+                        <td class="px-6 py-4 text-body-md text-on-surface">{{ alert.get_reason_type_display }}</td>
+                        <td class="px-6 py-4 text-body-md font-semibold">
+                            <span class="{% if alert.severity == 'high' %}text-error{% elif alert.severity == 'medium' %}text-secondary-fixed-dim{% else %}text-on-surface-variant{% endif %}">
+                                {{ alert.get_severity_display }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-body-md text-on-surface">{{ alert.created_at|date:"d M Y" }}</td>
                     </tr>
                 {% empty %}
                     <tr>
-                        <td colspan="4" class="no-data">No open alerts.</td>
+                        <td colspan="4" class="px-6 py-8 text-center text-on-surface-variant">No open alerts.</td>
                     </tr>
                 {% endfor %}
             </tbody>
@@ -138,45 +169,51 @@
 <!-- SECTION 4: FINANCE                                                 -->
 <!-- ═══════════════════════════════════════════════════════════════════ -->
 
-<section class="section">
-    <h2 class="section-heading">Finance</h2>
+<section class="space-y-gutter mb-section-margin">
+    <h2 class="text-headline-lg font-headline-lg text-primary border-b-2 border-secondary-container pb-2">Finance</h2>
     
-    <div class="cards-grid">
-        <div class="stat-card border-green">
-            <div class="stat-card-metric">UGX {{ fees_collected_this_month|intcomma }}</div>
-            <div class="stat-card-label">Collected this month</div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-card-gap">
+        <!-- Collected This Month -->
+        <div class="glass-card rounded-[24px] p-6 border-l-4 border-l-green-500 hover:translate-y-[-2px] transition-all">
+            <div class="text-headline-lg font-headline-lg text-primary mb-2">UGX {{ fees_collected_this_month|intcomma }}</div>
+            <div class="text-label-md font-label-md text-on-surface-variant uppercase">Collected this month</div>
         </div>
-        <div class="stat-card border-amber">
-            <div class="stat-card-metric">{{ pending_sms_count }}</div>
-            <div class="stat-card-label">SMS pending</div>
+        
+        <!-- SMS Pending -->
+        <div class="glass-card rounded-[24px] p-6 border-l-4 border-l-secondary-fixed-dim hover:translate-y-[-2px] transition-all">
+            <div class="text-headline-lg font-headline-lg text-primary mb-2">{{ pending_sms_count }}</div>
+            <div class="text-label-md font-label-md text-on-surface-variant uppercase">SMS pending</div>
         </div>
-        <div class="stat-card {% if failed_sms_count > 0 %}border-red{% else %}border-green{% endif %}">
-            <div class="stat-card-metric">{{ failed_sms_count }}</div>
-            <div class="stat-card-label">SMS failed</div>
+        
+        <!-- SMS Failed -->
+        <div class="glass-card rounded-[24px] p-6 {% if failed_sms_count > 0 %}border-l-4 border-l-error{% else %}border-l-4 border-l-green-500{% endif %} hover:translate-y-[-2px] transition-all">
+            <div class="text-headline-lg font-headline-lg text-primary mb-2">{{ failed_sms_count }}</div>
+            <div class="text-label-md font-label-md text-on-surface-variant uppercase">SMS failed</div>
         </div>
     </div>
     
-    <div class="table-container">
-        <table>
-            <thead>
+    <!-- Recent Payments Table -->
+    <div class="overflow-x-auto rounded-[16px] border border-surface-variant">
+        <table class="w-full bg-white">
+            <thead class="bg-surface-container-low border-b border-surface-variant">
                 <tr>
-                    <th>Student</th>
-                    <th>Amount (UGX)</th>
-                    <th>Method</th>
-                    <th>Date</th>
+                    <th class="px-6 py-4 text-left text-label-md font-label-md text-primary">Student</th>
+                    <th class="px-6 py-4 text-left text-label-md font-label-md text-primary">Amount (UGX)</th>
+                    <th class="px-6 py-4 text-left text-label-md font-label-md text-primary">Method</th>
+                    <th class="px-6 py-4 text-left text-label-md font-label-md text-primary">Date</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody class="divide-y divide-surface-variant">
                 {% for p in recent_payments %}
-                    <tr>
-                        <td>{{ p.student.full_name }}</td>
-                        <td>{{ p.amount_paid|floatformat:0|intcomma }}</td>
-                        <td>{{ p.get_payment_method_display }}</td>
-                        <td>{{ p.payment_date|date:"d M Y" }}</td>
+                    <tr class="hover:bg-surface-container-low transition-colors">
+                        <td class="px-6 py-4 text-body-md text-on-surface">{{ p.student.full_name }}</td>
+                        <td class="px-6 py-4 text-body-md text-on-surface font-semibold">{{ p.amount_paid|floatformat:0|intcomma }}</td>
+                        <td class="px-6 py-4 text-body-md text-on-surface">{{ p.get_payment_method_display }}</td>
+                        <td class="px-6 py-4 text-body-md text-on-surface">{{ p.payment_date|date:"d M Y" }}</td>
                     </tr>
                 {% empty %}
                     <tr>
-                        <td colspan="4" class="no-data">No payments recorded this month.</td>
+                        <td colspan="4" class="px-6 py-8 text-center text-on-surface-variant">No payments recorded this month.</td>
                     </tr>
                 {% endfor %}
             </tbody>
@@ -188,43 +225,47 @@
 <!-- SECTION 5: NEW ENQUIRIES                                            -->
 <!-- ═══════════════════════════════════════════════════════════════════ -->
 
-<section class="section">
-    <h2 class="section-heading">New Enquiries</h2>
+<section class="space-y-gutter">
+    <h2 class="text-headline-lg font-headline-lg text-primary border-b-2 border-secondary-container pb-2">New Enquiries</h2>
     
-    <div class="cards-grid">
-        <div class="stat-card border-green">
-            <div class="stat-card-metric">{{ enquiries_this_month }}</div>
-            <div class="stat-card-label">Enquiries this month</div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-card-gap">
+        <!-- Enquiries This Month -->
+        <div class="glass-card rounded-[24px] p-6 border-l-4 border-l-green-500 hover:translate-y-[-2px] transition-all">
+            <div class="text-headline-lg font-headline-lg text-primary mb-2">{{ enquiries_this_month }}</div>
+            <div class="text-label-md font-label-md text-on-surface-variant uppercase">Enquiries this month</div>
         </div>
-        <div class="stat-card border-green">
-            <div class="stat-card-metric">{{ average_score_this_year }}</div>
-            <div class="stat-card-label">Avg score this year</div>
+        
+        <!-- Average Score This Year -->
+        <div class="glass-card rounded-[24px] p-6 border-l-4 border-l-green-500 hover:translate-y-[-2px] transition-all">
+            <div class="text-headline-lg font-headline-lg text-primary mb-2">{{ average_score_this_year|floatformat:1 }}</div>
+            <div class="text-label-md font-label-md text-on-surface-variant uppercase">Avg score this year</div>
         </div>
     </div>
     
-    <div class="table-container">
-        <table>
-            <thead>
+    <!-- Recent Enquiries Table -->
+    <div class="overflow-x-auto rounded-[16px] border border-surface-variant">
+        <table class="w-full bg-white">
+            <thead class="bg-surface-container-low border-b border-surface-variant">
                 <tr>
-                    <th>Child Name</th>
-                    <th>Parent</th>
-                    <th>Phone</th>
-                    <th>Class Interested</th>
-                    <th>Date</th>
+                    <th class="px-6 py-4 text-left text-label-md font-label-md text-primary">Child Name</th>
+                    <th class="px-6 py-4 text-left text-label-md font-label-md text-primary">Parent</th>
+                    <th class="px-6 py-4 text-left text-label-md font-label-md text-primary">Phone</th>
+                    <th class="px-6 py-4 text-left text-label-md font-label-md text-primary">Class Interested</th>
+                    <th class="px-6 py-4 text-left text-label-md font-label-md text-primary">Date</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody class="divide-y divide-surface-variant">
                 {% for e in recent_enquiries %}
-                    <tr>
-                        <td>{{ e.child_name }}</td>
-                        <td>{{ e.parent_name }}</td>
-                        <td>{{ e.parent_phone }}</td>
-                        <td>{{ e.interested_class }}</td>
-                        <td>{{ e.enquiry_date|date:"d M Y" }}</td>
+                    <tr class="hover:bg-surface-container-low transition-colors">
+                        <td class="px-6 py-4 text-body-md text-on-surface">{{ e.child_name }}</td>
+                        <td class="px-6 py-4 text-body-md text-on-surface">{{ e.parent_name }}</td>
+                        <td class="px-6 py-4 text-body-md text-on-surface">{{ e.parent_phone }}</td>
+                        <td class="px-6 py-4 text-body-md text-on-surface">{{ e.interested_class }}</td>
+                        <td class="px-6 py-4 text-body-md text-on-surface">{{ e.enquiry_date|date:"d M Y" }}</td>
                     </tr>
                 {% empty %}
                     <tr>
-                        <td colspan="5" class="no-data">No new enquiries.</td>
+                        <td colspan="5" class="px-6 py-8 text-center text-on-surface-variant">No new enquiries.</td>
                     </tr>
                 {% endfor %}
             </tbody>

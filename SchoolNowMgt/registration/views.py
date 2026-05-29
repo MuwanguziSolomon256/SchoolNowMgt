@@ -39,7 +39,7 @@ def register_teacher(request):
     
     if request.method == 'GET':
         form = TeacherRegistrationForm()
-        return render(request, 'SchoolNowMgt/registration/register.html', {
+        return render(request, 'teacher/register.html', {
             'form': form,
             'school': school,
         })
@@ -52,7 +52,7 @@ def register_teacher(request):
             email = form.cleaned_data['email'].lower()
             if CustomUser.objects.filter(email=email).exists():
                 form.add_error('email', 'An account with this email already exists.')
-                return render(request, 'SchoolNowMgt/registration/register.html', {
+                return render(request, 'teacher/register.html', {
                     'form': form,
                     'school': school,
                 })
@@ -98,14 +98,14 @@ def register_teacher(request):
             except Exception as e:
                 # If anything goes wrong, the transaction will be rolled back
                 messages.error(request, 'An error occurred during registration. Please try again.')
-                return render(request, 'SchoolNowMgt/registration/register.html', {
+                return render(request, 'teacher/register.html', {
                     'form': form,
                     'school': school,
                 })
         
         else:
             # Form is invalid, re-render with errors
-            return render(request, 'SchoolNowMgt/registration/register.html', {
+            return render(request, 'teacher/register.html', {
                 'form': form,
                 'school': school,
             })
@@ -350,3 +350,63 @@ def register_parent(request):
                 'school': school,
                 'role_display': 'Parent/Guardian',
             })
+
+
+def parent_login(request):
+    """
+    Parent login view.
+    """
+    from SchoolNowMgt.registration.forms import ParentLoginForm
+    
+    # Redirect if already logged in as parent
+    if request.user.is_authenticated and request.user.role == 'parent':
+        return redirect('home')
+
+    if request.method == 'POST':
+        form = ParentLoginForm(request=request, data=request.POST)
+        if form.is_valid():
+            login(request, form.authenticated_user)
+
+            # Safe redirect logic
+            next_url = request.GET.get('next', '')
+            if (next_url.startswith('/') and 
+                not next_url.startswith('//') and 
+                ' ' not in next_url):
+                return redirect(next_url)
+            else:
+                return redirect('home')
+    else:
+        form = ParentLoginForm()
+
+    context = {'form': form}
+    return render(request, 'registration/parent_login.html', context)
+
+
+def support_staff_login(request):
+    """
+    Support staff login view.
+    """
+    from SchoolNowMgt.registration.forms import SupportStaffLoginForm
+    
+    # Redirect if already logged in as support staff
+    if request.user.is_authenticated and request.user.role == 'non_teaching_staff':
+        return redirect('home')
+
+    if request.method == 'POST':
+        form = SupportStaffLoginForm(request=request, data=request.POST)
+        if form.is_valid():
+            login(request, form.authenticated_user)
+
+            # Safe redirect logic
+            next_url = request.GET.get('next', '')
+            if (next_url.startswith('/') and 
+                not next_url.startswith('//') and 
+                ' ' not in next_url):
+                return redirect(next_url)
+            else:
+                return redirect('home')
+    else:
+        form = SupportStaffLoginForm()
+
+    context = {'form': form}
+    return render(request, 'registration/support_login.html', context)

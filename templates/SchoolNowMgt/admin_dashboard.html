@@ -1,0 +1,380 @@
+{% extends "SchoolNowMgt/base_ethos.html" %}
+{% load static %}
+
+{% block title %}EduVision Pro - Admin Dashboard{% endblock %}
+
+{% block content %}
+
+<div class="flex min-h-screen bg-background flex-col md:flex-row">
+    <!-- Mobile Menu Toggle -->
+    <button id="sidebarToggle" class="md:hidden fixed top-4 left-4 z-50 p-2 rounded-lg bg-primary text-white shadow-lg">
+        <span class="material-symbols-outlined">menu</span>
+    </button>
+    
+    <!-- Sidebar Navigation -->
+    <aside id="sidebar" class="h-screen w-full md:w-64 fixed md:relative left-0 top-0 sidebar-gradient flex flex-col py-4 md:py-base gap-2 shadow-xl shadow-primary/20 z-40 transform -translate-x-full md:translate-x-0 transition-transform duration-300 overflow-y-auto">
+        <div class="px-4 md:px-6 py-6 md:py-8">
+            <h1 class="font-headline-lg text-headline-lg font-black text-secondary-container text-lg md:text-2xl">Legacy Academy</h1>
+            <p class="font-label-md text-label-md text-on-primary/60 text-xs md:text-sm">Admin Portal</p>
+        </div>
+        
+        <nav class="flex-grow space-y-1 px-2">
+            <!-- Dashboard (Active) -->
+            <div class="bg-secondary-container text-on-secondary-container rounded-lg font-bold flex items-center gap-3 px-3 md:px-4 py-2 md:py-3 mx-0 md:mx-2 group cursor-pointer nav-item active text-sm md:text-base">
+                <span class="material-symbols-outlined text-lg md:text-xl">dashboard</span>
+                <span class="font-label-md text-label-md">Dashboard</span>
+            </div>
+            
+            <!-- Students -->
+            <div class="text-on-primary/70 flex items-center gap-3 px-3 md:px-4 py-2 md:py-3 mx-0 md:mx-2 hover:bg-white/10 rounded-lg transition-all group cursor-pointer hover:translate-x-1 duration-300 nav-item text-sm md:text-base">
+                <span class="material-symbols-outlined text-lg md:text-xl">school</span>
+                <span class="font-label-md text-label-md">Students</span>
+            </div>
+            
+            <!-- Staff -->
+            <div class="text-on-primary/70 flex items-center gap-3 px-3 md:px-4 py-2 md:py-3 mx-0 md:mx-2 hover:bg-white/10 rounded-lg transition-all group cursor-pointer hover:translate-x-1 duration-300 nav-item text-sm md:text-base">
+                <span class="material-symbols-outlined text-lg md:text-xl">groups</span>
+                <span class="font-label-md text-label-md">Staff</span>
+            </div>
+            
+            <!-- Finance -->
+            <div class="text-on-primary/70 flex items-center gap-3 px-3 md:px-4 py-2 md:py-3 mx-0 md:mx-2 hover:bg-white/10 rounded-lg transition-all group cursor-pointer hover:translate-x-1 duration-300 nav-item text-sm md:text-base">
+                <span class="material-symbols-outlined text-lg md:text-xl">payments</span>
+                <span class="font-label-md text-label-md">Finance</span>
+            </div>
+            
+            <!-- Reports -->
+            <div class="text-on-primary/70 flex items-center gap-3 px-3 md:px-4 py-2 md:py-3 mx-0 md:mx-2 hover:bg-white/10 rounded-lg transition-all group cursor-pointer hover:translate-x-1 duration-300 nav-item text-sm md:text-base">
+                <span class="material-symbols-outlined text-lg md:text-xl">analytics</span>
+                <span class="font-label-md text-label-md">Reports</span>
+            </div>
+            
+            <!-- Communication -->
+            <div class="text-on-primary/70 flex items-center gap-3 px-3 md:px-4 py-2 md:py-3 mx-0 md:mx-2 hover:bg-white/10 rounded-lg transition-all group cursor-pointer hover:translate-x-1 duration-300 nav-item text-sm md:text-base">
+                <span class="material-symbols-outlined text-lg md:text-xl">chat_bubble</span>
+                <span class="font-label-md text-label-md">Communication</span>
+            </div>
+        </nav>
+        
+        <!-- Bottom Actions -->
+        <div class="px-2 md:px-4 mb-4">
+            <button class="w-full py-2 md:py-3 bg-secondary-container text-on-secondary-container font-bold rounded-xl shadow-lg shadow-secondary-container/20 hover:shadow-secondary-container/40 active:scale-95 transition-all flex items-center justify-center gap-2 text-xs md:text-sm">
+                <span class="material-symbols-outlined text-lg md:text-xl">person_add</span>
+                <span class="font-label-md text-label-md">New Admission</span>
+            </button>
+        </div>
+        
+        <!-- Support & Logout -->
+        <div class="border-t border-white/10 pt-4 pb-6 px-2 md:px-4 space-y-1">
+            <div class="text-on-primary/70 flex items-center gap-3 px-3 md:px-4 py-2 mx-0 md:mx-2 hover:bg-white/10 rounded-lg transition-all cursor-pointer nav-item text-sm md:text-base">
+                <span class="material-symbols-outlined text-lg md:text-xl">contact_support</span>
+                <span class="font-label-md text-label-md">Support</span>
+            </div>
+            <div class="text-on-primary/70 flex items-center gap-3 px-3 md:px-4 py-2 mx-0 md:mx-2 hover:bg-white/10 rounded-lg transition-all cursor-pointer nav-item text-sm md:text-base">
+                <span class="material-symbols-outlined text-lg md:text-xl">logout</span>
+                <span class="font-label-md text-label-md">Logout</span>
+            </div>
+        </div>
+    </aside>
+    
+    <!-- Main Content -->
+    <main class="w-full min-h-screen flex flex-col md:ml-0">
+        <!-- Top Navigation Bar -->
+        <header class="flex justify-between items-center px-4 md:px-container-padding w-full sticky top-0 z-40 bg-surface/70 backdrop-blur-2xl border-b border-white/20 shadow-sm shadow-primary/5 h-14 md:h-16">
+            <div class="flex items-center gap-2 md:gap-4 flex-grow">
+                <div class="hidden md:flex relative items-center bg-surface-container-low rounded-full px-3 md:px-4 py-2 w-80 md:w-96">
+                    <span class="material-symbols-outlined text-outline text-lg">search</span>
+                    <input class="bg-transparent border-none focus:ring-0 text-body-md w-full ml-2 text-xs md:text-sm" placeholder="Search student records..." type="text"/>
+                </div>
+                <button class="md:hidden p-2 rounded-full hover:bg-surface-container-highest/50">
+                    <span class="material-symbols-outlined text-on-surface-variant">search</span>
+                </button>
+            </div>
+            
+            <div class="flex items-center gap-2 md:gap-6">
+                <!-- Notification Icons -->
+                <div class="flex items-center gap-2 md:gap-4">
+                    <button class="p-2 rounded-full hover:bg-surface-container-highest/50 cursor-pointer transition-all active:scale-95">
+                        <span class="material-symbols-outlined text-on-surface-variant text-lg md:text-xl">notifications</span>
+                    </button>
+                    <button class="hidden md:block p-2 rounded-full hover:bg-surface-container-highest/50 cursor-pointer transition-all active:scale-95">
+                        <span class="material-symbols-outlined text-on-surface-variant text-lg md:text-xl">help</span>
+                    </button>
+                    <button class="hidden md:block p-2 rounded-full hover:bg-surface-container-highest/50 cursor-pointer transition-all active:scale-95">
+                        <span class="material-symbols-outlined text-on-surface-variant text-lg md:text-xl">settings</span>
+                    </button>
+                </div>
+                
+                <!-- User Profile -->
+                <div class="hidden md:flex items-center gap-3 pl-6 border-l border-outline-variant/30">
+                    <div class="text-right">
+                        <p class="font-label-md text-label-md text-on-surface font-bold text-xs md:text-sm">{{ user.first_name|default:"Admin User" }}</p>
+                        <p class="text-[10px] text-on-surface-variant uppercase tracking-wider">Super Admin</p>
+                    </div>
+                    <img alt="Administrator Profile" class="w-8 md:w-10 h-8 md:h-10 rounded-full object-cover border-2 border-primary" src="https://via.placeholder.com/40"/>
+                </div>
+            </div>
+        </header>
+        
+        <!-- Page Content -->
+        <section class="p-4 md:p-container-padding space-y-6 md:space-y-section-margin flex-grow overflow-y-auto">
+            <!-- Header Section -->
+            <div class="flex flex-col gap-4 md:gap-0 md:flex-row md:items-end justify-between animate-in">
+                <div>
+                    <h2 class="font-display-lg text-display-lg text-primary text-2xl md:text-4xl">School Overview</h2>
+                    <p class="font-body-lg text-body-lg text-on-surface-variant text-xs md:text-sm">Welcome back. Here is what's happening at {{ school_name|default:"Your School" }} today.</p>
+                </div>
+                <div class="flex gap-2 md:gap-3">
+                    <button class="glass-card px-3 md:px-6 py-2 md:py-3 rounded-xl text-primary font-bold shadow-sm flex items-center gap-2 hover:bg-white/40 transition-all text-xs md:text-sm">
+                        <span class="material-symbols-outlined text-lg md:text-xl">download</span>
+                        <span class="hidden md:inline">Export Report</span>
+                    </button>
+                    <button class="bg-primary text-on-primary px-3 md:px-6 py-2 md:py-3 rounded-xl font-bold shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all active:scale-95 text-xs md:text-sm">
+                        Generate Invoices
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Bento Grid - Key Analytics -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-gutter">
+                <!-- Total Students Card -->
+                <div class="col-span-1 glass-card p-4 md:p-6 rounded-2xl md:rounded-3xl shadow-sm relative overflow-hidden group animate-in">
+                    <div class="relative z-10">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="p-2 md:p-3 bg-primary/5 rounded-2xl">
+                                <span class="material-symbols-outlined text-primary text-lg md:text-xl">school</span>
+                            </div>
+                            <span class="text-green-600 font-bold text-label-md flex items-center gap-1 text-xs md:text-sm">
+                                <span class="material-symbols-outlined text-sm">trending_up</span>
+                                {{ student_growth|default:"+12%" }}
+                            </span>
+                        </div>
+                        <h3 class="text-on-surface-variant font-label-md uppercase tracking-wider text-xs">Total Students</h3>
+                        <p class="font-display-lg text-display-lg text-primary mt-1 text-2xl md:text-4xl">{{ total_students|default:"0" }}</p>
+                    </div>
+                    <div class="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                        <span class="material-symbols-outlined text-[120px] md:text-[150px]">school</span>
+                    </div>
+                </div>
+                
+                <!-- Revenue Card -->
+                <div class="col-span-12 md:col-span-8 glass-card p-6 rounded-3xl shadow-sm relative overflow-hidden group animate-in">
+                    <div class="relative z-10 flex flex-col md:flex-row justify-between">
+                        <div class="space-y-4">
+                            <div class="flex items-center gap-3">
+                                <div class="p-3 bg-secondary-container/10 rounded-2xl">
+                                    <span class="material-symbols-outlined text-secondary">payments</span>
+                                </div>
+                                <div>
+                                    <h3 class="text-on-surface-variant font-label-md uppercase tracking-wider">Monthly Revenue</h3>
+                                    <p class="font-display-lg text-display-lg text-primary">${{ monthly_revenue|default:"0" }}</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-6 mt-4">
+                                <div>
+                                    <p class="text-label-md text-on-surface-variant">Collected</p>
+                                    <p class="font-headline-md text-headline-md text-primary">${{ collected_amount|default:"0" }}</p>
+                                </div>
+                                <div>
+                                    <p class="text-label-md text-on-surface-variant">Outstanding</p>
+                                    <p class="font-headline-md text-headline-md text-error">${{ outstanding_amount|default:"0" }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Progress Ring -->
+                        <div class="flex-grow md:max-w-xs pt-6 md:pt-0">
+                            <div class="relative w-32 h-32 mx-auto">
+                                <svg class="w-full h-full" viewBox="0 0 36 36">
+                                    <path class="text-primary/5 stroke-current" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-width="3"></path>
+                                    <path class="text-secondary-container stroke-current" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-dasharray="85, 100" stroke-linecap="round" stroke-width="3"></path>
+                                </svg>
+                                <div class="absolute inset-0 flex flex-col items-center justify-center">
+                                    <span class="text-headline-md font-bold text-primary">{{ fee_collection_goal|default:"85" }}%</span>
+                                    <span class="text-[10px] uppercase text-on-surface-variant">Goal</span>
+                                </div>
+                            </div>
+                            <p class="text-center mt-2 font-label-md text-on-surface-variant">Fee Collection Target</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Priority Alerts -->
+                <div class="col-span-12 md:col-span-5 flex flex-col gap-gutter animate-in">
+                    <div class="glass-card rounded-3xl p-6 shadow-sm flex-grow">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="font-headline-md text-headline-md text-primary">Priority Alerts</h3>
+                            {% if alert_count %}
+                            <span class="badge badge-error">{{ alert_count }} Urgent</span>
+                            {% else %}
+                            <span class="badge badge-success">All Clear</span>
+                            {% endif %}
+                        </div>
+                        <div class="space-y-4">
+                            {% if alerts %}
+                                {% for alert in alerts|slice:":3" %}
+                                <div class="alert alert-{% if alert.severity == 'high' %}error{% elif alert.severity == 'medium' %}warning{% else %}info{% endif %} rounded-2xl">
+                                    <span class="material-symbols-outlined flex-shrink-0">
+                                        {% if alert.severity == 'high' %}report_problem{% else %}info{% endif %}
+                                    </span>
+                                    <div>
+                                        <p class="font-bold text-body-md">{{ alert.title }}</p>
+                                        <p class="text-body-md text-on-surface-variant">{{ alert.description }}</p>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                            <div class="alert alert-success rounded-2xl">
+                                <span class="material-symbols-outlined">check_circle</span>
+                                <div>
+                                    <p class="font-bold">No Alerts</p>
+                                    <p class="text-sm">All systems operational</p>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Quick Actions & Stats -->
+                <div class="col-span-12 md:col-span-7 grid grid-cols-2 gap-gutter animate-in">
+                    <div class="glass-card p-6 rounded-3xl shadow-sm hover:translate-y-[-4px] transition-all cursor-pointer group">
+                        <div class="flex flex-col items-center text-center gap-2">
+                            <div class="w-16 h-16 bg-primary/5 rounded-full flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors duration-300">
+                                <span class="material-symbols-outlined text-3xl">person_add</span>
+                            </div>
+                            <h4 class="font-headline-md text-headline-md text-primary">Add Staff</h4>
+                            <p class="text-body-md text-on-surface-variant">Onboard new educators</p>
+                        </div>
+                    </div>
+                    
+                    <div class="glass-card p-6 rounded-3xl shadow-sm hover:translate-y-[-4px] transition-all cursor-pointer group">
+                        <div class="flex flex-col items-center text-center gap-2">
+                            <div class="w-16 h-16 bg-primary/5 rounded-full flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors duration-300">
+                                <span class="material-symbols-outlined text-3xl">event</span>
+                            </div>
+                            <h4 class="font-headline-md text-headline-md text-primary">Events</h4>
+                            <p class="text-body-md text-on-surface-variant">Manage school calendar</p>
+                        </div>
+                    </div>
+                    
+                    <div class="col-span-2 glass-card p-6 rounded-3xl shadow-sm relative overflow-hidden">
+                        <div class="relative z-10 flex justify-between items-center">
+                            <div>
+                                <h4 class="font-headline-md text-headline-md text-primary">Campus Status: Active</h4>
+                                <p class="text-body-md text-on-surface-variant">Next Term Registration opens in 14 days</p>
+                            </div>
+                            <button class="bg-primary-container text-on-primary-container px-6 py-2 rounded-full font-bold hover:bg-primary transition-all">View Schedule</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Activity Table -->
+            <div class="glass-card rounded-3xl p-8 shadow-sm animate-in">
+                <div class="flex justify-between items-center mb-8">
+                    <h3 class="font-headline-md text-headline-md text-primary">Recent Transactions & Activities</h3>
+                    <button class="text-primary font-bold hover:underline flex items-center gap-1">
+                        View All
+                        <span class="material-symbols-outlined">arrow_forward</span>
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th class="pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-left">Entity</th>
+                                <th class="pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-left">Description</th>
+                                <th class="pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-left">Date</th>
+                                <th class="pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-right">Amount / Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if recent_activities %}
+                                {% for activity in recent_activities|slice:":5" %}
+                                <tr>
+                                    <td class="py-4">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary text-sm">
+                                                {{ activity.initials }}
+                                            </div>
+                                            <div>
+                                                <p class="font-bold text-primary">{{ activity.name }}</p>
+                                                <p class="text-[10px] text-on-surface-variant">ID: {{ activity.id }}</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="py-4 text-on-surface-variant">{{ activity.description }}</td>
+                                    <td class="py-4 text-on-surface-variant">{{ activity.date }}</td>
+                                    <td class="py-4 text-right">
+                                        <span class="text-primary font-bold">{{ activity.amount }}</span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                            <tr>
+                                <td colspan="4" class="py-8 text-center text-on-surface-variant">
+                                    <p class="font-label-md">No recent activities</p>
+                                </td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+
+<script>
+    // Sidebar Toggle for Mobile
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const sidebar = document.getElementById('sidebar');
+    
+    if (sidebarToggle) {
+        sidebarToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('-translate-x-full');
+        });
+        
+        // Close sidebar when clicking on a nav item
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', () => {
+                if (window.innerWidth < 768) {
+                    sidebar.classList.add('-translate-x-full');
+                }
+            });
+        });
+    }
+    
+    // Close sidebar when clicking outside on mobile
+    document.addEventListener('click', (e) => {
+        if (window.innerWidth < 768 && sidebar && !sidebar.contains(e.target) && !sidebarToggle.contains(e.target)) {
+            sidebar.classList.add('-translate-x-full');
+        }
+    });
+    
+    // Glass card hover effects
+    document.querySelectorAll('.glass-card').forEach(card => {
+        card.addEventListener('mousedown', () => {
+            card.classList.add('scale-[0.98]', 'shadow-none');
+        });
+        card.addEventListener('mouseup', () => {
+            card.classList.remove('scale-[0.98]', 'shadow-none');
+        });
+        card.addEventListener('mouseleave', () => {
+            card.classList.remove('scale-[0.98]', 'shadow-none');
+        });
+    });
+    
+    // Responsive viewport handling
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+            if (window.innerWidth >= 768) {
+                sidebar.classList.remove('-translate-x-full');
+            }
+        }, 250);
+    });
+</script>
+
+{% endblock %}

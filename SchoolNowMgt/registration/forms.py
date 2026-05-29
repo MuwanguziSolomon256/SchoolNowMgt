@@ -345,3 +345,192 @@ class ParentRegistrationForm(forms.Form):
                 self.add_error('password2', 'Passwords do not match.')
         
         return cleaned_data
+
+
+class ParentLoginForm(forms.Form):
+    """Login form for parents."""
+    from django.contrib.auth import authenticate
+    from SchoolNowMgt.models import CustomUser
+    
+    email = forms.EmailField(
+        label='Email',
+        widget=forms.EmailInput(attrs={'autofocus': True})
+    )
+    password = forms.CharField(
+        label='Password',
+        widget=forms.PasswordInput()
+    )
+
+    def __init__(self, request=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.request = request
+        self.authenticated_user = None
+
+    def clean(self):
+        cleaned_data = super().clean()
+        email = cleaned_data.get('email')
+        password = cleaned_data.get('password')
+
+        if not email or not password:
+            return cleaned_data
+
+        from django.contrib.auth import authenticate
+        from SchoolNowMgt.models import CustomUser
+
+        # Find user by email (case-insensitive)
+        try:
+            user = CustomUser.objects.get(email__iexact=email)
+        except CustomUser.DoesNotExist:
+            raise forms.ValidationError(
+                "No account found with this email address."
+            )
+
+        # Check if user role is 'parent'
+        if user.role != 'parent':
+            raise forms.ValidationError(
+                "This login is for parents only."
+            )
+
+        # Authenticate with username and password
+        authenticated = authenticate(
+            request=self.request,
+            username=user.username,
+            password=password
+        )
+
+        if authenticated is None:
+            raise forms.ValidationError(
+                "Incorrect password. Please try again."
+            )
+
+        # Store authenticated user
+        self.authenticated_user = authenticated
+        return cleaned_data
+
+
+class SupportStaffLoginForm(forms.Form):
+    """Login form for support staff."""
+    
+    email = forms.EmailField(
+        label='Email',
+        widget=forms.EmailInput(attrs={'autofocus': True})
+    )
+    password = forms.CharField(
+        label='Password',
+        widget=forms.PasswordInput()
+    )
+
+    def __init__(self, request=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.request = request
+        self.authenticated_user = None
+
+    def clean(self):
+        cleaned_data = super().clean()
+        email = cleaned_data.get('email')
+        password = cleaned_data.get('password')
+
+        if not email or not password:
+            return cleaned_data
+
+        from django.contrib.auth import authenticate
+        from SchoolNowMgt.models import CustomUser
+
+        # Find user by email (case-insensitive)
+        try:
+            user = CustomUser.objects.get(email__iexact=email)
+        except CustomUser.DoesNotExist:
+            raise forms.ValidationError(
+                "No account found with this email address."
+            )
+
+        # Check if user role is 'non_teaching_staff'
+        if user.role != 'non_teaching_staff':
+            raise forms.ValidationError(
+                "This login is for support staff only."
+            )
+
+        # Authenticate with username and password
+        authenticated = authenticate(
+            request=self.request,
+            username=user.username,
+            password=password
+        )
+
+        if authenticated is None:
+            raise forms.ValidationError(
+                "Incorrect password. Please try again."
+            )
+
+        # Store authenticated user
+        self.authenticated_user = authenticated
+        return cleaned_data
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# PASSWORD RESET FORMS
+# ═════════════════════════════════════════════════════════════════════════════
+
+
+class ParentPasswordResetForm(forms.Form):
+    """Password reset form for parents - filters by parent role."""
+    
+    email = forms.EmailField(
+        label='Email',
+        max_length=254,
+        widget=forms.EmailInput(attrs={
+            'autocomplete': 'email',
+            'placeholder': 'Enter your email address'
+        })
+    )
+    
+    def clean_email(self):
+        """Validate that email belongs to a parent user."""
+        from SchoolNowMgt.models import CustomUser
+        
+        email = self.cleaned_data.get('email')
+        
+        try:
+            user = CustomUser.objects.get(email__iexact=email)
+            if user.role != 'parent':
+                raise forms.ValidationError(
+                    "This email is not associated with a parent account."
+                )
+        except CustomUser.DoesNotExist:
+            raise forms.ValidationError(
+                "No account found with this email address."
+            )
+        
+        return email
+
+
+class SupportStaffPasswordResetForm(forms.Form):
+    """Password reset form for support staff - filters by role."""
+    
+    email = forms.EmailField(
+        label='Email',
+        max_length=254,
+        widget=forms.EmailInput(attrs={
+            'autocomplete': 'email',
+            'placeholder': 'Enter your email address'
+        })
+    )
+    
+    def clean_email(self):
+        """Validate that email belongs to a support staff user."""
+        from SchoolNowMgt.models import CustomUser
+        
+        email = self.cleaned_data.get('email')
+        
+        try:
+            user = CustomUser.objects.get(email__iexact=email)
+            if user.role != 'non_teaching_staff':
+                raise forms.ValidationError(
+                    "This email is not associated with a support staff account."
+                )
+        except CustomUser.DoesNotExist:
+            raise forms.ValidationError(
+                "No account found with this email address."
+            )
+        
+        return email
