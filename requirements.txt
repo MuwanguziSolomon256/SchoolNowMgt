@@ -32,6 +32,9 @@ django-crispy-forms>=2.1
 # OAuth and social authentication (Google, Microsoft, Apple)
 django-allauth>=0.57.0
 
+# JWT token handling (required by django-allauth for OAuth providers)
+PyJWT>=2.8.0
+
 # ============================================================================
 # NOTE: After adding new packages, regenerate this file with:
 #   pip freeze > requirements.txt
