@@ -11,23 +11,32 @@ services:
       if [ -d staticfiles ]; then echo "✓ Static files directory created successfully"; ls staticfiles/ | head -5; else echo "✗ Warning: staticfiles directory not found"; fi
     startCommand: |
       echo "=== Starting Django application ==="
-      echo "Step 1: Running database migrations..."
-      python manage.py migrate --no-input || { echo "❌ Migrations failed!"; exit 1; }
+      
+      echo "Step 1: Waiting for database to be ready..."
+      sleep 5
+      
+      echo "Step 2: Running database migrations..."
+      python manage.py migrate SchoolNowMgt --no-input
+      python manage.py migrate --no-input
+      if [ $? -ne 0 ]; then
+        echo "❌ Migrations failed!"
+        exit 1
+      fi
       echo "✓ Migrations complete"
       
-      echo "Step 2: Ensuring default school exists..."
-      python manage.py ensure_default_school || echo "⚠ Warning: Could not create default school, but continuing..."
+      echo "Step 3: Ensuring default school exists..."
+      python manage.py ensure_default_school 2>/dev/null || echo "⚠ Warning: Could not create default school, but continuing..."
       echo "✓ School initialization complete"
       
-      echo "Step 3: Creating admin user..."
-      python manage.py create_admin --username admin --email admin@schoolnowmgt.com --password ${ADMIN_PASSWORD:-ChangeMe123!} || echo "⚠ Warning: Admin user creation failed (may already exist)"
+      echo "Step 4: Creating admin user..."
+      python manage.py create_admin --username admin --email admin@schoolnowmgt.com --password ${ADMIN_PASSWORD:-ChangeMe123!} 2>/dev/null || echo "⚠ Warning: Admin user creation failed (may already exist)"
       echo "✓ Admin user check complete"
       
-      echo "Step 4: Loading initial data..."
+      echo "Step 5: Loading initial data..."
       python manage.py loaddata data.json 2>/dev/null || echo "ℹ Note: No data.json to load or already loaded"
       echo "✓ Data loading complete"
       
-      echo "Step 5: Starting Gunicorn server..."
+      echo "Step 6: Starting Gunicorn server..."
       exec gunicorn schoolmgmt_project.wsgi:application \
         --workers 1 \
         --worker-class sync \
