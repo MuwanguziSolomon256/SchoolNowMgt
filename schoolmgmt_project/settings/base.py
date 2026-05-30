@@ -29,7 +29,7 @@ INSTALLED_APPS = [
     'authentication',
     'teacher_auth',
     'teacher',
-    'profile',
+    'user_profile',
     'dashboard',
     'curriculum',
     'SchoolNowMgt',
