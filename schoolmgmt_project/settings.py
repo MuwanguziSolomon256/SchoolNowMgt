@@ -133,11 +133,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # ============================================================================
 AUTH_USER_MODEL = 'SchoolNowMgt.CustomUser'
 
-# Authentication
-LOGIN_URL = '/teacher/login/'
-LOGIN_REDIRECT_URL = '/teacher/'
-LOGOUT_REDIRECT_URL = '/teacher/login/'
-
 # --- PASSWORD RESET TIMEOUT ---
 PASSWORD_RESET_TIMEOUT = 86400  # 24 hours
 

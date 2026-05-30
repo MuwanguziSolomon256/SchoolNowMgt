@@ -104,9 +104,9 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-LOGIN_URL          = 'login'
+LOGIN_URL          = 'auth:login'
 LOGIN_REDIRECT_URL = 'SchoolNowMgt:dashboard'
-LOGOUT_REDIRECT_URL = 'login'
+LOGOUT_REDIRECT_URL = 'auth:login'
 
 # Africa's Talking
 AT_USERNAME  = config('AT_USERNAME', default='')
