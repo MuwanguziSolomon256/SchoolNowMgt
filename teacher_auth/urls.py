@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views, password_views
-from profile.views import teacher_profile
+from user_profile.views import teacher_profile
 
 app_name = 'teacher_auth'
 

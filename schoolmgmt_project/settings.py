@@ -37,7 +37,7 @@ INSTALLED_APPS = [
     'authentication',
     'curriculum',
     'dashboard',
-    'profile',
+    'user_profile',
     'registration',
     'teacher_auth',
 ]

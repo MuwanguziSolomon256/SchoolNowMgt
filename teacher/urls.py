@@ -6,7 +6,7 @@ from teacher_auth.password_views import (
     teacher_password_reset_confirm,
     teacher_password_reset_complete,
 )
-from profile.views import teacher_profile
+from user_profile.views import teacher_profile
 from dashboard.teacher_views import teacher_dashboard
 from curriculum.views import enter_grade_uganda
 from curriculum.international_views import enter_grade_international
