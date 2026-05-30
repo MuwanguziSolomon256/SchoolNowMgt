@@ -4,15 +4,13 @@ from decouple import config
 
 DEBUG = False
 
-# Allow Render domain and localhost for health checks
+# Allow PythonAnywhere domain and localhost for health checks
 ALLOWED_HOSTS = [
-    'schoolnowmgt.onrender.com',
-    'www.schoolnowmgt.onrender.com',
+    'msolomon.pythonanywhere.com',
+    'www.msolomon.pythonanywhere.com',
     '127.0.0.1',
     'localhost',
-    os.getenv('RENDER_EXTERNAL_HOSTNAME', ''),
 ]
-ALLOWED_HOSTS = [h for h in ALLOWED_HOSTS if h]  # Remove empty strings
 
 DATABASES = {
     'default': {
