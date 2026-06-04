@@ -49,6 +49,11 @@ class UnifiedLoginForm(forms.Form):
     )
     
     def __init__(self, *args, role=None, **kwargs):
+        # Set initial role value if provided
+        if role and 'initial' not in kwargs:
+            kwargs['initial'] = kwargs.get('initial', {})
+            kwargs['initial']['role'] = role
+        
         super().__init__(*args, **kwargs)
         self.role = role
         self.user = None
@@ -71,6 +76,16 @@ class UnifiedLoginForm(forms.Form):
             raise forms.ValidationError(
                 'No account found with this email address.'
             )
+        except CustomUser.MultipleObjectsReturned:
+            # Handle duplicate email accounts - try to find the active one with matching role
+            users = CustomUser.objects.filter(email__iexact=email, role=role, is_active=True)
+            if users.exists():
+                user = users.first()
+                self.user = user
+            else:
+                raise forms.ValidationError(
+                    f'Multiple accounts found with this email. Please contact support.'
+                )
         
         # Verify role matches
         if role and user.role != role:

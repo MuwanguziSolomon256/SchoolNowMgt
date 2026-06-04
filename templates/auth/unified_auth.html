@@ -320,7 +320,7 @@
                                 <span class="material-symbols-outlined text-on-surface-variant group-[.active]:text-primary transition-colors text-2xl sm:text-3xl block">admin_panel_settings</span>
                                 <span class="font-label-md text-label-md group-[.active]:text-primary text-center mt-2 block text-xs sm:text-sm">Admin</span>
                             </button>
-                            <button type="button" class="role-card group active flex-col items-center justify-center p-3 sm:p-4" data-role="teacher" onclick="selectRole(event, 'teacher')">
+                            <button type="button" class="role-card group flex-col items-center justify-center p-3 sm:p-4" data-role="teacher" onclick="selectRole(event, 'teacher')">
                                 <span class="material-symbols-outlined text-on-surface-variant group-[.active]:text-primary transition-colors text-2xl sm:text-3xl block">person_book</span>
                                 <span class="font-label-md text-label-md group-[.active]:text-primary text-center mt-2 block text-xs sm:text-sm">Teacher</span>
                             </button>
@@ -333,7 +333,8 @@
                                 <span class="font-label-md text-label-md group-[.active]:text-primary text-center mt-2 block text-xs sm:text-sm">Support</span>
                             </button>
                         </div>
-                        <input type="hidden" name="role" id="roleInput" value="{{ form.role.value|default:'teacher' }}">
+                        <!-- Role field with proper value preservation -->
+                        <input type="hidden" name="role" id="roleInput" value="{% firstof form.role.value form.role.initial 'teacher' %}">
                     </div>
                     
                     <!-- Email Field -->
