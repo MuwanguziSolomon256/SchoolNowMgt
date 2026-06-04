@@ -307,7 +307,7 @@ def parent_dashboard(request):
     children = Student.objects.filter(
         parent_user=request.user,
         status='active',
-        school=user_school
+        class_grade__school=user_school
     ).prefetch_related('grade_set', 'class_grade')
     
     # Get selected child (first child or from session)

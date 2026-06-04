@@ -59,9 +59,12 @@
                             Dashboard
                         </a>
                         {% endif %}
-                        <a href="{% url 'teacher:logout' %}" class="px-4 py-2 bg-red-600 rounded-lg hover:bg-red-700 transition">
-                            Logout
-                        </a>
+                        <form method="post" action="{% url 'teacher:logout' %}" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="px-4 py-2 bg-red-600 rounded-lg hover:bg-red-700 transition" onclick="return confirm('Are you sure you want to logout?');">
+                                Logout
+                            </button>
+                        </form>
                     </div>
                 {% else %}
                     <div class="flex gap-3">

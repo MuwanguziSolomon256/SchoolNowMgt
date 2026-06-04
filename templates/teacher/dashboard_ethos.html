@@ -7,10 +7,16 @@
 
 <style>
     .glass-card {
-        background: rgba(255, 255, 255, 0.7);
+        background: #ffffff;
         backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.4);
+        border: 1px solid #e1e2e5;
         box-shadow: 0 8px 32px 0 rgba(30, 34, 79, 0.08);
+    }
+    .glass-card a {
+        display: block;
+        height: 100%;
+        text-decoration: none;
+        color: inherit;
     }
     .sun-gold-glow:hover {
         box-shadow: 0 10px 15px -3px rgba(254, 183, 0, 0.3);
@@ -115,27 +121,27 @@
         <!-- Quick Actions Grid -->
         <div class="col-span-8">
             <div class="grid grid-cols-3 gap-gutter h-full">
-                <div class="glass-card rounded-3xl p-6 group cursor-pointer hover:bg-primary transition-all duration-300">
+                <a href="{% url 'SchoolNowMgt:mark_attendance' %}" class="glass-card rounded-3xl p-6 group cursor-pointer hover:bg-primary transition-all duration-300">
                     <div class="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-white/20 transition-colors">
                         <span class="material-symbols-outlined text-primary group-hover:text-white" data-icon="assignment_ind">assignment_ind</span>
                     </div>
                     <h4 class="font-headline-md text-headline-md text-primary group-hover:text-white transition-colors">Attendance</h4>
                     <p class="text-on-surface-variant group-hover:text-on-primary/70 text-sm mt-2 transition-colors">Mark today's presence for Grade 12-B.</p>
-                </div>
-                <div class="glass-card rounded-3xl p-6 group cursor-pointer hover:bg-secondary-container transition-all duration-300">
+                </a>
+                <a href="#gradebook" class="glass-card rounded-3xl p-6 group cursor-pointer hover:bg-secondary-container transition-all duration-300">
                     <div class="w-12 h-12 rounded-2xl bg-secondary-container/10 flex items-center justify-center mb-4 group-hover:bg-white/20 transition-colors">
                         <span class="material-symbols-outlined text-secondary group-hover:text-on-secondary-container" data-icon="draw">draw</span>
                     </div>
                     <h4 class="font-headline-md text-headline-md text-primary group-hover:text-on-secondary-container transition-colors">Gradebook</h4>
                     <p class="text-on-surface-variant group-hover:text-on-secondary-container/70 text-sm mt-2 transition-colors">Input mid-term evaluation scores.</p>
-                </div>
-                <div class="glass-card rounded-3xl p-6 group cursor-pointer hover:bg-primary-container transition-all duration-300">
+                </a>
+                <a href="#circulars" class="glass-card rounded-3xl p-6 group cursor-pointer hover:bg-primary-container transition-all duration-300">
                     <div class="w-12 h-12 rounded-2xl bg-primary-container/10 flex items-center justify-center mb-4 group-hover:bg-white/20 transition-colors">
                         <span class="material-symbols-outlined text-primary-container group-hover:text-white" data-icon="chat">chat</span>
                     </div>
                     <h4 class="font-headline-md text-headline-md text-primary group-hover:text-white transition-colors">Circulars</h4>
                     <p class="text-on-surface-variant group-hover:text-on-primary/70 text-sm mt-2 transition-colors">Broadcast announcement to all parents.</p>
-                </div>
+                </a>
                 <div class="col-span-3 glass-card rounded-3xl p-6 flex items-center justify-between group overflow-hidden relative">
                     <div class="absolute inset-0 bg-gradient-to-r from-secondary-container/5 to-transparent"></div>
                     <div class="relative z-10">

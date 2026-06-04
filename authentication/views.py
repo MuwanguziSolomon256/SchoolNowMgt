@@ -67,6 +67,8 @@ def unified_login(request):
                 return redirect('teacher:dashboard')
             elif user.role == 'admin':
                 return redirect('/admin/')
+            elif user.role == 'parent':
+                return redirect('SchoolNowMgt:parent_dashboard')
             else:
                 return redirect('/')
         else:
@@ -99,6 +101,8 @@ def unified_register(request):
             return redirect('/admin/')
         elif request.user.role == 'teacher':
             return redirect('teacher:dashboard')
+        elif request.user.role == 'parent':
+            return redirect('SchoolNowMgt:parent_dashboard')
         else:
             return redirect('/')
     
@@ -147,16 +151,20 @@ def unified_register(request):
                             is_full_time=True,
                         )
                         staff_profile.save()
-                    
-                    # Log in the user
-                    login(request, user)
-                    messages.success(request, f'Welcome {first_name}! Your account has been created.')
-                    
-                    # Role-based redirect
-                    if user.role == 'teacher':
-                        return redirect('teacher:dashboard')
-                    else:
-                        return redirect('/')
+                
+                # Log in the user (OUTSIDE transaction to avoid session issues)
+                # Set the backend attribute to avoid "multiple authentication backends" error
+                user.backend = 'django.contrib.auth.backends.ModelBackend'
+                login(request, user)
+                messages.success(request, f'Welcome {first_name}! Your account has been created.')
+                
+                # Role-based redirect
+                if user.role == 'teacher':
+                    return redirect('teacher:dashboard')
+                elif user.role == 'parent':
+                    return redirect('SchoolNowMgt:parent_dashboard')
+                else:
+                    return redirect('/')
             
             except Exception as e:
                 messages.error(request, f'Registration failed: {str(e)}')

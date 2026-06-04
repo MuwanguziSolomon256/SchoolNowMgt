@@ -145,9 +145,8 @@ class TeacherLoginForm(forms.Form):
             return cleaned_data
 
         # Step 1: Find user by email (case-insensitive)
-        try:
-            user = CustomUser.objects.get(email__iexact=email)
-        except CustomUser.DoesNotExist:
+        user = CustomUser.objects.filter(email__iexact=email).first()
+        if not user:
             raise forms.ValidationError(
                 "No account found with this email address."
             )

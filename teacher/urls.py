@@ -7,7 +7,10 @@ from teacher_auth.password_views import (
     teacher_password_reset_complete,
 )
 from user_profile.views import teacher_profile
-from dashboard.teacher_views import teacher_dashboard
+from dashboard.teacher_views import (
+    teacher_dashboard, toggle_task_status, create_task,
+    student_search, quick_grade_entry, send_circular
+)
 from curriculum.views import enter_grade_uganda
 from curriculum.international_views import enter_grade_international
 
@@ -24,6 +27,13 @@ urlpatterns = [
     path('grades/international/',
          enter_grade_international,
          name='enter_grade_international'),
+
+    # API Endpoints
+    path('api/tasks/<int:task_id>/toggle/', toggle_task_status, name='toggle_task'),
+    path('api/tasks/create/', create_task, name='create_task'),
+    path('api/students/search/', student_search, name='student_search'),
+    path('api/grades/quick-add/', quick_grade_entry, name='quick_grade_entry'),
+    path('api/circulars/send/', send_circular, name='send_circular'),
 
     path('password/reset/',
          teacher_password_reset,

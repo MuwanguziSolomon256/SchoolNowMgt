@@ -7,8 +7,6 @@ urlpatterns = [
     path('teacher/', views.register_teacher, name='register_teacher'),
     path('admin/', views.register_admin, name='register_admin'),
     path('staff/', views.register_non_teaching_staff, name='register_staff'),
-    path('parent/', views.register_parent, name='register_parent'),
-    path('parent/login/', views.parent_login, name='parent_login'),
     path('support/login/', views.support_staff_login, name='support_login'),
     
     # Parent password reset URLs - TODO: Implement these views

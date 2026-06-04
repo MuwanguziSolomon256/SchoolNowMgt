@@ -640,20 +640,31 @@ button, .btn {
 
 /* Glass Card - Primary effect */
 .glass-card {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.4);
+  background: #ffffff;
+  backdrop-filter: blur(0px);
+  -webkit-backdrop-filter: blur(0px);
+  border: 1px solid #e1e2e5;
   box-shadow: 0 8px 32px 0 rgba(30, 34, 79, 0.08);
   border-radius: 1.5rem;
   transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  display: block;
+}
+
+a.glass-card {
+  color: inherit;
+  text-decoration: none;
+  display: block;
+}
+
+a.glass-card:hover {
+  color: inherit;
 }
 
 .glass-card:hover {
   box-shadow: 0 12px 40px rgba(30, 34, 79, 0.12);
   transform: translateY(-2px);
-  backdrop-filter: blur(25px);
-  -webkit-backdrop-filter: blur(25px);
+  backdrop-filter: blur(0px);
+  -webkit-backdrop-filter: blur(0px);
 }
 
 .glass-card.glass-edge {

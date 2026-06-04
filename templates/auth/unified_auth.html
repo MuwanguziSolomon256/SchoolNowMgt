@@ -333,7 +333,7 @@
                                 <span class="font-label-md text-label-md group-[.active]:text-primary text-center mt-2 block text-xs sm:text-sm">Support</span>
                             </button>
                         </div>
-                        <input type="hidden" name="role" id="roleInput" value="teacher">
+                        <input type="hidden" name="role" id="roleInput" value="{{ form.role.value|default:'teacher' }}">
                     </div>
                     
                     <!-- Email Field -->
@@ -357,15 +357,18 @@
                     <div class="form-group">
                         <input 
                             type="password" 
-                            name="password" 
+                            name="{% if is_login %}password{% else %}password1{% endif %}" 
                             id="password" 
                             class="form-input w-full text-xs sm:text-sm md:text-base"
                             placeholder="Password"
                             required
                         >
-                        <label for="password" class="form-label text-xs">Password</label>
+                        <label for="password" class="form-label text-xs">{% if is_login %}Password{% else %}Password{% endif %}</label>
                         {% if form.password.errors %}
                             <div class="error-message text-xs">{{ form.password.errors.0 }}</div>
+                        {% endif %}
+                        {% if form.password1.errors %}
+                            <div class="error-message text-xs">{{ form.password1.errors.0 }}</div>
                         {% endif %}
                     </div>
                     
@@ -422,14 +425,14 @@
                         <div class="form-group">
                             <input 
                                 type="password" 
-                                name="password_confirm" 
-                                id="password_confirm" 
+                                name="password2" 
+                                id="password2" 
                                 class="form-input w-full text-xs sm:text-sm md:text-base"
                                 placeholder="Confirm Password"
                             >
-                            <label for="password_confirm" class="form-label text-xs">Confirm Password</label>
-                            {% if form.password_confirm.errors %}
-                                <div class="error-message text-xs">{{ form.password_confirm.errors.0 }}</div>
+                            <label for="password2" class="form-label text-xs">Confirm Password</label>
+                            {% if form.password2.errors %}
+                                <div class="error-message text-xs">{{ form.password2.errors.0 }}</div>
                             {% endif %}
                         </div>
                     {% else %}
