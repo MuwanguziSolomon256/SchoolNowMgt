@@ -79,7 +79,7 @@ def teacher_logout(request):
     Teacher logout view. POST only.
     """
     logout(request)
-    return redirect('teacher:login')
+    return redirect('auth:unified_login')
 
 
 @login_required(login_url='teacher:login')

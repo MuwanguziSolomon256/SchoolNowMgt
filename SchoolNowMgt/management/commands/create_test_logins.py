@@ -31,11 +31,14 @@ class Command(BaseCommand):
             self.stdout.write(self.style.SUCCESS(f'✓ Created school: {school.name}'))
         
         # Define test users for each role
+        # All users use the same password for consistency during development
+        test_password = 'password123'
+        
         test_users = [
             {
                 'username': 'admin_test',
                 'email': 'admin@test.com',
-                'password': 'AdminTest123!',
+                'password': test_password,
                 'role': 'admin',
                 'first_name': 'Admin',
                 'last_name': 'User',
@@ -43,7 +46,7 @@ class Command(BaseCommand):
             {
                 'username': 'teacher_test',
                 'email': 'teacher@test.com',
-                'password': 'TeacherTest123!',
+                'password': test_password,
                 'role': 'teacher',
                 'first_name': 'John',
                 'last_name': 'Teacher',
@@ -51,7 +54,7 @@ class Command(BaseCommand):
             {
                 'username': 'staff_test',
                 'email': 'staff@test.com',
-                'password': 'StaffTest123!',
+                'password': test_password,
                 'role': 'non_teaching_staff',
                 'first_name': 'Jane',
                 'last_name': 'Staff',
@@ -59,7 +62,7 @@ class Command(BaseCommand):
             {
                 'username': 'parent_test',
                 'email': 'parent@test.com',
-                'password': 'ParentTest123!',
+                'password': test_password,
                 'role': 'parent',
                 'first_name': 'Peter',
                 'last_name': 'Parent',

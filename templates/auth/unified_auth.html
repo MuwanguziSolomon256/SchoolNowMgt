@@ -356,14 +356,25 @@
                     
                     <!-- Password Field -->
                     <div class="form-group">
-                        <input 
-                            type="password" 
-                            name="{% if is_login %}password{% else %}password1{% endif %}" 
-                            id="password" 
-                            class="form-input w-full text-xs sm:text-sm md:text-base"
-                            placeholder="Password"
-                            required
-                        >
+                        <div class="relative flex items-center">
+                            <input 
+                                type="password" 
+                                name="{% if is_login %}password{% else %}password1{% endif %}" 
+                                id="password" 
+                                class="form-input w-full text-xs sm:text-sm md:text-base pr-10"
+                                placeholder="Password"
+                                required
+                            >
+                            <button 
+                                type="button" 
+                                class="absolute right-0 bottom-0 translate-y-1 text-on-surface-variant hover:text-primary transition-colors p-2"
+                                onclick="togglePasswordVisibility('password')"
+                                id="passwordToggle"
+                                title="Toggle password visibility"
+                            >
+                                <span class="material-symbols-outlined text-lg">visibility</span>
+                            </button>
+                        </div>
                         <label for="password" class="form-label text-xs">{% if is_login %}Password{% else %}Password{% endif %}</label>
                         {% if form.password.errors %}
                             <div class="error-message text-xs">{{ form.password.errors.0 }}</div>
@@ -424,13 +435,24 @@
                         
                         <!-- Password Confirm Field (Registration only) -->
                         <div class="form-group">
-                            <input 
-                                type="password" 
-                                name="password2" 
-                                id="password2" 
-                                class="form-input w-full text-xs sm:text-sm md:text-base"
-                                placeholder="Confirm Password"
-                            >
+                            <div class="relative flex items-center">
+                                <input 
+                                    type="password" 
+                                    name="password2" 
+                                    id="password2" 
+                                    class="form-input w-full text-xs sm:text-sm md:text-base pr-10"
+                                    placeholder="Confirm Password"
+                                >
+                                <button 
+                                    type="button" 
+                                    class="absolute right-0 bottom-0 translate-y-1 text-on-surface-variant hover:text-primary transition-colors p-2"
+                                    onclick="togglePasswordVisibility('password2')"
+                                    id="password2Toggle"
+                                    title="Toggle password visibility"
+                                >
+                                    <span class="material-symbols-outlined text-lg">visibility</span>
+                                </button>
+                            </div>
                             <label for="password2" class="form-label text-xs">Confirm Password</label>
                             {% if form.password2.errors %}
                                 <div class="error-message text-xs">{{ form.password2.errors.0 }}</div>
@@ -491,6 +513,22 @@
             
             // Update hidden role input
             document.getElementById('roleInput').value = role;
+        }
+        
+        function togglePasswordVisibility(fieldId) {
+            const passwordField = document.getElementById(fieldId);
+            const toggleButton = document.getElementById(fieldId + 'Toggle');
+            const icon = toggleButton.querySelector('.material-symbols-outlined');
+            
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                icon.textContent = 'visibility_off';
+                toggleButton.title = 'Hide password';
+            } else {
+                passwordField.type = 'password';
+                icon.textContent = 'visibility';
+                toggleButton.title = 'Show password';
+            }
         }
         
         // Set initial active role
