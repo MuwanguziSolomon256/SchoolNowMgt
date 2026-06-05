@@ -3,10 +3,35 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
 from django.contrib import messages
 from django.utils import timezone
+from django.db import ProgrammingError
 from datetime import datetime
 
 from .models import ClassGrade, Student, StudentAttendance, Enquiry, School
 from .forms import EnquiryForm, AttendanceMarkingForm
+
+
+def get_school_safe():
+    """
+    Safely get the first school from the database.
+    Returns None if the table doesn't exist yet (during initial deployment).
+    """
+    try:
+        return School.objects.first()
+    except ProgrammingError:
+        # School table doesn't exist yet - migrations haven't run
+        return None
+
+
+def home(request):
+    """
+    Landing page showing the system and role-based entry points.
+    Accessible to both authenticated and unauthenticated users.
+    """
+    school = get_school_safe()
+    context = {
+        'school': school,
+    }
+    return render(request, 'SchoolNowMgt/home.html', context)
 
 
 def enquiry_form(request):
@@ -15,7 +40,7 @@ def enquiry_form(request):
     GET: Display the enquiry form with school name.
     POST: Save enquiry and redirect to success page.
     """
-    school = School.objects.first()
+    school = get_school_safe()
 
     if request.method == 'POST':
         form = EnquiryForm(request.POST)
@@ -124,11 +149,56 @@ def custom_logout(request):
     """
     Custom logout view that handles both GET (confirmation) and POST (actual logout).
     GET: Display logout confirmation page with a POST form.
-    POST: Log out the user and redirect to login page.
+    POST: Log out the user and redirect to unified login page.
     """
     if request.method == 'POST':
         logout(request)
-        return redirect('login')
+        return redirect('auth:unified_login')
     
     # GET: Show logout confirmation page
     return render(request, 'registration/logout_confirm.html')
+
+
+@login_required(login_url='SchoolNowMgt:login')
+def live_analytics(request):
+    """
+    Live analytics dashboard showing key performance indicators.
+    Requires admin/staff authentication.
+    """
+    from django.db.models import Count, Q, Avg
+    from decimal import Decimal
+    from SchoolNowMgt.models import RetentionAlert, CustomUser
+    
+    school = get_school_safe()
+    
+    # Get basic statistics
+    total_students = Student.objects.filter(status='active').count()
+    total_teachers = CustomUser.objects.filter(role='teacher').count()
+    total_staff = CustomUser.objects.filter(role__in=['admin', 'non_teaching_staff']).count()
+    
+    # Get attendance statistics for today
+    today = timezone.now().date()
+    today_attendance = StudentAttendance.objects.filter(date=today)
+    attendance_present = today_attendance.filter(status='present').count()
+    attendance_total = today_attendance.count()
+    attendance_percentage = (attendance_present / attendance_total * 100) if attendance_total > 0 else 0
+    
+    # Get class information
+    total_classes = ClassGrade.objects.count()
+    
+    # Get retention alerts
+    active_alerts = RetentionAlert.objects.filter(status='open').count()
+    
+    context = {
+        'school': school,
+        'total_students': total_students,
+        'total_teachers': total_teachers,
+        'total_staff': total_staff,
+        'total_classes': total_classes,
+        'attendance_present': attendance_present,
+        'attendance_total': attendance_total,
+        'attendance_percentage': round(attendance_percentage, 1),
+        'active_alerts': active_alerts,
+    }
+    
+    return render(request, 'SchoolNowMgt/analytics.html', context)

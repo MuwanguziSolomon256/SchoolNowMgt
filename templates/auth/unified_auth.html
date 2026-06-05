@@ -1,0 +1,506 @@
+{% load static %}<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>{% block title %}SchoolNow - Authentication{% endblock %}</title>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com" rel="preconnect">
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+    <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700;900&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    
+    <!-- Material Symbols Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface": "#f8f9fc",
+                        "primary-fixed": "#e0e0ff",
+                        "on-primary-fixed": "#121643",
+                        "primary-fixed-dim": "#bfc2fa",
+                        "on-error": "#ffffff",
+                        "secondary-container": "#feb700",
+                        "on-primary-container": "#868abd",
+                        "error": "#ba1a1a",
+                        "inverse-on-surface": "#f0f1f4",
+                        "inverse-primary": "#bfc2fa",
+                        "secondary-fixed-dim": "#ffba20",
+                        "on-secondary-fixed-variant": "#5e4200",
+                        "surface-container": "#edeef1",
+                        "surface-container-high": "#e7e8eb",
+                        "error-container": "#ffdad6",
+                        "surface-bright": "#f8f9fc",
+                        "on-tertiary": "#ffffff",
+                        "primary": "#080b3a",
+                        "on-secondary": "#ffffff",
+                        "outline": "#777680",
+                        "tertiary": "#2b0400",
+                        "on-tertiary-fixed": "#3c0800",
+                        "tertiary-container": "#500d00",
+                        "surface-dim": "#d9dadd",
+                        "on-error-container": "#93000a",
+                        "surface-variant": "#e1e2e5",
+                        "surface-tint": "#565a8b",
+                        "on-background": "#191c1e",
+                        "on-primary": "#ffffff",
+                        "surface-container-low": "#f2f3f6",
+                        "on-surface": "#191c1e",
+                        "on-primary-fixed-variant": "#3f4371",
+                        "secondary-fixed": "#ffdea8",
+                        "on-tertiary-container": "#e96442",
+                        "on-secondary-container": "#6b4b00",
+                        "secondary": "#7c5800",
+                        "surface-container-highest": "#e1e2e5",
+                        "primary-container": "#1e224f",
+                        "background": "#f8f9fc",
+                        "on-secondary-fixed": "#271900",
+                        "outline-variant": "#c7c5d0",
+                        "on-surface-variant": "#46464f",
+                        "inverse-surface": "#2e3133",
+                        "tertiary-fixed": "#ffdbd2",
+                        "tertiary-fixed-dim": "#ffb4a2",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-fixed-variant": "#881f01"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "base": "8px",
+                        "section-margin": "32px",
+                        "gutter": "16px",
+                        "container-padding": "20px",
+                        "card-gap": "12px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Hanken Grotesk"],
+                        "body-lg": ["Inter"],
+                        "headline-lg-mobile": ["Hanken Grotesk"],
+                        "display-lg": ["Hanken Grotesk"],
+                        "body-md": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-md": ["Hanken Grotesk"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["28px", {"lineHeight": "36px", "fontWeight": "600"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "display-lg": ["36px", {"lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "headline-md": ["22px", {"lineHeight": "28px", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 10px 30px -10px rgba(30, 34, 79, 0.08);
+        }
+        .glass-edge {
+            border-top: 1px solid rgba(255, 255, 255, 0.8);
+            border-left: 1px solid rgba(255, 255, 255, 0.8);
+        }
+        .ethos-gradient {
+            background: linear-gradient(135deg, #080b3a 0%, #1e224f 100%);
+        }
+        .ethos-gradient-accent {
+            background: radial-gradient(circle at top right, #ffdea8 0%, transparent 40%),
+                        radial-gradient(circle at bottom left, #e0e0ff 0%, transparent 40%);
+        }
+        .pattern-bg {
+            background-color: #f8f9fc;
+            background-image: linear-gradient(30deg, #080b3a 12%, transparent 12.5%, transparent 87%, #080b3a 87.5%, #080b3a),
+            linear-gradient(150deg, #080b3a 12%, transparent 12.5%, transparent 87%, #080b3a 87.5%, #080b3a),
+            linear-gradient(30deg, #080b3a 12%, transparent 12.5%, transparent 87%, #080b3a 87.5%, #080b3a),
+            linear-gradient(150deg, #080b3a 12%, transparent 12.5%, transparent 87%, #080b3a 87.5%, #080b3a),
+            linear-gradient(60deg, #080b3a77 25%, transparent 25.5%, transparent 75%, #080b3a77 75%, #080b3a77),
+            linear-gradient(60deg, #080b3a77 25%, transparent 25.5%, transparent 75%, #080b3a77 75%, #080b3a77);
+            background-size: 80px 140px;
+            background-position: 0 0, 0 0, 40px 70px, 40px 70px, 0 0, 40px 70px;
+            opacity: 0.03;
+        }
+        .role-card {
+            padding: clamp(12px, 3vw, 16px);
+            border-radius: 1rem;
+            border: 2px solid transparent;
+            background: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: auto;
+            aspect-ratio: 1 / 1.1;
+        }
+        .role-card:hover {
+            background: rgba(255, 255, 255, 0.8);
+            border-color: #feb700;
+            transform: translateY(-2px);
+        }
+        .role-card.active {
+            background: rgba(254, 183, 0, 0.2);
+            border-color: #feb700;
+        }
+        .form-input {
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid #c7c5d0;
+            padding: clamp(8px, 2vw, 12px) 0;
+            transition: border-color 0.3s ease;
+            font-family: Inter;
+            font-size: clamp(12px, 2.5vw, 14px);
+            width: 100%;
+        }
+        .form-input:focus {
+            outline: none;
+            border-bottom-color: #080b3a;
+        }
+        .form-input::placeholder {
+            color: transparent;
+        }
+        .form-label {
+            position: absolute;
+            left: 0;
+            top: -24px;
+            color: #46464f;
+            font-size: clamp(10px, 1.5vw, 12px);
+            font-weight: 600;
+            font-family: Inter;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+        }
+        .form-group {
+            position: relative;
+            margin-bottom: clamp(16px, 4vw, 24px);
+        }
+        .form-input:focus ~ .form-label,
+        .form-input:not(:placeholder-shown) ~ .form-label {
+            top: -32px;
+            color: #080b3a;
+        }
+        .btn-primary {
+            background: #080b3a;
+            color: white;
+            border-radius: 0.75rem;
+            padding: clamp(12px, 3vw, 16px) clamp(24px, 5vw, 32px);
+            font-weight: 600;
+            font-family: Hanken Grotesk;
+            font-size: clamp(16px, 3vw, 22px);
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 24px rgba(8, 11, 58, 0.15);
+            width: 100%;
+        }
+        .btn-primary:hover {
+            transform: scale(1.02);
+            box-shadow: 0 12px 32px rgba(8, 11, 58, 0.2);
+        }
+        .btn-primary:active {
+            transform: scale(0.95);
+        }
+        .error-message {
+            color: #ba1a1a;
+            font-size: clamp(12px, 2vw, 14px);
+            margin-top: 8px;
+        }
+        .sun-glow:hover {
+            box-shadow: 0 0 20px rgba(254, 183, 0, 0.4);
+        }
+        
+        /* Responsive breakpoints */
+        @media (max-width: 640px) {
+            .role-card {
+                padding: clamp(12px, 4vw, 16px);
+                border-radius: 0.75rem;
+            }
+            .form-input {
+                font-size: clamp(12px, 3vw, 14px);
+                padding: clamp(8px, 2vw, 12px) 0;
+                border-bottom-width: 1.5px;
+            }
+            .form-group {
+                margin-bottom: clamp(16px, 4vw, 24px);
+            }
+            .form-label {
+                font-size: clamp(10px, 2vw, 12px);
+            }
+        }
+    </style>
+</head>
+<body class="bg-surface font-body-md text-on-surface selection:bg-secondary-container/30">
+    <!-- Background Decoration -->
+    <div class="fixed inset-0 z-[-1] ethos-gradient-accent opacity-40"></div>
+    <div class="fixed inset-0 z-[-2] pattern-bg"></div>
+    
+    <!-- Main Content Shell -->
+    <main class="min-h-screen w-full flex items-center justify-center p-3 sm:p-4 md:p-6 lg:p-gutter">
+        <!-- Auth Card Container -->
+        <div class="w-full h-full max-w-7xl grid grid-cols-1 md:grid-cols-2 gap-0 overflow-hidden rounded-xl sm:rounded-2xl lg:rounded-[32px] glass-panel glass-edge shadow-lg sm:shadow-xl lg:shadow-2xl">
+            <!-- Left Side: Visual/Branding -->
+            <div class="hidden md:flex md:col-span-1 relative ethos-gradient p-6 sm:p-8 md:p-10 lg:p-12 flex-col justify-between overflow-hidden min-h-full">
+                <div class="absolute inset-0 z-0 opacity-10">
+                    <div class="absolute inset-0 pattern-bg"></div>
+                </div>
+                
+                <div class="relative z-10">
+                    <div class="flex items-center gap-2 sm:gap-3 mb-6 sm:mb-8">
+                        <div class="w-8 h-8 sm:w-10 sm:h-10 bg-secondary-container rounded-lg flex items-center justify-center shadow-lg flex-shrink-0">
+                            <span class="material-symbols-outlined text-primary font-bold text-lg sm:text-xl">school</span>
+                        </div>
+                        <h1 class="text-white font-headline-lg text-headline-lg tracking-tight text-lg sm:text-xl md:text-2xl">SchoolNow</h1>
+                    </div>
+                    <p class="mt-4 sm:mt-6 text-on-primary-fixed/80 font-body-lg text-body-lg max-w-xs text-xs sm:text-sm md:text-base leading-relaxed">
+                        Illuminating Education. Empowering the next generation of African scholars.
+                    </p>
+                </div>
+                
+                <div class="relative z-10 hidden lg:block">
+                    <div class="grid grid-cols-1 gap-3 sm:gap-4">
+                        <div class="glass-panel p-3 sm:p-4 rounded-lg border-white/10 bg-white/5">
+                            <span class="material-symbols-outlined text-secondary-fixed text-xl sm:text-2xl mb-1 sm:mb-2 block">verified_user</span>
+                            <h3 class="text-white font-label-md text-label-md uppercase tracking-widest text-xs">Authorized Access Only</h3>
+                        </div>
+                        <div class="glass-panel p-3 sm:p-4 rounded-lg border-white/10 bg-white/5">
+                            <span class="material-symbols-outlined text-secondary-fixed text-xl sm:text-2xl mb-1 sm:mb-2 block">school</span>
+                            <h3 class="text-white font-label-md text-label-md uppercase tracking-widest text-xs">500+ Partner Schools</h3>
+                        </div>
+                    </div>
+                    <div class="h-[1px] w-full bg-white/10 my-4 sm:my-6"></div>
+                    <p class="text-white/50 text-xs sm:text-sm italic">
+                        "Innovation in administration is the heartbeat of academic excellence."
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Right Side: Auth Form -->
+            <div class="md:col-span-1 bg-white/40 backdrop-blur-md p-5 sm:p-8 md:p-10 lg:p-16 flex flex-col justify-center overflow-y-auto w-full min-h-screen md:min-h-auto">
+                <div class="mb-6 sm:mb-8 md:mb-10">
+                    <h2 class="font-display-lg text-display-lg text-primary mb-1 sm:mb-2 text-2xl sm:text-3xl md:text-4xl" id="formTitle">
+                        {% if is_login %}Login to Portal{% else %}Create Account{% endif %}
+                    </h2>
+                    <p class="text-on-surface-variant font-body-md text-body-md text-xs sm:text-sm md:text-base">
+                        {% if is_login %}Enter your credentials to access the portal.{% else %}Join the SchoolNow ecosystem today.{% endif %}
+                    </p>
+                </div>
+                
+                <!-- Messages -->
+                {% if messages %}
+                    <div class="mb-4 sm:mb-6 p-3 sm:p-4 rounded-lg bg-error-container border border-error text-xs sm:text-sm">
+                        {% for message in messages %}
+                            <p class="text-error font-body-md">{{ message }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                
+                <form method="post" class="space-y-4 sm:space-y-6 md:space-y-8" id="authForm">
+                    {% csrf_token %}
+                    
+                    <!-- Role Selection -->
+                    <div class="space-y-3 sm:space-y-4">
+                        <label class="text-primary font-label-md text-label-md uppercase tracking-wider block text-xs">Select Your Role</label>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
+                            <button type="button" class="role-card group flex-col items-center justify-center p-3 sm:p-4" data-role="admin" onclick="selectRole(event, 'admin')">
+                                <span class="material-symbols-outlined text-on-surface-variant group-[.active]:text-primary transition-colors text-2xl sm:text-3xl block">admin_panel_settings</span>
+                                <span class="font-label-md text-label-md group-[.active]:text-primary text-center mt-2 block text-xs sm:text-sm">Admin</span>
+                            </button>
+                            <button type="button" class="role-card group flex-col items-center justify-center p-3 sm:p-4" data-role="teacher" onclick="selectRole(event, 'teacher')">
+                                <span class="material-symbols-outlined text-on-surface-variant group-[.active]:text-primary transition-colors text-2xl sm:text-3xl block">person_book</span>
+                                <span class="font-label-md text-label-md group-[.active]:text-primary text-center mt-2 block text-xs sm:text-sm">Teacher</span>
+                            </button>
+                            <button type="button" class="role-card group flex-col items-center justify-center p-3 sm:p-4" data-role="parent" onclick="selectRole(event, 'parent')">
+                                <span class="material-symbols-outlined text-on-surface-variant group-[.active]:text-primary transition-colors text-2xl sm:text-3xl block">family_restroom</span>
+                                <span class="font-label-md text-label-md group-[.active]:text-primary text-center mt-2 block text-xs sm:text-sm">Parent</span>
+                            </button>
+                            <button type="button" class="role-card group flex-col items-center justify-center p-3 sm:p-4" data-role="non_teaching_staff" onclick="selectRole(event, 'non_teaching_staff')">
+                                <span class="material-symbols-outlined text-on-surface-variant group-[.active]:text-primary transition-colors text-2xl sm:text-3xl block">support_agent</span>
+                                <span class="font-label-md text-label-md group-[.active]:text-primary text-center mt-2 block text-xs sm:text-sm">Support</span>
+                            </button>
+                        </div>
+                        <!-- Role field with proper value preservation -->
+                        <input type="hidden" name="role" id="roleInput" value="{% firstof form.role.value form.role.initial 'teacher' %}">
+                    </div>
+                    
+                    <!-- Email Field -->
+                    <div class="form-group">
+                        <input 
+                            type="email" 
+                            name="email" 
+                            id="email" 
+                            class="form-input w-full text-xs sm:text-sm md:text-base"
+                            placeholder="Email Address"
+                            required
+                            value="{{ form.email.value|default:'' }}"
+                        >
+                        <label for="email" class="form-label text-xs">Email Address</label>
+                        {% if form.email.errors %}
+                            <div class="error-message text-xs">{{ form.email.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Password Field -->
+                    <div class="form-group">
+                        <input 
+                            type="password" 
+                            name="{% if is_login %}password{% else %}password1{% endif %}" 
+                            id="password" 
+                            class="form-input w-full text-xs sm:text-sm md:text-base"
+                            placeholder="Password"
+                            required
+                        >
+                        <label for="password" class="form-label text-xs">{% if is_login %}Password{% else %}Password{% endif %}</label>
+                        {% if form.password.errors %}
+                            <div class="error-message text-xs">{{ form.password.errors.0 }}</div>
+                        {% endif %}
+                        {% if form.password1.errors %}
+                            <div class="error-message text-xs">{{ form.password1.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    {% if not is_login %}
+                        <!-- Full Name Field (Registration only) -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                            <div class="form-group">
+                                <input 
+                                    type="text" 
+                                    name="first_name" 
+                                    id="first_name" 
+                                    class="form-input w-full text-xs sm:text-sm md:text-base"
+                                    placeholder="First Name"
+                                    value="{{ form.first_name.value|default:'' }}"
+                                >
+                                <label for="first_name" class="form-label text-xs">First Name</label>
+                                {% if form.first_name.errors %}
+                                    <div class="error-message text-xs">{{ form.first_name.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="form-group">
+                                <input 
+                                    type="text" 
+                                    name="last_name" 
+                                    id="last_name" 
+                                    class="form-input w-full text-xs sm:text-sm md:text-base"
+                                    placeholder="Last Name"
+                                    value="{{ form.last_name.value|default:'' }}"
+                                >
+                                <label for="last_name" class="form-label text-xs">Last Name</label>
+                                {% if form.last_name.errors %}
+                                    <div class="error-message text-xs">{{ form.last_name.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Phone Number Field (Registration only) -->
+                        <div class="form-group">
+                            <input 
+                                type="tel" 
+                                name="phone" 
+                                id="phone" 
+                                class="form-input w-full text-xs sm:text-sm md:text-base"
+                                placeholder="Phone Number"
+                                value="{{ form.phone.value|default:'' }}"
+                            >
+                            <label for="phone" class="form-label text-xs">Phone Number</label>
+                            {% if form.phone.errors %}
+                                <div class="error-message text-xs">{{ form.phone.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Password Confirm Field (Registration only) -->
+                        <div class="form-group">
+                            <input 
+                                type="password" 
+                                name="password2" 
+                                id="password2" 
+                                class="form-input w-full text-xs sm:text-sm md:text-base"
+                                placeholder="Confirm Password"
+                            >
+                            <label for="password2" class="form-label text-xs">Confirm Password</label>
+                            {% if form.password2.errors %}
+                                <div class="error-message text-xs">{{ form.password2.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <!-- Remember Me Checkbox (Login only) -->
+                        <div class="flex items-center gap-2 sm:gap-3">
+                            <input type="checkbox" name="remember_me" id="remember_me" class="w-4 h-4 sm:w-5 sm:h-5 rounded border-outline-variant text-primary">
+                            <label for="remember_me" class="font-body-md text-body-md text-on-surface-variant cursor-pointer select-none text-xs sm:text-sm md:text-base">Keep me logged in for 30 days</label>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Submit Button -->
+                    <div class="pt-3 sm:pt-4 md:pt-6 space-y-4 sm:space-y-6">
+                        <button type="submit" class="btn-primary w-full sun-glow flex items-center justify-center gap-2 sm:gap-3 px-4 py-3 sm:py-4 text-sm sm:text-base md:text-lg">
+                            <span>{% if is_login %}Login to Portal{% else %}Sign Up{% endif %}</span>
+                            <span class="material-symbols-outlined transition-transform text-lg sm:text-xl">arrow_forward</span>
+                        </button>
+                        
+                        <!-- Toggle Auth Mode -->
+                        <div class="text-center pt-2">
+                            <p class="text-body-md font-body-md text-on-surface-variant text-xs sm:text-sm md:text-base">
+                                {% if is_login %}
+                                    Don't have an account? <a href="{% url 'auth:unified_register' %}" class="text-primary font-bold hover:underline">Sign Up</a>
+                                {% else %}
+                                    Already have an account? <a href="{% url 'auth:unified_login' %}" class="text-primary font-bold hover:underline">Log In</a>
+                                {% endif %}
+                            </p>
+                        </div>
+                        
+                        <!-- Django Admin Login -->
+                        <div class="pt-6 sm:pt-8 border-t border-outline-variant/30">
+                            <p class="text-center text-on-surface-variant font-label-md text-label-md text-xs sm:text-sm mb-4 uppercase tracking-wider">Django Administrator</p>
+                            <a href="{% url 'admin:index' %}" class="w-full flex items-center justify-center gap-2 sm:gap-3 px-4 py-3 sm:py-4 rounded-xl border-2 border-primary text-primary font-bold hover:bg-primary/5 transition-all active:scale-95 text-xs sm:text-sm md:text-base">
+                                <span class="material-symbols-outlined text-lg sm:text-xl">admin_panel_settings</span>
+                                <span>Django Admin Portal</span>
+                            </a>
+                            <p class="text-center text-on-surface-variant/60 text-[10px] sm:text-xs mt-3 italic">For system administrators only</p>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+    
+    <script>
+        function selectRole(event, role) {
+            event.preventDefault();
+            
+            // Remove active class from all role cards
+            document.querySelectorAll('.role-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            
+            // Add active class to clicked card
+            event.currentTarget.classList.add('active');
+            
+            // Update hidden role input
+            document.getElementById('roleInput').value = role;
+        }
+        
+        // Set initial active role
+        document.addEventListener('DOMContentLoaded', () => {
+            const initialRole = document.getElementById('roleInput').value;
+            const roleCard = document.querySelector(`[data-role="${initialRole}"]`);
+            if (roleCard) {
+                roleCard.classList.add('active');
+            }
+        });
+    </script>
+</body>
+</html>

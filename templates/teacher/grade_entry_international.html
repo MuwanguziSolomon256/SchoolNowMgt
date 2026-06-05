@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grade Entry — International Curriculum | School Management</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+                         'Helvetica Neue', Arial, sans-serif;
+            background-color: #f9f9f9;
+            color: #333;
+            line-height: 1.6;
+            font-size: 16px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+        }
+
+        .page-subtitle {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .success-message {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 4px;
+            padding: 12px 16px;
+            margin-bottom: 20px;
+            color: #155724;
+            font-size: 14px;
+        }
+
+        .curriculum-tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .curriculum-tab {
+            flex: 1;
+            text-align: center;
+            padding: 12px 16px;
+            text-decoration: none;
+            color: #666;
+            font-weight: 500;
+            font-size: 14px;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s ease;
+            margin-bottom: -2px;
+        }
+
+        .curriculum-tab:hover {
+            color: #333;
+            background-color: #f8f9fa;
+        }
+
+        .curriculum-tab.active {
+            color: #007bff;
+            border-bottom-color: #007bff;
+        }
+
+        .form-card {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            padding: 30px;
+            margin-bottom: 40px;
+        }
+
+        .form-card h2 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 24px;
+            border-bottom: 1px solid #e9ecef;
+            padding-bottom: 12px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-grid.full {
+            grid-template-columns: 1fr;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 6px;
+        }
+
+        .form-group .help-text {
+            font-size: 12px;
+            color: #666;
+            margin-top: 4px;
+            font-style: italic;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select,
+        textarea {
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 14px;
+            background-color: #fff;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+        }
+
+        input[type="number"] {
+            text-align: right;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-error {
+            color: #dc3545;
+            font-size: 13px;
+            margin-top: 4px;
+        }
+
+        .form-error ul {
+            margin: 0;
+            padding-left: 18px;
+        }
+
+        .form-error li {
+            margin: 2px 0;
+        }
+
+        .non-field-error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 4px;
+            padding: 12px 16px;
+            margin-bottom: 20px;
+            color: #721c24;
+            font-size: 14px;
+        }
+
+        .grade-entry-section {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .grade-entry-section h3 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 12px;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 28px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            font-size: 14px;
+            font-weight: 600;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+
+        .recent-grades-section {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            padding: 30px;
+        }
+
+        .recent-grades-section h2 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #e9ecef;
+            padding-bottom: 12px;
+        }
+
+        .grades-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        .grades-table thead {
+            background-color: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .grades-table th {
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .grades-table tbody tr {
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .grades-table tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .grades-table td {
+            padding: 12px;
+        }
+
+        .grade-band {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+            text-align: center;
+            min-width: 32px;
+            color: #fff;
+            background-color: #007bff;
+        }
+
+        .grade-band.a-star,
+        .grade-band.a,
+        .grade-band.7,
+        .grade-band.6 {
+            background-color: #28a745;
+        }
+
+        .grade-band.b,
+        .grade-band.5 {
+            background-color: #17a2b8;
+        }
+
+        .grade-band.c,
+        .grade-band.4 {
+            background-color: #ffc107;
+            color: #333;
+        }
+
+        .grade-band.d,
+        .grade-band.e,
+        .grade-band.f,
+        .grade-band.g,
+        .grade-band.3,
+        .grade-band.2 {
+            background-color: #fd7e14;
+        }
+
+        .grade-band.u,
+        .grade-band.1 {
+            background-color: #dc3545;
+        }
+
+        .curriculum-badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-right: 6px;
+            background-color: #e9ecef;
+            color: #333;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+            font-size: 14px;
+        }
+
+        .no-data p {
+            margin: 0;
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .curriculum-tabs {
+                flex-direction: column;
+            }
+
+            .curriculum-tab {
+                border-bottom: 1px solid #e9ecef;
+                margin-bottom: 0;
+            }
+
+            .curriculum-tab.active {
+                border-bottom: 2px solid #007bff;
+                border-left: 3px solid #007bff;
+            }
+
+            .container {
+                padding: 20px 15px;
+            }
+
+            .form-card,
+            .recent-grades-section {
+                padding: 20px;
+            }
+
+            .page-title {
+                font-size: 22px;
+            }
+
+            .grades-table {
+                font-size: 13px;
+            }
+
+            .grades-table th,
+            .grades-table td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1 class="page-title">Enter grades — International Curriculum</h1>
+            <p class="page-subtitle">Cambridge IGCSE · IB PYP/MYP · Semesters 1–2</p>
+        </div>
+
+        <!-- Curriculum Selection Tabs -->
+        <div class="curriculum-tabs">
+            <a href="?curriculum=igcse" 
+               class="curriculum-tab {% if request.GET.curriculum == 'igcse' or not request.GET.curriculum %}active{% endif %}">
+                Cambridge IGCSE
+            </a>
+            <a href="?curriculum=ib" 
+               class="curriculum-tab {% if request.GET.curriculum == 'ib' %}active{% endif %}">
+                IB Programme
+            </a>
+        </div>
+
+        <!-- Success Messages -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="success-message">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Non-field Errors -->
+        {% if form.non_field_errors %}
+            {% for error in form.non_field_errors %}
+                <div class="non-field-error">
+                    {{ error }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Grade Entry Form -->
+        <div class="form-card">
+            <h2>Enter New Grade</h2>
+            <form method="post" novalidate>
+                {% csrf_token %}
+
+                <!-- Curriculum Type & Semester (2-column row) -->
+                <div class="form-grid">
+                    <!-- Curriculum Type Field -->
+                    <div class="form-group">
+                        <label for="{{ form.curriculum_type.id_for_label }}">
+                            {{ form.curriculum_type.label }}
+                        </label>
+                        <select name="{{ form.curriculum_type.name }}"
+                                id="{{ form.curriculum_type.id_for_label }}"
+                                {% if form.curriculum_type.field.required %}required{% endif %}>
+                            <option value="">— Select curriculum —</option>
+                            {% for value, label in form.curriculum_type.field.choices %}
+                                <option value="{{ value }}"
+                                        {% if form.curriculum_type.value == value %}selected{% endif %}>
+                                    {{ label }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        {% if form.curriculum_type.errors %}
+                            <div class="form-error">
+                                {{ form.curriculum_type.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Semester Field -->
+                    <div class="form-group">
+                        <label for="{{ form.semester.id_for_label }}">
+                            {{ form.semester.label }}
+                        </label>
+                        <select name="{{ form.semester.name }}"
+                                id="{{ form.semester.id_for_label }}"
+                                {% if form.semester.field.required %}required{% endif %}>
+                            <option value="">— Select semester —</option>
+                            {% for value, label in form.semester.field.choices %}
+                                <option value="{{ value }}"
+                                        {% if form.semester.value == value %}selected{% endif %}>
+                                    {{ label }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        {% if form.semester.errors %}
+                            <div class="form-error">
+                                {{ form.semester.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Student & Subject (2-column row) -->
+                <div class="form-grid">
+                    <!-- Student Field -->
+                    <div class="form-group">
+                        <label for="{{ form.student.id_for_label }}">
+                            {{ form.student.label }}
+                        </label>
+                        <select name="{{ form.student.name }}"
+                                id="{{ form.student.id_for_label }}"
+                                {% if form.student.field.required %}required{% endif %}>
+                            <option value="">— Select student —</option>
+                            {% for value, label in form.student.field.choices %}
+                                {% if value %}
+                                    <option value="{{ value }}"
+                                            {% if form.student.value|stringformat:"s" == value|stringformat:"s" %}selected{% endif %}>
+                                        {{ label }}
+                                    </option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                        {% if form.student.errors %}
+                            <div class="form-error">
+                                {{ form.student.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Subject Field -->
+                    <div class="form-group">
+                        <label for="{{ form.subject.id_for_label }}">
+                            {{ form.subject.label }}
+                        </label>
+                        <select name="{{ form.subject.name }}"
+                                id="{{ form.subject.id_for_label }}"
+                                {% if form.subject.field.required %}required{% endif %}>
+                            <option value="">— Select subject —</option>
+                            {% for value, label in form.subject.field.choices %}
+                                {% if value %}
+                                    <option value="{{ value }}"
+                                            {% if form.subject.value|stringformat:"s" == value|stringformat:"s" %}selected{% endif %}>
+                                        {{ label }}
+                                    </option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                        {% if form.subject.errors %}
+                            <div class="form-error">
+                                {{ form.subject.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Academic Year (1-column) -->
+                <div class="form-grid full">
+                    <div class="form-group">
+                        <label for="{{ form.academic_year.id_for_label }}">
+                            {{ form.academic_year.label }}
+                        </label>
+                        <input type="text"
+                               name="{{ form.academic_year.name }}"
+                               id="{{ form.academic_year.id_for_label }}"
+                               value="{{ form.academic_year.value }}"
+                               max_length="4"
+                               {% if form.academic_year.field.required %}required{% endif %}>
+                        {% if form.academic_year.errors %}
+                            <div class="form-error">
+                                {{ form.academic_year.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Grade Entry Section -->
+                <div class="grade-entry-section">
+                    <h3>Grade Entry</h3>
+                    <p style="font-size: 13px; color: #666; margin-bottom: 16px;">
+                        If you enter a percentage score, the grade band is calculated automatically.
+                        Or enter a grade band directly.
+                    </p>
+
+                    <!-- Score Field (full width) -->
+                    <div class="form-grid full">
+                        <div class="form-group">
+                            <label for="{{ form.score.id_for_label }}">
+                                {{ form.score.label }}
+                            </label>
+                            <input type="number"
+                                   name="{{ form.score.name }}"
+                                   id="{{ form.score.id_for_label }}"
+                                   value="{{ form.score.value }}"
+                                   step="0.01"
+                                   min="0"
+                                   max="100"
+                                   placeholder="0–100">
+                            <div class="help-text">
+                                {{ form.score.help_text }}
+                            </div>
+                            {% if form.score.errors %}
+                                <div class="form-error">
+                                    {{ form.score.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Direct Grade Fields (2-column row) -->
+                    <div class="form-grid">
+                        <!-- IGCSE Direct Grade -->
+                        <div class="form-group">
+                            <label for="{{ form.direct_grade_igcse.id_for_label }}">
+                                {{ form.direct_grade_igcse.label }}
+                            </label>
+                            <select name="{{ form.direct_grade_igcse.name }}"
+                                    id="{{ form.direct_grade_igcse.id_for_label }}">
+                                <option value="">— Select grade —</option>
+                                {% for value, label in form.direct_grade_igcse.field.choices %}
+                                    {% if value %}
+                                        <option value="{{ value }}"
+                                                {% if form.direct_grade_igcse.value == value %}selected{% endif %}>
+                                            {{ label }}
+                                        </option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                            {% if form.direct_grade_igcse.errors %}
+                                <div class="form-error">
+                                    {{ form.direct_grade_igcse.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- IB Direct Grade -->
+                        <div class="form-group">
+                            <label for="{{ form.direct_grade_ib.id_for_label }}">
+                                {{ form.direct_grade_ib.label }}
+                            </label>
+                            <select name="{{ form.direct_grade_ib.name }}"
+                                    id="{{ form.direct_grade_ib.id_for_label }}">
+                                <option value="">— Select grade —</option>
+                                {% for value, label in form.direct_grade_ib.field.choices %}
+                                    {% if value %}
+                                        <option value="{{ value }}"
+                                                {% if form.direct_grade_ib.value == value %}selected{% endif %}>
+                                            {{ label }}
+                                        </option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                            {% if form.direct_grade_ib.errors %}
+                                <div class="form-error">
+                                    {{ form.direct_grade_ib.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Remarks (full width) -->
+                <div class="form-grid full">
+                    <div class="form-group">
+                        <label for="{{ form.remarks.id_for_label }}">
+                            {{ form.remarks.label }}
+                        </label>
+                        <textarea name="{{ form.remarks.name }}"
+                                  id="{{ form.remarks.id_for_label }}"
+                                  placeholder="Optional remarks or notes">{{ form.remarks.value }}</textarea>
+                        {% if form.remarks.errors %}
+                            <div class="form-error">
+                                {{ form.remarks.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Save grade</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Recently Entered Grades -->
+        <div class="recent-grades-section">
+            <h2>Recently entered grades</h2>
+
+            {% if recent_grades %}
+                <table class="grades-table">
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>Class</th>
+                            <th>Subject</th>
+                            <th>Semester</th>
+                            <th style="text-align: right;">Score</th>
+                            <th style="text-align: center;">Grade</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for grade in recent_grades %}
+                            <tr>
+                                <td>{{ grade.student.full_name }}</td>
+                                <td>{{ grade.student.class_grade.name }}</td>
+                                <td>{{ grade.subject.name }}</td>
+                                <td>{{ grade.get_term_display }}</td>
+                                <td style="text-align: right;">{{ grade.score }}/100</td>
+                                <td style="text-align: center;">
+                                    {% comment %}
+                                    Extract curriculum type and grade from remarks field.
+                                    Format: "[IGCSE] Grade: A*." or "[IB] Grade: 7."
+                                    {% endcomment %}
+                                    {% if "[IGCSE]" in grade.remarks %}
+                                        {% with grade.remarks|slice:"18:21" as extracted_grade %}
+                                            <span class="grade-band igcse">
+                                                <span class="curriculum-badge">IGCSE</span>
+                                                {{ extracted_grade|slice:":1" }}
+                                            </span>
+                                        {% endwith %}
+                                    {% elif "[IB]" in grade.remarks %}
+                                        {% with grade.remarks|slice:"13:14" as extracted_grade %}
+                                            <span class="grade-band ib">
+                                                <span class="curriculum-badge">IB</span>
+                                                {{ extracted_grade }}
+                                            </span>
+                                        {% endwith %}
+                                    {% else %}
+                                        <span class="grade-band">—</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="no-data">
+                    <p>No grades entered yet.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

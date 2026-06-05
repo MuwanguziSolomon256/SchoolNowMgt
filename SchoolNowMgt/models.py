@@ -22,16 +22,7 @@ class CustomUserManager(BaseUserManager):
         if not email:
             raise ValueError('The Email field must be set')
         if not school:
-            # Try to get or create a default school
-            school, _ = School.objects.get_or_create(
-                name='Default School',
-                defaults={
-                    'registration_number': 'DEFAULT-001',
-                    'address': 'Not specified',
-                    'phone': '0000000000',
-                    'email': 'default@school.com',
-                }
-            )
+            raise ValueError('School field is required')
         
         email = self.normalize_email(email)
         user = self.model(username=username, email=email, school=school, **extra_fields)
@@ -711,4 +702,137 @@ class SMSLog(models.Model):
         indexes = [
             models.Index(fields=['status']),
             models.Index(fields=['sent_at']),
+        ]
+
+
+class TeacherTask(models.Model):
+    """
+    Represents a task assigned to or created by a teacher.
+    
+    Teachers can create their own tasks related to grading, lesson prep, etc.
+    Tasks have priority levels and due dates for better organization.
+    """
+    
+    PRIORITY_CHOICES = [
+        ('low', 'Low'),
+        ('medium', 'Medium'),
+        ('high', 'High'),
+    ]
+    
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('completed', 'Completed'),
+    ]
+    
+    teacher = models.ForeignKey(
+        StaffProfile,
+        on_delete=models.CASCADE,
+        related_name='tasks'
+    )
+    title = models.CharField(max_length=200)
+    description = models.TextField(blank=True)
+    due_date = models.DateTimeField()
+    priority = models.CharField(
+        max_length=10,
+        choices=PRIORITY_CHOICES,
+        default='medium'
+    )
+    subject = models.ForeignKey(
+        Subject,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='teacher_tasks'
+    )
+    class_grade = models.ForeignKey(
+        ClassGrade,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='teacher_tasks'
+    )
+    status = models.CharField(
+        max_length=10,
+        choices=STATUS_CHOICES,
+        default='pending',
+        db_index=True
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    
+    def __str__(self):
+        return f"{self.title} — {self.teacher.user.get_full_name()} ({self.priority})"
+    
+    class Meta:
+        ordering = ['-due_date']
+        indexes = [
+            models.Index(fields=['teacher', 'status']),
+            models.Index(fields=['due_date']),
+        ]
+
+
+class ActivityLog(models.Model):
+    """
+    Tracks significant teacher activities in the system for audit and dashboard display.
+    
+    Records actions like quiz submissions by students, messages from principal,
+    system backups, attendance marking, and grade entry. Used to populate
+    the Recent Activity feed on the teacher dashboard.
+    """
+    
+    ACTIVITY_TYPE_CHOICES = [
+        ('quiz_submission', 'Quiz Submission'),
+        ('message', 'Message'),
+        ('system_backup', 'System Backup'),
+        ('attendance_marked', 'Attendance Marked'),
+        ('grade_entered', 'Grade Entered'),
+        ('circular_sent', 'Circular Sent'),
+        ('lesson_created', 'Lesson Created'),
+        ('other', 'Other'),
+    ]
+    
+    SEVERITY_CHOICES = [
+        ('info', 'Info'),
+        ('warning', 'Warning'),
+        ('success', 'Success'),
+    ]
+    
+    teacher = models.ForeignKey(
+        StaffProfile,
+        on_delete=models.CASCADE,
+        related_name='activity_logs'
+    )
+    activity_type = models.CharField(
+        max_length=30,
+        choices=ACTIVITY_TYPE_CHOICES
+    )
+    description = models.TextField()
+    related_student = models.ForeignKey(
+        Student,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='activity_logs'
+    )
+    icon_name = models.CharField(
+        max_length=50,
+        default='info',
+        help_text="Material Symbols icon name"
+    )
+    severity = models.CharField(
+        max_length=10,
+        choices=SEVERITY_CHOICES,
+        default='info'
+    )
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    
+    def __str__(self):
+        return f"{self.activity_type} — {self.teacher.user.get_full_name()} at {self.created_at}"
+    
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['teacher', '-created_at']),
+            models.Index(fields=['activity_type']),
         ]

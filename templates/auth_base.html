@@ -1,0 +1,302 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="SchoolNow - School Management System">
+    <title>{% block title %}SchoolNow - Administration Portal{% endblock %}</title>
+    
+    <!-- Ethos Glass Design System CSS -->
+    <link rel="stylesheet" href="{% static 'css/ethos-glass-theme.css' %}">
+    
+    <!-- Custom auth styles -->
+    <style>
+        body {
+            display: flex;
+            min-height: 100vh;
+            background-color: var(--background);
+        }
+        
+        .auth-container {
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+        }
+        
+        .auth-hero {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-container) 100%);
+            color: var(--on-primary);
+            padding: var(--spacing-2xl);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .auth-hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+            border-radius: 50%;
+            transform: translate(200px, -200px);
+        }
+        
+        .auth-hero > * {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .auth-hero-header {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+        }
+        
+        .auth-hero-logo {
+            width: 48px;
+            height: 48px;
+            background-color: var(--secondary-container);
+            border-radius: var(--rounded-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: 700;
+            color: #000;
+        }
+        
+        .auth-hero-title {
+            font-size: var(--headline-lg-size);
+            font-weight: var(--headline-lg-weight);
+            margin: 0;
+        }
+        
+        .auth-hero-content h2 {
+            font-family: var(--font-display);
+            font-size: 32px;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: var(--spacing-lg);
+        }
+        
+        .auth-hero-content p {
+            font-size: var(--body-lg-size);
+            line-height: var(--body-lg-height);
+            opacity: 0.9;
+            margin-bottom: var(--spacing-lg);
+        }
+        
+        .auth-hero-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-xl);
+        }
+        
+        .stat-item {
+            padding: var(--spacing-lg);
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: var(--rounded-lg);
+            backdrop-filter: blur(10px);
+        }
+        
+        .stat-number {
+            font-size: 28px;
+            font-weight: 700;
+            display: block;
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .stat-label {
+            font-size: var(--body-md-size);
+            opacity: 0.9;
+        }
+        
+        .auth-hero-footer {
+            font-size: var(--body-md-size);
+            opacity: 0.8;
+            font-style: italic;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            padding-top: var(--spacing-lg);
+        }
+        
+        .auth-form {
+            padding: var(--spacing-2xl);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .auth-form-wrapper {
+            width: 100%;
+            max-width: 460px;
+        }
+        
+        .auth-form-header {
+            margin-bottom: var(--spacing-2xl);
+            text-align: center;
+        }
+        
+        .auth-form-header h1 {
+            font-size: var(--headline-lg-size);
+            font-weight: var(--headline-lg-weight);
+            color: var(--on-surface);
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .auth-form-header p {
+            font-size: var(--body-md-size);
+            color: var(--on-surface-variant);
+        }
+        
+        .auth-form-content {
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .auth-form-footer {
+            text-align: center;
+            padding-top: var(--spacing-lg);
+            border-top: 1px solid var(--outline-variant);
+            margin-top: var(--spacing-lg);
+        }
+        
+        .auth-form-footer p {
+            font-size: var(--body-md-size);
+            color: var(--on-surface-variant);
+        }
+        
+        .auth-form-footer a {
+            color: var(--primary);
+            font-weight: 600;
+            margin-left: 4px;
+        }
+        
+        /* Messages */
+        .messages {
+            margin-bottom: var(--spacing-lg);
+        }
+        
+        .message {
+            padding: var(--spacing-md);
+            border-radius: var(--rounded-default);
+            margin-bottom: var(--spacing-md);
+            font-size: var(--body-md-size);
+        }
+        
+        .message.debug,
+        .message.info {
+            background-color: #e0f2fe;
+            color: #0c4a6e;
+            border-left: 4px solid #0284c7;
+        }
+        
+        .message.success {
+            background-color: #d1fae5;
+            color: #065f46;
+            border-left: 4px solid #10b981;
+        }
+        
+        .message.warning {
+            background-color: #fef3c7;
+            color: #78350f;
+            border-left: 4px solid #f59e0b;
+        }
+        
+        .message.error {
+            background-color: #fee2e2;
+            color: #7f1d1d;
+            border-left: 4px solid #ef4444;
+        }
+        
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            .auth-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .auth-hero {
+                display: none;
+            }
+            
+            .auth-form {
+                padding: var(--spacing-lg);
+                min-height: 100vh;
+            }
+            
+            .auth-form-wrapper {
+                max-width: 100%;
+            }
+            
+            .auth-form-header h1 {
+                font-size: var(--headline-lg-mobile-size);
+            }
+        }
+        
+        @media (max-width: 640px) {
+            .auth-form {
+                padding: var(--spacing-md);
+            }
+            
+            .auth-hero-content h2 {
+                font-size: 24px;
+            }
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="auth-container">
+        <!-- Hero Section (Hidden on Mobile) -->
+        <div class="auth-hero">
+            <div class="auth-hero-header">
+                <div class="auth-hero-logo">S</div>
+                <h1 class="auth-hero-title">SchoolNow</h1>
+            </div>
+            
+            <div class="auth-hero-content">
+                <h2>Illuminating Education</h2>
+                <p>Empowering the next generation of African scholars.</p>
+                <p>SchoolNow provides administrators and teachers with the tools to manage curriculum, track student progress, and streamline finances with modern precision.</p>
+                
+                <div class="auth-hero-stats">
+                    <div class="stat-item">
+                        <span class="stat-number">500+</span>
+                        <span class="stat-label">Partner Institutions</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">Real-time</span>
+                        <span class="stat-label">Insights & Reporting</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="auth-hero-footer">
+                "Innovation in administration is the heartbeat of academic excellence."
+            </div>
+        </div>
+        
+        <!-- Form Section -->
+        <div class="auth-form">
+            <div class="auth-form-wrapper">
+                {% if messages %}
+                    <div class="messages">
+                        {% for message in messages %}
+                            <div class="message message-{{ message.tags }}">{{ message }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                
+                {% block auth_form %}{% endblock %}
+            </div>
+        </div>
+    </div>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

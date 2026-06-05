@@ -4,24 +4,18 @@ from decouple import config
 
 DEBUG = False
 
-# Allow Render domain and localhost for health checks
+# Allow PythonAnywhere domain and localhost for health checks
 ALLOWED_HOSTS = [
-    'schoolnowmgt.onrender.com',
-    'www.schoolnowmgt.onrender.com',
+    'msolomon.pythonanywhere.com',
+    'www.msolomon.pythonanywhere.com',
     '127.0.0.1',
     'localhost',
-    os.getenv('RENDER_EXTERNAL_HOSTNAME', ''),
 ]
-ALLOWED_HOSTS = [h for h in ALLOWED_HOSTS if h]  # Remove empty strings
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME':     config('DB_NAME', default='school_db'),
-        'USER':     config('DB_USER', default='school_user'),
-        'PASSWORD': config('DB_PASSWORD', default=''),
-        'HOST':     config('DB_HOST', default='localhost'),
-        'PORT':     config('DB_PORT', default='5432'),
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
 
@@ -39,24 +33,45 @@ X_FRAME_OPTIONS             = 'DENY'
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {asctime} {message}',
+            'style': '{',
+        },
+    },
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
         },
     },
     'root': {
         'handlers': ['console'],
-        'level': 'WARNING',
+        'level': 'INFO',
     },
     'loggers': {
         'django': {
             'handlers': ['console'],
-            'level': 'WARNING',
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+        'django.contrib.auth': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
             'propagate': False,
         },
         'SchoolNowMgt': {
             'handlers': ['console'],
-            'level': 'INFO',
+            'level': 'DEBUG',
             'propagate': False,
         },
     },
@@ -68,6 +83,12 @@ EMAIL_PORT    = config('EMAIL_PORT', default=587, cast=int)
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER     = config('EMAIL_HOST_USER',     default='')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
+
+# WhiteNoise configuration for serving static files efficiently
+# This allows WhiteNoise to compress files on-the-fly
+WHITENOISE_AUTOREFRESH = False
+WHITENOISE_USE_FINDERS = True
+WHITENOISE_COMPRESSION_QUALITY = 80
 
 # ────────────────────────────────────────────────────────────────────────────
 # PRE-LAUNCH CHECKLIST

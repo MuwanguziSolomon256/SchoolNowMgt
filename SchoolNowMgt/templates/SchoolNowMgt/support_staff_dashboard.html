@@ -1,0 +1,157 @@
+{% extends 'SchoolNowMgt/base.html' %}
+{% load humanize %}
+
+{% block extra_css %}
+<style>
+  .glass-card {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    box-shadow: 0 8px 32px 0 rgba(30, 34, 79, 0.08);
+  }
+  .inner-glow {
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.8);
+  }
+  .active-tab-glow {
+    box-shadow: 0 0 15px rgba(254, 183, 0, 0.3);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="max-w-7xl mx-auto px-container-padding py-section-margin">
+
+  <!-- Bento Grid Layout -->
+  <div class="grid grid-cols-12 gap-card-gap">
+    
+    <!-- Clock In/Out Status Card -->
+    <section class="col-span-12 lg:col-span-4 glass-card rounded-3xl p-6 flex flex-col justify-between overflow-hidden relative inner-glow">
+      <div class="absolute -top-12 -right-12 w-48 h-48 bg-secondary-container/10 rounded-full blur-3xl"></div>
+      <div class="flex justify-between items-start z-10">
+        <div>
+          <h2 class="font-headline-md text-headline-md text-primary mb-1">Shift Status</h2>
+          <p class="text-on-surface-variant font-body-md">Active since {{ shift_start_time|date:"h:i A" }}</p>
+        </div>
+        <span class="px-3 py-1 {% if is_on_duty %}bg-green-100 text-green-700{% else %}bg-red-100 text-red-700{% endif %} rounded-full text-label-md font-bold flex items-center gap-1">
+          <span class="w-2 h-2 {% if is_on_duty %}bg-green-500{% else %}bg-red-500{% endif %} rounded-full {% if is_on_duty %}animate-pulse{% endif %}"></span>
+          {% if is_on_duty %}ON DUTY{% else %}OFF DUTY{% endif %}
+        </span>
+      </div>
+      <div class="mt-8 z-10 text-center">
+        <div class="font-display-lg text-display-lg text-primary tracking-tight font-black tabular-nums" id="digital-clock">{{ current_time|date:"H:i:s" }}</div>
+        <p class="font-label-md text-label-md text-outline mt-2">{{ current_date|date:"l, F d, Y" }}</p>
+      </div>
+      <div class="mt-8 flex gap-3 z-10">
+        <button class="flex-1 py-4 bg-primary text-on-primary rounded-2xl font-bold hover:bg-primary-container transition-all shadow-md flex items-center justify-center gap-2">
+          <span class="material-symbols-outlined">{% if is_on_duty %}logout{% else %}login{% endif %}</span>
+          {% if is_on_duty %}Clock Out{% else %}Clock In{% endif %}
+        </button>
+        <button class="w-16 py-4 glass-card text-primary rounded-2xl flex items-center justify-center hover:bg-white transition-all">
+          <span class="material-symbols-outlined">coffee</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Pending Maintenance Task Queue -->
+    <section class="col-span-12 lg:col-span-8 glass-card rounded-3xl p-6 inner-glow">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="font-headline-md text-headline-md text-primary">Pending Tasks</h2>
+        <a class="text-primary font-label-md hover:underline" href="#">View All</a>
+      </div>
+      <div class="space-y-4 max-h-[320px] overflow-y-auto pr-2">
+        {% for task in pending_tasks %}
+          <div class="flex items-center gap-4 p-4 rounded-2xl bg-surface-container-low hover:bg-surface-container-high transition-all group">
+            <div class="h-12 w-12 rounded-xl {% if task.priority == 'high' %}bg-error-container text-error{% elif task.priority == 'medium' %}bg-secondary-fixed text-on-secondary-fixed{% else %}bg-primary-fixed text-on-primary-fixed{% endif %} flex items-center justify-center">
+              <span class="material-symbols-outlined">{{ task.icon }}</span>
+            </div>
+            <div class="flex-1">
+              <h3 class="font-label-md text-body-lg font-bold text-on-surface">{{ task.title }}</h3>
+              <p class="text-on-surface-variant font-body-md">{{ task.details }}</p>
+            </div>
+            <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button class="px-4 py-2 bg-primary text-on-primary rounded-lg text-label-md font-bold hover:scale-105 transition-transform">Accept</button>
+              <button class="px-4 py-2 border border-outline-variant text-on-surface-variant rounded-lg text-label-md font-bold hover:bg-white transition-all">Delegate</button>
+            </div>
+          </div>
+        {% empty %}
+          <p class="text-center text-on-surface-variant py-4">No pending tasks</p>
+        {% endfor %}
+      </div>
+    </section>
+
+    <!-- Daily Schedule Timeline -->
+    <section class="col-span-12 lg:col-span-5 glass-card rounded-3xl p-6 inner-glow">
+      <div class="flex items-center gap-2 mb-6">
+        <span class="material-symbols-outlined text-primary">calendar_today</span>
+        <h2 class="font-headline-md text-headline-md text-primary">Daily Schedule</h2>
+      </div>
+      <div class="space-y-6 relative before:absolute before:left-3 before:top-2 before:bottom-2 before:w-0.5 before:bg-outline-variant/30">
+        {% for event in schedule_events %}
+          <div class="relative pl-10">
+            <div class="absolute left-[7px] top-1.5 w-2.5 h-2.5 rounded-full {% if event.is_current %}bg-secondary-container animate-pulse{% elif event.status == 'completed' %}bg-primary/40{% else %}bg-secondary-container{% endif %}"></div>
+            <div class="font-label-md {% if event.is_current %}text-on-secondary-fixed-variant{% else %}text-outline{% endif %} mb-1">{{ event.start_time|date:"h:i A" }} - {{ event.end_time|date:"h:i A" }}</div>
+            <div class="p-4 {% if event.is_current %}bg-secondary-container/10 rounded-2xl border border-secondary-container/20{% else %}glass-card/50 rounded-2xl{% endif %}">
+              <p class="font-bold text-on-surface">{{ event.title }}</p>
+              <p class="text-on-surface-variant text-body-md">{{ event.location }}</p>
+            </div>
+          </div>
+        {% empty %}
+          <p class="text-center text-on-surface-variant py-4">No scheduled events</p>
+        {% endfor %}
+      </div>
+    </section>
+
+    <!-- Inventory Overview -->
+    <section class="col-span-12 lg:col-span-7 glass-card rounded-3xl p-6 inner-glow">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="font-headline-md text-headline-md text-primary">Inventory Overview</h2>
+        <button class="flex items-center gap-1 text-primary font-label-md bg-primary-fixed px-3 py-1.5 rounded-full hover:bg-primary-fixed-dim transition-colors">
+          <span class="material-symbols-outlined text-[18px]">download</span>
+          Reports
+        </button>
+      </div>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {% for inventory in inventory_items %}
+          <div class="flex flex-col items-center p-4 bg-surface-container rounded-2xl hover:scale-105 transition-transform duration-300">
+            <div class="relative w-20 h-20 mb-3">
+              <svg class="w-full h-full transform -rotate-90">
+                <circle class="text-primary/10" cx="40" cy="40" fill="transparent" r="34" stroke="currentColor" stroke-width="6"></circle>
+                <circle class="{% if inventory.percentage >= 75 %}text-secondary-container{% elif inventory.percentage >= 50 %}text-secondary-container{% else %}text-error{% endif %}" cx="40" cy="40" fill="transparent" r="34" stroke="currentColor" stroke-dasharray="{{ inventory.percentage }}" stroke-dashoffset="{{ 100 | add:inventory.percentage | add:'-100' }}" stroke-width="6"></circle>
+              </svg>
+              <div class="absolute inset-0 flex items-center justify-center font-bold text-primary">{{ inventory.percentage }}%</div>
+            </div>
+            <p class="font-label-md text-on-surface text-center">{{ inventory.name }}</p>
+            <p class="text-outline text-[11px] uppercase mt-1">Status: {{ inventory.status }}</p>
+          </div>
+        {% endfor %}
+      </div>
+      <div class="mt-6 flex items-center gap-4 bg-primary-container p-4 rounded-2xl text-on-primary">
+        <span class="material-symbols-outlined text-secondary-container text-4xl">local_shipping</span>
+        <div>
+          <h4 class="font-bold">Next Delivery Scheduled</h4>
+          <p class="text-on-primary-container text-body-md">{{ next_delivery_info }}</p>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+</div>
+
+<script>
+  // Real-time Clock
+  function updateClock() {
+    const now = new Date();
+    const h = String(now.getHours()).padStart(2, '0');
+    const m = String(now.getMinutes()).padStart(2, '0');
+    const s = String(now.getSeconds()).padStart(2, '0');
+    const clockEl = document.getElementById('digital-clock');
+    if (clockEl) {
+      clockEl.textContent = `${h}:${m}:${s}`;
+    }
+  }
+  setInterval(updateClock, 1000);
+</script>
+
+{% endblock %}

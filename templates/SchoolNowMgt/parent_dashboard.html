@@ -1,0 +1,276 @@
+{% extends "SchoolNowMgt/base_ethos.html" %}
+{% load static %}
+
+{% block title %}EduVision Pro - Parent Portal{% endblock %}
+
+{% block content %}
+
+<div class="flex min-h-screen bg-background flex-col md:flex-row">
+    <!-- Mobile Menu Toggle -->
+    <button id="sidebarToggle" class="md:hidden fixed top-4 left-4 z-50 p-2 rounded-lg bg-primary text-white shadow-lg">
+        <span class="material-symbols-outlined">menu</span>
+    </button>
+    
+    <!-- Sidebar Navigation -->
+    <aside id="sidebar" class="h-screen w-full md:w-64 fixed md:relative left-0 top-0 sidebar-gradient flex flex-col py-4 md:py-base gap-2 shadow-xl shadow-primary/20 z-40 transform -translate-x-full md:translate-x-0 transition-transform duration-300 overflow-y-auto">
+        <div class="px-4 md:px-6 py-6 md:py-8">
+            <h1 class="font-headline-lg text-headline-lg font-black text-secondary-container text-lg md:text-2xl">Legacy Academy</h1>
+            <p class="font-label-md text-label-md text-on-primary/60 text-xs md:text-sm">Parent Portal</p>
+        </div>
+        
+        <nav class="flex-grow space-y-1 px-2">
+            <div class="text-on-primary/70 flex items-center gap-3 px-3 md:px-4 py-2 md:py-3 mx-0 md:mx-2 hover:bg-white/10 rounded-lg transition-all group cursor-pointer hover:translate-x-1 duration-300 nav-item text-sm md:text-base">
+                <span class="material-symbols-outlined text-lg md:text-xl">dashboard</span>
+                <span class="font-label-md text-label-md">Dashboard</span>
+            </div>
+            
+            <div class="bg-secondary-container text-on-secondary-container rounded-lg font-bold flex items-center gap-3 px-3 md:px-4 py-2 md:py-3 mx-0 md:mx-2 group cursor-pointer nav-item active text-sm md:text-base">
+                <span class="material-symbols-outlined text-lg md:text-xl">child_care</span>
+                <span class="font-label-md text-label-md">Children</span>
+            </div>
+            
+            <div class="text-on-primary/70 flex items-center gap-3 px-3 md:px-4 py-2 md:py-3 mx-0 md:mx-2 hover:bg-white/10 rounded-lg transition-all group cursor-pointer hover:translate-x-1 duration-300 nav-item text-sm md:text-base">
+                <span class="material-symbols-outlined text-lg md:text-xl">school</span>
+                <span class="font-label-md text-label-md">Academics</span>
+            </div>
+            
+            <div class="text-on-primary/70 flex items-center gap-3 px-3 md:px-4 py-2 md:py-3 mx-0 md:mx-2 hover:bg-white/10 rounded-lg transition-all group cursor-pointer hover:translate-x-1 duration-300 nav-item text-sm md:text-base">
+                <span class="material-symbols-outlined text-lg md:text-xl">payments</span>
+                <span class="font-label-md text-label-md">Payments</span>
+            </div>
+            
+            <div class="text-on-primary/70 flex items-center gap-3 px-3 md:px-4 py-2 md:py-3 mx-0 md:mx-2 hover:bg-white/10 rounded-lg transition-all group cursor-pointer hover:translate-x-1 duration-300 nav-item text-sm md:text-base">
+                <span class="material-symbols-outlined text-lg md:text-xl">chat_bubble</span>
+                <span class="font-label-md text-label-md">Messaging</span>
+            </div>
+        </nav>
+        
+        <!-- Bottom Support & Logout -->
+        <div class="px-2 mt-auto pb-4 space-y-1">
+            <div class="text-on-primary/70 flex items-center gap-3 px-3 md:px-4 py-2 md:py-3 mx-0 md:mx-2 hover:bg-white/10 rounded-lg transition-all cursor-pointer nav-item text-sm md:text-base">
+                <span class="material-symbols-outlined text-lg md:text-xl">contact_support</span>
+                <span class="font-label-md text-label-md">Support</span>
+            </div>
+            <a href="{% url 'SchoolNowMgt:custom_logout' %}" class="text-on-primary/70 flex items-center gap-3 px-3 md:px-4 py-2 md:py-3 mx-0 md:mx-2 hover:bg-white/10 rounded-lg transition-all cursor-pointer nav-item text-sm md:text-base">
+                <span class="material-symbols-outlined text-lg md:text-xl">logout</span>
+                <span class="font-label-md text-label-md">Logout</span>
+            </a>
+        </div>
+    </aside>
+    
+    <!-- Main Content -->
+    <main class="w-full flex flex-col md:ml-0">
+        <!-- Top Navigation Bar -->
+        <header class="flex justify-between items-center px-4 md:px-container-padding w-full sticky top-0 z-40 bg-surface/70 backdrop-blur-2xl h-14 md:h-16 border-b border-white/20 shadow-sm shadow-primary/5">
+            <div class="flex items-center gap-3 md:gap-6 flex-1">
+                <h2 class="font-headline-md text-headline-md font-bold text-primary text-lg md:text-2xl">EduVision Pro</h2>
+                <div class="hidden md:flex items-center bg-surface-container-low px-4 py-2 rounded-full border border-outline-variant/30">
+                    <span class="material-symbols-outlined text-outline text-sm mr-2">search</span>
+                    <input class="bg-transparent border-none focus:ring-0 text-body-md font-body-md w-64" placeholder="Search records..." type="text"/>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-2 md:gap-4">
+                <div class="hidden md:flex gap-2">
+                    <button class="p-2 hover:bg-surface-container-highest/50 rounded-full transition-all cursor-pointer active:scale-95">
+                        <span class="material-symbols-outlined text-on-surface-variant text-lg md:text-xl">notifications</span>
+                    </button>
+                    <button class="p-2 hover:bg-surface-container-highest/50 rounded-full transition-all cursor-pointer active:scale-95">
+                        <span class="material-symbols-outlined text-on-surface-variant text-lg md:text-xl">help</span>
+                    </button>
+                    <button class="p-2 hover:bg-surface-container-highest/50 rounded-full transition-all cursor-pointer active:scale-95">
+                        <span class="material-symbols-outlined text-on-surface-variant text-lg md:text-xl">settings</span>
+                    </button>
+                </div>
+                <div class="hidden md:block h-8 w-px bg-outline-variant/30 mx-2"></div>
+                <div class="flex items-center gap-2 md:gap-3 cursor-pointer">
+                    <div class="text-right hidden sm:block">
+                        <p class="font-label-md text-label-md text-primary font-bold text-xs md:text-sm">{{ user.first_name|default:"Parent" }}</p>
+                        <p class="text-[10px] text-outline uppercase tracking-wider">Parent Account</p>
+                    </div>
+                    <img alt="Parent Profile" class="w-8 md:w-10 h-8 md:h-10 rounded-full border-2 border-secondary-container" src="https://via.placeholder.com/40"/>
+                </div>
+            </div>
+        </header>
+        
+        <!-- Page Content -->
+        <div class="p-3 sm:p-4 md:p-6 lg:p-8 space-y-4 md:space-y-6 lg:space-y-8">
+            <!-- Welcome Section -->
+            <section class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 animate-in">
+                <div>
+                    <h3 class="font-display-lg text-display-lg text-primary text-xl md:text-3xl lg:text-4xl">Good Morning, {{ parent_name|default:"Parent" }}</h3>
+                    <p class="font-body-lg text-body-lg text-on-surface-variant text-xs md:text-sm lg:text-base">Here is an overview of your children's progress at Legacy Academy.</p>
+                </div>
+                
+                <!-- Student Switcher -->
+                <div class="flex gap-2 md:gap-4 bg-surface-container-high/50 p-1.5 rounded-2xl glass-card w-full md:w-auto overflow-x-auto">
+                    {% for student in students %}
+                    <button class="flex-shrink-0 {% if student.id == selected_student %}bg-primary text-white{% else %}hover:bg-surface-container-highest{% endif %} flex items-center gap-2 md:gap-3 px-3 md:px-6 py-2 md:py-3 rounded-xl transition-all active:scale-95 text-xs md:text-sm">
+                        <img class="w-6 md:w-8 h-6 md:h-8 rounded-full border border-white/20" src="https://via.placeholder.com/32" alt="{{ student.name }}"/>
+                        <div class="text-left hidden sm:block">
+                            <p class="font-label-md text-label-md leading-none text-xs md:text-sm">{{ student.name }}</p>
+                            <p class="text-[10px] text-white/60">{{ student.grade }}</p>
+                        </div>
+                    </button>
+                    {% endfor %}
+                </div>
+            </section>
+            
+            <!-- Bento Grid Content -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 animate-in">
+                <!-- Academic Performance Card -->
+                <div class="md:col-span-2 glass-card rounded-2xl md:rounded-[32px] p-4 md:p-6 lg:p-8 glass-edge">
+                    <div class="flex flex-col md:flex-row justify-between items-start gap-4 md:gap-6 mb-4 md:mb-8">
+                        <div>
+                            <h4 class="font-headline-lg text-headline-lg text-primary text-lg md:text-2xl">Academic Performance</h4>
+                            <p class="text-body-md text-outline text-xs md:text-sm">{{ selected_student_name|default:"Student" }}'s Term Summary</p>
+                        </div>
+                        <div class="flex flex-col items-start md:items-end">
+                            <span class="text-display-lg font-black text-primary leading-none text-2xl md:text-4xl">{{ gpa|default:"0.00" }}</span>
+                            <span class="font-label-md text-label-md text-secondary tracking-widest uppercase text-xs">Current GPA</span>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-4 md:space-y-6">
+                        {% for subject in subjects %}
+                        <div class="group">
+                            <div class="flex justify-between items-center mb-2">
+                                <div class="flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-primary-container text-lg md:text-xl">{{ subject.icon }}</span>
+                                    <span class="font-label-md text-label-md text-primary text-xs md:text-sm">{{ subject.name }}</span>
+                                </div>
+                                <span class="font-bold text-primary text-xs md:text-sm">{{ subject.score }}%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-bar-fill" style="width: {{ subject.score }}%"></div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="mt-4 md:mt-8 pt-4 md:pt-8 border-t border-outline-variant/20 grid grid-cols-3 gap-4 md:flex md:gap-12">
+                        <div>
+                            <p class="text-[10px] text-outline uppercase font-bold tracking-tighter">Attendance</p>
+                            <p class="font-headline-md text-headline-md text-primary text-lg md:text-2xl">{{ attendance|default:"0" }}%</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-outline uppercase font-bold tracking-tighter">Assignments</p>
+                            <p class="font-headline-md text-headline-md text-primary text-lg md:text-2xl">{{ assignments_completed|default:"0" }}/{{ total_assignments|default:"0" }}</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-outline uppercase font-bold tracking-tighter">Class Rank</p>
+                            <p class="font-headline-md text-headline-md text-primary text-lg md:text-2xl">{{ class_rank|default:"N/A" }} <span class="text-body-md font-normal text-outline">of {{ class_size|default:"0" }}</span></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Financial Status Card -->
+                <div class="md:col-span-1 glass-card rounded-2xl md:rounded-[32px] p-4 md:p-6 lg:p-8 glass-edge bg-primary text-white flex flex-col">
+                    <div class="flex justify-between items-center mb-6 md:mb-12">
+                        <div class="p-3 bg-white/10 rounded-2xl">
+                            <span class="material-symbols-outlined text-secondary-container text-lg md:text-xl">account_balance_wallet</span>
+                        </div>
+                        <span class="bg-secondary-container/20 text-secondary-container px-3 py-1 rounded-full text-[10px] font-bold uppercase">{{ payment_status|default:"Pending" }}</span>
+                    </div>
+                    <p class="text-on-primary/60 font-label-md text-label-md mb-2 text-xs">Outstanding Balance</p>
+                    <h4 class="text-3xl md:text-4xl lg:text-5xl font-black leading-tight tracking-tight mb-4 md:mb-8">{{ outstanding_balance|default:"₦0" }}</h4>
+                    <div class="mt-auto space-y-2 md:space-y-4">
+                        <button class="w-full py-2 md:py-4 bg-secondary-container text-on-secondary-container font-bold rounded-2xl flex items-center justify-center gap-2 shadow-[0_8px_24px_rgba(254,183,0,0.3)] hover:scale-[1.02] active:scale-[0.98] transition-all text-xs md:text-sm">
+                            <span>Pay Now</span>
+                            <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                        </button>
+                        <button class="w-full py-2 md:py-4 bg-white/10 text-white font-bold rounded-2xl border border-white/10 hover:bg-white/20 transition-all text-xs md:text-sm">
+                            Download Invoice
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- School Calendar -->
+                <div class="col-span-1 md:col-span-3 glass-card rounded-2xl md:rounded-[32px] p-4 md:p-6 lg:p-8 glass-edge">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4 md:mb-8">
+                        <div>
+                            <h4 class="font-headline-md text-headline-md text-primary text-lg md:text-2xl">School Calendar</h4>
+                            <p class="text-body-md text-outline text-xs md:text-sm">{{ current_month|default:"October" }} {{ current_year|default:"2023" }}</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button class="p-2 border border-outline-variant/30 rounded-xl hover:bg-surface-container-high transition-all">
+                                <span class="material-symbols-outlined text-primary text-lg md:text-xl">chevron_left</span>
+                            </button>
+                            <button class="p-2 border border-outline-variant/30 rounded-xl hover:bg-surface-container-high transition-all">
+                                <span class="material-symbols-outlined text-primary text-lg md:text-xl">chevron_right</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Calendar Grid -->
+                    <div class="grid grid-cols-7 gap-2 md:gap-4">
+                        {% for day in calendar_days %}
+                        <div class="space-y-2 md:space-y-4">
+                            <p class="text-center font-label-md text-label-md text-outline uppercase text-[10px] md:text-xs">{{ day.day_name }}</p>
+                            <div class="h-16 md:h-24 rounded-2xl {% if day.is_today %}border-2 border-primary/20 bg-primary/5{% else %}border border-outline-variant/20 bg-surface-container-low/30{% endif %} p-2 flex flex-col items-center justify-center relative overflow-hidden">
+                                <span class="text-body-lg {% if day.is_today %}text-primary font-bold text-sm md:text-base{% else %}text-outline text-xs md:text-sm{% endif %}">{{ day.date }}</span>
+                                {% if day.has_event %}<div class="mt-1 w-1.5 h-1.5 rounded-full {% if day.event_type == 'exam' %}bg-error{% else %}bg-secondary-container{% endif %}"></div>{% endif %}
+                            </div>
+                            {% if day.events %}
+                            <div class="{% if day.event_type == 'exam' %}bg-error-container/20 border border-error/10{% else %}bg-secondary-container/10 border border-secondary-container/20{% endif %} p-2 md:p-3 rounded-xl">
+                                <p class="text-[10px] font-bold {% if day.event_type == 'exam' %}text-error{% else %}text-secondary{% endif %} uppercase leading-none mb-1">{{ day.event_type }}</p>
+                                <p class="text-body-md text-primary font-semibold leading-tight text-xs md:text-sm">{{ day.events }}</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+    // Sidebar Toggle
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const sidebar = document.getElementById('sidebar');
+
+    if (sidebarToggle) {
+        sidebarToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('-translate-x-full');
+        });
+        
+        // Close sidebar when clicking on a nav item
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', () => {
+                if (window.innerWidth < 768) {
+                    sidebar.classList.add('-translate-x-full');
+                }
+            });
+        });
+    }
+
+    // Close sidebar when clicking outside on mobile
+    document.addEventListener('click', (e) => {
+        if (window.innerWidth < 768 && sidebar && !sidebar.contains(e.target) && !sidebarToggle.contains(e.target)) {
+            sidebar.classList.add('-translate-x-full');
+        }
+    });
+
+    // Responsive viewport handling
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+            if (window.innerWidth >= 768) {
+                sidebar.classList.remove('-translate-x-full');
+            }
+        }, 250);
+    });
+
+    // Smooth animations
+    document.addEventListener('DOMContentLoaded', () => {
+        const cards = document.querySelectorAll('.glass-card, .animate-in');
+        cards.forEach((card, index) => {
+            card.style.animation = `fadeInUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) ${index * 0.1}s backwards`;
+        });
+    });
+</script>
+
+{% endblock %}

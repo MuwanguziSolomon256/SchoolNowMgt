@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SchoolNow - Registration</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700;800&amp;family=Inter:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "outline": "#777680",
+                        "on-error-container": "#93000a",
+                        "on-tertiary": "#ffffff",
+                        "tertiary": "#2b0400",
+                        "on-surface": "#191c1e",
+                        "secondary-container": "#feb700",
+                        "tertiary-container": "#500d00",
+                        "tertiary-fixed-dim": "#ffb4a2",
+                        "surface-container-highest": "#e1e2e5",
+                        "on-primary-fixed-variant": "#3f4371",
+                        "surface-variant": "#e1e2e5",
+                        "surface": "#f8f9fc",
+                        "on-error": "#ffffff",
+                        "inverse-on-surface": "#f0f1f4",
+                        "primary-container": "#1e224f",
+                        "on-primary-container": "#868abd",
+                        "secondary": "#7c5800",
+                        "on-tertiary-container": "#e96442",
+                        "outline-variant": "#c7c5d0",
+                        "inverse-primary": "#bfc2fa",
+                        "background": "#f8f9fc",
+                        "on-primary-fixed": "#121643",
+                        "primary-fixed": "#e0e0ff",
+                        "on-surface-variant": "#46464f",
+                        "on-tertiary-fixed": "#3c0800",
+                        "on-tertiary-fixed-variant": "#881f01",
+                        "error-container": "#ffdad6",
+                        "secondary-fixed-dim": "#ffba20",
+                        "on-secondary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-high": "#e7e8eb",
+                        "primary": "#080b3a",
+                        "on-secondary-fixed-variant": "#5e4200",
+                        "error": "#ba1a1a",
+                        "surface-tint": "#565a8b",
+                        "primary-fixed-dim": "#bfc2fa",
+                        "on-primary": "#ffffff",
+                        "surface-container": "#edeef1",
+                        "surface-dim": "#d9dadd",
+                        "on-secondary-fixed": "#271900",
+                        "inverse-surface": "#2e3133",
+                        "on-background": "#191c1e",
+                        "tertiary-fixed": "#ffdbd2",
+                        "on-secondary-container": "#6b4b00",
+                        "secondary-fixed": "#ffdea8",
+                        "surface-container-low": "#f2f3f6",
+                        "surface-bright": "#f8f9fc"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "16px",
+                        "base": "8px",
+                        "section-margin": "32px",
+                        "container-padding": "20px",
+                        "card-gap": "12px"
+                    },
+                    "fontFamily": {
+                        "label-md": ["Inter"],
+                        "headline-lg": ["Hanken Grotesk"],
+                        "body-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-lg-mobile": ["Hanken Grotesk"],
+                        "headline-md": ["Hanken Grotesk"],
+                        "display-lg": ["Hanken Grotesk"]
+                    },
+                    "fontSize": {
+                        "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "headline-lg": ["28px", {"lineHeight": "36px", "fontWeight": "600"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "headline-md": ["22px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "display-lg": ["36px", {"lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            background: radial-gradient(circle at 0% 0%, #e0e0ff 0%, #f8f9fc 50%, #ffdea8 100%);
+            min-height: 100vh;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 10px 30px rgba(30, 34, 79, 0.08);
+        }
+        .glass-input {
+            background: rgba(255, 255, 255, 0.3);
+            border: none;
+            border-bottom: 2px solid rgba(8, 11, 58, 0.1);
+            transition: all 0.3s ease;
+        }
+        .glass-input:focus {
+            outline: none;
+            border-bottom-color: #080b3a;
+            background: rgba(255, 255, 255, 0.5);
+            box-shadow: 0 4px 12px rgba(254, 183, 0, 0.1);
+        }
+        .role-pill {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .role-pill.active {
+            background-color: #080b3a;
+            color: white;
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(8, 11, 58, 0.2);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-body-md text-on-surface antialiased overflow-x-hidden">
+<!-- Suppressed Nav Shell for Transactional Screen -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-gutter py-4 bg-white/70 backdrop-blur-xl border-b border-white/20 shadow-sm">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[32px]">school</span>
+<h1 class="font-display-lg text-headline-md font-bold text-primary tracking-tight">SchoolNow</h1>
+</div>
+<a class="font-label-md text-label-md text-primary-container hover:opacity-80 transition-opacity" href="#">Help</a>
+</header>
+<main class="pt-24 pb-12 px-container-padding min-h-screen flex flex-col items-center justify-center max-w-lg mx-auto">
+<!-- Header Section -->
+<section class="text-center mb-section-margin w-full">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-primary mb-2">Create Your Account</h2>
+<p class="font-body-md text-on-surface-variant">Join the visionary community of modern educators.</p>
+</section>
+<!-- Role Selector -->
+<section class="w-full mb-8">
+<label class="font-label-md text-label-md text-outline uppercase tracking-widest mb-4 block text-center">Select Your Role</label>
+<div class="flex flex-wrap justify-center gap-3">
+<button class="role-pill active flex items-center gap-2 px-5 py-2.5 rounded-full border border-primary/10 bg-white/50 font-label-md text-label-md" data-role="Teacher" onclick="selectRole(this)">
+<span class="material-symbols-outlined text-[18px]">history_edu</span>
+                    Teacher
+                </button>
+<button class="role-pill flex items-center gap-2 px-5 py-2.5 rounded-full border border-primary/10 bg-white/50 font-label-md text-label-md" data-role="Admin" onclick="selectRole(this)">
+<span class="material-symbols-outlined text-[18px]">admin_panel_settings</span>
+                    Admin
+                </button>
+<button class="role-pill flex items-center gap-2 px-5 py-2.5 rounded-full border border-primary/10 bg-white/50 font-label-md text-label-md" data-role="Parent" onclick="selectRole(this)">
+<span class="material-symbols-outlined text-[18px]">family_restroom</span>
+                    Parent
+                </button>
+<button class="role-pill flex items-center gap-2 px-5 py-2.5 rounded-full border border-primary/10 bg-white/50 font-label-md text-label-md" data-role="Support" onclick="selectRole(this)">
+<span class="material-symbols-outlined text-[18px]">support_agent</span>
+                    Support
+                </button>
+</div>
+</section>
+<!-- Glassmorphic Form -->
+<form class="glass-card w-full rounded-3xl p-8 space-y-6 relative overflow-hidden">
+<!-- Decorative Accent -->
+<div class="absolute top-0 right-0 w-32 h-32 bg-secondary-container/10 blur-3xl -z-10 rounded-full"></div>
+<div class="space-y-4">
+<!-- Full Name -->
+<div class="relative">
+<label class="font-label-md text-label-md text-on-surface-variant block mb-1" for="full_name">Full Name</label>
+<div class="flex items-center">
+<span class="material-symbols-outlined absolute left-0 text-outline text-[20px]">person</span>
+<input class="glass-input w-full pl-8 py-3 font-body-md text-body-md focus:ring-0" id="full_name" placeholder="Enter your legal name" type="text"/>
+</div>
+</div>
+<!-- Email -->
+<div class="relative">
+<label class="font-label-md text-label-md text-on-surface-variant block mb-1" for="email">Email Address</label>
+<div class="flex items-center">
+<span class="material-symbols-outlined absolute left-0 text-outline text-[20px]">mail</span>
+<input class="glass-input w-full pl-8 py-3 font-body-md text-body-md focus:ring-0" id="email" placeholder="name@institution.edu" type="email"/>
+</div>
+</div>
+<!-- Phone Number -->
+<div class="relative">
+<label class="font-label-md text-label-md text-on-surface-variant block mb-1" for="phone">Phone Number</label>
+<div class="flex items-center">
+<span class="material-symbols-outlined absolute left-0 text-outline text-[20px]">call</span>
+<input class="glass-input w-full pl-8 py-3 font-body-md text-body-md focus:ring-0" id="phone" placeholder="+234 000 000 0000" type="tel"/>
+</div>
+</div>
+<!-- Password -->
+<div class="relative">
+<label class="font-label-md text-label-md text-on-surface-variant block mb-1" for="password">Password</label>
+<div class="flex items-center">
+<span class="material-symbols-outlined absolute left-0 text-outline text-[20px]">lock</span>
+<input class="glass-input w-full pl-8 py-3 font-body-md text-body-md focus:ring-0" id="password" placeholder="••••••••" type="password"/>
+<button class="absolute right-0 text-outline hover:text-primary" type="button">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Sign Up Button -->
+<button class="w-full bg-primary text-on-primary font-headline-md text-body-lg py-4 rounded-xl shadow-lg hover:shadow-secondary-container/20 transition-all active:scale-[0.98] group relative overflow-hidden" type="submit">
+<span class="relative z-10 flex items-center justify-center gap-2">
+                    Sign Up
+                    <span class="material-symbols-outlined">arrow_forward</span>
+</span>
+<div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+</button>
+<!-- Social/Other Sign Up (Subtle) -->
+<div class="relative flex items-center py-4">
+<div class="flex-grow border-t border-outline/20"></div>
+<span class="flex-shrink mx-4 font-label-md text-outline">OR REGISTER WITH</span>
+<div class="flex-grow border-t border-outline/20"></div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<button class="flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-outline/20 bg-white/30 hover:bg-white/50 transition-colors font-label-md text-primary" type="button">
+<img alt="Google" class="w-5 h-5" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBrj3JjllolcNPtYShTmJ-t_xVIH5Ra7b-5jv5fGbAnPi_YT2oPWtsxFiorzfWpaqwXpNilCaK7cU3bkYt_Iwojv-Eb5h4fwYFk-k-QM1iwc8mROLpaDQHLEImwh9wTuXLa9APpenAv6oJGj8vQrCWcb4eVayUl08VIfdL89JPLaBMXhdl9XXUWDckiwXslMaZIXmYwBCiz0G9hlDshjgCQ1zwbkq7HaEPNB6lffq_ftgm7dVDAm6O1bmv5nlaSW5qikUeF2JW-ixjW"/>
+                    Google
+                </button>
+<button class="flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-outline/20 bg-white/30 hover:bg-white/50 transition-colors font-label-md text-primary" type="button">
+<img alt="Microsoft" class="w-5 h-5" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCvqPW-ulpglGP5SEFy5Ov46yasmgwkTk6tJZ-MXmFNpVkZSW0jgNhaaYN_J_3QskzxyAeoZ4R4wsx8SS5XsFeExtsO5ZvY9xhOv_fTz0eTM1vG8oNpJZmR1LEpzvLo0fWichnOWQkYjcc--TMUd7mMoCVFwAkW6Dv05NT98_I84Gjo_BHu609_VFIxhj4v18TUfyLkVMDnR3qXQTOOj_yr7MaJe4iBvQovjB-4ZhdtlSlAf8uqL-2B4pTKuOlXZXsz0ZBnli05MmVX"/>
+                    Microsoft
+                </button>
+</div>
+</form>
+<!-- Footer Link -->
+<p class="mt-8 font-body-md text-on-surface-variant">
+            Already have an account? 
+            <a class="text-primary font-bold hover:underline decoration-secondary-container decoration-2 underline-offset-4" href="#">Log In here</a>
+</p>
+<!-- Atmospheric Image -->
+<div class="mt-12 w-full max-w-sm rounded-3xl overflow-hidden shadow-2xl relative aspect-[16/9]">
+<img class="w-full h-full object-cover" data-alt="A diverse group of university students and professors collaborating in a high-tech, sunlit modern library lounge. The environment features glass walls, lush indoor plants, and soft warm lighting that emphasizes a feeling of community and academic excellence. The overall aesthetic is professional and airy, dominated by light tones and deep blue accents consistent with a premium education brand." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAWocQoGFpxpkVym6qtV1v2hLSwdYULXBbZEyqQNJwNQUJr0PpzGSX_5NV1Ccejm7BUaJ6Rzv6D4FHNRSpxcpaLKetuQ4jOlCqt1bYRQnMmj-8h7EvHSFvn8P2WlBps7rkV2hovWhFCBTb0yT_5ipkdypdVz4S7UU6XyPq2dcnaV3mWxmmf25S5-dVZBmunbqvk6A1JYXQtwiL4xAgvRH6Dc8Exe4VmQ93fP_Ks58K13x-cqyluQ9BZD7AVnyyY4c1VKm2MLDCwkOts"/>
+<div class="absolute inset-0 bg-gradient-to-t from-primary/40 to-transparent"></div>
+<div class="absolute bottom-4 left-6 right-6">
+<p class="font-label-md text-white text-[11px] opacity-80 uppercase tracking-tighter">Inspiring Education Through Technology</p>
+</div>
+</div>
+</main>
+<script>
+        function selectRole(element) {
+            document.querySelectorAll('.role-pill').forEach(btn => {
+                btn.classList.remove('active', 'bg-primary', 'text-white');
+                btn.classList.add('bg-white/50', 'text-on-surface');
+            });
+            element.classList.add('active');
+            
+            // Interaction Feedback
+            element.animate([
+                { transform: 'scale(1)' },
+                { transform: 'scale(1.05)' },
+                { transform: 'scale(1)' }
+            ], {
+                duration: 300,
+                easing: 'ease-out'
+            });
+        }
+
+        // Lightweight floating effect for background decorative elements
+        document.addEventListener('mousemove', (e) => {
+            const x = e.clientX / window.innerWidth;
+            const y = e.clientY / window.innerHeight;
+            document.body.style.backgroundPosition = `${x * 20}px ${y * 20}px`;
+        });
+    </script>
+</body></html>
