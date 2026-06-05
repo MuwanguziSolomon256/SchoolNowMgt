@@ -104,9 +104,9 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-LOGIN_URL          = 'auth:login'
+LOGIN_URL          = 'auth:unified_login'
 LOGIN_REDIRECT_URL = 'SchoolNowMgt:dashboard'
-LOGOUT_REDIRECT_URL = 'auth:login'
+LOGOUT_REDIRECT_URL = 'auth:unified_login'
 
 # Africa's Talking
 AT_USERNAME  = config('AT_USERNAME', default='')
@@ -150,7 +150,7 @@ ACCOUNT_USER_MODEL_USERNAME_FIELD = None
 # Redirect URLs for allauth
 ACCOUNT_ADAPTER = 'allauth.account.adapter.DefaultAccountAdapter'
 ACCOUNT_LOGIN_REDIRECT_URL = 'SchoolNowMgt:dashboard'
-ACCOUNT_LOGOUT_REDIRECT_URL = 'login'
+ACCOUNT_LOGOUT_REDIRECT_URL = 'auth:unified_login'
 SOCIALACCOUNT_AUTO_SIGNUP = True
 SOCIALACCOUNT_ADAPTER = 'allauth.socialaccount.adapter.DefaultSocialAccountAdapter'
 

@@ -398,7 +398,7 @@ def support_staff_dashboard(request):
     
     Renders: SchoolNowMgt/support_staff_dashboard.html
     """
-    today = timezone.localdate()
+    today = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
     
     # Get user's school for data isolation
     user_school = request.user.school
@@ -415,14 +415,14 @@ def support_staff_dashboard(request):
     # Check if staff is on duty today (school-filtered through staff profile)
     staff_attendance_today = StaffAttendance.objects.filter(
         staff=staff_profile,
-        date=today,
+        date=today.date(),
         staff__user__school=user_school
     ).first() if staff_profile else None
     
     is_on_duty = staff_attendance_today and staff_attendance_today.status == 'present'
     shift_start_time = staff_attendance_today.clock_in if staff_attendance_today else today
     current_time = timezone.now()
-    current_date = today
+    current_date = today.date()
     
     # Sample maintenance tasks
     pending_tasks = [

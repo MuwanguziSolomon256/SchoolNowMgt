@@ -284,29 +284,8 @@ def register_non_teaching_staff(request):
 
 def support_staff_login(request):
     """
-    Support staff login view.
+    Legacy support staff login view.
+    Redirects to unified authentication portal for consistency.
     """
-    from SchoolNowMgt.registration.forms import SupportStaffLoginForm
-    
-    # Redirect if already logged in as support staff
-    if request.user.is_authenticated and request.user.role == 'non_teaching_staff':
-        return redirect('home')
-
-    if request.method == 'POST':
-        form = SupportStaffLoginForm(request=request, data=request.POST)
-        if form.is_valid():
-            login(request, form.authenticated_user)
-
-            # Safe redirect logic
-            next_url = request.GET.get('next', '')
-            if (next_url.startswith('/') and 
-                not next_url.startswith('//') and 
-                ' ' not in next_url):
-                return redirect(next_url)
-            else:
-                return redirect('home')
-    else:
-        form = SupportStaffLoginForm()
-
-    context = {'form': form}
-    return render(request, 'registration/support_login.html', context)
+    # Redirect to unified login portal with support role pre-selected
+    return redirect('auth:login_role', role='support')

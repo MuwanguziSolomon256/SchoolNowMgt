@@ -255,7 +255,7 @@
                         <li class="flex items-center gap-2 text-body-md"><span class="material-symbols-outlined text-secondary text-[20px]">check_circle</span> Event Alerts</li>
                     </ul>
                     <div class="flex gap-3 pt-4">
-                        <a href="{% url 'registration:parent_login' %}" class="px-6 py-2 bg-primary text-white rounded-lg font-bold text-label-md hover:opacity-90">Login</a>
+                        <a href="{% url 'auth:login_role' role='parent' %}" class="px-6 py-2 bg-primary text-white rounded-lg font-bold text-label-md hover:opacity-90">Login</a>
                         <a href="{% url 'registration:register_parent' %}" class="px-6 py-2 border border-outline text-primary rounded-lg font-bold text-label-md hover:bg-primary/5">Register</a>
                     </div>
                 </div>
@@ -279,7 +279,7 @@
                         <li class="flex items-center gap-2 text-body-md"><span class="material-symbols-outlined text-secondary text-[20px]">check_circle</span> Security Logs</li>
                     </ul>
                     <div class="flex gap-3 pt-4">
-                        <a href="{% url 'registration:support_login' %}" class="px-6 py-2 bg-primary text-white rounded-lg font-bold text-label-md hover:opacity-90">Login</a>
+                        <a href="{% url 'auth:login_role' role='support' %}" class="px-6 py-2 bg-primary text-white rounded-lg font-bold text-label-md hover:opacity-90">Login</a>
                         <a href="{% url 'registration:register_staff' %}" class="px-6 py-2 border border-outline text-primary rounded-lg font-bold text-label-md hover:bg-primary/5">Register</a>
                     </div>
                 </div>
