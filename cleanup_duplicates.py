@@ -1,42 +1,24 @@
 """
-Script to clean up duplicate email accounts
+⚠️  DEPRECATED - Use cleanup_all_duplicates.py instead
+
+This script is partially consolidated into the comprehensive cleanup script.
+The logic for removing duplicate emails has been merged and improved.
+
+Please use the new comprehensive cleanup script instead:
+    python cleanup_all_duplicates.py
+
+That script handles:
+- Duplicate emails (keeps the most active/recent user) ← this script's purpose
+- Orphaned staff profiles
+- Orphaned tasks and activities
+- Detailed reporting
 """
-import os
-import django
+import sys
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'schoolmgmt_project.settings.dev')
-django.setup()
-
-from SchoolNowMgt.models import CustomUser
-from django.db.models import Count
-
-# Find emails with multiple accounts
-duplicates = CustomUser.objects.values('email').annotate(count=Count('id')).filter(count__gt=1)
-
-print(f"Found {duplicates.count()} emails with duplicate accounts\n")
-
-for dup in duplicates:
-    email = dup['email']
-    count = dup['count']
-    users = CustomUser.objects.filter(email__iexact=email).order_by('-is_active', '-date_joined')
-    
-    print(f"Email: {email} ({count} accounts)")
-    
-    # Keep the first active user, delete the rest
-    keeper = None
-    for i, user in enumerate(users):
-        if keeper is None and user.is_active:
-            keeper = user
-            print(f"  ✓ Keeping: {user.username} (ID: {user.id}, active={user.is_active}, role={user.role})")
-        else:
-            print(f"  ✗ Deleting: {user.username} (ID: {user.id}, active={user.is_active}, role={user.role})")
-            user.delete()
-    
-    # If no active user, keep the most recent
-    if keeper is None and users.exists():
-        keeper = users.first()
-        print(f"  ✓ Keeping (no active): {keeper.username} (ID: {keeper.id})")
-    
-    print()
-
-print("Cleanup complete!")
+print("\n⚠️  DEPRECATED SCRIPT")
+print("="*60)
+print("This script's functionality is now part of a better version.")
+print("\nPlease use the new comprehensive cleanup script instead:")
+print("    python cleanup_all_duplicates.py")
+print("="*60 + "\n")
+sys.exit(0)

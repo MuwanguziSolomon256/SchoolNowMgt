@@ -1,14 +1,21 @@
 """
-Clean up duplicate users
+⚠️  DEPRECATED - Use cleanup_all_duplicates.py instead
+
+This script is deprecated. Please use the comprehensive cleanup script instead:
+    python cleanup_all_duplicates.py
+
+That script handles:
+- Duplicate emails (keeps the most active/recent user)
+- Orphaned staff profiles
+- Orphaned tasks and activities
+- Detailed reporting
 """
-import os
-import django
+import sys
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'schoolmgmt_project.settings.dev')
-django.setup()
-
-from SchoolNowMgt.models import CustomUser
-
-# Delete all duplicates
-CustomUser.objects.filter(email='teacher@test.com').delete()
-print("✓ All teacher@test.com users deleted")
+print("\n⚠️  DEPRECATED SCRIPT")
+print("="*60)
+print("This script is outdated and may not work correctly.")
+print("\nPlease use the new comprehensive cleanup script instead:")
+print("    python cleanup_all_duplicates.py")
+print("="*60 + "\n")
+sys.exit(0)
