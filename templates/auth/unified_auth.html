@@ -300,11 +300,20 @@
                     </p>
                 </div>
                 
-                <!-- Messages -->
+                <!-- Messages & Form Errors -->
                 {% if messages %}
                     <div class="mb-4 sm:mb-6 p-3 sm:p-4 rounded-lg bg-error-container border border-error text-xs sm:text-sm">
                         {% for message in messages %}
                             <p class="text-error font-body-md">{{ message }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                
+                <!-- Non-field form errors (authentication errors) -->
+                {% if form.non_field_errors %}
+                    <div class="mb-4 sm:mb-6 p-3 sm:p-4 rounded-lg bg-error-container border border-error">
+                        {% for error in form.non_field_errors %}
+                            <p class="text-error font-body-md text-xs sm:text-sm">{{ error }}</p>
                         {% endfor %}
                     </div>
                 {% endif %}
