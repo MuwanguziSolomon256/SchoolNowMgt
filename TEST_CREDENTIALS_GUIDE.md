@@ -2,6 +2,26 @@
 
 ## ✅ Test Credentials
 
+### Quickest Way to View All Credentials
+
+```bash
+# Option 1: Django management command (shows from database)
+python manage.py list_test_credentials
+
+# Option 2: Standalone script (instant, no Django setup needed)
+python show_test_credentials.py
+
+# Different formats available:
+python manage.py list_test_credentials --format=table      # Pretty table
+python manage.py list_test_credentials --format=simple     # Simple list
+python manage.py list_test_credentials --format=json       # JSON format
+python manage.py list_test_credentials --format=copy-paste # Copy-paste ready
+
+python show_test_credentials.py --format=simple
+python show_test_credentials.py --format=json
+python show_test_credentials.py --format=copy-paste
+```
+
 After running `python manage.py create_test_logins`, use these credentials:
 
 ### Admin Account

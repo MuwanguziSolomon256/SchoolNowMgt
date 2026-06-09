@@ -25,8 +25,27 @@ def get_school_safe():
 def home(request):
     """
     Landing page showing the system and role-based entry points.
-    Accessible to both authenticated and unauthenticated users.
+    
+    - Unauthenticated users: Show landing page with login/register buttons
+    - Authenticated users: Redirect to their role-based dashboard
     """
+    # Redirect authenticated users to their dashboard based on role
+    if request.user.is_authenticated:
+        if request.user.is_superuser:
+            return redirect('/admin/')
+        elif request.user.role == 'admin':
+            return redirect('SchoolNowMgt:dashboard')
+        elif request.user.role == 'teacher':
+            return redirect('teacher:dashboard')
+        elif request.user.role == 'parent':
+            return redirect('SchoolNowMgt:parent_dashboard')
+        elif request.user.role == 'non_teaching_staff':
+            return redirect('SchoolNowMgt:support_staff_dashboard')
+        else:
+            # Unknown role, show landing page
+            pass
+    
+    # Show landing page to unauthenticated users
     school = get_school_safe()
     context = {
         'school': school,

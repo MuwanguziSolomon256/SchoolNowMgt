@@ -47,19 +47,50 @@
             </div>
             <div class="flex items-center gap-6">
                 {% if request.user.is_authenticated %}
-                    <span class="text-sm">{{ request.user.first_name }} {{ request.user.last_name }}</span>
+                    <span class="text-sm">
+                        {% if request.user.is_superuser or request.user.role == 'admin' %}
+                            <a href="{% url 'SchoolNowMgt:dashboard' %}" class="text-secondary-container hover:underline font-semibold">
+                                {{ request.user.first_name }} {{ request.user.last_name }}
+                            </a>
+                        {% elif request.user.role == 'teacher' %}
+                            <a href="{% url 'teacher:dashboard' %}" class="text-secondary-container hover:underline font-semibold">
+                                {{ request.user.first_name }} {{ request.user.last_name }}
+                            </a>
+                        {% elif request.user.role == 'parent' %}
+                            <a href="{% url 'SchoolNowMgt:parent_dashboard' %}" class="text-secondary-container hover:underline font-semibold">
+                                {{ request.user.first_name }} {{ request.user.last_name }}
+                            </a>
+                        {% elif request.user.role == 'non_teaching_staff' %}
+                            <a href="{% url 'SchoolNowMgt:support_staff_dashboard' %}" class="text-secondary-container hover:underline font-semibold">
+                                {{ request.user.first_name }} {{ request.user.last_name }}
+                            </a>
+                        {% else %}
+                            <span>{{ request.user.first_name }} {{ request.user.last_name }}</span>
+                        {% endif %}
+                    </span>
                     <div class="flex gap-3">
                         {% if request.user.is_superuser %}
                         <a href="/admin/" class="px-4 py-2 bg-secondary-container text-primary font-bold rounded-lg hover:bg-opacity-90 transition">
+                            Django Admin
+                        </a>
+                        {% elif request.user.role == 'admin' %}
+                        <a href="{% url 'SchoolNowMgt:dashboard' %}" class="px-4 py-2 bg-secondary-container text-primary font-bold rounded-lg hover:bg-opacity-90 transition">
                             Admin Dashboard
                         </a>
-                        {% endif %}
-                        {% if request.user.role == 'teacher' %}
+                        {% elif request.user.role == 'teacher' %}
                         <a href="{% url 'teacher:dashboard' %}" class="px-4 py-2 bg-white/20 rounded-lg hover:bg-white/30 transition">
-                            Dashboard
+                            Teacher Dashboard
+                        </a>
+                        {% elif request.user.role == 'parent' %}
+                        <a href="{% url 'SchoolNowMgt:parent_dashboard' %}" class="px-4 py-2 bg-white/20 rounded-lg hover:bg-white/30 transition">
+                            Parent Dashboard
+                        </a>
+                        {% elif request.user.role == 'non_teaching_staff' %}
+                        <a href="{% url 'SchoolNowMgt:support_staff_dashboard' %}" class="px-4 py-2 bg-white/20 rounded-lg hover:bg-white/30 transition">
+                            Staff Dashboard
                         </a>
                         {% endif %}
-                        <form method="post" action="{% url 'teacher:logout' %}" style="display: inline;">
+                        <form method="post" action="{% url 'SchoolNowMgt:custom_logout' %}" style="display: inline;">
                             {% csrf_token %}
                             <button type="submit" class="px-4 py-2 bg-red-600 rounded-lg hover:bg-red-700 transition" onclick="return confirm('Are you sure you want to logout?');">
                                 Logout

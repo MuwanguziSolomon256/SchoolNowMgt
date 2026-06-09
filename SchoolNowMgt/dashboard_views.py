@@ -23,6 +23,14 @@ def dashboard(request):
     """
     Authenticated dashboard view for school administrators.
     
+    Routes to appropriate dashboard based on user role:
+    - admin role: Admin dashboard with school management data
+    - teacher role: Teacher dashboard with class/attendance data
+    - parent role: Parent dashboard with child progress
+    - non_teaching_staff role: Support staff dashboard
+    
+    Access Control: Admins only can access this route
+    
     Computes 22 context variables covering:
     - Student enrollment and demographics
     - Attendance tracking (students and staff)
@@ -38,8 +46,20 @@ def dashboard(request):
     Multi-school isolation: All queries filtered by request.user.school
     to ensure admin only sees their school's data.
     
-    Renders: SchoolNowMgt/dashboard.html
+    Renders: SchoolNowMgt/admin_dashboard.html (for admins only)
     """
+    
+    # Role-based access control: Only admins can access this view
+    if request.user.role != 'admin' and not request.user.is_superuser:
+        # Redirect non-admins to their appropriate dashboard
+        if request.user.role == 'teacher':
+            return redirect('teacher:dashboard')
+        elif request.user.role == 'parent':
+            return redirect('SchoolNowMgt:parent_dashboard')
+        elif request.user.role == 'non_teaching_staff':
+            return redirect('SchoolNowMgt:support_staff_dashboard')
+        else:
+            return redirect('auth:unified_login')
     
     # Current date for filtering
     today = timezone.localdate()
@@ -297,6 +317,8 @@ def parent_dashboard(request):
     """
     Parent portal dashboard view.
     
+    Access Control: Parents only
+    
     Shows child's academic progress, attendance, financial status,
     and school calendar events.
     
@@ -305,6 +327,18 @@ def parent_dashboard(request):
     
     Renders: SchoolNowMgt/parent_dashboard.html
     """
+    # Role-based access control: Only parents can access this view
+    if request.user.role != 'parent':
+        # Redirect non-parents to their appropriate dashboard
+        if request.user.role == 'admin' or request.user.is_superuser:
+            return redirect('SchoolNowMgt:dashboard')
+        elif request.user.role == 'teacher':
+            return redirect('teacher:dashboard')
+        elif request.user.role == 'non_teaching_staff':
+            return redirect('SchoolNowMgt:support_staff_dashboard')
+        else:
+            return redirect('auth:unified_login')
+    
     today = timezone.localdate()
     
     # Get user's school for data isolation
@@ -390,6 +424,8 @@ def support_staff_dashboard(request):
     """
     Support staff (facilities, maintenance, cleaning) dashboard.
     
+    Access Control: Support staff only
+    
     Shows pending maintenance tasks, shift status, inventory,
     and daily schedule.
     
@@ -398,6 +434,18 @@ def support_staff_dashboard(request):
     
     Renders: SchoolNowMgt/support_staff_dashboard.html
     """
+    # Role-based access control: Only support staff can access this view
+    if request.user.role != 'non_teaching_staff':
+        # Redirect non-support-staff to their appropriate dashboard
+        if request.user.role == 'admin' or request.user.is_superuser:
+            return redirect('SchoolNowMgt:dashboard')
+        elif request.user.role == 'teacher':
+            return redirect('teacher:dashboard')
+        elif request.user.role == 'parent':
+            return redirect('SchoolNowMgt:parent_dashboard')
+        else:
+            return redirect('auth:unified_login')
+    
     today = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
     
     # Get user's school for data isolation
