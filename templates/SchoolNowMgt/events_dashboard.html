@@ -1,0 +1,255 @@
+{% extends "SchoolNowMgt/base_ethos.html" %}
+{% load static %}
+
+{% block title %}School Events - EduVision Pro{% endblock %}
+
+{% block content %}
+
+<nav class="fixed top-0 left-0 right-0 bg-primary text-on-primary px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between z-50 shadow-lg gap-2 sm:gap-4">
+    <div class="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+        <div class="w-8 sm:w-10 h-8 sm:h-10 rounded-lg sm:rounded-xl bg-secondary-container flex items-center justify-center text-primary flex-shrink-0">
+            <span class="material-symbols-outlined text-lg sm:text-xl" style="font-variation-settings: 'FILL' 1;">school</span>
+        </div>
+        <h1 class="text-sm sm:text-base md:text-lg font-black text-secondary-fixed hidden xs:inline">SchoolNow</h1>
+    </div>
+    <div class="flex items-center gap-2 ml-auto">
+        <a href="{% url 'SchoolNowMgt:dashboard' %}" class="text-on-primary/70 hover:text-white p-2 flex items-center gap-2 hover:bg-white/10 transition-all rounded-lg">
+            <span class="material-symbols-outlined text-base sm:text-lg">arrow_back</span>
+        </a>
+        <a class="text-on-primary/70 hover:text-white p-2 flex items-center gap-2 hover:bg-white/10 transition-all rounded-lg" href="{% url 'SchoolNowMgt:custom_logout' %}">
+            <span class="material-symbols-outlined text-base sm:text-lg">logout</span>
+        </a>
+    </div>
+</nav>
+
+<div class="w-full min-h-screen pt-24">
+    <section class="p-4 md:p-container-padding space-y-6 md:space-y-section-margin">
+        
+        <!-- Page Header -->
+        <div class="flex flex-col gap-4 md:gap-0 md:flex-row md:items-center justify-between">
+            <div>
+                <h2 class="font-display-lg text-display-lg text-primary text-2xl md:text-4xl">School Events</h2>
+                <p class="font-body-lg text-body-lg text-on-surface-variant text-xs md:text-sm">Manage your school calendar and upcoming events</p>
+            </div>
+        </div>
+
+        <!-- Display Errors if any -->
+        {% if errors %}
+        <div class="bg-error/10 border border-error text-error px-4 py-3 rounded-lg">
+            <h3 class="font-bold mb-2">Please fix the following errors:</h3>
+            <ul class="list-disc list-inside">
+                {% for field, error_list in errors.items %}
+                    {% for error in error_list %}
+                        <li>{{ field }}: {{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        {% if messages %}
+        <div class="bg-success/10 border border-success text-success px-4 py-3 rounded-lg">
+            {% for message in messages %}
+                <p>{{ message }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Upcoming Events Quick View -->
+        {% if upcoming_events %}
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {% for event in upcoming_events %}
+            <div class="glass-card p-6 rounded-3xl shadow-sm">
+                <div class="flex items-start justify-between mb-4">
+                    <h3 class="font-bold text-primary text-lg flex-1">{{ event.title }}</h3>
+                    <span class="inline-block px-3 py-1 bg-secondary/20 text-secondary rounded-full text-xs font-semibold whitespace-nowrap ml-2">
+                        {{ event.get_event_type_display }}
+                    </span>
+                </div>
+                <p class="text-on-surface-variant text-sm mb-2">
+                    <span class="material-symbols-outlined text-sm align-middle">calendar_today</span>
+                    {{ event.start_date|date:"M d, Y" }} - {{ event.end_date|date:"M d, Y" }}
+                </p>
+                {% if event.location %}
+                <p class="text-on-surface-variant text-sm mb-4">
+                    <span class="material-symbols-outlined text-sm align-middle">location_on</span>
+                    {{ event.location }}
+                </p>
+                {% endif %}
+                {% if event.description %}
+                <p class="text-on-surface text-sm mb-4">{{ event.description|truncatewords:20 }}</p>
+                {% endif %}
+                <div class="flex gap-2 pt-4 border-t border-white/10">
+                    <a href="{% url 'SchoolNowMgt:edit_event' event.id %}" class="flex-1 text-center px-4 py-2 bg-primary/20 text-primary rounded-lg hover:bg-primary/30 transition-all text-sm font-semibold">
+                        <span class="material-symbols-outlined text-sm align-middle">edit</span> Edit
+                    </a>
+                    <form method="post" action="{% url 'SchoolNowMgt:delete_event' event.id %}" class="flex-1" onsubmit="return confirm('Delete this event?');">
+                        {% csrf_token %}
+                        <button type="submit" class="w-full text-center px-4 py-2 bg-error/20 text-error rounded-lg hover:bg-error/30 transition-all text-sm font-semibold">
+                            <span class="material-symbols-outlined text-sm align-middle">delete</span> Delete
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Events Section -->
+        <div id="events-section" class="space-y-6">
+            <div class="flex items-center justify-between">
+                <h2 class="text-2xl font-bold text-primary">All Events</h2>
+                <button onclick="document.getElementById('createEventModal').classList.remove('hidden')" class="flex items-center gap-2 bg-primary text-on-primary px-4 py-2 rounded-xl hover:bg-primary/90 transition-all">
+                    <span class="material-symbols-outlined">add</span>
+                    <span>Add Event</span>
+                </button>
+            </div>
+
+            <!-- Events Table -->
+            {% if events %}
+            <div class="glass-card rounded-3xl shadow-sm overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-primary/5 border-b border-white/20">
+                            <tr>
+                                <th class="px-6 py-4 text-left text-sm font-bold text-primary">Event</th>
+                                <th class="px-6 py-4 text-left text-sm font-bold text-primary">Type</th>
+                                <th class="px-6 py-4 text-left text-sm font-bold text-primary">Start Date</th>
+                                <th class="px-6 py-4 text-left text-sm font-bold text-primary">End Date</th>
+                                <th class="px-6 py-4 text-left text-sm font-bold text-primary">Location</th>
+                                <th class="px-6 py-4 text-left text-sm font-bold text-primary">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-white/10">
+                            {% for event in events %}
+                            <tr class="hover:bg-primary/5 transition-colors">
+                                <td class="px-6 py-4 text-sm text-on-surface">{{ event.title }}</td>
+                                <td class="px-6 py-4 text-sm">
+                                    <span class="inline-block px-3 py-1 bg-secondary/20 text-secondary rounded-full text-xs font-semibold">
+                                        {{ event.get_event_type_display }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 text-sm text-on-surface">{{ event.start_date|date:"M d, Y" }}</td>
+                                <td class="px-6 py-4 text-sm text-on-surface">{{ event.end_date|date:"M d, Y" }}</td>
+                                <td class="px-6 py-4 text-sm text-on-surface-variant">{{ event.location|default:"—" }}</td>
+                                <td class="px-6 py-4 text-sm space-x-2">
+                                    <a href="{% url 'SchoolNowMgt:edit_event' event.id %}" class="inline-block text-primary hover:text-primary/70 transition-colors">
+                                        <span class="material-symbols-outlined text-lg">edit</span>
+                                    </a>
+                                    <form method="post" action="{% url 'SchoolNowMgt:delete_event' event.id %}" class="inline-block" onsubmit="return confirm('Delete this event?');">
+                                        {% csrf_token %}
+                                        <button type="submit" class="text-error hover:text-error/70 transition-colors">
+                                            <span class="material-symbols-outlined text-lg">delete</span>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            {% if paginator.num_pages > 1 %}
+            <div class="flex justify-center items-center gap-4 mt-6">
+                {% if events.has_previous %}
+                    <a href="?page=1" class="px-4 py-2 bg-primary text-on-primary rounded-lg hover:bg-primary/90 transition-all">First</a>
+                    <a href="?page={{ events.previous_page_number }}" class="px-4 py-2 bg-primary text-on-primary rounded-lg hover:bg-primary/90 transition-all">Previous</a>
+                {% endif %}
+                
+                <span class="text-on-surface">Page {{ page_num }} of {{ paginator.num_pages }}</span>
+                
+                {% if events.has_next %}
+                    <a href="?page={{ events.next_page_number }}" class="px-4 py-2 bg-primary text-on-primary rounded-lg hover:bg-primary/90 transition-all">Next</a>
+                    <a href="?page={{ paginator.num_pages }}" class="px-4 py-2 bg-primary text-on-primary rounded-lg hover:bg-primary/90 transition-all">Last</a>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            {% else %}
+            <div class="glass-card p-12 rounded-3xl shadow-sm text-center">
+                <span class="material-symbols-outlined text-6xl text-on-surface-variant/30 block mb-4">calendar_month</span>
+                <p class="text-on-surface-variant text-lg mb-6">No events created yet. Click "Add Event" to create your first event.</p>
+                <button onclick="document.getElementById('createEventModal').classList.remove('hidden')" class="inline-block bg-primary text-on-primary px-6 py-3 rounded-xl font-bold hover:bg-primary/90 transition-all">
+                    <span class="material-symbols-outlined text-lg align-middle">add</span> Create First Event
+                </button>
+            </div>
+            {% endif %}
+        </div>
+
+    </section>
+</div>
+
+<!-- Create Event Modal -->
+<div id="createEventModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div class="glass-card rounded-3xl shadow-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div class="sticky top-0 bg-primary text-on-primary px-6 py-4 flex items-center justify-between rounded-t-3xl">
+            <h3 class="text-xl font-bold">Create Event</h3>
+            <button onclick="document.getElementById('createEventModal').classList.add('hidden')" class="hover:bg-white/20 p-2 rounded-lg transition-all">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+
+        <form method="post" action="{% url 'SchoolNowMgt:create_event' %}" class="p-6 space-y-4">
+            {% csrf_token %}
+            
+            <div>
+                <label class="block text-sm font-semibold text-on-surface mb-2">Event Title *</label>
+                <input type="text" name="title" required placeholder="E.g., Mid-Term Break" class="w-full px-4 py-2 border border-outline rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-semibold text-on-surface mb-2">Event Type *</label>
+                    <select name="event_type" required class="w-full px-4 py-2 border border-outline rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                        <option value="">Select Type</option>
+                        <option value="holiday">Holiday</option>
+                        <option value="exam">Examination</option>
+                        <option value="activity">School Activity</option>
+                        <option value="meeting">Staff Meeting</option>
+                        <option value="other">Other Event</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-on-surface mb-2">Location</label>
+                    <input type="text" name="location" placeholder="Event location" class="w-full px-4 py-2 border border-outline rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-semibold text-on-surface mb-2">Start Date *</label>
+                    <input type="date" name="start_date" required class="w-full px-4 py-2 border border-outline rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-on-surface mb-2">End Date *</label>
+                    <input type="date" name="end_date" required class="w-full px-4 py-2 border border-outline rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-semibold text-on-surface mb-2">Description</label>
+                <textarea name="description" rows="4" placeholder="Event description (optional)" class="w-full px-4 py-2 border border-outline rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"></textarea>
+            </div>
+
+            <div class="flex gap-4 pt-4">
+                <button type="submit" class="flex-1 bg-primary text-on-primary px-6 py-3 rounded-xl font-bold hover:bg-primary/90 transition-all">Create Event</button>
+                <button type="button" onclick="document.getElementById('createEventModal').classList.add('hidden')" class="flex-1 bg-outline/20 text-on-surface px-6 py-3 rounded-xl font-bold hover:bg-outline/30 transition-all">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Close modals when clicking outside
+    document.querySelectorAll('[id$="Modal"]').forEach(modal => {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.classList.add('hidden');
+            }
+        });
+    });
+</script>
+
+{% endblock %}

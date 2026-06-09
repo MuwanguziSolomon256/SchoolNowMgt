@@ -1,0 +1,55 @@
+<!-- Events Widget - School Calendar Section -->
+<div class="col-span-1 sm:col-span-2 lg:col-span-3 glass-card p-6 rounded-3xl shadow-sm relative overflow-hidden group animate-in">
+    <div class="relative z-10">
+        <!-- Header -->
+        <div class="flex justify-between items-start mb-6">
+            <div>
+                <h3 class="text-on-surface-variant font-label-md uppercase tracking-wider text-xs mb-2">School Calendar</h3>
+                <p class="font-display-md text-display-md text-primary text-xl">{{ total_events_this_term|default:"0" }} Events</p>
+            </div>
+            <a href="{% url 'SchoolNowMgt:events_dashboard' %}" class="flex items-center gap-2 bg-secondary-fixed text-on-secondary-fixed rounded-lg font-bold px-4 py-2 hover:brightness-110 transition-all text-sm">
+                <span class="material-symbols-outlined">add</span>
+                <span>New Event</span>
+            </a>
+        </div>
+        
+        <!-- Upcoming Events Preview -->
+        {% if upcoming_events %}
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 mb-6">
+                {% for event in upcoming_events %}
+                <div class="p-4 bg-primary/5 rounded-2xl hover:bg-primary/10 transition-all cursor-pointer group">
+                    <div class="flex items-start justify-between mb-2">
+                        <span class="inline-block px-2 py-1 bg-secondary/20 text-secondary rounded text-xs font-semibold">
+                            {{ event.get_event_type_display|slice:":3"|upper }}
+                        </span>
+                        <span class="material-symbols-outlined text-lg text-secondary opacity-0 group-hover:opacity-100 transition-all">arrow_forward</span>
+                    </div>
+                    <p class="font-bold text-primary text-sm mb-2 line-clamp-2">{{ event.title }}</p>
+                    <p class="text-on-surface-variant text-xs">{{ event.start_date|date:"M d, Y" }}</p>
+                    {% if event.location %}
+                        <p class="text-on-surface-variant text-xs mt-1 flex items-center gap-1">
+                            <span class="material-symbols-outlined text-xs">location_on</span>
+                            {{ event.location|truncatewords:2 }}
+                        </p>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- View All Events Link -->
+            <div class="flex items-center justify-center pt-4 border-t border-white/10">
+                <a href="{% url 'SchoolNowMgt:events_dashboard' %}" class="text-primary hover:text-primary/70 text-sm font-bold transition-colors">
+                    View All Events in Calendar →
+                </a>
+            </div>
+        {% else %}
+            <div class="text-center py-8">
+                <span class="material-symbols-outlined text-5xl text-on-surface-variant/30 block mb-3">calendar_month</span>
+                <p class="text-on-surface-variant text-sm mb-4">No upcoming events scheduled</p>
+                <a href="{% url 'SchoolNowMgt:events_dashboard' %}" class="inline-block text-primary hover:text-primary/70 font-bold text-sm transition-colors">
+                    Create your first event →
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>

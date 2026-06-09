@@ -1020,3 +1020,100 @@ class MessageRecipient(models.Model):
             models.Index(fields=['recipient', '-created_at']),
             models.Index(fields=['read_at']),
         ]
+
+
+class Event(models.Model):
+    """
+    Represents a school event (holiday, exam, activity, etc.).
+    
+    Admins can create and manage school calendar events that are visible
+    to all staff and students.
+    """
+    
+    EVENT_TYPE_CHOICES = [
+        ('holiday', 'Holiday'),
+        ('exam', 'Examination'),
+        ('activity', 'School Activity'),
+        ('meeting', 'Staff Meeting'),
+        ('other', 'Other Event'),
+    ]
+    
+    school = models.ForeignKey(
+        School,
+        on_delete=models.CASCADE,
+        related_name='events',
+        db_index=True
+    )
+    title = models.CharField(max_length=200)
+    description = models.TextField(blank=True)
+    event_type = models.CharField(
+        max_length=20,
+        choices=EVENT_TYPE_CHOICES,
+        default='other',
+        db_index=True
+    )
+    start_date = models.DateField()
+    end_date = models.DateField()
+    location = models.CharField(max_length=255, blank=True)
+    created_by = models.ForeignKey(
+        CustomUser,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='events_created'
+    )
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"{self.title} ({self.start_date})"
+    
+    @property
+    def is_upcoming(self):
+        """Check if event is in the future."""
+        from django.utils import timezone
+        return self.start_date >= timezone.now().date()
+    
+    class Meta:
+        ordering = ['start_date']
+        indexes = [
+            models.Index(fields=['school', 'start_date']),
+            models.Index(fields=['event_type', 'start_date']),
+        ]
+
+
+class AdminProfile(models.Model):
+    """
+    Extended profile for admin users with additional information.
+    
+    One-to-one relationship with CustomUser for admin role users.
+    """
+    
+    user = models.OneToOneField(
+        CustomUser,
+        on_delete=models.CASCADE,
+        related_name='admin_profile',
+        limit_choices_to={'role': 'admin'}
+    )
+    bio = models.TextField(blank=True, help_text="Brief biography or professional summary")
+    department = models.CharField(max_length=100, blank=True, help_text="E.g., Administration, Leadership")
+    office_location = models.CharField(max_length=255, blank=True, help_text="Office location in school")
+    availability_hours = models.CharField(
+        max_length=255, 
+        blank=True, 
+        help_text="E.g., 8:00 AM - 5:00 PM, Monday to Friday"
+    )
+    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"Admin Profile: {self.user.get_full_name()}"
+    
+    def get_profile_image_url(self):
+        """Return profile picture URL or default."""
+        if self.user.profile_picture:
+            return self.user.profile_picture.url
+        return '/static/images/default-avatar.png'
+    
+    class Meta:
+        verbose_name = 'Admin Profile'
+        verbose_name_plural = 'Admin Profiles'

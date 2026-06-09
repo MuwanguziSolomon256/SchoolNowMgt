@@ -15,12 +15,13 @@ from .models import (
     Student, StaffProfile, StudentAttendance, StaffAttendance,
     RetentionAlert, SMSLog, Enquiry, FeePayment, Grade, ClassGrade,
     CustomUser, Message, MessageRecipient, MessageTemplate, School,
-    ActivityLog
+    ActivityLog, Event, AdminProfile
 )
 from .forms import (
     StaffOnboardingForm, BulkStaffUploadForm,
     StudentOnboardingForm, BulkStudentUploadForm,
-    AdminMessageForm, StaffPasswordResetForm
+    AdminMessageForm, StaffPasswordResetForm,
+    EventForm, AdminProfileForm, ProfilePictureForm
 )
 from .utils import (
     generate_temp_password, parse_csv_upload, resolve_message_recipients,
@@ -545,6 +546,14 @@ def dashboard(request):
         
         # Academic
         'average_score_this_year': average_score_this_year,
+        
+        # Admin Profile & Events
+        'admin_profile': AdminProfile.objects.filter(user=request.user).first() or None,
+        'upcoming_events': Event.objects.filter(
+            school=user_school,
+            start_date__gte=today
+        ).order_by('start_date')[:5],
+        'total_events_this_term': Event.objects.filter(school=user_school).count(),
         
         # Admin Onboarding & Messaging
         'classes': ClassGrade.objects.filter(school=user_school),
@@ -1976,3 +1985,260 @@ def admin_reports_dashboard(request):
     }
     
     return render(request, 'SchoolNowMgt/admin_reports_dashboard.html', context)
+# ─────────────────────────────────────────────────────────────
+# ADMIN PROFILE & EVENTS MANAGEMENT (Phase 3)
+# ─────────────────────────────────────────────────────────────
+
+@unified_login_required
+def admin_profile_view(request):
+    """
+    Display and manage admin profile.
+    
+    GET: Display admin profile page with edit forms
+    POST: Handled by separate edit_admin_profile view
+    
+    Access Control: Admin users only
+    
+    Renders: SchoolNowMgt/admin_profile.html
+    """
+    if request.user.role != 'admin':
+        return redirect('auth:unified_login')
+    
+    # Get or create AdminProfile
+    admin_profile, created = AdminProfile.objects.get_or_create(user=request.user)
+    
+    # Initialize forms
+    profile_form = AdminProfileForm(user=request.user, instance=admin_profile)
+    picture_form = ProfilePictureForm()
+    
+    context = {
+        'admin_profile': admin_profile,
+        'profile_form': profile_form,
+        'picture_form': picture_form,
+    }
+    
+    return render(request, 'SchoolNowMgt/admin_profile.html', context)
+
+
+@unified_login_required
+@require_POST
+def edit_admin_profile(request):
+    """
+    Handle admin profile updates (profile info and picture).
+    
+    POST: Save profile changes
+    
+    Access Control: Admin users only, editing their own profile
+    
+    Returns: JSON response or redirect with success/error message
+    """
+    if request.user.role != 'admin':
+        return redirect('auth:unified_login')
+    
+    try:
+        admin_profile = AdminProfile.objects.get(user=request.user)
+    except AdminProfile.DoesNotExist:
+        admin_profile = AdminProfile.objects.create(user=request.user)
+    
+    # Handle profile info update
+    if 'save_profile' in request.POST:
+        profile_form = AdminProfileForm(user=request.user, data=request.POST, instance=admin_profile)
+        if profile_form.is_valid():
+            profile_form.save()
+            return redirect('SchoolNowMgt:admin_profile')
+        else:
+            # Re-render with errors
+            context = {
+                'admin_profile': admin_profile,
+                'profile_form': profile_form,
+                'errors': profile_form.errors,
+            }
+            return render(request, 'SchoolNowMgt/admin_profile.html', context)
+    
+    # Handle profile picture upload
+    if 'save_picture' in request.POST:
+        picture_form = ProfilePictureForm(request.POST, request.FILES)
+        if picture_form.is_valid() and request.FILES.get('profile_picture'):
+            request.user.profile_picture = request.FILES['profile_picture']
+            request.user.save()
+            return redirect('SchoolNowMgt:admin_profile')
+        else:
+            context = {
+                'admin_profile': admin_profile,
+                'picture_form': picture_form,
+                'errors': picture_form.errors,
+            }
+            return render(request, 'SchoolNowMgt/admin_profile.html', context)
+    
+    return redirect('SchoolNowMgt:admin_profile')
+
+
+@unified_login_required
+@unified_login_required
+def events_dashboard(request):
+    """
+    Display the events mini-dashboard with all school events.
+    
+    GET: Display events dashboard page with all events
+    
+    Access Control: Admin users only
+    
+    Renders: SchoolNowMgt/events_dashboard.html
+    """
+    if request.user.role != 'admin':
+        return redirect('auth:unified_login')
+    
+    user_school = request.user.school
+    
+    # Get upcoming events (next 5)
+    upcoming_events = Event.objects.filter(
+        school=user_school,
+        start_date__gte=timezone.now().date()
+    ).order_by('start_date')[:5]
+    
+    # Get all events (paginated)
+    all_events = Event.objects.filter(school=user_school).order_by('-start_date')
+    events_page, paginator, page_num = paginate_queryset(request, all_events, per_page=10)
+    
+    context = {
+        'upcoming_events': upcoming_events,
+        'events': events_page,
+        'paginator': paginator,
+        'page_num': page_num,
+    }
+    
+    return render(request, 'SchoolNowMgt/events_dashboard.html', context)
+
+
+def list_events(request):
+    """
+    List all events for the school (used in dashboard context).
+    
+    GET: Return paginated event list
+    
+    Access Control: Admin users only
+    
+    Renders: SchoolNowMgt/admin_profile.html (via admin_profile_view)
+    """
+    if request.user.role != 'admin':
+        return redirect('auth:unified_login')
+    
+    user_school = request.user.school
+    events = Event.objects.filter(school=user_school).order_by('-start_date')
+    
+    return render(request, 'SchoolNowMgt/admin_profile.html', {
+        'events': paginate_queryset(request, events, per_page=10)
+    })
+
+
+@unified_login_required
+@require_POST
+def create_event(request):
+    """
+    Create a new school event.
+    
+    POST: Save event data
+    
+    Access Control: Admin users only
+    
+    Returns: Redirect to admin_profile on success
+    """
+    if request.user.role != 'admin':
+        return redirect('auth:unified_login')
+    
+    form = EventForm(request.POST)
+    if form.is_valid():
+        event = form.save(commit=False)
+        event.school = request.user.school
+        event.created_by = request.user
+        event.save()
+        return redirect('SchoolNowMgt:admin_profile')
+    
+    # Re-render admin profile with form errors
+    try:
+        admin_profile = AdminProfile.objects.get(user=request.user)
+    except AdminProfile.DoesNotExist:
+        admin_profile = AdminProfile.objects.create(user=request.user)
+    
+    context = {
+        'admin_profile': admin_profile,
+        'event_form': form,
+        'errors': form.errors,
+    }
+    
+    return render(request, 'SchoolNowMgt/admin_profile.html', context)
+
+
+@unified_login_required
+def edit_event(request, event_id):
+    """
+    Edit an existing school event.
+    
+    GET: Display event edit form
+    POST: Save event changes
+    
+    Access Control: Admin users only, must own the event's school
+    
+    Renders: SchoolNowMgt/admin_profile.html
+    """
+    if request.user.role != 'admin':
+        return redirect('auth:unified_login')
+    
+    try:
+        event = Event.objects.get(id=event_id, school=request.user.school)
+    except Event.DoesNotExist:
+        return redirect('SchoolNowMgt:admin_profile')
+    
+    if request.method == 'POST':
+        form = EventForm(request.POST, instance=event)
+        if form.is_valid():
+            form.save()
+            return redirect('SchoolNowMgt:admin_profile')
+    else:
+        form = EventForm(instance=event)
+    
+    try:
+        admin_profile = AdminProfile.objects.get(user=request.user)
+    except AdminProfile.DoesNotExist:
+        admin_profile = AdminProfile.objects.create(user=request.user)
+    
+    context = {
+        'admin_profile': admin_profile,
+        'event_form': form,
+        'edit_event': event,
+    }
+    
+    return render(request, 'SchoolNowMgt/admin_profile.html', context)
+
+
+@unified_login_required
+@require_POST
+def delete_event(request, event_id):
+    """
+    Delete a school event.
+    
+    POST: Delete event
+    
+    Access Control: Admin users only, must own the event's school
+    
+    Returns: Redirect to admin_profile
+    """
+    if request.user.role != 'admin':
+        return redirect('auth:unified_login')
+    
+    try:
+        event = Event.objects.get(id=event_id, school=request.user.school)
+        event.delete()
+    except Event.DoesNotExist:
+        pass
+    
+    return redirect('SchoolNowMgt:admin_profile')
+
+
+def ensure_admin_profile(user):
+    """
+    Helper function to ensure an admin user has an AdminProfile.
+    Auto-creates if missing.
+    """
+    if user.role == 'admin':
+        AdminProfile.objects.get_or_create(user=user)

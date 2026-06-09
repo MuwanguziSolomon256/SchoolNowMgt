@@ -10,7 +10,7 @@ import string
 from .models import (
     Enquiry, StudentAttendance, ClassGrade, Student, 
     CustomUser, StaffProfile, Message, MessageTemplate,
-    School
+    School, Event, AdminProfile
 )
 
 
@@ -436,3 +436,165 @@ class StaffPasswordResetForm(forms.Form):
         
         self.cleaned_data['_staff_user'] = user
         return identifier
+
+
+# ============================================================================
+# EVENTS & ADMIN PROFILE FORMS (Phase 3)
+# ============================================================================
+
+class EventForm(forms.ModelForm):
+    """
+    Form for creating and editing school events.
+    Validates that end_date >= start_date.
+    """
+    
+    class Meta:
+        model = Event
+        fields = ['title', 'description', 'event_type', 'start_date', 'end_date', 'location']
+        widgets = {
+            'title': forms.TextInput(attrs={
+                'placeholder': 'Event title (e.g., Mid-Term Break)',
+                'class': 'form-input'
+            }),
+            'description': forms.Textarea(attrs={
+                'placeholder': 'Event description (optional)',
+                'rows': 4,
+                'class': 'form-input'
+            }),
+            'event_type': forms.Select(attrs={
+                'class': 'form-input'
+            }),
+            'start_date': forms.DateInput(attrs={
+                'type': 'date',
+                'class': 'form-input'
+            }),
+            'end_date': forms.DateInput(attrs={
+                'type': 'date',
+                'class': 'form-input'
+            }),
+            'location': forms.TextInput(attrs={
+                'placeholder': 'Event location (optional)',
+                'class': 'form-input'
+            }),
+        }
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        start_date = cleaned_data.get('start_date')
+        end_date = cleaned_data.get('end_date')
+        
+        if start_date and end_date and end_date < start_date:
+            raise ValidationError("End date must be on or after the start date.")
+        
+        return cleaned_data
+
+
+class AdminProfileForm(forms.ModelForm):
+    """
+    Form for editing admin profile information.
+    Includes fields from both CustomUser and AdminProfile models.
+    """
+    
+    first_name = forms.CharField(
+        max_length=150,
+        required=True,
+        widget=forms.TextInput(attrs={
+            'placeholder': 'First name',
+            'class': 'form-input'
+        })
+    )
+    last_name = forms.CharField(
+        max_length=150,
+        required=True,
+        widget=forms.TextInput(attrs={
+            'placeholder': 'Last name',
+            'class': 'form-input'
+        })
+    )
+    email = forms.EmailField(
+        required=True,
+        widget=forms.EmailInput(attrs={
+            'placeholder': 'Email address',
+            'class': 'form-input'
+        })
+    )
+    
+    class Meta:
+        model = AdminProfile
+        fields = ['bio', 'department', 'office_location', 'availability_hours']
+        widgets = {
+            'bio': forms.Textarea(attrs={
+                'placeholder': 'Brief biography or professional summary',
+                'rows': 4,
+                'class': 'form-input'
+            }),
+            'department': forms.TextInput(attrs={
+                'placeholder': 'E.g., Administration, Leadership',
+                'class': 'form-input'
+            }),
+            'office_location': forms.TextInput(attrs={
+                'placeholder': 'Office location in school',
+                'class': 'form-input'
+            }),
+            'availability_hours': forms.TextInput(attrs={
+                'placeholder': 'E.g., 8:00 AM - 5:00 PM, Monday to Friday',
+                'class': 'form-input'
+            }),
+        }
+    
+    def __init__(self, user=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # Set initial values from user if provided
+        if user:
+            self.fields['first_name'].initial = user.first_name
+            self.fields['last_name'].initial = user.last_name
+            self.fields['email'].initial = user.email
+        
+        self.user = user
+    
+    def save(self, commit=True):
+        """Save both CustomUser and AdminProfile."""
+        instance = super().save(commit=False)
+        
+        if self.user:
+            self.user.first_name = self.cleaned_data['first_name']
+            self.user.last_name = self.cleaned_data['last_name']
+            self.user.email = self.cleaned_data['email']
+            if commit:
+                self.user.save()
+        
+        if commit:
+            instance.save()
+        
+        return instance
+
+
+class ProfilePictureForm(forms.Form):
+    """
+    Simple form for uploading admin profile picture.
+    Validates file type and size (max 5MB).
+    """
+    
+    profile_picture = forms.ImageField(
+        required=True,
+        widget=forms.FileInput(attrs={
+            'accept': 'image/*',
+            'class': 'form-input'
+        }),
+        help_text='Supported formats: JPG, PNG, GIF. Max size: 5MB'
+    )
+    
+    def clean_profile_picture(self):
+        picture = self.cleaned_data['profile_picture']
+        
+        # Check file size (5MB max)
+        if picture.size > 5 * 1024 * 1024:
+            raise ValidationError("Image file size must not exceed 5MB.")
+        
+        # Check file type
+        allowed_types = ('image/jpeg', 'image/png', 'image/gif')
+        if picture.content_type not in allowed_types:
+            raise ValidationError("Only JPG, PNG, and GIF images are allowed.")
+        
+        return picture

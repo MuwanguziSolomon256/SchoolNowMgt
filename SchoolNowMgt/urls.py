@@ -37,4 +37,12 @@ urlpatterns = [
     path('api/message/send/', dashboard_views.send_message_ajax, name='api_message_send'),
     path('messages/inbox/', dashboard_views.message_inbox, name='message_inbox'),
     path('api/message/<int:message_id>/mark-read/', dashboard_views.mark_message_read_ajax, name='api_message_mark_read'),
+    
+    # Admin Profile & Events Management (Phase 3)
+    path('admin/profile/', dashboard_views.admin_profile_view, name='admin_profile'),
+    path('admin/profile/edit/', dashboard_views.edit_admin_profile, name='edit_admin_profile'),
+    path('admin/events/', dashboard_views.events_dashboard, name='events_dashboard'),
+    path('admin/events/create/', dashboard_views.create_event, name='create_event'),
+    path('admin/events/<int:event_id>/edit/', dashboard_views.edit_event, name='edit_event'),
+    path('admin/events/<int:event_id>/delete/', dashboard_views.delete_event, name='delete_event'),
 ]
