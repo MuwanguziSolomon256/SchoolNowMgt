@@ -2,10 +2,27 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from django.db.models import Count, Avg, Q, Sum
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from django.db import transaction
+import uuid
+import csv
+import io
 
 from .models import (
     Student, StaffProfile, StudentAttendance, StaffAttendance,
-    RetentionAlert, SMSLog, Enquiry, FeePayment, Grade, ClassGrade
+    RetentionAlert, SMSLog, Enquiry, FeePayment, Grade, ClassGrade,
+    CustomUser, Message, MessageRecipient, MessageTemplate, School,
+    ActivityLog
+)
+from .forms import (
+    StaffOnboardingForm, BulkStaffUploadForm,
+    StudentOnboardingForm, BulkStudentUploadForm,
+    AdminMessageForm, StaffPasswordResetForm
+)
+from .utils import (
+    generate_temp_password, parse_csv_upload, resolve_message_recipients,
+    create_message_recipients, replace_message_placeholders, generate_employee_id
 )
 
 
@@ -296,6 +313,10 @@ def dashboard(request):
         
         # Academic
         'average_score_this_year': average_score_this_year,
+        
+        # Admin Onboarding & Messaging
+        'classes': ClassGrade.objects.filter(school=user_school),
+        'users': CustomUser.objects.filter(school=user_school, is_active=True),
     }
     
     # Route based on user role
@@ -565,3 +586,636 @@ def support_staff_dashboard(request):
     }
     
     return render(request, 'SchoolNowMgt/support_staff_dashboard.html', context)
+
+
+# ============================================================================
+# ADMIN ONBOARDING & MESSAGING AJAX VIEWS (Phase 4)
+# ============================================================================
+
+
+def admin_required(view_func):
+    """Decorator to restrict access to admin users only."""
+    def wrapper(request, *args, **kwargs):
+        if not request.user.is_authenticated or request.user.role != 'admin':
+            return JsonResponse({'success': False, 'message': 'Admin access required.'}, status=403)
+        return view_func(request, *args, **kwargs)
+    return wrapper
+
+
+@require_POST
+@login_required
+@admin_required
+def onboard_staff_ajax(request):
+    """
+    AJAX endpoint to create a single staff member (teacher or support staff).
+    
+    Returns JSON with:
+    - success (bool)
+    - message (str)
+    - data: { temp_password, employee_id, email } if successful
+    - errors (list) if validation fails
+    """
+    form = StaffOnboardingForm(request.POST)
+    
+    if not form.is_valid():
+        return JsonResponse({
+            'success': False,
+            'message': 'Form validation failed',
+            'errors': form.errors
+        }, status=400)
+    
+    try:
+        with transaction.atomic():
+            # Determine role based on is_teacher flag
+            role = 'teacher' if form.cleaned_data['is_teacher'] else 'non_teaching_staff'
+            
+            # Create CustomUser
+            temp_password = generate_temp_password()
+            user = CustomUser.objects.create_user(
+                username=form.cleaned_data['email'].lower(),
+                email=form.cleaned_data['email'].lower(),
+                password=temp_password,
+                first_name=form.cleaned_data['first_name'],
+                last_name=form.cleaned_data['last_name'],
+                role=role,
+                school=request.user.school,
+                is_active=True
+            )
+            
+            # Generate unique employee ID
+            employee_id = generate_employee_id(request.user.school)
+            
+            # Create StaffProfile
+            staff_profile = StaffProfile.objects.create(
+                user=user,
+                employee_id=employee_id,
+                position=form.cleaned_data['position'],
+                date_joined=form.cleaned_data['date_joined'],
+                is_full_time=True,
+                salary=0
+            )
+            
+            # Log activity
+            if hasattr(request.user, 'staffprofile'):
+                ActivityLog.objects.create(
+                    teacher=request.user.staffprofile,
+                    activity_type='staff_created',
+                    description=f"Created {role} {user.get_full_name()} (ID: {employee_id})",
+                    icon_name='person_add',
+                    severity='info'
+                )
+            
+            return JsonResponse({
+                'success': True,
+                'message': f'Staff member {user.get_full_name()} created successfully.',
+                'data': {
+                    'temp_password': temp_password,
+                    'employee_id': employee_id,
+                    'email': user.email,
+                    'full_name': user.get_full_name()
+                }
+            })
+    
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error creating staff: {str(e)}'
+        }, status=500)
+
+
+@require_POST
+@login_required
+@admin_required
+def bulk_onboard_staff_ajax(request):
+    """
+    AJAX endpoint to bulk create staff members from CSV upload.
+    
+    Expected CSV columns: first_name, last_name, email, position, date_joined, is_teacher
+    
+    Returns JSON with:
+    - success (bool)
+    - message (str)
+    - data: { created_count, failed_count, staff_list, errors } if successful
+    - errors (list) if file validation fails
+    """
+    form = BulkStaffUploadForm(request.POST, request.FILES)
+    
+    if not form.is_valid():
+        return JsonResponse({
+            'success': False,
+            'message': 'Form validation failed',
+            'errors': form.errors
+        }, status=400)
+    
+    file = request.FILES['csv_file']
+    required_cols = {'first_name', 'last_name', 'email', 'position', 'date_joined'}
+    
+    success, rows, parse_errors = parse_csv_upload(file, required_cols)
+    if not success:
+        return JsonResponse({
+            'success': False,
+            'message': 'CSV file parsing failed',
+            'errors': parse_errors
+        }, status=400)
+    
+    created_staff = []
+    errors = []
+    
+    try:
+        with transaction.atomic():
+            for row_num, row in rows:
+                try:
+                    email = row['email'].lower().strip()
+                    
+                    # Check if email already exists
+                    if CustomUser.objects.filter(email=email).exists():
+                        errors.append(f"Row {row_num}: Email already exists ({email})")
+                        continue
+                    
+                    # Parse date_joined
+                    try:
+                        date_joined = timezone.datetime.strptime(row['date_joined'], '%Y-%m-%d').date()
+                    except:
+                        errors.append(f"Row {row_num}: Invalid date format for date_joined (use YYYY-MM-DD)")
+                        continue
+                    
+                    # Determine role
+                    is_teacher = row.get('is_teacher', '').lower() in ('true', 'yes', '1')
+                    role = 'teacher' if is_teacher else 'non_teaching_staff'
+                    
+                    # Create CustomUser
+                    temp_password = generate_temp_password()
+                    user = CustomUser.objects.create_user(
+                        username=email,
+                        email=email,
+                        password=temp_password,
+                        first_name=row['first_name'].strip(),
+                        last_name=row['last_name'].strip(),
+                        role=role,
+                        school=request.user.school,
+                        is_active=True
+                    )
+                    
+                    # Generate employee ID
+                    employee_id = generate_employee_id(request.user.school)
+                    
+                    # Create StaffProfile
+                    StaffProfile.objects.create(
+                        user=user,
+                        employee_id=employee_id,
+                        position=row['position'].strip(),
+                        date_joined=date_joined,
+                        is_full_time=True,
+                        salary=0
+                    )
+                    
+                    created_staff.append({
+                        'name': user.get_full_name(),
+                        'email': email,
+                        'employee_id': employee_id,
+                        'position': row['position']
+                    })
+                
+                except Exception as row_error:
+                    errors.append(f"Row {row_num}: {str(row_error)}")
+    
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error processing CSV: {str(e)}'
+        }, status=500)
+    
+    return JsonResponse({
+        'success': len(errors) == 0,
+        'message': f'Created {len(created_staff)} staff member(s).',
+        'data': {
+            'created_count': len(created_staff),
+            'failed_count': len(errors),
+            'staff_list': created_staff,
+            'errors': errors
+        }
+    })
+
+
+@require_POST
+@login_required
+@admin_required
+def onboard_student_ajax(request):
+    """
+    AJAX endpoint to create a single student.
+    
+    Returns JSON with:
+    - success (bool)
+    - message (str)
+    - data: { admission_number, full_name } if successful
+    - errors (dict) if validation fails
+    """
+    form = StudentOnboardingForm(request.POST)
+    
+    if not form.is_valid():
+        return JsonResponse({
+            'success': False,
+            'message': 'Form validation failed',
+            'errors': form.errors
+        }, status=400)
+    
+    try:
+        with transaction.atomic():
+            # Generate admission number
+            year = timezone.now().year
+            random_hex = uuid.uuid4().hex[:6].upper()
+            admission_number = f"STU-{year}-{random_hex}"
+            
+            # Ensure DOB has a default if not provided
+            dob = form.cleaned_data['date_of_birth'] or timezone.now().date()
+            
+            # Create Student
+            student = Student.objects.create(
+                admission_number=admission_number,
+                first_name=form.cleaned_data['first_name'],
+                last_name=form.cleaned_data['last_name'],
+                date_of_birth=dob,
+                gender=form.cleaned_data['gender'],
+                class_grade=form.cleaned_data['class_grade'],
+                parent_name=form.cleaned_data['parent_name'],
+                parent_phone=form.cleaned_data['parent_phone'],
+                status='active'
+            )
+            
+            # Log activity
+            if hasattr(request.user, 'staffprofile'):
+                ActivityLog.objects.create(
+                    teacher=request.user.staffprofile,
+                    activity_type='student_created',
+                    description=f"Enrolled {student.full_name} (ID: {admission_number}) in {student.class_grade.name}",
+                    related_student=student,
+                    icon_name='person_add',
+                    severity='info'
+                )
+            
+            return JsonResponse({
+                'success': True,
+                'message': f'Student {student.full_name} enrolled successfully.',
+                'data': {
+                    'admission_number': admission_number,
+                    'full_name': student.full_name,
+                    'class': student.class_grade.name
+                }
+            })
+    
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error creating student: {str(e)}'
+        }, status=500)
+
+
+@require_POST
+@login_required
+@admin_required
+def bulk_onboard_student_ajax(request):
+    """
+    AJAX endpoint to bulk create students from CSV upload.
+    
+    Expected CSV columns: first_name, last_name, class, parent_name, parent_phone, gender, date_of_birth (optional)
+    
+    Returns JSON with:
+    - success (bool)
+    - message (str)
+    - data: { created_count, failed_count, student_list, errors }
+    """
+    form = BulkStudentUploadForm(request.POST, request.FILES)
+    
+    if not form.is_valid():
+        return JsonResponse({
+            'success': False,
+            'message': 'Form validation failed',
+            'errors': form.errors
+        }, status=400)
+    
+    file = request.FILES['csv_file']
+    required_cols = {'first_name', 'last_name', 'class', 'parent_name', 'parent_phone', 'gender'}
+    
+    success, rows, parse_errors = parse_csv_upload(file, required_cols)
+    if not success:
+        return JsonResponse({
+            'success': False,
+            'message': 'CSV file parsing failed',
+            'errors': parse_errors
+        }, status=400)
+    
+    created_students = []
+    errors = []
+    
+    try:
+        with transaction.atomic():
+            year = timezone.now().year
+            
+            for row_num, row in rows:
+                try:
+                    # Find class by name
+                    class_name = row['class'].strip()
+                    class_grade = ClassGrade.objects.filter(
+                        name=class_name,
+                        school=request.user.school
+                    ).first()
+                    
+                    if not class_grade:
+                        errors.append(f"Row {row_num}: Class '{class_name}' not found")
+                        continue
+                    
+                    # Generate admission number
+                    random_hex = uuid.uuid4().hex[:6].upper()
+                    admission_number = f"STU-{year}-{random_hex}"
+                    
+                    # Parse DOB if provided
+                    dob = None
+                    if row.get('date_of_birth', '').strip():
+                        try:
+                            dob = timezone.datetime.strptime(row['date_of_birth'], '%Y-%m-%d').date()
+                        except:
+                            dob = timezone.now().date()
+                    else:
+                        dob = timezone.now().date()
+                    
+                    # Create Student
+                    student = Student.objects.create(
+                        admission_number=admission_number,
+                        first_name=row['first_name'].strip(),
+                        last_name=row['last_name'].strip(),
+                        date_of_birth=dob,
+                        gender=row['gender'].strip().upper()[0],  # Take first char (M/F)
+                        class_grade=class_grade,
+                        parent_name=row['parent_name'].strip(),
+                        parent_phone=row['parent_phone'].strip(),
+                        status='active'
+                    )
+                    
+                    created_students.append({
+                        'name': student.full_name,
+                        'admission_number': admission_number,
+                        'class': class_grade.name,
+                        'parent': row['parent_name']
+                    })
+                
+                except Exception as row_error:
+                    errors.append(f"Row {row_num}: {str(row_error)}")
+    
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error processing CSV: {str(e)}'
+        }, status=500)
+    
+    return JsonResponse({
+        'success': len(errors) == 0,
+        'message': f'Enrolled {len(created_students)} student(s).',
+        'data': {
+            'created_count': len(created_students),
+            'failed_count': len(errors),
+            'student_list': created_students,
+            'errors': errors
+        }
+    })
+
+
+@require_POST
+@login_required
+@admin_required
+def send_message_ajax(request):
+    """
+    AJAX endpoint to create and send a message to recipients.
+    
+    Supports immediate and scheduled delivery. Creates Message and MessageRecipient entries.
+    
+    Returns JSON with:
+    - success (bool)
+    - message (str)
+    - data: { message_id, recipient_count, scheduled_for } if successful
+    """
+    form = AdminMessageForm(request.POST)
+    
+    if not form.is_valid():
+        return JsonResponse({
+            'success': False,
+            'message': 'Form validation failed',
+            'errors': form.errors
+        }, status=400)
+    
+    try:
+        with transaction.atomic():
+            # Create Message
+            message = Message.objects.create(
+                sender=request.user,
+                school=request.user.school,
+                subject=form.cleaned_data['subject'],
+                body=form.cleaned_data['body'],
+                template=form.cleaned_data.get('template'),
+                recipient_type=form.cleaned_data['recipient_type'],
+                target_class=form.cleaned_data.get('target_class'),
+                target_user=form.cleaned_data.get('target_user'),
+                scheduled_at=form.cleaned_data.get('scheduled_at')
+            )
+            
+            # Resolve recipients
+            recipients = resolve_message_recipients(message)
+            
+            # Create MessageRecipient entries
+            recipient_count = create_message_recipients(message, recipients)
+            
+            # Mark as sent
+            message.is_sent = True
+            message.save()
+            
+            # Log activity
+            if hasattr(request.user, 'staffprofile'):
+                ActivityLog.objects.create(
+                    teacher=request.user.staffprofile,
+                    activity_type='message_sent',
+                    description=f"Sent message '{message.subject}' to {recipient_count} recipient(s)",
+                    icon_name='mail',
+                    severity='info'
+                )
+            
+            scheduled_info = None
+            if message.scheduled_at:
+                scheduled_info = message.scheduled_at.isoformat()
+            
+            return JsonResponse({
+                'success': True,
+                'message': f'Message sent to {recipient_count} recipient(s).',
+                'data': {
+                    'message_id': message.id,
+                    'recipient_count': recipient_count,
+                    'scheduled_for': scheduled_info
+                }
+            })
+    
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error sending message: {str(e)}'
+        }, status=500)
+
+
+@require_POST
+@login_required
+@admin_required
+def reset_staff_password_ajax(request):
+    """
+    AJAX endpoint to reset a staff member's password.
+    
+    Generates new temporary password and updates the user's password.
+    
+    Returns JSON with:
+    - success (bool)
+    - message (str)
+    - data: { temp_password, full_name } if successful
+    """
+    form = StaffPasswordResetForm(request.POST)
+    
+    if not form.is_valid():
+        return JsonResponse({
+            'success': False,
+            'message': 'Form validation failed',
+            'errors': form.errors
+        }, status=400)
+    
+    try:
+        user = form.cleaned_data.get('_staff_user')
+        
+        if not user:
+            return JsonResponse({
+                'success': False,
+                'message': 'Staff member not found.'
+            }, status=404)
+        
+        # Generate new temporary password
+        temp_password = generate_temp_password()
+        
+        # Update user password
+        user.set_password(temp_password)
+        user.save()
+        
+        # Log activity
+        if hasattr(request.user, 'staffprofile'):
+            ActivityLog.objects.create(
+                teacher=request.user.staffprofile,
+                activity_type='password_reset',
+                description=f"Reset password for {user.get_full_name()} ({user.email})",
+                icon_name='lock_reset',
+                severity='info'
+            )
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Password reset for {user.get_full_name()}.',
+            'data': {
+                'temp_password': temp_password,
+                'full_name': user.get_full_name(),
+                'email': user.email
+            }
+        })
+    
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error resetting password: {str(e)}'
+        }, status=500)
+
+
+# ============================================================================
+# MESSAGE RECIPIENT VIEWS
+# ============================================================================
+
+
+@login_required
+def message_inbox(request):
+    """
+    Display message inbox for the logged-in user.
+    
+    Shows all messages received by the user, with filtering and pagination.
+    Supports filtering by read/unread, date range, and sender role.
+    
+    Access: All authenticated users (teachers, staff, parents)
+    
+    Renders: SchoolNowMgt/message_inbox.html
+    """
+    # Get all messages for the current user
+    messages_qs = MessageRecipient.objects.filter(
+        recipient=request.user
+    ).select_related('message', 'message__sender').order_by('-created_at')
+    
+    # Filter by read/unread if specified
+    filter_type = request.GET.get('filter', 'all')  # all, unread, read
+    if filter_type == 'unread':
+        messages_qs = messages_qs.filter(read_at__isnull=True)
+    elif filter_type == 'read':
+        messages_qs = messages_qs.filter(read_at__isnull=False)
+    
+    # Pagination
+    from django.core.paginator import Paginator
+    paginator = Paginator(messages_qs, 20)  # 20 messages per page
+    page_number = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page_number)
+    
+    # Count unread messages
+    unread_count = MessageRecipient.objects.filter(
+        recipient=request.user,
+        read_at__isnull=True
+    ).count()
+    
+    context = {
+        'page_obj': page_obj,
+        'messages': page_obj.object_list,
+        'unread_count': unread_count,
+        'filter_type': filter_type,
+    }
+    
+    return render(request, 'SchoolNowMgt/message_inbox.html', context)
+
+
+@login_required
+def mark_message_read_ajax(request, message_id):
+    """
+    AJAX endpoint to mark a message as read.
+    
+    Args:
+        message_id (int): ID of the Message to mark as read
+    
+    Returns JSON with:
+    - success (bool)
+    - message (str)
+    """
+    if request.method != 'POST':
+        return JsonResponse({
+            'success': False,
+            'message': 'Method not allowed'
+        }, status=405)
+    
+    try:
+        message_recipient = MessageRecipient.objects.get(
+            message_id=message_id,
+            recipient=request.user
+        )
+        
+        # Mark as read
+        message_recipient.read_at = timezone.now()
+        message_recipient.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Message marked as read'
+        })
+    
+    except MessageRecipient.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'message': 'Message not found or not accessible to you'
+        }, status=404)
+    
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error: {str(e)}'
+        }, status=500)

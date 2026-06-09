@@ -1,0 +1,247 @@
+<!-- Student Enrollment Modal -->
+<div id="studentEnrollModal" class="hidden fixed inset-0 z-50 overflow-y-auto">
+    <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+        <!-- Background overlay -->
+        <div class="fixed inset-0 bg-black/50 transition-opacity" onclick="document.getElementById('studentEnrollModal').classList.add('hidden')"></div>
+        
+        <!-- Modal content -->
+        <div class="relative inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
+            <!-- Close button -->
+            <button onclick="document.getElementById('studentEnrollModal').classList.add('hidden')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+            
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-primary to-primary/80 px-6 py-6 sm:px-8">
+                <h3 class="text-xl sm:text-2xl font-bold text-white">Enroll Student</h3>
+                <p class="text-white/80 text-sm mt-1">Add new student to your school</p>
+            </div>
+            
+            <!-- Tab navigation -->
+            <div class="border-b border-gray-200">
+                <div class="flex">
+                    <button onclick="switchStudentTab('single-student')" class="single-student-tab flex-1 px-4 py-3 text-center font-medium text-primary border-b-2 border-primary transition-colors">
+                        <span class="material-symbols-outlined text-sm align-middle mr-2">person</span>
+                        Single Student
+                    </button>
+                    <button onclick="switchStudentTab('bulk-student')" class="bulk-student-tab flex-1 px-4 py-3 text-center font-medium text-gray-600 border-b-2 border-transparent hover:text-gray-800 transition-colors">
+                        <span class="material-symbols-outlined text-sm align-middle mr-2">upload_file</span>
+                        Bulk Upload
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Content -->
+            <div class="px-6 py-6 sm:px-8">
+                <!-- Single Student Form -->
+                <form id="single-student-form" class="single-student-tab-content space-y-4">
+                    {% csrf_token %}
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+                            <input type="text" name="first_name" placeholder="John" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+                            <input type="text" name="last_name" placeholder="Doe" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition" required>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Class</label>
+                            <select name="class_grade" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition" required>
+                                <option value="">Select class...</option>
+                                {% for class in classes %}
+                                <option value="{{ class.id }}">{{ class.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Gender</label>
+                            <select name="gender" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition" required>
+                                <option value="">Select gender...</option>
+                                <option value="M">Male</option>
+                                <option value="F">Female</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Date of Birth (Optional)</label>
+                        <input type="date" name="date_of_birth" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Parent/Guardian Name</label>
+                        <input type="text" name="parent_name" placeholder="Sarah Nakato" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition" required>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Parent Phone</label>
+                        <input type="tel" name="parent_phone" placeholder="0772 123 456" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition" required>
+                    </div>
+                    
+                    <div id="single-student-errors" class="hidden bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-800"></div>
+                    
+                    <div class="flex gap-3 justify-end pt-4">
+                        <button type="button" onclick="document.getElementById('studentEnrollModal').classList.add('hidden')" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition">
+                            Cancel
+                        </button>
+                        <button type="submit" class="px-6 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition flex items-center gap-2">
+                            <span class="material-symbols-outlined text-sm">person_add</span>
+                            Enroll Student
+                        </button>
+                    </div>
+                </form>
+                
+                <!-- Bulk Upload Form -->
+                <form id="bulk-student-form" class="bulk-student-tab-content hidden space-y-4">
+                    {% csrf_token %}
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                        <p class="text-sm text-blue-800">
+                            <strong>CSV Format:</strong> first_name, last_name, class, gender (M/F), parent_name, parent_phone, date_of_birth (optional, YYYY-MM-DD)
+                        </p>
+                    </div>
+                    
+                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-primary hover:bg-primary/5 transition cursor-pointer" onclick="document.getElementById('bulk-student-csv-file').click()">
+                        <input type="file" id="bulk-student-csv-file" name="csv_file" accept=".csv" class="hidden" required>
+                        <span class="material-symbols-outlined text-4xl text-gray-400 block mb-2">upload_file</span>
+                        <p class="text-gray-700 font-medium">Click to upload CSV file</p>
+                        <p class="text-xs text-gray-500 mt-1">or drag and drop</p>
+                    </div>
+                    
+                    <div id="student-file-name" class="text-sm text-gray-600 hidden">Selected: <span id="student-file-name-text"></span></div>
+                    
+                    <div id="bulk-student-errors" class="hidden bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-800"></div>
+                    
+                    <div class="flex gap-3 justify-end pt-4">
+                        <button type="button" onclick="document.getElementById('studentEnrollModal').classList.add('hidden')" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition">
+                            Cancel
+                        </button>
+                        <button type="submit" class="px-6 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition flex items-center gap-2">
+                            <span class="material-symbols-outlined text-sm">upload</span>
+                            Upload Students
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function switchStudentTab(tab) {
+    // Hide all content
+    document.querySelectorAll('.single-student-tab-content, .bulk-student-tab-content').forEach(el => el.classList.add('hidden'));
+    document.querySelectorAll('.single-student-tab, .bulk-student-tab').forEach(btn => {
+        btn.classList.remove('border-primary', 'text-primary');
+        btn.classList.add('border-transparent', 'text-gray-600');
+    });
+    
+    // Show selected tab
+    if (tab === 'single-student') {
+        document.getElementById('single-student-form').classList.remove('hidden');
+        document.querySelector('.single-student-tab').classList.add('border-primary', 'text-primary');
+    } else {
+        document.getElementById('bulk-student-form').classList.remove('hidden');
+        document.querySelector('.bulk-student-tab').classList.add('border-primary', 'text-primary');
+    }
+}
+
+// File input handler for bulk upload
+document.getElementById('bulk-student-csv-file')?.addEventListener('change', function(e) {
+    if (e.target.files.length > 0) {
+        document.getElementById('student-file-name').classList.remove('hidden');
+        document.getElementById('student-file-name-text').textContent = e.target.files[0].name;
+    }
+});
+
+// Drag and drop for students
+const studentDropZone = document.querySelector('[onclick*="bulk-student-csv-file"]')?.parentElement;
+if (studentDropZone) {
+    studentDropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        studentDropZone.classList.add('border-primary', 'bg-primary/5');
+    });
+    studentDropZone.addEventListener('dragleave', () => {
+        studentDropZone.classList.remove('border-primary', 'bg-primary/5');
+    });
+    studentDropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        studentDropZone.classList.remove('border-primary', 'bg-primary/5');
+        const files = e.dataTransfer.files;
+        if (files.length > 0 && files[0].name.endsWith('.csv')) {
+            document.getElementById('bulk-student-csv-file').files = files;
+            document.getElementById('student-file-name').classList.remove('hidden');
+            document.getElementById('student-file-name-text').textContent = files[0].name;
+        }
+    });
+}
+
+// Single student form submission
+document.getElementById('single-student-form')?.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    
+    try {
+        const response = await fetch('{% url "SchoolNowMgt:api_student_onboard" %}', {
+            method: 'POST',
+            body: formData
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+            alert(`✓ Student enrolled!\nAdmission #: ${data.data.admission_number}\nName: ${data.data.full_name}\nClass: ${data.data.class}`);
+            this.reset();
+            document.getElementById('studentEnrollModal').classList.add('hidden');
+            location.reload();
+        } else {
+            const errorsDiv = document.getElementById('single-student-errors');
+            errorsDiv.classList.remove('hidden');
+            if (typeof data.errors === 'object') {
+                const errorList = Object.entries(data.errors).map(([field, msgs]) => `${field}: ${msgs.join(', ')}`).join('\n');
+                errorsDiv.textContent = errorList;
+            } else {
+                errorsDiv.textContent = data.message;
+            }
+        }
+    } catch (error) {
+        document.getElementById('single-student-errors').classList.remove('hidden');
+        document.getElementById('single-student-errors').textContent = `Error: ${error.message}`;
+    }
+});
+
+// Bulk student upload submission
+document.getElementById('bulk-student-form')?.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    
+    try {
+        const response = await fetch('{% url "SchoolNowMgt:api_student_bulk_onboard" %}', {
+            method: 'POST',
+            body: formData
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+            alert(`✓ Bulk enrollment completed!\n\nEnrolled: ${data.data.created_count} students\nFailed: ${data.data.failed_count}`);
+            console.log('Results:', data.data);
+            this.reset();
+            document.getElementById('studentEnrollModal').classList.add('hidden');
+            location.reload();
+        } else {
+            const errorsDiv = document.getElementById('bulk-student-errors');
+            errorsDiv.classList.remove('hidden');
+            if (data.data?.errors) {
+                errorsDiv.innerHTML = `<strong>Errors:</strong><br>${data.data.errors.join('<br>')}`;
+            } else {
+                errorsDiv.textContent = data.message;
+            }
+        }
+    } catch (error) {
+        document.getElementById('bulk-student-errors').classList.remove('hidden');
+        document.getElementById('bulk-student-errors').textContent = `Error: ${error.message}`;
+    }
+});
+</script>

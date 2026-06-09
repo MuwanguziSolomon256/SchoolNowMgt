@@ -14,4 +14,14 @@ urlpatterns = [
     path('attendance/done/', views.attendance_success, name='attendance_success'),
     path('logout/', views.custom_logout, name='custom_logout'),
     path('analytics/', views.live_analytics, name='live_analytics'),
+    
+    # Admin Onboarding & Messaging API Routes (Phase 6)
+    path('api/staff/onboard/', dashboard_views.onboard_staff_ajax, name='api_staff_onboard'),
+    path('api/staff/bulk-onboard/', dashboard_views.bulk_onboard_staff_ajax, name='api_staff_bulk_onboard'),
+    path('api/staff/reset-password/', dashboard_views.reset_staff_password_ajax, name='api_staff_reset_password'),
+    path('api/student/onboard/', dashboard_views.onboard_student_ajax, name='api_student_onboard'),
+    path('api/student/bulk-onboard/', dashboard_views.bulk_onboard_student_ajax, name='api_student_bulk_onboard'),
+    path('api/message/send/', dashboard_views.send_message_ajax, name='api_message_send'),
+    path('messages/inbox/', dashboard_views.message_inbox, name='message_inbox'),
+    path('api/message/<int:message_id>/mark-read/', dashboard_views.mark_message_read_ajax, name='api_message_mark_read'),
 ]

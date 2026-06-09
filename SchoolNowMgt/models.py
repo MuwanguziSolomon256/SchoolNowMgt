@@ -836,3 +836,187 @@ class ActivityLog(models.Model):
             models.Index(fields=['teacher', '-created_at']),
             models.Index(fields=['activity_type']),
         ]
+
+
+# ============================================================================
+# MESSAGE SYSTEM MODELS
+# ============================================================================
+
+
+class MessageTemplate(models.Model):
+    """
+    Pre-defined message templates for admins to quickly send standardized messages.
+    
+    Supports placeholders like {student_name}, {parent_name}, {class_name} that
+    are replaced with actual values when messages are sent to recipients.
+    """
+    
+    CATEGORY_CHOICES = [
+        ('attendance', 'Attendance Alert'),
+        ('academic', 'Academic Performance'),
+        ('event', 'School Event'),
+        ('general', 'General Announcement'),
+        ('discipline', 'Discipline Notice'),
+        ('fees', 'Fee Payment'),
+    ]
+    
+    ROLE_CHOICES = [
+        ('teacher', 'Teachers'),
+        ('staff', 'Support Staff'),
+        ('parent', 'Parents'),
+        ('all', 'All'),
+    ]
+    
+    name = models.CharField(max_length=200, help_text="Template name (e.g., 'Low Attendance Alert')")
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES)
+    intended_for = models.CharField(
+        max_length=10,
+        choices=ROLE_CHOICES,
+        default='all',
+        help_text="Which role(s) this template is intended for"
+    )
+    body = models.TextField(
+        help_text="Template body with optional placeholders: {student_name}, {parent_name}, {class_name}, {teacher_name}"
+    )
+    created_by = models.ForeignKey(
+        CustomUser,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='message_templates_created'
+    )
+    school = models.ForeignKey(
+        School,
+        on_delete=models.CASCADE,
+        related_name='message_templates'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    is_active = models.BooleanField(default=True)
+    
+    def __str__(self):
+        return f"{self.name} ({self.category})"
+    
+    class Meta:
+        ordering = ['category', 'name']
+        indexes = [
+            models.Index(fields=['school', 'is_active']),
+            models.Index(fields=['category']),
+        ]
+
+
+class Message(models.Model):
+    """
+    In-app messages sent by admins to stakeholders (teachers, staff, parents).
+    
+    Supports immediate delivery and scheduled delivery (processed by background cron).
+    Each message creates MessageRecipient entries for targeted users.
+    """
+    
+    sender = models.ForeignKey(
+        CustomUser,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='messages_sent',
+        limit_choices_to={'role': 'admin'}
+    )
+    school = models.ForeignKey(
+        School,
+        on_delete=models.CASCADE,
+        related_name='messages'
+    )
+    subject = models.CharField(max_length=200)
+    body = models.TextField()
+    template = models.ForeignKey(
+        MessageTemplate,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='messages_using_template'
+    )
+    recipient_type = models.CharField(
+        max_length=50,
+        choices=[
+            ('all_teachers', 'All Teachers'),
+            ('all_staff', 'All Support Staff'),
+            ('all_staff_combined', 'All Teachers & Support Staff'),
+            ('all_parents', 'All Parents'),
+            ('class_specific', 'Parents of Specific Class'),
+            ('individual', 'Individual User'),
+        ],
+        help_text="Targeting strategy for message recipients"
+    )
+    # For class_specific and individual targeting
+    target_class = models.ForeignKey(
+        ClassGrade,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        help_text="Used when recipient_type='class_specific'"
+    )
+    target_user = models.ForeignKey(
+        CustomUser,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='messages_targeted_to_user',
+        help_text="Used when recipient_type='individual'"
+    )
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    scheduled_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        db_index=True,
+        help_text="If set, message will be delivered at this time (processed by cron). If null, delivered immediately."
+    )
+    is_sent = models.BooleanField(
+        default=False,
+        db_index=True,
+        help_text="Marks when message has been processed and recipients assigned"
+    )
+    
+    def __str__(self):
+        return f"{self.subject} — {self.recipient_type} ({self.created_at.strftime('%Y-%m-%d %H:%M')})"
+    
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['school', '-created_at']),
+            models.Index(fields=['is_sent', 'scheduled_at']),
+        ]
+
+
+class MessageRecipient(models.Model):
+    """
+    Junction table linking Message → CustomUser for efficient recipient tracking.
+    
+    Each recipient record tracks whether they've read the message and when.
+    """
+    
+    message = models.ForeignKey(
+        Message,
+        on_delete=models.CASCADE,
+        related_name='recipients'
+    )
+    recipient = models.ForeignKey(
+        CustomUser,
+        on_delete=models.CASCADE,
+        related_name='received_messages'
+    )
+    read_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="Timestamp when recipient marked message as read. Null if unread."
+    )
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    
+    def __str__(self):
+        status = "read" if self.read_at else "unread"
+        return f"{self.message.subject} → {self.recipient.email} ({status})"
+    
+    class Meta:
+        unique_together = ('message', 'recipient')
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['recipient', '-created_at']),
+            models.Index(fields=['read_at']),
+        ]

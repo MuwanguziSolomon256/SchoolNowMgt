@@ -46,13 +46,16 @@
     
     <!-- Right Side Actions -->
     <div class="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-        <button class="bg-secondary-fixed text-on-secondary-fixed rounded-lg font-bold px-2 sm:px-4 py-2 flex items-center gap-2 hover:brightness-110 transition-all text-xs sm:text-sm whitespace-nowrap">
+        <button onclick="document.getElementById('studentEnrollModal').classList.remove('hidden')" class="bg-secondary-fixed text-on-secondary-fixed rounded-lg font-bold px-2 sm:px-4 py-2 flex items-center gap-2 hover:brightness-110 transition-all text-xs sm:text-sm whitespace-nowrap" title="Enroll new student">
             <span class="material-symbols-outlined text-base sm:text-lg">person_add</span>
             <span class="hidden sm:inline">New Admission</span>
         </button>
-        <a class="text-on-primary/70 hover:text-white p-2 flex items-center gap-2 hover:bg-white/10 transition-all rounded-lg" href="#">
-            <span class="material-symbols-outlined text-base sm:text-lg">support_agent</span>
-        </a>
+        <button onclick="document.getElementById('staffOnboardModal').classList.remove('hidden')" class="text-on-primary/70 hover:text-white p-2 flex items-center gap-2 hover:bg-white/10 transition-all rounded-lg" title="Onboard staff">
+            <span class="material-symbols-outlined text-base sm:text-lg">group_add</span>
+        </button>
+        <button onclick="document.getElementById('messageModal').classList.remove('hidden')" class="text-on-primary/70 hover:text-white p-2 flex items-center gap-2 hover:bg-white/10 transition-all rounded-lg" title="Send message">
+            <span class="material-symbols-outlined text-base sm:text-lg">mail</span>
+        </button>
         <a class="text-on-primary/70 hover:text-white p-2 flex items-center gap-2 hover:bg-white/10 transition-all rounded-lg" href="{% url 'SchoolNowMgt:custom_logout' %}">
             <span class="material-symbols-outlined text-base sm:text-lg">logout</span>
         </a>
@@ -366,5 +369,10 @@
         }
     });
 </script>
+
+<!-- Modals -->
+{% include "includes/staff_onboard_modal.html" %}
+{% include "includes/student_enroll_modal.html" %}
+{% include "includes/message_modal.html" %}
 
 {% endblock %}

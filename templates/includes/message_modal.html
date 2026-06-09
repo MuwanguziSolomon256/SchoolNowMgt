@@ -1,0 +1,157 @@
+<!-- Messaging Modal -->
+<div id="messageModal" class="hidden fixed inset-0 z-50 overflow-y-auto">
+    <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+        <!-- Background overlay -->
+        <div class="fixed inset-0 bg-black/50 transition-opacity" onclick="document.getElementById('messageModal').classList.add('hidden')"></div>
+        
+        <!-- Modal content -->
+        <div class="relative inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full max-h-[90vh] overflow-y-auto">
+            <!-- Close button -->
+            <button onclick="document.getElementById('messageModal').classList.add('hidden')" class="fixed top-4 right-4 text-gray-400 hover:text-gray-600 transition z-10">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+            
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-primary to-primary/80 px-6 py-6 sm:px-8">
+                <h3 class="text-xl sm:text-2xl font-bold text-white">Send Message</h3>
+                <p class="text-white/80 text-sm mt-1">Create and send messages to stakeholders</p>
+            </div>
+            
+            <!-- Content -->
+            <div class="px-6 py-6 sm:px-8">
+                <form id="message-form" class="space-y-5">
+                    {% csrf_token %}
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Subject</label>
+                        <input type="text" name="subject" placeholder="Message subject" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition" maxlength="200" required>
+                        <p class="text-xs text-gray-500 mt-1">Max 200 characters</p>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Send To</label>
+                        <select name="recipient_type" id="recipient_type" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition" required onchange="updateRecipientFields()">
+                            <option value="">Select recipients...</option>
+                            <option value="all_teachers">All Teachers</option>
+                            <option value="all_staff">All Support Staff</option>
+                            <option value="all_staff_combined">All Teachers & Support Staff</option>
+                            <option value="all_parents">All Parents</option>
+                            <option value="class_specific">Parents of Specific Class</option>
+                            <option value="individual">Individual User</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Conditional fields -->
+                    <div id="class_field" class="hidden">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Select Class</label>
+                        <select name="target_class" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition">
+                            <option value="">Choose a class...</option>
+                            {% for class in classes %}
+                            <option value="{{ class.id }}">{{ class.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div id="user_field" class="hidden">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Select User</label>
+                        <select name="target_user" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition">
+                            <option value="">Choose a user...</option>
+                            {% for user in users %}
+                            <option value="{{ user.id }}">{{ user.get_full_name }} ({{ user.get_role_display }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Message</label>
+                        <textarea name="body" placeholder="Type your message here... (max 1000 characters)" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition" rows="5" maxlength="1000" required></textarea>
+                        <p class="text-xs text-gray-500 mt-1">Max 1000 characters</p>
+                    </div>
+                    
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                        <p class="text-xs text-blue-800">
+                            <strong>Tip:</strong> Messages will be delivered immediately to recipients' dashboard inboxes.
+                        </p>
+                    </div>
+                    
+                    <div id="message-errors" class="hidden bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-800"></div>
+                    
+                    <div id="message-success" class="hidden bg-green-50 border border-green-200 rounded-lg p-3 text-sm text-green-800"></div>
+                    
+                    <div class="flex gap-3 justify-end pt-4">
+                        <button type="button" onclick="document.getElementById('messageModal').classList.add('hidden')" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition">
+                            Cancel
+                        </button>
+                        <button type="submit" class="px-6 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition flex items-center gap-2">
+                            <span class="material-symbols-outlined text-sm">send</span>
+                            Send Message
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function updateRecipientFields() {
+    const recipientType = document.getElementById('recipient_type').value;
+    const classField = document.getElementById('class_field');
+    const userField = document.getElementById('user_field');
+    
+    classField.classList.add('hidden');
+    userField.classList.add('hidden');
+    
+    if (recipientType === 'class_specific') {
+        classField.classList.remove('hidden');
+    } else if (recipientType === 'individual') {
+        userField.classList.remove('hidden');
+    }
+}
+
+// Message form submission
+document.getElementById('message-form')?.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    // Reset messages
+    document.getElementById('message-errors').classList.add('hidden');
+    document.getElementById('message-success').classList.add('hidden');
+    
+    const formData = new FormData(this);
+    
+    try {
+        const response = await fetch('{% url "SchoolNowMgt:api_message_send" %}', {
+            method: 'POST',
+            body: formData
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+            document.getElementById('message-success').classList.remove('hidden');
+            document.getElementById('message-success').innerHTML = `
+                <strong>✓ Message sent successfully!</strong><br>
+                Delivered to ${data.data.recipient_count} recipient(s).
+            `;
+            this.reset();
+            setTimeout(() => {
+                document.getElementById('messageModal').classList.add('hidden');
+                location.reload();
+            }, 1500);
+        } else {
+            const errorsDiv = document.getElementById('message-errors');
+            errorsDiv.classList.remove('hidden');
+            if (typeof data.errors === 'object') {
+                const errorList = Object.entries(data.errors).map(([field, msgs]) => 
+                    Array.isArray(msgs) ? `${field}: ${msgs[0]}` : `${field}: ${msgs}`
+                ).join('<br>');
+                errorsDiv.innerHTML = errorList;
+            } else {
+                errorsDiv.textContent = data.message;
+            }
+        }
+    } catch (error) {
+        document.getElementById('message-errors').classList.remove('hidden');
+        document.getElementById('message-errors').textContent = `Error: ${error.message}`;
+    }
+});
+</script>

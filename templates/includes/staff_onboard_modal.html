@@ -1,0 +1,243 @@
+<!-- Staff Onboarding Modal -->
+<div id="staffOnboardModal" class="hidden fixed inset-0 z-50 overflow-y-auto">
+    <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+        <!-- Background overlay -->
+        <div class="fixed inset-0 bg-black/50 transition-opacity" onclick="document.getElementById('staffOnboardModal').classList.add('hidden')"></div>
+        
+        <!-- Modal content -->
+        <div class="relative inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
+            <!-- Close button -->
+            <button onclick="document.getElementById('staffOnboardModal').classList.add('hidden')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+            
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-primary to-primary/80 px-6 py-6 sm:px-8">
+                <h3 class="text-xl sm:text-2xl font-bold text-white">Onboard Staff</h3>
+                <p class="text-white/80 text-sm mt-1">Add new teacher or support staff to your school</p>
+            </div>
+            
+            <!-- Tab navigation -->
+            <div class="border-b border-gray-200">
+                <div class="flex">
+                    <button onclick="switchTab('single-staff')" class="single-tab flex-1 px-4 py-3 text-center font-medium text-primary border-b-2 border-primary transition-colors">
+                        <span class="material-symbols-outlined text-sm align-middle mr-2">person</span>
+                        Single Staff
+                    </button>
+                    <button onclick="switchTab('bulk-staff')" class="bulk-tab flex-1 px-4 py-3 text-center font-medium text-gray-600 border-b-2 border-transparent hover:text-gray-800 transition-colors">
+                        <span class="material-symbols-outlined text-sm align-middle mr-2">upload_file</span>
+                        Bulk Upload
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Content -->
+            <div class="px-6 py-6 sm:px-8">
+                <!-- Single Staff Form -->
+                <form id="single-staff-form" class="single-tab-content space-y-4">
+                    {% csrf_token %}
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+                            <input type="text" name="first_name" placeholder="John" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+                            <input type="text" name="last_name" placeholder="Doe" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition" required>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                        <input type="email" name="email" placeholder="john.doe@school.edu" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition" required>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Position</label>
+                            <select name="position" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition" required>
+                                <option value="">Select position...</option>
+                                <option value="Class Teacher">Class Teacher</option>
+                                <option value="Subject Teacher">Subject Teacher</option>
+                                <option value="Head Teacher">Head Teacher</option>
+                                <option value="Deputy Head">Deputy Head</option>
+                                <option value="Cleaner">Cleaner</option>
+                                <option value="Security">Security</option>
+                                <option value="Administrator">Administrator</option>
+                                <option value="Support Staff">Support Staff</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Date Joined</label>
+                            <input type="date" name="date_joined" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition" required>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center gap-2">
+                        <input type="checkbox" id="is-teacher" name="is_teacher" class="w-4 h-4 text-primary rounded focus:ring-2 focus:ring-primary">
+                        <label for="is-teacher" class="text-sm text-gray-700">This person is a teacher</label>
+                    </div>
+                    
+                    <div id="single-staff-errors" class="hidden bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-800"></div>
+                    
+                    <div class="flex gap-3 justify-end pt-4">
+                        <button type="button" onclick="document.getElementById('staffOnboardModal').classList.add('hidden')" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition">
+                            Cancel
+                        </button>
+                        <button type="submit" class="px-6 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition flex items-center gap-2">
+                            <span class="material-symbols-outlined text-sm">person_add</span>
+                            Create Staff
+                        </button>
+                    </div>
+                </form>
+                
+                <!-- Bulk Upload Form -->
+                <form id="bulk-staff-form" class="bulk-tab-content hidden space-y-4">
+                    {% csrf_token %}
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                        <p class="text-sm text-blue-800">
+                            <strong>CSV Format:</strong> first_name, last_name, email, position, date_joined (YYYY-MM-DD), is_teacher (true/false)
+                        </p>
+                    </div>
+                    
+                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-primary hover:bg-primary/5 transition cursor-pointer" onclick="document.getElementById('bulk-csv-file').click()">
+                        <input type="file" id="bulk-csv-file" name="csv_file" accept=".csv" class="hidden" required>
+                        <span class="material-symbols-outlined text-4xl text-gray-400 block mb-2">upload_file</span>
+                        <p class="text-gray-700 font-medium">Click to upload CSV file</p>
+                        <p class="text-xs text-gray-500 mt-1">or drag and drop</p>
+                    </div>
+                    
+                    <div id="file-name" class="text-sm text-gray-600 hidden">Selected: <span id="file-name-text"></span></div>
+                    
+                    <div id="bulk-staff-errors" class="hidden bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-800"></div>
+                    
+                    <div class="flex gap-3 justify-end pt-4">
+                        <button type="button" onclick="document.getElementById('staffOnboardModal').classList.add('hidden')" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition">
+                            Cancel
+                        </button>
+                        <button type="submit" class="px-6 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition flex items-center gap-2">
+                            <span class="material-symbols-outlined text-sm">upload</span>
+                            Upload Staff
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function switchTab(tab) {
+    // Hide all content
+    document.querySelectorAll('.single-tab-content, .bulk-tab-content').forEach(el => el.classList.add('hidden'));
+    document.querySelectorAll('.single-tab, .bulk-tab').forEach(btn => {
+        btn.classList.remove('border-primary', 'text-primary', 'font-bold');
+        btn.classList.add('border-transparent', 'text-gray-600');
+    });
+    
+    // Show selected tab
+    if (tab === 'single-staff') {
+        document.getElementById('single-staff-form').classList.remove('hidden');
+        document.querySelector('.single-tab').classList.add('border-primary', 'text-primary');
+    } else {
+        document.getElementById('bulk-staff-form').classList.remove('hidden');
+        document.querySelector('.bulk-tab').classList.add('border-primary', 'text-primary');
+    }
+}
+
+// File input handler for bulk upload
+document.getElementById('bulk-csv-file')?.addEventListener('change', function(e) {
+    if (e.target.files.length > 0) {
+        document.getElementById('file-name').classList.remove('hidden');
+        document.getElementById('file-name-text').textContent = e.target.files[0].name;
+    }
+});
+
+// Drag and drop
+const dropZone = document.querySelector('.border-dashed');
+if (dropZone) {
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('border-primary', 'bg-primary/5');
+    });
+    dropZone.addEventListener('dragleave', () => {
+        dropZone.classList.remove('border-primary', 'bg-primary/5');
+    });
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('border-primary', 'bg-primary/5');
+        const files = e.dataTransfer.files;
+        if (files.length > 0 && files[0].name.endsWith('.csv')) {
+            document.getElementById('bulk-csv-file').files = files;
+            document.getElementById('file-name').classList.remove('hidden');
+            document.getElementById('file-name-text').textContent = files[0].name;
+        }
+    });
+}
+
+// Single staff form submission
+document.getElementById('single-staff-form')?.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    
+    try {
+        const response = await fetch('{% url "SchoolNowMgt:api_staff_onboard" %}', {
+            method: 'POST',
+            body: formData
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+            alert(`✓ Staff created!\nEmail: ${data.data.email}\nTemporary Password: ${data.data.temp_password}\n\nShare these credentials with the staff member.`);
+            this.reset();
+            document.getElementById('staffOnboardModal').classList.add('hidden');
+            location.reload();
+        } else {
+            const errorsDiv = document.getElementById('single-staff-errors');
+            errorsDiv.classList.remove('hidden');
+            if (typeof data.errors === 'object') {
+                const errorList = Object.entries(data.errors).map(([field, msgs]) => `${field}: ${msgs.join(', ')}`).join('\n');
+                errorsDiv.textContent = errorList;
+            } else {
+                errorsDiv.textContent = data.message;
+            }
+        }
+    } catch (error) {
+        document.getElementById('single-staff-errors').classList.remove('hidden');
+        document.getElementById('single-staff-errors').textContent = `Error: ${error.message}`;
+    }
+});
+
+// Bulk staff upload submission
+document.getElementById('bulk-staff-form')?.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    
+    try {
+        const response = await fetch('{% url "SchoolNowMgt:api_staff_bulk_onboard" %}', {
+            method: 'POST',
+            body: formData
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+            alert(`✓ Bulk upload completed!\n\nCreated: ${data.data.created_count} staff\nFailed: ${data.data.failed_count}\n\nCheck the details below.`);
+            console.log('Results:', data.data);
+            this.reset();
+            document.getElementById('staffOnboardModal').classList.add('hidden');
+            location.reload();
+        } else {
+            const errorsDiv = document.getElementById('bulk-staff-errors');
+            errorsDiv.classList.remove('hidden');
+            if (data.data?.errors) {
+                errorsDiv.innerHTML = `<strong>Errors:</strong><br>${data.data.errors.join('<br>')}`;
+            } else {
+                errorsDiv.textContent = data.message;
+            }
+        }
+    } catch (error) {
+        document.getElementById('bulk-staff-errors').classList.remove('hidden');
+        document.getElementById('bulk-staff-errors').textContent = `Error: ${error.message}`;
+    }
+});
+</script>
