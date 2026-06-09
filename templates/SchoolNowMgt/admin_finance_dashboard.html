@@ -1,0 +1,360 @@
+{% extends "SchoolNowMgt/base_ethos.html" %}
+{% load static %}
+
+{% block title %}Finance Dashboard - Admin Panel{% endblock %}
+
+{% block content %}
+
+<!-- Main Content Area -->
+<div class="w-full min-h-screen pt-24">
+    
+    <!-- Header Section -->
+    <header class="flex justify-between items-center px-container-padding w-full sticky top-24 z-40 bg-surface/70 backdrop-blur-2xl border-b border-white/20 shadow-sm h-14 md:h-16">
+        <div class="flex items-center gap-4">
+            <a href="{% url 'SchoolNowMgt:dashboard' %}" class="text-primary hover:text-secondary-container flex items-center gap-2 text-sm font-bold">
+                <span class="material-symbols-outlined">arrow_back</span>
+                <span>Dashboard</span>
+            </a>
+        </div>
+        <h2 class="text-primary font-bold text-lg md:text-xl">Finance & Revenue</h2>
+        <div class="w-32"></div>
+    </header>
+
+    <!-- Page Content -->
+    <section class="p-4 md:p-container-padding space-y-6 md:space-y-section-margin flex-grow">
+        
+        <!-- Header Section -->
+        <div class="flex flex-col gap-4 md:gap-0 md:flex-row md:items-end justify-between">
+            <div>
+                <h1 class="font-display-lg text-display-lg text-primary text-2xl md:text-4xl">Finance</h1>
+                <p class="font-body-lg text-body-lg text-on-surface-variant text-xs md:text-sm">
+                    Monitor fee collection, track payments, and manage school financials.
+                </p>
+            </div>
+            <a href="{% url 'SchoolNowMgt:export_finance' %}" 
+               class="bg-tertiary text-on-tertiary rounded-lg font-bold px-3 md:px-4 py-2 flex items-center gap-2 hover:brightness-110 transition-all text-sm">
+                <span class="material-symbols-outlined">download</span>
+                <span>Export Report</span>
+            </a>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-gutter">
+            <!-- Collected This Month -->
+            <div class="glass-card p-4 md:p-6 rounded-2xl md:rounded-3xl shadow-sm">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="p-2 md:p-3 bg-green-100/50 rounded-2xl">
+                        <span class="material-symbols-outlined text-green-600 text-lg md:text-xl">payments</span>
+                    </div>
+                </div>
+                <h3 class="text-on-surface-variant font-label-md uppercase tracking-wider text-xs">Collected This Month</h3>
+                <p class="font-display-lg text-display-lg text-green-600 mt-1 text-xl md:text-3xl">UGX {{ fees_collected_this_month|floatformat:0 }}</p>
+            </div>
+
+            <!-- Outstanding -->
+            <div class="glass-card p-4 md:p-6 rounded-2xl md:rounded-3xl shadow-sm">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="p-2 md:p-3 bg-red-100/50 rounded-2xl">
+                        <span class="material-symbols-outlined text-red-600 text-lg md:text-xl">pending_actions</span>
+                    </div>
+                </div>
+                <h3 class="text-on-surface-variant font-label-md uppercase tracking-wider text-xs">Outstanding</h3>
+                <p class="font-display-lg text-display-lg text-red-600 mt-1 text-xl md:text-3xl">UGX {{ outstanding_fees|floatformat:0 }}</p>
+            </td>
+
+            <!-- Collection Target -->
+            <div class="glass-card p-4 md:p-6 rounded-2xl md:rounded-3xl shadow-sm">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="p-2 md:p-3 bg-secondary/5 rounded-2xl">
+                        <span class="material-symbols-outlined text-secondary text-lg md:text-xl">target</span>
+                    </div>
+                </div>
+                <h3 class="text-on-surface-variant font-label-md uppercase tracking-wider text-xs">Target Achievement</h3>
+                <p class="font-display-lg text-display-lg text-secondary mt-1 text-xl md:text-3xl">{{ fee_collection_percentage }}%</p>
+            </div>
+
+            <!-- Progress Ring -->
+            <div class="glass-card p-4 md:p-6 rounded-2xl md:rounded-3xl shadow-sm flex items-center justify-center">
+                <div class="relative w-24 h-24">
+                    <svg class="w-full h-full" viewBox="0 0 36 36">
+                        <path class="text-primary/5 stroke-current" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-width="3"></path>
+                        <path class="text-secondary-container stroke-current" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-dasharray="{{ fee_collection_percentage }}, 100" stroke-linecap="round" stroke-width="3"></path>
+                    </svg>
+                    <div class="absolute inset-0 flex flex-col items-center justify-center">
+                        <span class="text-headline-md font-bold text-primary text-sm md:text-base">{{ fee_collection_percentage }}%</span>
+                        <span class="text-[10px] uppercase text-on-surface-variant">Progress</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-gutter">
+            <!-- Monthly Revenue Trend -->
+            <div class="glass-card rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-sm">
+                <h3 class="font-headline-md text-headline-md text-primary mb-4 text-lg md:text-xl">Monthly Revenue Trend</h3>
+                <div class="relative w-full" style="height: 300px;">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Fee Collection by Class Chart -->
+            <div class="glass-card rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-sm">
+                <h3 class="font-headline-md text-headline-md text-primary mb-4 text-lg md:text-xl">Fee Collection by Class</h3>
+                <div class="relative w-full" style="height: 300px;">
+                    <canvas id="classChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fee Breakdown by Class -->
+        <div class="glass-card rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-sm">
+            <h3 class="font-headline-md text-headline-md text-primary mb-4 md:mb-6 text-lg md:text-xl">Fee Collection by Class (This Month)</h3>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full text-xs md:text-sm">
+                    <thead>
+                        <tr class="border-b border-outline-variant/20">
+                            <th class="pb-3 md:pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-left">Class</th>
+                            <th class="pb-3 md:pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-right">Amount Collected</th>
+                            <th class="pb-3 md:pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-center">Transactions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in fee_by_class %}
+                        <tr class="border-b border-outline-variant/10 hover:bg-surface-container-low/50 transition-colors">
+                            <td class="py-3 md:py-4 text-primary font-bold">{{ item.student__class_grade__name }}</td>
+                            <td class="py-3 md:py-4 text-right text-green-600 font-bold">UGX {{ item.total_amount|floatformat:0 }}</td>
+                            <td class="py-3 md:py-4 text-center">
+                                <span class="badge badge-info">{{ item.transaction_count }}</span>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="py-6 text-center text-on-surface-variant">
+                                <p class="font-label-md">No payments recorded this month</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Recent Transactions -->
+        <div class="glass-card rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-sm">
+            <div class="flex justify-between items-center mb-4 md:mb-6">
+                <h3 class="font-headline-md text-headline-md text-primary text-lg md:text-xl">Recent Transactions</h3>
+                <span class="text-on-surface-variant text-xs md:text-sm">
+                    Page {{ recent_transactions.number }} of {{ paginator.num_pages }}
+                </span>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-xs md:text-sm">
+                    <thead>
+                        <tr class="border-b border-outline-variant/20">
+                            <th class="pb-3 md:pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-left">Student</th>
+                            <th class="pb-3 md:pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-left">Class</th>
+                            <th class="pb-3 md:pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-right">Amount</th>
+                            <th class="pb-3 md:pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-left">Date</th>
+                            <th class="pb-3 md:pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-center">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for transaction in recent_transactions %}
+                        <tr class="border-b border-outline-variant/10 hover:bg-surface-container-low/50 transition-colors">
+                            <td class="py-3 md:py-4">
+                                <div class="flex items-center gap-2 md:gap-3">
+                                    <div class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary text-xs md:text-sm flex-shrink-0">
+                                        {{ transaction.student.user.first_name|first|upper }}
+                                    </div>
+                                    <span class="font-bold text-primary">{{ transaction.student.user.get_full_name }}</span>
+                                </div>
+                            </td>
+                            <td class="py-3 md:py-4 text-on-surface-variant">{{ transaction.student.class_grade.name }}</td>
+                            <td class="py-3 md:py-4 text-right text-green-600 font-bold">UGX {{ transaction.amount_paid|floatformat:0 }}</td>
+                            <td class="py-3 md:py-4 text-on-surface-variant">{{ transaction.payment_date|date:"M d, Y" }}</td>
+                            <td class="py-3 md:py-4 text-center">
+                                <span class="badge badge-success text-xs md:text-sm">Completed</span>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="py-8 text-center text-on-surface-variant">
+                                <p class="font-label-md">No transactions found</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination Controls (Phase 1.5) -->
+            {% if paginator.num_pages > 1 %}
+            <div class="mt-4 md:mt-6 flex justify-center items-center gap-2">
+                {% if recent_transactions.has_previous %}
+                    <a href="?page=1{% if class_filter %}&class={{ class_filter }}{% endif %}" 
+                       class="px-3 py-2 rounded-lg border border-outline-variant/30 text-primary hover:bg-primary/10 transition-all text-xs md:text-sm">
+                        &laquo; First
+                    </a>
+                    <a href="?page={{ recent_transactions.previous_page_number }}{% if class_filter %}&class={{ class_filter }}{% endif %}" 
+                       class="px-3 py-2 rounded-lg border border-outline-variant/30 text-primary hover:bg-primary/10 transition-all text-xs md:text-sm">
+                        &lsaquo; Previous
+                    </a>
+                {% endif %}
+                
+                <span class="px-3 py-2 text-on-surface-variant text-xs md:text-sm">
+                    Page {{ recent_transactions.number }} of {{ paginator.num_pages }}
+                </span>
+                
+                {% if recent_transactions.has_next %}
+                    <a href="?page={{ recent_transactions.next_page_number }}{% if class_filter %}&class={{ class_filter }}{% endif %}" 
+                       class="px-3 py-2 rounded-lg border border-outline-variant/30 text-primary hover:bg-primary/10 transition-all text-xs md:text-sm">
+                        Next &rsaquo;
+                    </a>
+                    <a href="?page={{ paginator.num_pages }}{% if class_filter %}&class={{ class_filter }}{% endif %}" 
+                       class="px-3 py-2 rounded-lg border border-outline-variant/30 text-primary hover:bg-primary/10 transition-all text-xs md:text-sm">
+                        Last &raquo;
+                    </a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+
+    </section>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Chart data from context
+    const revenueLabels = {{ chart_data.monthly_revenue_labels|safe }};
+    const revenueData = {{ chart_data.monthly_revenue|safe }};
+    const classLabels = {{ chart_data.fee_by_class_labels|safe }};
+    const classAmounts = {{ chart_data.fee_by_class_amounts|safe }};
+
+    // Initialize Monthly Revenue Chart
+    if (document.getElementById('revenueChart')) {
+        const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+        new Chart(revenueCtx, {
+            type: 'line',
+            data: {
+                labels: revenueLabels,
+                datasets: [{
+                    label: 'Revenue (UGX)',
+                    data: revenueData,
+                    borderColor: '#565a8b',
+                    backgroundColor: 'rgba(86, 90, 139, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: '#565a8b',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 5,
+                    pointHoverRadius: 7
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        labels: {
+                            font: { family: "'Inter', sans-serif", size: 12 },
+                            color: '#46464f',
+                            padding: 15
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            font: { family: "'Inter', sans-serif", size: 11 },
+                            color: '#46464f',
+                            callback: function(value) {
+                                return 'UGX ' + value.toLocaleString();
+                            }
+                        },
+                        grid: { color: 'rgba(119, 118, 128, 0.1)' }
+                    },
+                    x: {
+                        ticks: {
+                            font: { family: "'Inter', sans-serif", size: 11 },
+                            color: '#46464f'
+                        },
+                        grid: { color: 'rgba(119, 118, 128, 0.1)' }
+                    }
+                }
+            }
+        });
+    }
+
+    // Initialize Class Fee Collection Chart
+    if (document.getElementById('classChart')) {
+        const classCtx = document.getElementById('classChart').getContext('2d');
+        new Chart(classCtx, {
+            type: 'bar',
+            data: {
+                labels: classLabels,
+                datasets: [{
+                    label: 'Amount Collected (UGX)',
+                    data: classAmounts,
+                    backgroundColor: [
+                        '#565a8b',
+                        '#feb700',
+                        '#2b0400',
+                        '#7c5800',
+                        '#080b3a'
+                    ],
+                    borderRadius: 8,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        labels: {
+                            font: { family: "'Inter', sans-serif", size: 12 },
+                            color: '#46464f',
+                            padding: 15
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            font: { family: "'Inter', sans-serif", size: 11 },
+                            color: '#46464f',
+                            callback: function(value) {
+                                return 'UGX ' + value.toLocaleString();
+                            }
+                        },
+                        grid: { color: 'rgba(119, 118, 128, 0.1)' }
+                    },
+                    x: {
+                        ticks: {
+                            font: { family: "'Inter', sans-serif", size: 11 },
+                            color: '#46464f'
+                        },
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+    }
+
+    // Real-time refresh: Auto-refresh dashboard data every 60 seconds
+    setInterval(function() {
+        location.reload();
+    }, 60000);
+</script>
+{% endblock %}

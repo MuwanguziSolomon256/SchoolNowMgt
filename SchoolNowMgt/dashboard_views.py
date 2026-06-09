@@ -2,12 +2,14 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from django.db.models import Count, Avg, Q, Sum
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.views.decorators.http import require_POST
 from django.db import transaction
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 import uuid
 import csv
 import io
+from datetime import datetime, timedelta
 
 from .models import (
     Student, StaffProfile, StudentAttendance, StaffAttendance,
@@ -33,6 +35,236 @@ def unified_login_required(view_func):
             return redirect('auth:unified_login')
         return view_func(request, *args, **kwargs)
     return wrapper
+
+
+# ─────────────────────────────────────────────────────────────
+# PAGINATION & FILTERING HELPERS (Phase 1.5)
+# ─────────────────────────────────────────────────────────────
+
+def paginate_queryset(request, queryset, per_page=20):
+    """
+    Paginates a queryset based on page number in request.
+    Returns: (paginated_items, paginator, page_num)
+    """
+    paginator = Paginator(queryset, per_page)
+    page_num = request.GET.get('page', 1)
+    
+    try:
+        page_num_int = int(page_num)
+    except (ValueError, TypeError):
+        page_num_int = 1
+    
+    try:
+        items = paginator.page(page_num_int)
+    except PageNotAnInteger:
+        items = paginator.page(1)
+    except EmptyPage:
+        # Handle empty page - return last page or first page if totally empty
+        if paginator.num_pages > 0:
+            items = paginator.page(paginator.num_pages)
+        else:
+            items = paginator.page(1)
+    
+    return items, paginator, page_num_int
+
+
+def export_csv(filename, headers, rows):
+    """
+    Creates CSV response with given data.
+    Returns: HttpResponse with CSV content
+    """
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    
+    writer = csv.writer(response)
+    writer.writerow(headers)
+    for row in rows:
+        writer.writerow(row)
+    
+    return response
+
+
+# ─────────────────────────────────────────────────────────────
+# CSV EXPORT ENDPOINTS (Phase 1.5)
+# ─────────────────────────────────────────────────────────────
+
+@unified_login_required
+def export_students_csv(request):
+    """Export Students data as CSV"""
+    if request.user.role != 'admin' and not request.user.is_superuser:
+        return redirect('auth:unified_login')
+    
+    user_school = request.user.school
+    
+    # Get filter parameters
+    class_filter = request.GET.get('class', '')
+    status_filter = request.GET.get('status', 'active')
+    
+    # Build query
+    students = Student.objects.filter(
+        class_grade__school=user_school,
+        status=status_filter if status_filter else 'active'
+    ).select_related('class_grade', 'parent_user')
+    
+    if class_filter:
+        students = students.filter(class_grade__id=class_filter)
+    
+    # Prepare CSV data
+    headers = ['Admission #', 'Student Name', 'Class', 'Date Admitted', 'Status', 'Parent/Guardian']
+    rows = []
+    
+    for student in students:
+        rows.append([
+            student.admission_number or '—',
+            student.full_name,
+            student.class_grade.name if student.class_grade else '—',
+            student.date_admitted.strftime('%d/%m/%Y') if student.date_admitted else '—',
+            student.status.title(),
+            student.parent_user.get_full_name() if student.parent_user else student.parent_name or '—'
+        ])
+    
+    filename = f"students_export_{timezone.now().strftime('%Y%m%d_%H%M%S')}.csv"
+    return export_csv(filename, headers, rows)
+
+
+@unified_login_required
+def export_staff_csv(request):
+    """Export Staff data as CSV"""
+    if request.user.role != 'admin' and not request.user.is_superuser:
+        return redirect('auth:unified_login')
+    
+    user_school = request.user.school
+    
+    # Get filter parameters
+    position_filter = request.GET.get('position', '')
+    
+    # Build query
+    staff = StaffProfile.objects.filter(
+        user__school=user_school,
+        date_left__isnull=True
+    ).select_related('user')
+    
+    if position_filter:
+        staff = staff.filter(position=position_filter)
+    
+    # Prepare CSV data
+    headers = ['Employee ID', 'Staff Name', 'Position', 'Date Joined', 'Employment Type', 'Email']
+    rows = []
+    
+    for s in staff:
+        rows.append([
+            s.employee_id or '—',
+            s.user.get_full_name(),
+            s.position or '—',
+            s.date_joined.strftime('%d/%m/%Y') if s.date_joined else '—',
+            s.employment_type.title() if s.employment_type else '—',
+            s.user.email or '—'
+        ])
+    
+    filename = f"staff_export_{timezone.now().strftime('%Y%m%d_%H%M%S')}.csv"
+    return export_csv(filename, headers, rows)
+
+
+@unified_login_required
+def export_finance_csv(request):
+    """Export Finance data as CSV"""
+    if request.user.role != 'admin' and not request.user.is_superuser:
+        return redirect('auth:unified_login')
+    
+    user_school = request.user.school
+    today = timezone.localdate()
+    
+    # Get filter parameters
+    class_filter = request.GET.get('class', '')
+    month = request.GET.get('month', today.month)
+    year = request.GET.get('year', today.year)
+    
+    # Build query
+    transactions = FeePayment.objects.filter(
+        student__class_grade__school=user_school,
+        payment_date__month=month,
+        payment_date__year=year
+    ).select_related('student', 'student__class_grade')
+    
+    if class_filter:
+        transactions = transactions.filter(student__class_grade__id=class_filter)
+    
+    # Prepare CSV data
+    headers = ['Date', 'Student', 'Class', 'Amount (UGX)', 'Payment Method', 'Reference']
+    rows = []
+    total_collected = 0
+    
+    for transaction in transactions:
+        amount = transaction.amount_paid or 0
+        total_collected += amount
+        rows.append([
+            transaction.payment_date.strftime('%d/%m/%Y') if transaction.payment_date else '—',
+            transaction.student.user.get_full_name() if transaction.student else '—',
+            transaction.student.class_grade.name if transaction.student and transaction.student.class_grade else '—',
+            f"{amount:,.0f}",
+            transaction.payment_method or '—',
+            transaction.reference_number or '—'
+        ])
+    
+    # Add total row
+    rows.append(['', '', 'TOTAL', f"{total_collected:,.0f}", '', ''])
+    
+    filename = f"finance_export_{timezone.now().strftime('%Y%m%d_%H%M%S')}.csv"
+    return export_csv(filename, headers, rows)
+
+
+@unified_login_required
+def export_reports_csv(request):
+    """Export Academic Reports as CSV"""
+    if request.user.role != 'admin' and not request.user.is_superuser:
+        return redirect('auth:unified_login')
+    
+    user_school = request.user.school
+    today = timezone.localdate()
+    current_year = str(today.year)
+    
+    # Get filter parameter
+    class_filter = request.GET.get('class', '')
+    
+    # Build query for class performance
+    class_performance = Grade.objects.filter(
+        academic_year=current_year,
+        student__class_grade__school=user_school
+    ).values('student__class_grade__name').annotate(
+        avg_score=Avg('score'),
+        student_count=Count('student', distinct=True)
+    ).order_by('student__class_grade__name')
+    
+    if class_filter:
+        class_performance = class_performance.filter(student__class_grade__id=class_filter)
+    
+    # Prepare CSV data
+    headers = ['Class', 'Average Score', 'Student Count', 'Grade']
+    rows = []
+    
+    for perf in class_performance:
+        avg_score = perf['avg_score'] or 0
+        avg_score = round(avg_score, 1)
+        
+        # Grade mapping
+        if avg_score >= 80:
+            grade = 'Excellent'
+        elif avg_score >= 70:
+            grade = 'Good'
+        elif avg_score >= 60:
+            grade = 'Average'
+        else:
+            grade = 'Needs Improvement'
+        
+        rows.append([
+            perf['student__class_grade__name'] or '—',
+            f"{avg_score}",
+            perf['student_count'] or 0,
+            grade
+        ])
+    
+    filename = f"reports_export_{timezone.now().strftime('%Y%m%d_%H%M%S')}.csv"
+    return export_csv(filename, headers, rows)
 
 
 @unified_login_required
@@ -1219,3 +1451,528 @@ def mark_message_read_ajax(request, message_id):
             'success': False,
             'message': f'Error: {str(e)}'
         }, status=500)
+
+
+# ─────────────────────────────────────────────────────────────
+# ADMIN MINI-DASHBOARDS (Phase 7)
+# ─────────────────────────────────────────────────────────────
+
+@unified_login_required
+def admin_students_dashboard(request):
+    """
+    Admin mini-dashboard for Students section.
+    
+    Shows:
+    - Total students, new this month, by class
+    - Student list with search/filter/pagination
+    - Inline "New Admission" form
+    """
+    if request.user.role != 'admin' and not request.user.is_superuser:
+        return redirect('auth:unified_login')
+    
+    today = timezone.localdate()
+    user_school = request.user.school
+    
+    # Students stats
+    total_students = Student.objects.filter(
+        status='active',
+        class_grade__school=user_school
+    ).count()
+    
+    new_students_this_month = Student.objects.filter(
+        date_admitted__year=today.year,
+        date_admitted__month=today.month,
+        class_grade__school=user_school
+    ).count()
+    
+    total_classes = ClassGrade.objects.filter(school=user_school).count()
+    
+    # Students by class (with counts)
+    students_by_class = ClassGrade.objects.filter(
+        school=user_school
+    ).annotate(
+        student_count=Count('students', filter=Q(students__status='active'))
+    ).order_by('level')
+    
+    # All classes for modal/form and filtering
+    classes = ClassGrade.objects.filter(school=user_school).order_by('level')
+    
+    # Get filter parameters
+    class_filter = request.GET.get('class', '')
+    status_filter = request.GET.get('status', 'active')
+    search_query = request.GET.get('search', '')
+    
+    # Recent students with filtering
+    recent_students = Student.objects.filter(
+        class_grade__school=user_school,
+        status=status_filter if status_filter else 'active'
+    ).select_related('class_grade', 'parent_user')
+    
+    if class_filter:
+        recent_students = recent_students.filter(class_grade__id=class_filter)
+    
+    if search_query:
+        recent_students = recent_students.filter(
+            Q(first_name__icontains=search_query) |
+            Q(last_name__icontains=search_query) |
+            Q(admission_number__icontains=search_query)
+        )
+    
+    recent_students = recent_students.order_by('-date_admitted')
+    
+    # Paginate
+    paginated_items, paginator, page_num = paginate_queryset(request, recent_students, per_page=15)
+    
+    context = {
+        'today': today,
+        'user': request.user,
+        'school': user_school,
+        'total_students': total_students,
+        'new_students_this_month': new_students_this_month,
+        'total_classes': total_classes,
+        'students_by_class': students_by_class,
+        'recent_students': paginated_items,
+        'paginator': paginator,
+        'classes': classes,
+        'class_filter': class_filter,
+        'status_filter': status_filter,
+        'search_query': search_query,
+    }
+    
+    return render(request, 'SchoolNowMgt/admin_students_dashboard.html', context)
+
+
+@unified_login_required
+def admin_staff_dashboard(request):
+    """
+    Admin mini-dashboard for Staff section.
+    
+    Shows:
+    - Total staff, new this month, by department
+    - Staff list with search/filter/pagination
+    - Inline "Add Staff" form
+    """
+    if request.user.role != 'admin' and not request.user.is_superuser:
+        return redirect('auth:unified_login')
+    
+    today = timezone.localdate()
+    user_school = request.user.school
+    
+    # Staff stats
+    total_staff = StaffProfile.objects.filter(
+        user__is_active=True,
+        user__school=user_school,
+        date_left__isnull=True
+    ).count()
+    
+    new_staff_this_month = StaffProfile.objects.filter(
+        date_joined__year=today.year,
+        date_joined__month=today.month,
+        user__school=user_school
+    ).count()
+    
+    # Staff by position (annotated counts)
+    staff_positions = StaffProfile.objects.filter(
+        user__school=user_school,
+        date_left__isnull=True
+    ).values('position').annotate(
+        position_count=Count('id')
+    ).order_by('position')
+    
+    # Get filter parameters
+    position_filter = request.GET.get('position', '')
+    search_query = request.GET.get('search', '')
+    
+    # Recent staff with filtering
+    recent_staff = StaffProfile.objects.filter(
+        user__school=user_school
+    ).select_related('user')
+    
+    if position_filter:
+        recent_staff = recent_staff.filter(position=position_filter)
+    
+    if search_query:
+        recent_staff = recent_staff.filter(
+            Q(user__first_name__icontains=search_query) |
+            Q(user__last_name__icontains=search_query) |
+            Q(employee_id__icontains=search_query)
+        )
+    
+    recent_staff = recent_staff.order_by('-date_joined')
+    
+    # Paginate
+    paginated_items, paginator, page_num = paginate_queryset(request, recent_staff, per_page=15)
+    
+    # Today's attendance summary
+    staff_present_today = StaffAttendance.objects.filter(
+        date=today,
+        status='present',
+        staff__user__school=user_school
+    ).count()
+    
+    staff_absent_today = StaffAttendance.objects.filter(
+        date=today,
+        status='absent',
+        staff__user__school=user_school
+    ).count()
+    
+    context = {
+        'today': today,
+        'user': request.user,
+        'school': user_school,
+        'total_staff': total_staff,
+        'new_staff_this_month': new_staff_this_month,
+        'staff_positions': staff_positions,
+        'recent_staff': paginated_items,
+        'paginator': paginator,
+        'staff_present_today': staff_present_today,
+        'staff_absent_today': staff_absent_today,
+        'position_filter': position_filter,
+        'search_query': search_query,
+    }
+    
+    return render(request, 'SchoolNowMgt/admin_staff_dashboard.html', context)
+
+
+@unified_login_required
+def admin_communication_dashboard(request):
+    """
+    Admin mini-dashboard for Communication section.
+    
+    Shows:
+    - Messages sent count, pending messages, recipients breakdown
+    - Message history table with pagination
+    - Inline "Send Message" form
+    """
+    if request.user.role != 'admin' and not request.user.is_superuser:
+        return redirect('auth:unified_login')
+    
+    today = timezone.localdate()
+    user_school = request.user.school
+    
+    # Message stats (from Message model)
+    total_messages_sent = Message.objects.filter(
+        school=user_school
+    ).count()
+    
+    # Messages this month
+    messages_this_month = Message.objects.filter(
+        created_at__year=today.year,
+        created_at__month=today.month,
+        school=user_school
+    ).count()
+    
+    # Recipient breakdown (count unique recipients)
+    all_recipients = MessageRecipient.objects.filter(
+        message__school=user_school
+    ).count()
+    
+    # Get filter parameters
+    search_query = request.GET.get('search', '')
+    
+    # Recent messages with filtering
+    recent_messages = Message.objects.filter(
+        school=user_school
+    ).select_related('sender')
+    
+    if search_query:
+        recent_messages = recent_messages.filter(
+            Q(subject__icontains=search_query) |
+            Q(body__icontains=search_query)
+        )
+    
+    recent_messages = recent_messages.order_by('-created_at')
+    
+    # Paginate
+    paginated_items, paginator, page_num = paginate_queryset(request, recent_messages, per_page=15)
+    
+    context = {
+        'today': today,
+        'user': request.user,
+        'school': user_school,
+        'total_messages_sent': total_messages_sent,
+        'messages_this_month': messages_this_month,
+        'all_recipients': all_recipients,
+        'recent_messages': paginated_items,
+        'paginator': paginator,
+        'search_query': search_query,
+    }
+    
+    return render(request, 'SchoolNowMgt/admin_communication_dashboard.html', context)
+
+
+@unified_login_required
+def admin_finance_dashboard(request):
+    """
+    Admin mini-dashboard for Finance section.
+    
+    Shows:
+    - Monthly revenue, collected this month, outstanding, % target
+    - Recent transactions with pagination
+    - Revenue trend data
+    - Fee breakdown by class
+    """
+    if request.user.role != 'admin' and not request.user.is_superuser:
+        return redirect('auth:unified_login')
+    
+    today = timezone.localdate()
+    user_school = request.user.school
+    
+    # Get filter parameters
+    class_filter = request.GET.get('class', '')
+    month = request.GET.get('month', today.month)
+    year = request.GET.get('year', today.year)
+    
+    try:
+        month = int(month)
+        year = int(year)
+    except (ValueError, TypeError):
+        month = today.month
+        year = today.year
+    
+    # Finance stats
+    fees_collected_this_month = FeePayment.objects.filter(
+        payment_date__year=year,
+        payment_date__month=month,
+        student__class_grade__school=user_school
+    ).aggregate(total=Sum('amount_paid'))['total'] or 0
+    
+    # Outstanding fees (simple: expected - paid)
+    outstanding_fees = 50000  # Mock for now
+    
+    # Fee collection percentage
+    fee_collection_percentage = 85  # Mock default
+    
+    # Recent transactions with filtering
+    recent_transactions = FeePayment.objects.filter(
+        student__class_grade__school=user_school
+    ).select_related('student', 'student__class_grade')
+    
+    if class_filter:
+        recent_transactions = recent_transactions.filter(student__class_grade__id=class_filter)
+    
+    recent_transactions = recent_transactions.order_by('-payment_date')
+    
+    # Paginate
+    paginated_items, paginator, page_num = paginate_queryset(request, recent_transactions, per_page=15)
+    
+    # Fee breakdown by class
+    fee_by_class = FeePayment.objects.filter(
+        student__class_grade__school=user_school,
+        payment_date__year=year,
+        payment_date__month=month
+    ).values('student__class_grade__name').annotate(
+        total_amount=Sum('amount_paid'),
+        transaction_count=Count('id')
+    ).order_by('student__class_grade__name')
+    
+    # Chart data: Monthly revenue trend (last 6 months)
+    import json
+    from datetime import timedelta
+    monthly_revenue = []
+    monthly_labels = []
+    current_date = today
+    
+    for i in range(5, -1, -1):
+        check_date = current_date - timedelta(days=i*30)
+        check_month = check_date.month
+        check_year = check_date.year
+        
+        monthly_total = FeePayment.objects.filter(
+            payment_date__year=check_year,
+            payment_date__month=check_month,
+            student__class_grade__school=user_school
+        ).aggregate(total=Sum('amount_paid'))['total'] or 0
+        
+        monthly_revenue.append(int(monthly_total))
+        monthly_labels.append(check_date.strftime('%b %Y'))
+    
+    # Chart data: Fee by class (bar chart)
+    fee_by_class_labels = []
+    fee_by_class_amounts = []
+    
+    for item in fee_by_class:
+        fee_by_class_labels.append(item['student__class_grade__name'])
+        fee_by_class_amounts.append(int(item['total_amount'] or 0))
+    
+    # Convert to JSON for template
+    chart_data = {
+        'monthly_revenue_labels': json.dumps(monthly_labels),
+        'monthly_revenue': json.dumps(monthly_revenue),
+        'fee_by_class_labels': json.dumps(fee_by_class_labels),
+        'fee_by_class_amounts': json.dumps(fee_by_class_amounts),
+    }
+    
+    # Get all classes for filter dropdown
+    classes = ClassGrade.objects.filter(school=user_school).order_by('level')
+    
+    context = {
+        'today': today,
+        'user': request.user,
+        'school': user_school,
+        'fees_collected_this_month': fees_collected_this_month,
+        'outstanding_fees': outstanding_fees,
+        'fee_collection_percentage': fee_collection_percentage,
+        'recent_transactions': paginated_items,
+        'paginator': paginator,
+        'fee_by_class': fee_by_class,
+        'classes': classes,
+        'class_filter': class_filter,
+        'month': month,
+        'year': year,
+        'chart_data': chart_data,
+    }
+    
+    return render(request, 'SchoolNowMgt/admin_finance_dashboard.html', context)
+
+
+@unified_login_required
+def admin_reports_dashboard(request):
+    """
+    Admin mini-dashboard for Reports section.
+    
+    Shows:
+    - Academic performance by class (with pagination)
+    - Attendance trends
+    - Enrollment growth
+    - Fee collection vs. target
+    - Retention alert summary
+    """
+    if request.user.role != 'admin' and not request.user.is_superuser:
+        return redirect('auth:unified_login')
+    
+    today = timezone.localdate()
+    user_school = request.user.school
+    current_year = str(today.year)
+    
+    # Get filter parameter
+    class_filter = request.GET.get('class', '')
+    
+    # Academic metrics
+    average_score_this_year = Grade.objects.filter(
+        academic_year=current_year,
+        student__class_grade__school=user_school
+    ).aggregate(avg=Avg('score'))['avg']
+    
+    if average_score_this_year is not None:
+        average_score_this_year = round(average_score_this_year, 1)
+    else:
+        average_score_this_year = '—'
+    
+    # Class performance breakdown with filtering
+    class_performance = Grade.objects.filter(
+        academic_year=current_year,
+        student__class_grade__school=user_school
+    ).values('student__class_grade__name').annotate(
+        avg_score=Avg('score')
+    ).order_by('student__class_grade__name')
+    
+    if class_filter:
+        class_performance = class_performance.filter(student__class_grade__id=class_filter)
+    
+    # Note: class_performance is a summary table, no pagination needed
+    
+    # Enrollment data (new students by month)
+    enrollment_by_month_qs = Student.objects.filter(
+        class_grade__school=user_school
+    ).extra(
+        select={'month': 'strftime("%%m", date_admitted)'}
+    ).values('month').annotate(
+        count=Count('id')
+    ).order_by('month')
+    
+    # Get the latest month's enrollment count (for template)
+    enrollment_by_month = list(enrollment_by_month_qs.values_list('count', flat=True)) if enrollment_by_month_qs.exists() else []
+    
+    # Attendance summary
+    total_student_attendance = StudentAttendance.objects.filter(
+        student__class_grade__school=user_school,
+        date=today
+    )
+    present_count = total_student_attendance.filter(status='present').count()
+    total_count = total_student_attendance.count()
+    attendance_percentage = round((present_count / total_count * 100), 1) if total_count > 0 else 0
+    
+    # Retention alerts summary
+    retention_alerts_count = RetentionAlert.objects.filter(
+        resolved=False,
+        student__class_grade__school=user_school
+    ).count()
+    
+    high_severity_alerts = RetentionAlert.objects.filter(
+        resolved=False,
+        severity='high',
+        student__class_grade__school=user_school
+    ).count()
+    
+    # Chart data: Enrollment trend (monthly new admissions)
+    import json
+    from datetime import timedelta
+    
+    enrollment_trend_labels = []
+    enrollment_trend_data = []
+    current_date = today
+    
+    for i in range(5, -1, -1):
+        check_date = current_date - timedelta(days=i*30)
+        check_month = check_date.month
+        check_year = check_date.year
+        
+        new_admissions = Student.objects.filter(
+            class_grade__school=user_school,
+            date_admitted__year=check_year,
+            date_admitted__month=check_month
+        ).count()
+        
+        enrollment_trend_data.append(new_admissions)
+        enrollment_trend_labels.append(check_date.strftime('%b %Y'))
+    
+    # Chart data: Class performance bar chart
+    class_perf_labels = []
+    class_perf_scores = []
+    
+    for item in class_performance:
+        class_perf_labels.append(item['student__class_grade__name'])
+        class_perf_scores.append(round(item['avg_score'], 1) if item['avg_score'] else 0)
+    
+    # Chart data: Retention alert severity pie chart
+    low_alerts = RetentionAlert.objects.filter(
+        resolved=False,
+        severity='low',
+        student__class_grade__school=user_school
+    ).count()
+    medium_alerts = RetentionAlert.objects.filter(
+        resolved=False,
+        severity='medium',
+        student__class_grade__school=user_school
+    ).count()
+    
+    # Convert to JSON for template
+    chart_data = {
+        'enrollment_trend_labels': json.dumps(enrollment_trend_labels),
+        'enrollment_trend_data': json.dumps(enrollment_trend_data),
+        'class_perf_labels': json.dumps(class_perf_labels),
+        'class_perf_scores': json.dumps(class_perf_scores),
+        'alert_severity_labels': json.dumps(['Low', 'Medium', 'High']),
+        'alert_severity_data': json.dumps([low_alerts, medium_alerts, high_severity_alerts]),
+    }
+    
+    # Get all classes for filter dropdown
+    classes = ClassGrade.objects.filter(school=user_school).order_by('level')
+    
+    context = {
+        'today': today,
+        'user': request.user,
+        'school': user_school,
+        'average_score_this_year': average_score_this_year,
+        'class_performance': class_performance,
+        'enrollment_by_month': enrollment_by_month,
+        'attendance_percentage': attendance_percentage,
+        'retention_alerts_count': retention_alerts_count,
+        'high_severity_alerts': high_severity_alerts,
+        'classes': classes,
+        'class_filter': class_filter,
+        'chart_data': chart_data,
+    }
+    
+    return render(request, 'SchoolNowMgt/admin_reports_dashboard.html', context)

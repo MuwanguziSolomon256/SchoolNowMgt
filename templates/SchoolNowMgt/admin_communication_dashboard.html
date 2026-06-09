@@ -1,0 +1,188 @@
+{% extends "SchoolNowMgt/base_ethos.html" %}
+{% load static %}
+
+{% block title %}Communication Dashboard - Admin Panel{% endblock %}
+
+{% block content %}
+
+<!-- Main Content Area -->
+<div class="w-full min-h-screen pt-24">
+    
+    <!-- Header Section -->
+    <header class="flex justify-between items-center px-container-padding w-full sticky top-24 z-40 bg-surface/70 backdrop-blur-2xl border-b border-white/20 shadow-sm h-14 md:h-16">
+        <div class="flex items-center gap-4">
+            <a href="{% url 'SchoolNowMgt:dashboard' %}" class="text-primary hover:text-secondary-container flex items-center gap-2 text-sm font-bold">
+                <span class="material-symbols-outlined">arrow_back</span>
+                <span>Dashboard</span>
+            </a>
+        </div>
+        <h2 class="text-primary font-bold text-lg md:text-xl">Communication Center</h2>
+        <div class="w-32"></div>
+    </header>
+
+    <!-- Page Content -->
+    <section class="p-4 md:p-container-padding space-y-6 md:space-y-section-margin flex-grow">
+        
+        <!-- Header Section -->
+        <div class="flex flex-col gap-4 md:gap-0 md:flex-row md:items-end justify-between">
+            <div>
+                <h1 class="font-display-lg text-display-lg text-primary text-2xl md:text-4xl">Communication</h1>
+                <p class="font-body-lg text-body-lg text-on-surface-variant text-xs md:text-sm">
+                    Send messages to students, parents, and staff. Track message history and delivery status.
+                </p>
+            </div>
+            <button onclick="document.getElementById('messageModal').classList.remove('hidden')" 
+                    class="bg-secondary-fixed text-on-secondary-fixed rounded-lg font-bold px-3 md:px-4 py-2 flex items-center gap-2 hover:brightness-110 transition-all text-sm">
+                <span class="material-symbols-outlined">mail</span>
+                <span>Send Message</span>
+            </button>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-gutter">
+            <!-- Total Messages -->
+            <div class="glass-card p-4 md:p-6 rounded-2xl md:rounded-3xl shadow-sm">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="p-2 md:p-3 bg-primary/5 rounded-2xl">
+                        <span class="material-symbols-outlined text-primary text-lg md:text-xl">mail</span>
+                    </div>
+                </div>
+                <h3 class="text-on-surface-variant font-label-md uppercase tracking-wider text-xs">Messages Sent</h3>
+                <p class="font-display-lg text-display-lg text-primary mt-1 text-2xl md:text-4xl">{{ total_messages_sent }}</p>
+            </div>
+
+            <!-- This Month -->
+            <div class="glass-card p-4 md:p-6 rounded-2xl md:rounded-3xl shadow-sm">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="p-2 md:p-3 bg-secondary/5 rounded-2xl">
+                        <span class="material-symbols-outlined text-secondary text-lg md:text-xl">calendar_month</span>
+                    </div>
+                </div>
+                <h3 class="text-on-surface-variant font-label-md uppercase tracking-wider text-xs">This Month</h3>
+                <p class="font-display-lg text-display-lg text-secondary mt-1 text-2xl md:text-4xl">{{ messages_this_month }}</p>
+            </div>
+
+            <!-- Recipients -->
+            <div class="glass-card p-4 md:p-6 rounded-2xl md:rounded-3xl shadow-sm">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="p-2 md:p-3 bg-tertiary/5 rounded-2xl">
+                        <span class="material-symbols-outlined text-tertiary text-lg md:text-xl">people</span>
+                    </div>
+                </div>
+                <h3 class="text-on-surface-variant font-label-md uppercase tracking-wider text-xs">Total Recipients</h3>
+                <p class="font-display-lg text-display-lg text-tertiary mt-1 text-2xl md:text-4xl">{{ all_recipients }}</p>
+            </div>
+        </div>
+
+        <!-- Filter & Search Section (Phase 1.5) -->
+        <div class="glass-card rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-sm">
+            <form method="GET" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-bold text-primary mb-2">Search Messages</label>
+                    <input type="text" name="search" placeholder="Subject or content" 
+                           value="{{ search_query }}"
+                           class="w-full px-3 md:px-4 py-2 rounded-lg border border-outline-variant/30 focus:outline-none focus:border-primary text-xs md:text-sm">
+                </div>
+                
+                <div class="flex gap-2">
+                    <button type="submit" class="bg-primary text-on-primary rounded-lg font-bold px-4 py-2 hover:brightness-110 transition-all text-sm">
+                        <span class="material-symbols-outlined inline text-sm">search</span> Search
+                    </button>
+                    <a href="{% url 'SchoolNowMgt:admin_communication' %}" class="bg-surface-container text-on-surface rounded-lg font-bold px-4 py-2 hover:brightness-90 transition-all text-sm">
+                        Clear
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Message History -->
+        <div class="glass-card rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-sm">
+            <div class="flex justify-between items-center mb-4 md:mb-6">
+                <h3 class="font-headline-md text-headline-md text-primary text-lg md:text-xl">Message History</h3>
+                <span class="text-on-surface-variant text-xs md:text-sm">
+                    Page {{ recent_messages.number }} of {{ paginator.num_pages }}
+                </span>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-xs md:text-sm">
+                    <thead>
+                        <tr class="border-b border-outline-variant/20">
+                            <th class="pb-3 md:pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-left">Subject</th>
+                            <th class="pb-3 md:pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-left">Sent By</th>
+                            <th class="pb-3 md:pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-center">Date Sent</th>
+                            <th class="pb-3 md:pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-center">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for message in recent_messages %}
+                        <tr class="border-b border-outline-variant/10 hover:bg-surface-container-low/50 transition-colors">
+                            <td class="py-3 md:py-4">
+                                <div class="min-w-0">
+                                    <p class="font-bold text-primary truncate">{{ message.subject|default:"(No Subject)" }}</p>
+                                    <p class="text-on-surface-variant text-xs truncate">{{ message.body|truncatewords:5 }}</p>
+                                </div>
+                            </td>
+                            <td class="py-3 md:py-4">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary text-xs md:text-sm flex-shrink-0">
+                                        {{ message.created_by.first_name|first|upper }}
+                                    </div>
+                                    <span class="text-on-surface-variant">{{ message.created_by.get_full_name }}</span>
+                                </div>
+                            </td>
+                            <td class="py-3 md:py-4 text-center text-on-surface-variant">{{ message.created_at|date:"M d, Y" }}</td>
+                            <td class="py-3 md:py-4 text-center">
+                                <span class="badge badge-success text-xs md:text-sm">Sent</span>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="py-8 text-center text-on-surface-variant">
+                                <p class="font-label-md">No messages found</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination Controls (Phase 1.5) -->
+            {% if paginator.num_pages > 1 %}
+            <div class="mt-4 md:mt-6 flex justify-center items-center gap-2">
+                {% if recent_messages.has_previous %}
+                    <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}" 
+                       class="px-3 py-2 rounded-lg border border-outline-variant/30 text-primary hover:bg-primary/10 transition-all text-xs md:text-sm">
+                        &laquo; First
+                    </a>
+                    <a href="?page={{ recent_messages.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}" 
+                       class="px-3 py-2 rounded-lg border border-outline-variant/30 text-primary hover:bg-primary/10 transition-all text-xs md:text-sm">
+                        &lsaquo; Previous
+                    </a>
+                {% endif %}
+                
+                <span class="px-3 py-2 text-on-surface-variant text-xs md:text-sm">
+                    Page {{ recent_messages.number }} of {{ paginator.num_pages }}
+                </span>
+                
+                {% if recent_messages.has_next %}
+                    <a href="?page={{ recent_messages.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}" 
+                       class="px-3 py-2 rounded-lg border border-outline-variant/30 text-primary hover:bg-primary/10 transition-all text-xs md:text-sm">
+                        Next &rsaquo;
+                    </a>
+                    <a href="?page={{ paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}" 
+                       class="px-3 py-2 rounded-lg border border-outline-variant/30 text-primary hover:bg-primary/10 transition-all text-xs md:text-sm">
+                        Last &raquo;
+                    </a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+
+    </section>
+</div>
+
+<!-- Send Message Modal -->
+{% include "includes/message_modal.html" %}
+
+{% endblock %}

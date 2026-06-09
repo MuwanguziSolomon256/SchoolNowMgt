@@ -1,0 +1,411 @@
+{% extends "SchoolNowMgt/base_ethos.html" %}
+{% load static %}
+
+{% block title %}Reports Dashboard - Admin Panel{% endblock %}
+
+{% block content %}
+
+<!-- Main Content Area -->
+<div class="w-full min-h-screen pt-24">
+    
+    <!-- Header Section -->
+    <header class="flex justify-between items-center px-container-padding w-full sticky top-24 z-40 bg-surface/70 backdrop-blur-2xl border-b border-white/20 shadow-sm h-14 md:h-16">
+        <div class="flex items-center gap-4">
+            <a href="{% url 'SchoolNowMgt:dashboard' %}" class="text-primary hover:text-secondary-container flex items-center gap-2 text-sm font-bold">
+                <span class="material-symbols-outlined">arrow_back</span>
+                <span>Dashboard</span>
+            </a>
+        </div>
+        <h2 class="text-primary font-bold text-lg md:text-xl">Reports & Analytics</h2>
+        <div class="w-32"></div>
+    </header>
+
+    <!-- Page Content -->
+    <section class="p-4 md:p-container-padding space-y-6 md:space-y-section-margin flex-grow">
+        
+        <!-- Header Section -->
+        <div class="flex flex-col gap-4 md:gap-0 md:flex-row md:items-end justify-between">
+            <div>
+                <h1 class="font-display-lg text-display-lg text-primary text-2xl md:text-4xl">Reports</h1>
+                <p class="font-body-lg text-body-lg text-on-surface-variant text-xs md:text-sm">
+                    Access academic, operational, and financial reports. Export data for further analysis.
+                </p>
+            </div>
+            <div class="flex gap-2">
+                <a href="{% url 'SchoolNowMgt:export_reports' %}" 
+                   class="text-primary border border-primary rounded-lg font-bold px-4 py-2 flex items-center gap-2 hover:bg-primary/10 transition-all text-sm">
+                    <span class="material-symbols-outlined">download</span>
+                    <span class="hidden md:inline">Export</span>
+                </a>
+                <button class="bg-secondary-fixed text-on-secondary-fixed rounded-lg font-bold px-4 py-2 flex items-center gap-2 hover:brightness-110 transition-all text-sm">
+                    <span class="material-symbols-outlined">print</span>
+                    <span class="hidden md:inline">Print</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ACADEMIC REPORTS SECTION -->
+        <div class="space-y-4">
+            <h2 class="font-headline-lg text-headline-lg text-primary text-xl md:text-2xl">Academic Reports</h2>
+
+            <!-- Average Score Card -->
+            <div class="glass-card p-4 md:p-6 rounded-2xl md:rounded-3xl shadow-sm">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <h3 class="text-on-surface-variant font-label-md uppercase tracking-wider text-xs md:text-sm">Average Score ({{ today.year }})</h3>
+                        <p class="font-display-lg text-display-lg text-primary mt-2 text-3xl md:text-4xl">
+                            {% if average_score_this_year != '—' %}
+                                {{ average_score_this_year }}/100
+                            {% else %}
+                                {{ average_score_this_year }}
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="p-3 bg-primary/5 rounded-2xl">
+                        <span class="material-symbols-outlined text-primary text-3xl md:text-4xl">trending_up</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Class Performance -->
+            <div class="glass-card rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-sm">
+                <h3 class="font-headline-md text-headline-md text-primary mb-4 md:mb-6 text-lg md:text-xl">Performance by Class</h3>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full text-xs md:text-sm">
+                        <thead>
+                            <tr class="border-b border-outline-variant/20">
+                                <th class="pb-3 md:pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-left">Class</th>
+                                <th class="pb-3 md:pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-right">Average Score</th>
+                                <th class="pb-3 md:pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-center">Performance</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for class_perf in class_performance %}
+                            <tr class="border-b border-outline-variant/10 hover:bg-surface-container-low/50 transition-colors">
+                                <td class="py-3 md:py-4 text-primary font-bold">{{ class_perf.student__class_grade__name }}</td>
+                                <td class="py-3 md:py-4 text-right font-bold">{{ class_perf.avg_score|floatformat:1 }}/100</td>
+                                <td class="py-3 md:py-4 text-center">
+                                    {% if class_perf.avg_score >= 80 %}
+                                        <span class="badge badge-success">Excellent</span>
+                                    {% elif class_perf.avg_score >= 70 %}
+                                        <span class="badge badge-info">Good</span>
+                                    {% elif class_perf.avg_score >= 60 %}
+                                        <span class="badge badge-warning">Average</span>
+                                    {% else %}
+                                        <span class="badge badge-error">Needs Improvement</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="py-6 text-center text-on-surface-variant">
+                                    <p class="font-label-md">No performance data available</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- OPERATIONAL REPORTS SECTION -->
+        <div class="space-y-4">
+            <h2 class="font-headline-lg text-headline-lg text-primary text-xl md:text-2xl">Operational Reports</h2>
+
+            <!-- Attendance Summary -->
+            <div class="glass-card p-4 md:p-6 rounded-2xl md:rounded-3xl shadow-sm">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <h3 class="text-on-surface-variant font-label-md uppercase tracking-wider text-xs md:text-sm">Today's Attendance Rate</h3>
+                        <p class="font-display-lg text-display-lg text-primary mt-2 text-3xl md:text-4xl">{{ attendance_percentage }}%</p>
+                    </div>
+                    <div class="p-3 bg-secondary/5 rounded-2xl">
+                        <span class="material-symbols-outlined text-secondary text-3xl md:text-4xl">check_circle</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Enrollment & Alerts -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-gutter">
+                <!-- Retention Alerts -->
+                <div class="glass-card p-4 md:p-6 rounded-2xl md:rounded-3xl shadow-sm">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <h3 class="text-on-surface-variant font-label-md uppercase tracking-wider text-xs md:text-sm">Retention Alerts</h3>
+                            <p class="font-display-lg text-display-lg text-primary mt-2 text-2xl md:text-3xl">{{ retention_alerts_count }}</p>
+                            {% if high_severity_alerts > 0 %}
+                                <p class="text-error font-bold text-xs md:text-sm mt-2">{{ high_severity_alerts }} High Priority</p>
+                            {% endif %}
+                        </div>
+                        <div class="p-3 bg-error/5 rounded-2xl">
+                            <span class="material-symbols-outlined text-error text-3xl md:text-4xl">warning</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Enrollment Growth -->
+                <div class="glass-card p-4 md:p-6 rounded-2xl md:rounded-3xl shadow-sm">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <h3 class="text-on-surface-variant font-label-md uppercase tracking-wider text-xs md:text-sm">New Enrollments This Month</h3>
+                            <p class="font-display-lg text-display-lg text-tertiary mt-2 text-2xl md:text-3xl">
+                                {% if enrollment_by_month %}
+                                    {{ enrollment_by_month|last|default:"0" }}
+                                {% else %}
+                                    0
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="p-3 bg-tertiary/5 rounded-2xl">
+                            <span class="material-symbols-outlined text-tertiary text-3xl md:text-4xl">group_add</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CHARTS SECTION -->
+        <div class="space-y-4">
+            <h2 class="font-headline-lg text-headline-lg text-primary text-xl md:text-2xl">Analytics & Trends</h2>
+            
+            <!-- Charts Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-gutter">
+                <!-- Enrollment Trend Chart -->
+                <div class="glass-card rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-sm">
+                    <h3 class="font-headline-md text-headline-md text-primary mb-4 text-lg md:text-xl">Enrollment Trend</h3>
+                    <div class="relative w-full" style="height: 300px;">
+                        <canvas id="enrollmentChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Class Performance Chart -->
+                <div class="glass-card rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-sm">
+                    <h3 class="font-headline-md text-headline-md text-primary mb-4 text-lg md:text-xl">Performance by Class</h3>
+                    <div class="relative w-full" style="height: 300px;">
+                        <canvas id="performanceChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Alert Severity Distribution -->
+                <div class="glass-card rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-sm">
+                    <h3 class="font-headline-md text-headline-md text-primary mb-4 text-lg md:text-xl">Alert Severity Distribution</h3>
+                    <div class="relative w-full" style="height: 300px;">
+                        <canvas id="alertChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- EXPORT SECTION -->
+        <div class="glass-card rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-sm">
+            <h3 class="font-headline-md text-headline-md text-primary mb-4 md:mb-6 text-lg md:text-xl">Generate & Export Reports</h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-gutter">
+                <!-- Academic Report Export -->
+                <button class="p-4 border-2 border-primary/20 rounded-xl hover:bg-primary/5 transition-all text-left group">
+                    <div class="flex items-start justify-between mb-2">
+                        <div class="p-2 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
+                            <span class="material-symbols-outlined text-primary">school</span>
+                        </div>
+                    </div>
+                    <h4 class="font-bold text-primary mb-1">Export Academic Report</h4>
+                    <p class="text-on-surface-variant text-xs md:text-sm">Class performance, averages & trends (CSV)</p>
+                </button>
+
+                <!-- Financial Report Export -->
+                <button class="p-4 border-2 border-secondary/20 rounded-xl hover:bg-secondary/5 transition-all text-left group">
+                    <div class="flex items-start justify-between mb-2">
+                        <div class="p-2 bg-secondary/10 rounded-lg group-hover:bg-secondary/20 transition-colors">
+                            <span class="material-symbols-outlined text-secondary">payments</span>
+                        </div>
+                    </div>
+                    <h4 class="font-bold text-secondary mb-1">Export Financial Report</h4>
+                    <p class="text-on-surface-variant text-xs md:text-sm">Fee collections & payments (CSV)</p>
+                </button>
+
+                <!-- Comprehensive Report -->
+                <button class="p-4 border-2 border-tertiary/20 rounded-xl hover:bg-tertiary/5 transition-all text-left group">
+                    <div class="flex items-start justify-between mb-2">
+                        <div class="p-2 bg-tertiary/10 rounded-lg group-hover:bg-tertiary/20 transition-colors">
+                            <span class="material-symbols-outlined text-tertiary">summarize</span>
+                        </div>
+                    </div>
+                    <h4 class="font-bold text-tertiary mb-1">Print Summary Report</h4>
+                    <p class="text-on-surface-variant text-xs md:text-sm">Full institutional overview (PDF)</p>
+                </button>
+            </div>
+        </div>
+
+    </section>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Chart data from context
+    const enrollmentLabels = {{ chart_data.enrollment_trend_labels|safe }};
+    const enrollmentData = {{ chart_data.enrollment_trend_data|safe }};
+    const perfLabels = {{ chart_data.class_perf_labels|safe }};
+    const perfScores = {{ chart_data.class_perf_scores|safe }};
+    const alertLabels = {{ chart_data.alert_severity_labels|safe }};
+    const alertData = {{ chart_data.alert_severity_data|safe }};
+
+    // Initialize Enrollment Trend Chart
+    if (document.getElementById('enrollmentChart')) {
+        const enrollmentCtx = document.getElementById('enrollmentChart').getContext('2d');
+        new Chart(enrollmentCtx, {
+            type: 'line',
+            data: {
+                labels: enrollmentLabels,
+                datasets: [{
+                    label: 'New Admissions',
+                    data: enrollmentData,
+                    borderColor: '#2b0400',
+                    backgroundColor: 'rgba(43, 4, 0, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: '#2b0400',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 5,
+                    pointHoverRadius: 7
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        labels: {
+                            font: { family: "'Inter', sans-serif", size: 12 },
+                            color: '#46464f',
+                            padding: 15
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            font: { family: "'Inter', sans-serif", size: 11 },
+                            color: '#46464f'
+                        },
+                        grid: { color: 'rgba(119, 118, 128, 0.1)' }
+                    },
+                    x: {
+                        ticks: {
+                            font: { family: "'Inter', sans-serif", size: 11 },
+                            color: '#46464f'
+                        },
+                        grid: { color: 'rgba(119, 118, 128, 0.1)' }
+                    }
+                }
+            }
+        });
+    }
+
+    // Initialize Performance by Class Chart
+    if (document.getElementById('performanceChart')) {
+        const perfCtx = document.getElementById('performanceChart').getContext('2d');
+        new Chart(perfCtx, {
+            type: 'bar',
+            data: {
+                labels: perfLabels,
+                datasets: [{
+                    label: 'Average Score (out of 100)',
+                    data: perfScores,
+                    backgroundColor: [
+                        '#565a8b',
+                        '#feb700',
+                        '#2b0400',
+                        '#7c5800',
+                        '#080b3a'
+                    ],
+                    borderRadius: 8,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                indexAxis: 'x',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        labels: {
+                            font: { family: "'Inter', sans-serif", size: 12 },
+                            color: '#46464f',
+                            padding: 15
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            font: { family: "'Inter', sans-serif", size: 11 },
+                            color: '#46464f'
+                        },
+                        grid: { color: 'rgba(119, 118, 128, 0.1)' }
+                    },
+                    x: {
+                        ticks: {
+                            font: { family: "'Inter', sans-serif", size: 11 },
+                            color: '#46464f'
+                        },
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+    }
+
+    // Initialize Alert Severity Pie Chart
+    if (document.getElementById('alertChart')) {
+        const alertCtx = document.getElementById('alertChart').getContext('2d');
+        new Chart(alertCtx, {
+            type: 'doughnut',
+            data: {
+                labels: alertLabels,
+                datasets: [{
+                    label: 'Alerts Count',
+                    data: alertData,
+                    backgroundColor: [
+                        '#FFA500',  // Orange for Low
+                        '#FFD700',  // Gold for Medium
+                        '#FF6B6B'   // Red for High
+                    ],
+                    borderColor: '#fff',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'bottom',
+                        labels: {
+                            font: { family: "'Inter', sans-serif", size: 12 },
+                            color: '#46464f',
+                            padding: 15
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Real-time refresh: Auto-refresh dashboard data every 60 seconds
+    setInterval(function() {
+        location.reload();
+    }, 60000);
+</script>
+{% endblock %}

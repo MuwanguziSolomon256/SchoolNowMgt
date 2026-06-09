@@ -15,6 +15,19 @@ urlpatterns = [
     path('logout/', views.custom_logout, name='custom_logout'),
     path('analytics/', views.live_analytics, name='live_analytics'),
     
+    # Admin Mini-Dashboards (Phase 7)
+    path('admin/students/', dashboard_views.admin_students_dashboard, name='admin_students'),
+    path('admin/staff/', dashboard_views.admin_staff_dashboard, name='admin_staff'),
+    path('admin/communication/', dashboard_views.admin_communication_dashboard, name='admin_communication'),
+    path('admin/finance/', dashboard_views.admin_finance_dashboard, name='admin_finance'),
+    path('admin/reports/', dashboard_views.admin_reports_dashboard, name='admin_reports'),
+    
+    # CSV Export Endpoints (Phase 1.5)
+    path('export/students/', dashboard_views.export_students_csv, name='export_students'),
+    path('export/staff/', dashboard_views.export_staff_csv, name='export_staff'),
+    path('export/finance/', dashboard_views.export_finance_csv, name='export_finance'),
+    path('export/reports/', dashboard_views.export_reports_csv, name='export_reports'),
+    
     # Admin Onboarding & Messaging API Routes (Phase 6)
     path('api/staff/onboard/', dashboard_views.onboard_staff_ajax, name='api_staff_onboard'),
     path('api/staff/bulk-onboard/', dashboard_views.bulk_onboard_staff_ajax, name='api_staff_bulk_onboard'),

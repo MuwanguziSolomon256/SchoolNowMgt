@@ -6,6 +6,7 @@
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
     <title>{% block title %}EduVision Pro - Dashboard{% endblock %}</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Hanken+Grotesk:wght@600;700;800;900&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
     <link href="{% static 'css/ethos-glass-theme.css' %}" rel="stylesheet"/>
     <script id="tailwind-config">
@@ -109,6 +110,83 @@
         }
         .sidebar-gradient {
             background: linear-gradient(180deg, #080b3a 0%, #1e224f 100%);
+        }
+        
+        /* Mobile Optimizations */
+        @media (max-width: 640px) {
+            .glass-card {
+                border-radius: 16px !important;
+                padding: 16px !important;
+            }
+            
+            /* Responsive tables on mobile */
+            table {
+                font-size: 12px;
+            }
+            
+            th, td {
+                padding: 8px 4px !important;
+            }
+            
+            /* Hide certain columns on mobile */
+            .hidden-mobile {
+                display: none;
+            }
+            
+            /* Responsive chart containers */
+            canvas {
+                max-width: 100%;
+            }
+            
+            /* Touch-friendly buttons */
+            button, a {
+                min-height: 44px;
+                min-width: 44px;
+                padding: 10px !important;
+            }
+            
+            /* Responsive stat cards */
+            .glass-card p {
+                font-size: clamp(20px, 4vw, 24px);
+            }
+            
+            /* Flexible grid */
+            .grid-cols-1 {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            /* Tablet optimizations */
+            .glass-card {
+                border-radius: 20px !important;
+            }
+            
+            /* Stack filter forms vertically */
+            .filter-form {
+                flex-direction: column;
+            }
+            
+            .filter-form > div {
+                width: 100%;
+            }
+        }
+        
+        /* Improve readability on all screens */
+        @media (min-width: 640px) {
+            .glass-card {
+                transition: transform 0.2s, box-shadow 0.2s;
+            }
+            
+            .glass-card:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            }
+        }
+        
+        /* Smooth animations */
+        * {
+            transition: background-color 0.2s ease;
         }
     </style>
     {% block extra_css %}{% endblock %}
