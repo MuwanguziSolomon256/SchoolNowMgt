@@ -1,0 +1,40 @@
+<!-- Teacher Profile Card - My PROFILE Section -->
+<div class="col-span-1 glass-card p-6 rounded-3xl shadow-sm relative overflow-hidden group animate-in border-l-4 border-secondary-container">
+    <div class="relative z-10">
+        <div class="flex justify-between items-start mb-4">
+            <div>
+                <h3 class="text-on-surface-variant font-label-md uppercase tracking-wider text-xs mb-2">My PROFILE</h3>
+                <p class="font-display-md text-display-md text-primary text-xl font-bold">{{ user.get_full_name|truncatewords:2 }}</p>
+                <p class="text-on-surface-variant text-xs mt-1">{% if user.role %}{{ user.role|title }}{% else %}Teacher{% endif %}</p>
+            </div>
+            <a href="{% url 'teacher:profile' %}" class="p-2 hover:bg-primary/10 rounded-lg transition-all text-primary hover:text-primary/70">
+                <span class="material-symbols-outlined">settings</span>
+            </a>
+        </div>
+        
+        <!-- Profile Picture -->
+        <div class="flex items-center gap-4 mt-6 pt-6 border-t border-white/10">
+            <div class="relative">
+                {% if user.profile_picture %}
+                    <img src="{{ user.profile_picture.url }}" alt="{{ user.get_full_name }}" class="w-14 h-14 rounded-xl object-cover border-2 border-secondary-container">
+                {% else %}
+                    <div class="w-14 h-14 rounded-xl bg-secondary-container/20 flex items-center justify-center border-2 border-secondary-container">
+                        <span class="material-symbols-outlined text-secondary">account_circle</span>
+                    </div>
+                {% endif %}
+                
+                <!-- Picture Upload Button -->
+                <a href="{% url 'teacher:profile' %}" class="absolute -bottom-2 -right-2 bg-primary text-on-primary p-1 rounded-full hover:bg-primary/90 transition-all text-xs">
+                    <span class="material-symbols-outlined text-sm">edit</span>
+                </a>
+            </div>
+            
+            <div class="flex-1">
+                <p class="text-sm text-on-surface-variant">Click the settings icon to update your profile</p>
+                <a href="{% url 'teacher:profile' %}" class="text-primary hover:text-primary/70 text-xs font-bold mt-1 inline-block transition-colors">
+                    View Profile →
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

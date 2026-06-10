@@ -91,15 +91,12 @@
         <div class="flex items-center gap-6 ml-auto">
             <!-- Notification Icons -->
             <div class="flex items-center gap-4">
-                <button class="p-2 rounded-full hover:bg-surface-container-highest/50 cursor-pointer transition-all active:scale-95">
+                <a href="{% url 'SchoolNowMgt:admin_communication' %}" class="p-2 rounded-full hover:bg-surface-container-highest/50 cursor-pointer transition-all active:scale-95">
                     <span class="material-symbols-outlined text-on-surface-variant">notifications</span>
-                </button>
-                <button class="hidden md:block p-2 rounded-full hover:bg-surface-container-highest/50 cursor-pointer transition-all active:scale-95">
-                    <span class="material-symbols-outlined text-on-surface-variant">help</span>
-                </button>
-                <button class="hidden md:block p-2 rounded-full hover:bg-surface-container-highest/50 cursor-pointer transition-all active:scale-95">
+                </a>
+                <a href="{% url 'SchoolNowMgt:admin_profile' %}" class="hidden md:block p-2 rounded-full hover:bg-surface-container-highest/50 cursor-pointer transition-all active:scale-95">
                     <span class="material-symbols-outlined text-on-surface-variant">settings</span>
-                </button>
+                </a>
             </div>
             
 
@@ -117,13 +114,6 @@
                     <p class="font-body-lg text-body-lg text-on-surface-variant text-xs md:text-sm">Welcome back. Here is what's happening at {{ school_name|default:"Your School" }} today.</p>
                 </div>
                 <div class="flex gap-2 md:gap-3">
-                    <button class="glass-card px-3 md:px-6 py-2 md:py-3 rounded-xl text-primary font-bold shadow-sm flex items-center gap-2 hover:bg-white/40 transition-all text-xs md:text-sm">
-                        <span class="material-symbols-outlined text-lg md:text-xl">download</span>
-                        <span class="hidden md:inline">Export Report</span>
-                    </button>
-                    <button class="bg-primary text-on-primary px-3 md:px-6 py-2 md:py-3 rounded-xl font-bold shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all active:scale-95 text-xs md:text-sm">
-                        Generate Invoices
-                    </button>
                 </div>
             </div>
             

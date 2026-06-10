@@ -31,11 +31,17 @@
                     Monitor fee collection, track payments, and manage school financials.
                 </p>
             </div>
-            <a href="{% url 'SchoolNowMgt:export_finance' %}" 
-               class="bg-tertiary text-on-tertiary rounded-lg font-bold px-3 md:px-4 py-2 flex items-center gap-2 hover:brightness-110 transition-all text-sm">
-                <span class="material-symbols-outlined">download</span>
-                <span>Export Report</span>
-            </a>
+            <div class="flex gap-2 flex-col md:flex-row">
+                <a href="{% url 'SchoolNowMgt:export_finance' %}" 
+                   class="bg-tertiary text-on-tertiary rounded-lg font-bold px-3 md:px-4 py-2 flex items-center gap-2 hover:brightness-110 transition-all text-sm">
+                    <span class="material-symbols-outlined">download</span>
+                    <span>Export Report</span>
+                </a>
+                <button class="bg-primary text-on-primary rounded-lg font-bold px-3 md:px-4 py-2 flex items-center gap-2 hover:brightness-110 transition-all text-sm">
+                    <span class="material-symbols-outlined">receipt_long</span>
+                    <span>Generate Invoices</span>
+                </button>
+            </div>
         </div>
 
         <!-- Stats Cards -->

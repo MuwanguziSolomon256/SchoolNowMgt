@@ -9,7 +9,8 @@ from teacher_auth.password_views import (
 from user_profile.views import teacher_profile
 from dashboard.teacher_views import (
     teacher_dashboard, toggle_task_status, create_task,
-    student_search, quick_grade_entry, send_circular
+    student_search, quick_grade_entry, send_circular,
+    teacher_students_list, teacher_lessons_list
 )
 from curriculum.views import enter_grade_uganda
 from curriculum.international_views import enter_grade_international
@@ -22,6 +23,11 @@ urlpatterns = [
     path('login/',       teacher_login,        name='login'),
     path('logout/',      teacher_logout,       name='logout'),
     path('profile/',     teacher_profile,      name='profile'),
+    
+    # New navigation routes (Phase 3)
+    path('students/',    teacher_students_list, name='students'),
+    path('lessons/',     teacher_lessons_list,  name='lessons'),
+    
     path('grades/uganda/',
          enter_grade_uganda,     name='enter_grade_uganda'),
     path('grades/international/',

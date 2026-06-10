@@ -104,7 +104,7 @@ def teacher_dashboard(request):
         'todays_classes': todays_classes,
     }
     
-    return render(request, 'teacher/dashboard_modern.html', context)
+    return render(request, 'SchoolNowMgt/teacher_dashboard.html', context)
 
 
 # ===== API ENDPOINTS FOR AJAX OPERATIONS =====
@@ -290,3 +290,138 @@ def send_circular(request):
         })
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=400)
+
+
+# ===== NEW TEACHER VIEWS (Phase 3) =====
+
+@login_required(login_url='teacher:login')
+def teacher_students_list(request):
+    """
+    List all students from teacher's assigned classes.
+    
+    Displays:
+    - Students with name, admission number, class, attendance today
+    - Search/filter functionality
+    - Pagination
+    """
+    # Verify logged-in user is a teacher
+    if request.user.role != 'teacher':
+        return redirect('teacher:login')
+    
+    # Fetch StaffProfile
+    staff = get_object_or_404(StaffProfile, user=request.user)
+    
+    # Get today's date
+    today = timezone.localdate()
+    
+    # Get all students from teacher's classes
+    students = Student.objects.filter(
+        class_grade__class_teacher=staff,
+        status='active'
+    ).select_related('class_grade').order_by('class_grade__level', 'first_name')
+    
+    # Get filter parameters
+    search_query = request.GET.get('search', '')
+    class_filter = request.GET.get('class', '')
+    
+    # Apply filters
+    if search_query:
+        students = students.filter(
+            Q(first_name__icontains=search_query) |
+            Q(last_name__icontains=search_query) |
+            Q(admission_number__icontains=search_query)
+        )
+    
+    if class_filter:
+        students = students.filter(class_grade_id=class_filter)
+    
+    # Get classes for filter dropdown
+    my_classes = ClassGrade.objects.filter(
+        class_teacher=staff
+    ).order_by('level')
+    
+    # Attendance data for today
+    attendance_today = StudentAttendance.objects.filter(
+        date=today,
+        student__class_grade__class_teacher=staff
+    ).values('student_id', 'status')
+    
+    attendance_dict = {att['student_id']: att['status'] for att in attendance_today}
+    
+    # Add attendance status to each student
+    for student in students:
+        student.attendance_status = attendance_dict.get(student.id, 'not_marked')
+    
+    context = {
+        'students': students,
+        'my_classes': my_classes,
+        'search_query': search_query,
+        'class_filter': class_filter,
+        'total_students': students.count(),
+        'today': today,
+    }
+    
+    return render(request, 'teacher/students_list.html', context)
+
+
+@login_required(login_url='teacher:login')
+def teacher_lessons_list(request):
+    """
+    List all lessons (timetable) for the teacher.
+    
+    Displays:
+    - Lessons by class, day, time
+    - Subject, student count
+    - Week view
+    """
+    # Verify logged-in user is a teacher
+    if request.user.role != 'teacher':
+        return redirect('teacher:login')
+    
+    # Fetch StaffProfile
+    staff = get_object_or_404(StaffProfile, user=request.user)
+    
+    # Get today's date
+    today = timezone.localdate()
+    
+    # Get all lessons/timetable entries for this teacher
+    all_lessons = Timetable.objects.filter(
+        teacher=staff
+    ).select_related('subject', 'class_grade').order_by('day_of_week', 'start_time')
+    
+    # Get unique days for display
+    days_of_week = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday']
+    days_display = {
+        'monday': 'Monday',
+        'tuesday': 'Tuesday',
+        'wednesday': 'Wednesday',
+        'thursday': 'Thursday',
+        'friday': 'Friday',
+    }
+    
+    # Create a list of day objects with their lessons
+    days_with_lessons = []
+    for day in days_of_week:
+        day_lessons = [l for l in all_lessons if l.day_of_week == day]
+        if day_lessons:
+            # Annotate student count for each lesson
+            for lesson in day_lessons:
+                lesson.student_count = Student.objects.filter(
+                    class_grade=lesson.class_grade,
+                    status='active'
+                ).count()
+            
+            days_with_lessons.append({
+                'day_code': day,
+                'day_name': days_display[day],
+                'lessons': day_lessons
+            })
+    
+    context = {
+        'all_lessons': all_lessons,
+        'days_with_lessons': days_with_lessons,
+        'today': today,
+        'total_lessons': all_lessons.count(),
+    }
+    
+    return render(request, 'teacher/lessons_list.html', context)

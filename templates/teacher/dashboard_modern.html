@@ -187,15 +187,12 @@
         </div>
         <div class="flex items-center gap-4">
             <div class="flex items-center gap-1">
-                <button class="p-2 rounded-full hover:bg-surface-container-highest/50 transition-all cursor-pointer active:scale-95">
+                <a href="{% url 'teacher_auth:dashboard' %}" class="p-2 rounded-full hover:bg-surface-container-highest/50 transition-all cursor-pointer active:scale-95">
                     <span class="material-symbols-outlined text-on-surface-variant" data-icon="notifications">notifications</span>
-                </button>
-                <button class="p-2 rounded-full hover:bg-surface-container-highest/50 transition-all cursor-pointer active:scale-95">
-                    <span class="material-symbols-outlined text-on-surface-variant" data-icon="help">help</span>
-                </button>
-                <button class="p-2 rounded-full hover:bg-surface-container-highest/50 transition-all cursor-pointer active:scale-95">
+                </a>
+                <a href="{% url 'teacher_auth:profile' %}" class="p-2 rounded-full hover:bg-surface-container-highest/50 transition-all cursor-pointer active:scale-95">
                     <span class="material-symbols-outlined text-on-surface-variant" data-icon="settings">settings</span>
-                </button>
+                </a>
             </div>
             <div class="h-8 w-[1px] bg-outline-variant/30 mx-2"></div>
             <div class="flex items-center gap-3 cursor-pointer group">
