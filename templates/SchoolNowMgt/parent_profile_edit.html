@@ -5,61 +5,11 @@
 
 {% block content %}
 
-<div class="flex min-h-screen bg-background flex-col md:flex-row">
-    <!-- Sidebar Navigation -->
-    <aside id="sidebar" class="h-screen w-full md:w-64 fixed md:relative left-0 top-0 sidebar-gradient flex flex-col py-4 md:py-base gap-2 shadow-xl shadow-primary/20 z-40 transform -translate-x-full md:translate-x-0 transition-transform duration-300 overflow-y-auto">
-        <div class="px-4 md:px-6 py-6 md:py-8">
-            <h1 class="font-headline-lg text-headline-lg font-black text-secondary-container text-lg md:text-2xl">Legacy Academy</h1>
-            <p class="font-label-md text-label-md text-on-primary/60 text-xs md:text-sm">Parent Portal</p>
-        </div>
-        
-        <nav class="flex-grow space-y-1 px-2">
-            <a href="{% url 'SchoolNowMgt:parent_dashboard' %}" class="text-on-primary/70 flex items-center gap-3 px-3 md:px-4 py-2 md:py-3 mx-0 md:mx-2 hover:bg-white/10 rounded-lg transition-all group cursor-pointer hover:translate-x-1 duration-300 nav-item text-sm md:text-base">
-                <span class="material-symbols-outlined text-lg md:text-xl">dashboard</span>
-                <span class="font-label-md text-label-md">Dashboard</span>
-            </a>
-            
-            <div class="bg-secondary-container text-on-secondary-container rounded-lg font-bold flex items-center gap-3 px-3 md:px-4 py-2 md:py-3 mx-0 md:mx-2 group cursor-pointer nav-item active text-sm md:text-base">
-                <span class="material-symbols-outlined text-lg md:text-xl">person</span>
-                <span class="font-label-md text-label-md">My Profile</span>
-            </div>
-            
-            <a href="{% url 'SchoolNowMgt:parent_dashboard' %}#children" class="text-on-primary/70 flex items-center gap-3 px-3 md:px-4 py-2 md:py-3 mx-0 md:mx-2 hover:bg-white/10 rounded-lg transition-all group cursor-pointer hover:translate-x-1 duration-300 nav-item text-sm md:text-base">
-                <span class="material-symbols-outlined text-lg md:text-xl">child_care</span>
-                <span class="font-label-md text-label-md">Children</span>
-            </a>
-            
-            <a href="{% url 'SchoolNowMgt:parent_dashboard' %}#academics" class="text-on-primary/70 flex items-center gap-3 px-3 md:px-4 py-2 md:py-3 mx-0 md:mx-2 hover:bg-white/10 rounded-lg transition-all group cursor-pointer hover:translate-x-1 duration-300 nav-item text-sm md:text-base">
-                <span class="material-symbols-outlined text-lg md:text-xl">school</span>
-                <span class="font-label-md text-label-md">Academics</span>
-            </a>
-            
-            <a href="{% url 'SchoolNowMgt:parent_dashboard' %}#payments" class="text-on-primary/70 flex items-center gap-3 px-3 md:px-4 py-2 md:py-3 mx-0 md:mx-2 hover:bg-white/10 rounded-lg transition-all group cursor-pointer hover:translate-x-1 duration-300 nav-item text-sm md:text-base">
-                <span class="material-symbols-outlined text-lg md:text-xl">payments</span>
-                <span class="font-label-md text-label-md">Payments</span>
-            </a>
-            
-            <a href="{% url 'SchoolNowMgt:parent_dashboard' %}#messaging" class="text-on-primary/70 flex items-center gap-3 px-3 md:px-4 py-2 md:py-3 mx-0 md:mx-2 hover:bg-white/10 rounded-lg transition-all group cursor-pointer hover:translate-x-1 duration-300 nav-item text-sm md:text-base">
-                <span class="material-symbols-outlined text-lg md:text-xl">chat_bubble</span>
-                <span class="font-label-md text-label-md">Messaging</span>
-            </a>
-        </nav>
-        
-        <!-- Bottom Support & Logout -->
-        <div class="px-2 mt-auto pb-4 space-y-1">
-            <div class="text-on-primary/70 flex items-center gap-3 px-3 md:px-4 py-2 md:py-3 mx-0 md:mx-2 hover:bg-white/10 rounded-lg transition-all cursor-pointer nav-item text-sm md:text-base">
-                <span class="material-symbols-outlined text-lg md:text-xl">contact_support</span>
-                <span class="font-label-md text-label-md">Support</span>
-            </div>
-            <a href="{% url 'SchoolNowMgt:custom_logout' %}" class="text-on-primary/70 flex items-center gap-3 px-3 md:px-4 py-2 md:py-3 mx-0 md:mx-2 hover:bg-white/10 rounded-lg transition-all cursor-pointer nav-item text-sm md:text-base">
-                <span class="material-symbols-outlined text-lg md:text-xl">logout</span>
-                <span class="font-label-md text-label-md">Logout</span>
-            </a>
-        </div>
-    </aside>
-    
-    <!-- Main Content -->
-    <main class="w-full flex flex-col md:ml-0">
+<!-- Include New Top Navigation Bar -->
+{% include "SchoolNowMgt/includes/parent_navigation_bar.html" %}
+
+<!-- Main Content -->
+<main class="w-full flex flex-col min-h-screen bg-background pt-24">
         <!-- Top Navigation Bar -->
         <header class="flex justify-between items-center px-4 md:px-container-padding w-full sticky top-0 z-40 bg-surface/70 backdrop-blur-2xl h-14 md:h-16 border-b border-white/20 shadow-sm shadow-primary/5">
             <div class="flex items-center gap-3 md:gap-6 flex-1">
@@ -224,40 +174,5 @@
             </div>
         </div>
     </main>
-</div>
-
-<script>
-// Sidebar toggle functionality
-document.addEventListener('DOMContentLoaded', function() {
-    const sidebar = document.getElementById('sidebar');
-    const sidebarToggle = document.getElementById('sidebarToggle');
-    const sidebarOverlay = document.querySelector('[id="sidebarOverlay"]');
-    
-    if (sidebarToggle) {
-        sidebarToggle.addEventListener('click', function() {
-            sidebar.classList.toggle('-translate-x-full');
-            sidebarOverlay?.classList.toggle('hidden');
-        });
-    }
-    
-    if (sidebarOverlay) {
-        sidebarOverlay.addEventListener('click', function() {
-            sidebar.classList.add('-translate-x-full');
-            sidebarOverlay.classList.add('hidden');
-        });
-    }
-    
-    // Close sidebar when clicking on a nav link
-    const navItems = sidebar.querySelectorAll('a, div[class*="nav-item"]');
-    navItems.forEach(item => {
-        if (item.tagName === 'A') {
-            item.addEventListener('click', function() {
-                sidebar.classList.add('-translate-x-full');
-                sidebarOverlay?.classList.add('hidden');
-            });
-        }
-    });
-});
-</script>
 
 {% endblock %}
