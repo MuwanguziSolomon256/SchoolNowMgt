@@ -54,10 +54,13 @@
     
     <!-- Right Side Actions -->
     <div class="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-        <a class="text-on-primary/70 hover:text-white px-3 py-2 flex items-center gap-2 hover:bg-white/10 transition-all rounded-lg font-bold text-sm" href="{% url 'teacher:logout' %}">
-            <span class="material-symbols-outlined text-base sm:text-lg">logout</span>
-            <span class="hidden sm:inline">Log out</span>
-        </a>
+        <form method="post" action="{% url 'teacher:logout' %}" style="display: contents;">
+            {% csrf_token %}
+            <button type="submit" class="text-on-primary/70 hover:text-white px-3 py-2 flex items-center gap-2 hover:bg-white/10 transition-all rounded-lg font-bold text-sm" onclick="return confirm('Are you sure you want to logout?');">
+                <span class="material-symbols-outlined text-base sm:text-lg">logout</span>
+                <span class="hidden sm:inline">Log out</span>
+            </button>
+        </form>
     </div>
 </nav>
 

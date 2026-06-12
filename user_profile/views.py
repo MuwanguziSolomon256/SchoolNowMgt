@@ -1,8 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from SchoolNowMgt.models import StaffProfile, ClassGrade, Timetable
-from .forms import TeacherProfileForm, TeacherQualificationForm
+from SchoolNowMgt.models import StaffProfile, ClassGrade, Timetable, CustomUser
+from .forms import TeacherProfileForm, TeacherQualificationForm, ParentProfileForm
 
 
 # NOTE: Ensure MEDIA_URL and MEDIA_ROOT are configured in settings.py
@@ -76,3 +76,43 @@ def teacher_profile(request):
     }
     
     return render(request, 'teacher/profile.html', context)
+
+
+@login_required
+def edit_profile(request):
+    """
+    Display and edit parent profile information.
+    
+    GET: Display parent's profile edit form with current information.
+    POST: Process profile updates (name, email, phone, profile picture).
+    
+    This view is accessible to parent users from the dashboard settings icon.
+    """
+    # Restrict access to parents only
+    if request.user.role != 'parent':
+        messages.error(request, 'This page is only accessible to parents.')
+        return redirect('SchoolNowMgt:parent_dashboard')
+    
+    if request.method == 'POST':
+        # Bind form to request data and files
+        form = ParentProfileForm(
+            request.POST,
+            request.FILES,
+            instance=request.user
+        )
+        
+        # Validate and save form
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Your profile has been updated successfully.')
+            return redirect('SchoolNowMgt:parent_dashboard')
+        
+        # If form is invalid, re-render with errors
+        context = {'form': form}
+        return render(request, 'SchoolNowMgt/parent_profile_edit.html', context)
+    
+    # GET request: instantiate form with current data
+    form = ParentProfileForm(instance=request.user)
+    
+    context = {'form': form}
+    return render(request, 'SchoolNowMgt/parent_profile_edit.html', context)

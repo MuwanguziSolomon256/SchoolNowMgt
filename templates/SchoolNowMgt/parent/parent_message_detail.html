@@ -1,0 +1,242 @@
+{% extends "SchoolNowMgt/base_ethos.html" %}
+{% load static %}
+
+{% block title %}Message - EduVision Pro Parent Portal{% endblock %}
+
+{% block content %}
+
+<!-- Include Parent Navigation Bar -->
+{% include "SchoolNowMgt/includes/parent_navigation_bar.html" %}
+
+<!-- Main Content -->
+<main class="w-full flex flex-col min-h-screen bg-background pt-24">
+    <!-- Top Navigation Bar -->
+    <header class="flex justify-between items-center px-4 md:px-container-padding w-full sticky top-0 z-40 bg-surface/70 backdrop-blur-2xl h-14 md:h-16 border-b border-white/20 shadow-sm shadow-primary/5">
+        <div class="flex items-center gap-3 md:gap-6 flex-1">
+            <a href="{% url 'SchoolNowMgt:parent_message_inbox' %}" class="p-2 hover:bg-surface-container-highest/50 rounded-lg transition-all cursor-pointer active:scale-95">
+                <span class="material-symbols-outlined text-on-surface-variant text-lg md:text-xl">arrow_back</span>
+            </a>
+            <h2 class="font-headline-md text-headline-md font-bold text-primary text-lg md:text-2xl truncate">{{ message.subject }}</h2>
+        </div>
+        
+        <div class="flex items-center gap-2 md:gap-4">
+            <a href="{% url 'SchoolNowMgt:parent_dashboard' %}" class="p-2 hover:bg-surface-container-highest/50 rounded-full transition-all cursor-pointer active:scale-95">
+                <span class="material-symbols-outlined text-on-surface-variant text-lg md:text-xl">home</span>
+            </a>
+        </div>
+    </header>
+
+    <!-- Page Content -->
+    <div class="p-3 sm:p-4 md:p-6 lg:p-8 max-w-3xl mx-auto w-full space-y-4">
+        <!-- Message Thread -->
+        <div class="space-y-4">
+            {% for msg in related_messages %}
+            <div class="glass-card rounded-xl p-4 md:p-6 {% if msg == message %}border-2 border-primary/50 bg-primary/5{% else %}border border-outline-variant/30{% endif %}">
+                <!-- Message Header -->
+                <div class="flex items-start justify-between gap-4 mb-4">
+                    <div class="flex items-start gap-3 flex-1">
+                        {% if msg.sender.profile_picture %}
+                            <img alt="{{ msg.sender.get_full_name }}" class="w-10 h-10 rounded-full border border-outline-variant object-cover" src="{{ msg.sender.profile_picture.url }}"/>
+                        {% else %}
+                            <div class="w-10 h-10 rounded-full border border-outline-variant bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                <span class="material-symbols-outlined text-primary">person</span>
+                            </div>
+                        {% endif %}
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <p class="font-semibold text-sm text-primary">
+                                    {% if msg.sender == user %}
+                                        You
+                                    {% else %}
+                                        {{ msg.sender.get_full_name }}
+                                    {% endif %}
+                                </p>
+                                <span class="text-xs text-on-surface-variant bg-surface-container rounded px-2 py-1">
+                                    {% if msg.sender.role == 'teacher' %}
+                                        Teacher
+                                    {% elif msg.sender.role == 'admin' %}
+                                        Admin
+                                    {% elif msg.sender.role == 'non_teaching_staff' %}
+                                        Staff
+                                    {% else %}
+                                        Parent
+                                    {% endif %}
+                                </span>
+                            </div>
+                            <p class="text-xs text-on-surface-variant mt-1">{{ msg.created_at|date:"M d, Y - H:i" }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Message Status -->
+                    {% if msg != message and not is_sender %}
+                    <button class="mark-read-btn" data-message-id="{{ msg.id }}" title="Mark as read">
+                        <span class="material-symbols-outlined text-on-surface-variant text-lg hover:text-primary transition-colors">
+                            {% if msg.read_at %}done_all{% else %}mail_outline{% endif %}
+                        </span>
+                    </button>
+                    {% endif %}
+                </div>
+
+                <!-- Message Subject (only for first/main message) -->
+                {% if msg == message %}
+                <div class="mb-4 pb-4 border-b border-outline-variant/30">
+                    <h3 class="font-bold text-base text-primary mb-2">{{ msg.subject }}</h3>
+                </div>
+                {% endif %}
+
+                <!-- Message Body -->
+                <div class="prose prose-sm max-w-none">
+                    <p class="text-sm text-on-surface whitespace-pre-wrap">{{ msg.body }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Reply Form -->
+        {% if not is_sender %}
+        <div class="glass-card rounded-xl p-4 md:p-6 border-2 border-secondary-container/30 bg-secondary-container/5">
+            <h3 class="font-semibold text-primary mb-4 flex items-center gap-2">
+                <span class="material-symbols-outlined">reply</span>
+                Reply to {{ message.sender.get_full_name }}
+            </h3>
+
+            <form id="reply-form" class="space-y-4">
+                {% csrf_token %}
+                <input type="hidden" name="recipient" value="{{ message.sender.id }}"/>
+
+                <!-- Subject (pre-filled with Re:) -->
+                <div>
+                    <label class="block text-sm font-medium text-primary mb-2">Subject</label>
+                    <input type="text" name="subject" class="form-input" placeholder="Re: {{ message.subject }}" value="Re: {{ message.subject }}" required/>
+                    <div class="text-xs text-error hidden" id="subject-error"></div>
+                </div>
+
+                <!-- Message Body -->
+                <div>
+                    <label class="block text-sm font-medium text-primary mb-2">Your Reply</label>
+                    <textarea name="body" class="form-input" placeholder="Type your reply here..." rows="5" required></textarea>
+                    <div class="text-xs text-error hidden" id="body-error"></div>
+                </div>
+
+                <!-- Submit Buttons -->
+                <div class="flex gap-3">
+                    <button type="button" onclick="window.history.back()" class="flex-1 px-4 py-2 rounded-lg border border-outline-variant hover:bg-surface-container-high transition-colors text-sm font-medium">
+                        Cancel
+                    </button>
+                    <button type="submit" class="flex-1 px-4 py-2 rounded-lg bg-secondary text-white hover:bg-secondary/90 transition-colors text-sm font-medium flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined text-sm">send</span>
+                        Send Reply
+                    </button>
+                </div>
+            </form>
+        </div>
+        {% endif %}
+
+        <!-- Actions Bar -->
+        <div class="flex justify-between items-center pt-4 border-t border-outline-variant/30">
+            <a href="{% url 'SchoolNowMgt:parent_message_inbox' %}" class="px-4 py-2 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors text-sm font-medium flex items-center gap-2">
+                <span class="material-symbols-outlined text-sm">arrow_back</span>
+                Back to Messages
+            </a>
+            
+            {% if not is_sender %}
+            <button id="delete-btn" class="px-4 py-2 rounded-lg bg-error/10 text-error hover:bg-error/20 transition-colors text-sm font-medium flex items-center gap-2">
+                <span class="material-symbols-outlined text-sm">delete</span>
+                Delete
+            </button>
+            {% endif %}
+        </div>
+    </div>
+</main>
+
+<script>
+    // Mark message as read
+    document.querySelectorAll('.mark-read-btn').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const messageId = btn.dataset.messageId;
+
+            try {
+                const response = await fetch(`/school/parent/api/message/${messageId}/mark-read/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    }
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    btn.innerHTML = '<span class="material-symbols-outlined text-on-surface-variant text-lg hover:text-primary transition-colors">done_all</span>';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        });
+    });
+
+    // Reply form submission
+    const replyForm = document.getElementById('reply-form');
+    if (replyForm) {
+        replyForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = new FormData(replyForm);
+            
+            try {
+                const response = await fetch('{% url "SchoolNowMgt:api_parent_message_send" %}', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert('Reply sent successfully!');
+                    // Reload to show the new message
+                    window.location.reload();
+                } else {
+                    if (data.errors) {
+                        for (const [field, errors] of Object.entries(data.errors)) {
+                            const errorEl = document.getElementById(`${field}-error`);
+                            if (errorEl) {
+                                errorEl.textContent = errors[0];
+                                errorEl.classList.remove('hidden');
+                            }
+                        }
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred while sending the reply.');
+            }
+        });
+    }
+
+    // Delete button
+    const deleteBtn = document.getElementById('delete-btn');
+    if (deleteBtn) {
+        deleteBtn.addEventListener('click', () => {
+            if (confirm('Are you sure you want to delete this message?')) {
+                // In a real implementation, you would send a DELETE request
+                alert('Delete functionality coming soon');
+            }
+        });
+    }
+</script>
+
+<style>
+    .form-input {
+        @apply w-full px-3 py-2 rounded-lg border border-outline-variant bg-surface-container text-sm text-primary placeholder-on-surface-variant/50 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all;
+    }
+
+    .prose p {
+        margin: 0;
+    }
+</style>
+
+{% endblock %}

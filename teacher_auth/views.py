@@ -15,61 +15,16 @@ from SchoolNowMgt.models import (
 
 def teacher_register(request):
     """
-    Teacher registration view.
-    Creates a new teacher account and associated staff profile.
+    Teacher registration view - redirects to unified registration.
     """
-    # Redirect if already logged in as teacher
-    if request.user.is_authenticated and request.user.role == 'teacher':
-        return redirect('teacher:dashboard')
-
-    if request.method == 'POST':
-        form = TeacherRegistrationForm(request.POST)
-        if form.is_valid():
-            try:
-                user = form.save()
-                messages.success(
-                    request,
-                    'Registration successful! You can now log in with your email and password.'
-                )
-                return redirect('teacher:login')
-            except Exception as e:
-                messages.error(
-                    request,
-                    f'Registration failed: {str(e)}'
-                )
-    else:
-        form = TeacherRegistrationForm()
-
-    context = {'form': form}
-    return render(request, 'teacher/register.html', context)
+    return redirect('auth:unified_register')
 
 
 def teacher_login(request):
     """
-    Teacher login view.
+    Teacher login view - redirects to unified login.
     """
-    # Redirect if already logged in as teacher
-    if request.user.is_authenticated and request.user.role == 'teacher':
-        return redirect('teacher:dashboard')
-
-    if request.method == 'POST':
-        form = TeacherLoginForm(request=request, data=request.POST)
-        if form.is_valid():
-            login(request, form.authenticated_user)
-
-            # Safe redirect logic
-            next_url = request.GET.get('next', '')
-            if (next_url.startswith('/') and 
-                not next_url.startswith('//') and 
-                ' ' not in next_url):
-                return redirect(next_url)
-            else:
-                return redirect('teacher:dashboard')
-    else:
-        form = TeacherLoginForm()
-
-    context = {'form': form}
-    return render(request, 'teacher/login.html', context)
+    return redirect('auth:unified_login')
 
 
 @login_required(login_url='teacher:login')

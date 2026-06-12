@@ -438,6 +438,48 @@ class StaffPasswordResetForm(forms.Form):
         return identifier
 
 
+class ParentMessageForm(forms.Form):
+    """
+    Form for parents to send messages to teachers, staff, or admins.
+    
+    Recipient choices are filtered based on parent's child's teachers and
+    staff members marked as messageable.
+    """
+    
+    recipient = forms.ModelChoiceField(
+        queryset=CustomUser.objects.none(),  # Will be set in __init__
+        widget=forms.Select(attrs={'class': 'form-input'}),
+        label="Send to"
+    )
+    subject = forms.CharField(
+        max_length=200,
+        widget=forms.TextInput(attrs={
+            'placeholder': 'Message subject',
+            'class': 'form-input'
+        })
+    )
+    body = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': 'Your message (max 1000 chars)',
+            'rows': 6,
+            'class': 'form-input',
+            'maxlength': 1000
+        })
+    )
+    
+    def __init__(self, parent_user, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Filter recipients: class teachers + enabled staff in same school
+        self.parent_user = parent_user
+        self.fields['recipient'].queryset = get_parent_messageable_recipients(parent_user)
+    
+    def clean_body(self):
+        body = self.cleaned_data.get('body', '').strip()
+        if len(body) < 5:
+            raise ValidationError("Message must be at least 5 characters long.")
+        return body
+
+
 # ============================================================================
 # EVENTS & ADMIN PROFILE FORMS (Phase 3)
 # ============================================================================

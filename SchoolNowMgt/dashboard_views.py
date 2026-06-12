@@ -20,12 +20,13 @@ from .models import (
 from .forms import (
     StaffOnboardingForm, BulkStaffUploadForm,
     StudentOnboardingForm, BulkStudentUploadForm,
-    AdminMessageForm, StaffPasswordResetForm,
+    AdminMessageForm, StaffPasswordResetForm, ParentMessageForm,
     EventForm, AdminProfileForm, ProfilePictureForm
 )
 from .utils import (
     generate_temp_password, parse_csv_upload, resolve_message_recipients,
-    create_message_recipients, replace_message_placeholders, generate_employee_id
+    create_message_recipients, replace_message_placeholders, generate_employee_id,
+    get_parent_messageable_recipients, get_parent_unread_count, get_parent_messages
 )
 
 
@@ -1459,6 +1460,282 @@ def mark_message_read_ajax(request, message_id):
         return JsonResponse({
             'success': False,
             'message': f'Error: {str(e)}'
+        }, status=500)
+
+
+# ============================================================================
+# PARENT MESSAGING VIEWS
+# ============================================================================
+
+@login_required
+def parent_message_inbox(request):
+    """
+    Display message inbox for a parent.
+    
+    Shows all messages received from admin/staff and sent by parent to teachers/staff.
+    Supports filtering by message type (received/sent/unread) and pagination.
+    
+    Access: Parent users only
+    
+    Renders: SchoolNowMgt/parent/parent_message_inbox.html
+    """
+    if request.user.role != 'parent':
+        return redirect('auth:unified_login')
+    
+    # Get filter type from request
+    filter_type = request.GET.get('filter', 'all')  # all, received, sent, unread
+    
+    # Get messages based on filter
+    messages_qs = get_parent_messages(request.user, filter_type)
+    
+    # Pagination
+    paginator = Paginator(messages_qs, 15)  # 15 messages per page
+    page_number = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page_number)
+    
+    # Count unread messages
+    unread_count = get_parent_unread_count(request.user)
+    
+    # Get message details with recipient status
+    messages_data = []
+    for message in page_obj.object_list:
+        try:
+            # Try to get recipient status if parent received this message
+            recipient = MessageRecipient.objects.get(
+                message=message,
+                recipient=request.user
+            )
+            is_read = recipient.read_at is not None
+        except MessageRecipient.DoesNotExist:
+            # Parent sent this message
+            is_read = True  # Sent messages are considered read
+        
+        messages_data.append({
+            'message': message,
+            'is_read': is_read,
+            'is_sent': message.sender == request.user,
+        })
+    
+    context = {
+        'page_obj': page_obj,
+        'messages_data': messages_data,
+        'unread_count': unread_count,
+        'filter_type': filter_type,
+    }
+    
+    return render(request, 'SchoolNowMgt/parent/parent_message_inbox.html', context)
+
+
+@login_required
+def parent_message_detail(request, message_id):
+    """
+    Display a single message with full thread (if replies exist).
+    
+    Shows message details with related recipients and allows parent to reply.
+    
+    Access: Parent who is recipient or sender of the message
+    
+    Renders: SchoolNowMgt/parent/parent_message_detail.html
+    """
+    if request.user.role != 'parent':
+        return redirect('auth:unified_login')
+    
+    try:
+        message = Message.objects.select_related('sender').get(id=message_id)
+    except Message.DoesNotExist:
+        return redirect('SchoolNowMgt:parent_message_inbox')
+    
+    # Check access: must be recipient or sender
+    is_sender = message.sender == request.user
+    is_recipient = MessageRecipient.objects.filter(
+        message=message,
+        recipient=request.user
+    ).exists()
+    
+    if not (is_sender or is_recipient):
+        return redirect('SchoolNowMgt:parent_message_inbox')
+    
+    # Mark as read if parent is recipient
+    if is_recipient and not is_sender:
+        try:
+            recipient = MessageRecipient.objects.get(
+                message=message,
+                recipient=request.user
+            )
+            if not recipient.read_at:
+                recipient.read_at = timezone.now()
+                recipient.save()
+        except MessageRecipient.DoesNotExist:
+            pass
+    
+    # Get related messages (replies/thread) - same subject and participants
+    related_messages = Message.objects.filter(
+        subject=message.subject,
+        school=request.user.school
+    ).filter(
+        Q(sender=request.user) | Q(target_user=request.user)
+    ).select_related('sender').order_by('created_at')
+    
+    # Initialize form for reply
+    form = ParentMessageForm(request.user) if request.method == 'GET' else None
+    
+    context = {
+        'message': message,
+        'related_messages': related_messages,
+        'is_sender': is_sender,
+        'form': form,
+    }
+    
+    return render(request, 'SchoolNowMgt/parent/parent_message_detail.html', context)
+
+
+@login_required
+@require_POST
+def parent_send_message_ajax(request):
+    """
+    AJAX endpoint for parent to send a message to a teacher/staff member.
+    
+    Creates Message and MessageRecipient entries for the recipient.
+    
+    Returns JSON with:
+    - success (bool)
+    - message (str)
+    - data: { message_id, recipient_name } if successful
+    """
+    if request.user.role != 'parent':
+        return JsonResponse({
+            'success': False,
+            'message': 'Access denied. Parents only.'
+        }, status=403)
+    
+    form = ParentMessageForm(request.user, request.POST)
+    
+    if not form.is_valid():
+        return JsonResponse({
+            'success': False,
+            'message': 'Form validation failed',
+            'errors': form.errors
+        }, status=400)
+    
+    try:
+        with transaction.atomic():
+            recipient = form.cleaned_data['recipient']
+            
+            # Create Message
+            message = Message.objects.create(
+                sender=request.user,
+                sender_type='parent',
+                school=request.user.school,
+                subject=form.cleaned_data['subject'],
+                body=form.cleaned_data['body'],
+                recipient_type='individual',
+                target_user=recipient,
+                is_sent=True
+            )
+            
+            # Create MessageRecipient entry for the staff member
+            MessageRecipient.objects.create(
+                message=message,
+                recipient=recipient
+            )
+            
+            return JsonResponse({
+                'success': True,
+                'message': f'Message sent to {recipient.get_full_name()}.',
+                'data': {
+                    'message_id': message.id,
+                    'recipient_name': recipient.get_full_name()
+                }
+            })
+    
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error sending message: {str(e)}'
+        }, status=500)
+
+
+@login_required
+@require_POST
+def parent_mark_message_read_ajax(request, message_id):
+    """
+    AJAX endpoint for parent to mark a received message as read.
+    
+    Args:
+        message_id (int): ID of the Message to mark as read
+    
+    Returns JSON with:
+    - success (bool)
+    - message (str)
+    """
+    if request.user.role != 'parent':
+        return JsonResponse({
+            'success': False,
+            'message': 'Access denied'
+        }, status=403)
+    
+    if request.method != 'POST':
+        return JsonResponse({
+            'success': False,
+            'message': 'Method not allowed'
+        }, status=405)
+    
+    try:
+        message_recipient = MessageRecipient.objects.get(
+            message_id=message_id,
+            recipient=request.user
+        )
+        
+        # Mark as read
+        if not message_recipient.read_at:
+            message_recipient.read_at = timezone.now()
+            message_recipient.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Message marked as read'
+        })
+    
+    except MessageRecipient.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'message': 'Message not found'
+        }, status=404)
+    
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error: {str(e)}'
+        }, status=500)
+
+
+@login_required
+def get_parent_unread_count_ajax(request):
+    """
+    AJAX endpoint to get unread message count for parent (for badge display).
+    
+    Returns JSON with:
+    - success (bool)
+    - unread_count (int)
+    """
+    if request.user.role != 'parent':
+        return JsonResponse({
+            'success': False,
+            'unread_count': 0
+        }, status=403)
+    
+    try:
+        unread_count = get_parent_unread_count(request.user)
+        
+        return JsonResponse({
+            'success': True,
+            'unread_count': unread_count
+        })
+    
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'unread_count': 0
         }, status=500)
 
 

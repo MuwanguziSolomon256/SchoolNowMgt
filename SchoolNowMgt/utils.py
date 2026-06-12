@@ -273,3 +273,138 @@ School Management System
     except Exception as e:
         print(f"Error sending email: {str(e)}")
         return False
+
+
+# ============================================================================
+# PARENT MESSAGING UTILITIES
+# ============================================================================
+
+def get_parent_messageable_recipients(parent_user):
+    """
+    Get list of teachers and staff that a parent can send messages to.
+    
+    Returns class teachers for all of parent's children + admin staff.
+    
+    Args:
+        parent_user: CustomUser instance with role='parent'
+        
+    Returns:
+        QuerySet: CustomUser objects (teachers/staff) the parent can message
+    """
+    from .models import Student, ClassGrade
+    
+    if parent_user.role != 'parent':
+        return CustomUser.objects.none()
+    
+    # Get all classes where parent's children are enrolled
+    student_classes = Student.objects.filter(
+        parents=parent_user,
+        status='active',
+        school=parent_user.school
+    ).values_list('class_grade_id', flat=True).distinct()
+    
+    # Get all teachers assigned to those classes
+    class_teachers = CustomUser.objects.filter(
+        teacher__class_grades__in=student_classes,
+        school=parent_user.school,
+        is_active=True,
+        role='teacher'
+    ).distinct()
+    
+    # Get admin/staff marked as messageable
+    admin_staff = CustomUser.objects.filter(
+        school=parent_user.school,
+        is_active=True,
+        role__in=['admin', 'non_teaching_staff']
+    )
+    
+    # Combine and return distinct
+    recipients = (class_teachers | admin_staff).distinct().order_by('first_name', 'last_name')
+    return recipients
+
+
+def get_parent_unread_count(parent_user):
+    """
+    Get count of unread messages for a parent.
+    
+    Args:
+        parent_user: CustomUser instance with role='parent'
+        
+    Returns:
+        int: Number of unread messages
+    """
+    from .models import MessageRecipient
+    
+    return MessageRecipient.objects.filter(
+        recipient=parent_user,
+        read_at__isnull=True
+    ).count()
+
+
+def get_parent_messages(parent_user, filter_type='all'):
+    """
+    Get messages for a parent (both received from admin and sent to staff).
+    
+    Args:
+        parent_user: CustomUser instance
+        filter_type: 'all', 'received', 'sent', 'unread'
+        
+    Returns:
+        List: Message objects with related data (sorted by created_at descending)
+        
+    Note: Returns a list instead of QuerySet because Django doesn't support
+    ordering after union() in all databases (especially SQLite).
+    """
+    from .models import Message, MessageRecipient
+    
+    if filter_type == 'received':
+        # Messages admin sent to parent
+        message_ids = MessageRecipient.objects.filter(
+            recipient=parent_user
+        ).values_list('message_id', flat=True)
+        messages = Message.objects.filter(
+            id__in=message_ids,
+            sender_type='admin'
+        ).select_related('sender')
+        return sorted(messages, key=lambda x: x.created_at, reverse=True)
+    
+    elif filter_type == 'sent':
+        # Messages parent sent to staff/admin
+        messages = Message.objects.filter(
+            sender=parent_user,
+            sender_type='parent'
+        ).select_related('sender')
+        return sorted(messages, key=lambda x: x.created_at, reverse=True)
+    
+    elif filter_type == 'unread':
+        # Unread received messages
+        message_ids = MessageRecipient.objects.filter(
+            recipient=parent_user,
+            read_at__isnull=True
+        ).values_list('message_id', flat=True)
+        messages = Message.objects.filter(
+            id__in=message_ids,
+            sender_type='admin'
+        ).select_related('sender')
+        return sorted(messages, key=lambda x: x.created_at, reverse=True)
+    
+    else:  # 'all'
+        # All messages (received + sent)
+        received_ids = MessageRecipient.objects.filter(
+            recipient=parent_user
+        ).values_list('message_id', flat=True)
+        
+        received_messages = list(Message.objects.filter(
+            id__in=received_ids,
+            sender_type='admin'
+        ).select_related('sender'))
+        
+        sent_messages = list(Message.objects.filter(
+            sender=parent_user,
+            sender_type='parent'
+        ).select_related('sender'))
+        
+        # Combine and sort by created_at descending
+        all_messages = received_messages + sent_messages
+        return sorted(all_messages, key=lambda x: x.created_at, reverse=True)
+

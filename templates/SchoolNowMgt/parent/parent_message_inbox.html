@@ -1,0 +1,298 @@
+{% extends "SchoolNowMgt/base_ethos.html" %}
+{% load static %}
+
+{% block title %}Messages - EduVision Pro Parent Portal{% endblock %}
+
+{% block content %}
+
+<!-- Include Parent Navigation Bar -->
+{% include "SchoolNowMgt/includes/parent_navigation_bar.html" %}
+
+<!-- Main Content -->
+<main class="w-full flex flex-col min-h-screen bg-background pt-24">
+    <!-- Top Navigation Bar -->
+    <header class="flex justify-between items-center px-4 md:px-container-padding w-full sticky top-0 z-40 bg-surface/70 backdrop-blur-2xl h-14 md:h-16 border-b border-white/20 shadow-sm shadow-primary/5">
+        <div class="flex items-center gap-3 md:gap-6 flex-1">
+            <h2 class="font-headline-md text-headline-md font-bold text-primary text-lg md:text-2xl">Messages</h2>
+            <div class="hidden md:flex items-center bg-surface-container-low px-4 py-2 rounded-full border border-outline-variant/30">
+                <span class="material-symbols-outlined text-outline text-sm mr-2">search</span>
+                <input id="search-messages" class="bg-transparent border-none focus:ring-0 text-body-md font-body-md w-64" placeholder="Search messages..." type="text"/>
+            </div>
+        </div>
+        
+        <div class="flex items-center gap-2 md:gap-4">
+            <button id="compose-btn" class="p-2 hover:bg-surface-container-highest/50 rounded-full transition-all cursor-pointer active:scale-95" title="Compose new message">
+                <span class="material-symbols-outlined text-on-surface-variant text-lg md:text-xl">add_circle</span>
+            </button>
+            <a href="{% url 'SchoolNowMgt:parent_dashboard' %}" class="p-2 hover:bg-surface-container-highest/50 rounded-full transition-all cursor-pointer active:scale-95">
+                <span class="material-symbols-outlined text-on-surface-variant text-lg md:text-xl">home</span>
+            </a>
+        </div>
+    </header>
+
+    <!-- Page Content -->
+    <div class="p-3 sm:p-4 md:p-6 lg:p-8 space-y-4 md:space-y-6">
+        <!-- Filter Tabs -->
+        <div class="flex gap-2 border-b border-outline-variant/30 overflow-x-auto pb-2">
+            <a href="?filter=all" class="px-4 py-2 text-sm font-medium {% if filter_type == 'all' %}text-primary border-b-2 border-primary{% else %}text-on-surface-variant{% endif %} hover:text-primary transition-colors">
+                All Messages
+            </a>
+            <a href="?filter=unread" class="px-4 py-2 text-sm font-medium relative {% if filter_type == 'unread' %}text-primary border-b-2 border-primary{% else %}text-on-surface-variant{% endif %} hover:text-primary transition-colors">
+                Unread
+                {% if unread_count > 0 %}
+                <span class="absolute -top-1 -right-1 bg-error text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">{{ unread_count }}</span>
+                {% endif %}
+            </a>
+            <a href="?filter=received" class="px-4 py-2 text-sm font-medium {% if filter_type == 'received' %}text-primary border-b-2 border-primary{% else %}text-on-surface-variant{% endif %} hover:text-primary transition-colors">
+                Received
+            </a>
+            <a href="?filter=sent" class="px-4 py-2 text-sm font-medium {% if filter_type == 'sent' %}text-primary border-b-2 border-primary{% else %}text-on-surface-variant{% endif %} hover:text-primary transition-colors">
+                Sent
+            </a>
+        </div>
+
+        <!-- Messages List -->
+        <div class="space-y-3">
+            {% if messages_data %}
+                {% for item in messages_data %}
+                <a href="{% url 'SchoolNowMgt:parent_message_detail' item.message.id %}" class="block">
+                    <div class="glass-card rounded-xl p-4 hover:bg-surface-container-highest/50 transition-all cursor-pointer border {% if not item.is_read %}border-primary/30 bg-primary/5{% else %}border-outline-variant/30{% endif %}">
+                        <div class="flex items-start justify-between gap-4">
+                            <div class="flex-1 min-w-0">
+                                <!-- Sender Info -->
+                                <div class="flex items-center gap-3 mb-2">
+                                    {% if item.message.sender.profile_picture %}
+                                        <img alt="{{ item.message.sender.get_full_name }}" class="w-8 h-8 rounded-full border border-outline-variant object-cover" src="{{ item.message.sender.profile_picture.url }}"/>
+                                    {% else %}
+                                        <div class="w-8 h-8 rounded-full border border-outline-variant bg-primary/10 flex items-center justify-center">
+                                            <span class="material-symbols-outlined text-primary text-xs">person</span>
+                                        </div>
+                                    {% endif %}
+                                    <div class="flex-1">
+                                        <p class="font-medium text-sm text-primary">
+                                            {% if item.is_sent %}
+                                                To: {{ item.message.target_user.get_full_name }}
+                                            {% else %}
+                                                {{ item.message.sender.get_full_name }}
+                                            {% endif %}
+                                        </p>
+                                        <p class="text-xs text-on-surface-variant">{{ item.message.created_at|date:"M d, Y - H:i" }}</p>
+                                    </div>
+                                </div>
+
+                                <!-- Message Subject & Body Preview -->
+                                <div>
+                                    <h3 class="font-semibold text-sm text-primary {% if not item.is_read %}font-bold{% endif %} truncate">{{ item.message.subject }}</h3>
+                                    <p class="text-xs text-on-surface-variant truncate mt-1">{{ item.message.body|truncatewords:20 }}</p>
+                                </div>
+                            </div>
+
+                            <!-- Status Indicators -->
+                            <div class="flex items-center gap-2 flex-shrink-0">
+                                {% if not item.is_read %}
+                                    <span class="w-2 h-2 rounded-full bg-primary"></span>
+                                {% else %}
+                                    <span class="text-xs text-on-surface-variant">
+                                        {% if item.is_sent %}
+                                            <span class="material-symbols-outlined text-xs">done_all</span>
+                                        {% else %}
+                                            <span class="material-symbols-outlined text-xs">done</span>
+                                        {% endif %}
+                                    </span>
+                                {% endif %}
+                                <span class="material-symbols-outlined text-on-surface-variant text-lg">chevron_right</span>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                {% endfor %}
+
+                <!-- Pagination -->
+                {% if page_obj.has_other_pages %}
+                <div class="flex justify-center gap-2 mt-8">
+                    {% if page_obj.has_previous %}
+                        <a href="?page=1&filter={{ filter_type }}" class="px-4 py-2 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 text-sm">First</a>
+                        <a href="?page={{ page_obj.previous_page_number }}&filter={{ filter_type }}" class="px-4 py-2 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 text-sm">Previous</a>
+                    {% endif %}
+                    
+                    <div class="flex items-center gap-1">
+                        {% for num in page_obj.paginator.page_range %}
+                            {% if page_obj.number == num %}
+                                <span class="px-4 py-2 rounded-lg bg-primary text-white text-sm">{{ num }}</span>
+                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                <a href="?page={{ num }}&filter={{ filter_type }}" class="px-4 py-2 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 text-sm">{{ num }}</a>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}&filter={{ filter_type }}" class="px-4 py-2 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 text-sm">Next</a>
+                        <a href="?page={{ page_obj.paginator.num_pages }}&filter={{ filter_type }}" class="px-4 py-2 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 text-sm">Last</a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            {% else %}
+                <!-- Empty State -->
+                <div class="flex flex-col items-center justify-center py-12 text-center">
+                    <span class="material-symbols-outlined text-on-surface-variant/30 text-6xl mb-4">mail_outline</span>
+                    <h3 class="text-lg font-semibold text-on-surface-variant mb-2">No messages yet</h3>
+                    <p class="text-sm text-on-surface-variant/70 mb-6">
+                        {% if filter_type == 'unread' %}
+                            You don't have any unread messages
+                        {% elif filter_type == 'sent' %}
+                            You haven't sent any messages yet
+                        {% elif filter_type == 'received' %}
+                            You haven't received any messages yet
+                        {% else %}
+                            Start by composing a message to a teacher or staff member
+                        {% endif %}
+                    </p>
+                    <button id="compose-btn-empty" class="px-6 py-3 bg-primary text-white rounded-xl hover:bg-primary/90 transition-colors text-sm font-medium flex items-center gap-2">
+                        <span class="material-symbols-outlined">add_circle</span>
+                        Compose Message
+                    </button>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</main>
+
+<!-- Compose Message Modal -->
+<div id="compose-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+    <div class="bg-surface rounded-2xl shadow-lg max-w-lg w-full max-h-[90vh] overflow-y-auto">
+        <div class="p-6 border-b border-outline-variant/30">
+            <div class="flex justify-between items-center">
+                <h2 class="text-lg font-bold text-primary">Compose Message</h2>
+                <button id="close-modal" class="text-on-surface-variant hover:text-on-surface">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+        </div>
+
+        <form id="message-form" class="p-6 space-y-4">
+            {% csrf_token %}
+            
+            <!-- Recipient -->
+            <div>
+                <label class="block text-sm font-medium text-primary mb-2">Send to</label>
+                {{ form.recipient }}
+                <div class="text-xs text-error hidden" id="recipient-error"></div>
+            </div>
+
+            <!-- Subject -->
+            <div>
+                <label class="block text-sm font-medium text-primary mb-2">Subject</label>
+                {{ form.subject }}
+                <div class="text-xs text-error hidden" id="subject-error"></div>
+            </div>
+
+            <!-- Message Body -->
+            <div>
+                <label class="block text-sm font-medium text-primary mb-2">Message</label>
+                {{ form.body }}
+                <div class="text-xs text-error hidden" id="body-error"></div>
+            </div>
+
+            <!-- Submit Buttons -->
+            <div class="flex gap-3 pt-4">
+                <button type="button" id="cancel-compose" class="flex-1 px-4 py-2 rounded-lg border border-outline-variant hover:bg-surface-container-high transition-colors text-sm font-medium">
+                    Cancel
+                </button>
+                <button type="submit" class="flex-1 px-4 py-2 rounded-lg bg-primary text-white hover:bg-primary/90 transition-colors text-sm font-medium flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined text-sm">send</span>
+                    Send
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Modal controls
+    const composeBtn = document.getElementById('compose-btn');
+    const composeBtnEmpty = document.getElementById('compose-btn-empty');
+    const composeModal = document.getElementById('compose-modal');
+    const closeModalBtn = document.getElementById('close-modal');
+    const cancelComposeBtn = document.getElementById('cancel-compose');
+    const messageForm = document.getElementById('message-form');
+
+    function openModal() {
+        composeModal.classList.remove('hidden');
+    }
+
+    function closeModal() {
+        composeModal.classList.add('hidden');
+    }
+
+    composeBtn?.addEventListener('click', openModal);
+    composeBtnEmpty?.addEventListener('click', openModal);
+    closeModalBtn?.addEventListener('click', closeModal);
+    cancelComposeBtn?.addEventListener('click', closeModal);
+
+    // Close on outside click
+    composeModal?.addEventListener('click', (e) => {
+        if (e.target === composeModal) closeModal();
+    });
+
+    // Form submission
+    messageForm?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const formData = new FormData(messageForm);
+        
+        try {
+            const response = await fetch('{% url "SchoolNowMgt:api_parent_message_send" %}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                }
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                // Show success message
+                alert('Message sent successfully!');
+                closeModal();
+                messageForm.reset();
+                // Reload the page to show the new message
+                window.location.reload();
+            } else {
+                // Show error messages
+                if (data.errors) {
+                    for (const [field, errors] of Object.entries(data.errors)) {
+                        const errorEl = document.getElementById(`${field}-error`);
+                        if (errorEl) {
+                            errorEl.textContent = errors[0];
+                            errorEl.classList.remove('hidden');
+                        }
+                    }
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('An error occurred while sending the message.');
+        }
+    });
+
+    // Search functionality
+    const searchInput = document.getElementById('search-messages');
+    searchInput?.addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase();
+        document.querySelectorAll('.glass-card').forEach(card => {
+            const text = card.textContent.toLowerCase();
+            card.parentElement.style.display = text.includes(query) ? 'block' : 'none';
+        });
+    });
+</script>
+
+<style>
+    .form-input {
+        @apply w-full px-3 py-2 rounded-lg border border-outline-variant bg-surface-container text-sm text-primary placeholder-on-surface-variant/50 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all;
+    }
+</style>
+
+{% endblock %}

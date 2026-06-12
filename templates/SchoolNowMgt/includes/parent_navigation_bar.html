@@ -1,0 +1,130 @@
+<!-- Top Navigation Bar -->
+<nav class="fixed top-0 left-0 right-0 bg-primary text-on-primary px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between z-50 shadow-lg gap-2 sm:gap-4">
+    <!-- Left Section: Logo + Mobile Menu Button -->
+    <div class="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+        <div class="w-8 sm:w-10 h-8 sm:h-10 rounded-lg sm:rounded-xl bg-secondary-container flex items-center justify-center text-primary flex-shrink-0">
+            <span class="material-symbols-outlined text-lg sm:text-xl" style="font-variation-settings: 'FILL' 1;">school</span>
+        </div>
+        <h1 class="text-sm sm:text-base md:text-lg font-black text-secondary-fixed hidden xs:inline">SchoolNow</h1>
+        
+        <!-- Mobile Menu Button - Next to Logo -->
+        <button id="parentMobileMenuToggle" class="lg:hidden p-2 hover:bg-white/10 rounded-lg transition-all text-on-primary flex items-center ml-auto lg:ml-0">
+            <span class="material-symbols-outlined text-xl">menu</span>
+        </button>
+    </div>
+    
+    <!-- Navigation Links - Desktop -->
+    <div class="hidden lg:flex items-center gap-1 flex-grow justify-center">
+        <a class="text-on-primary/70 hover:text-white px-3 py-2 flex items-center gap-2 hover:bg-white/10 transition-all text-sm rounded-lg" href="{% url 'SchoolNowMgt:parent_dashboard' %}">
+            <span class="material-symbols-outlined text-base">dashboard</span>
+            <span>Dashboard</span>
+        </a>
+        <a class="text-on-primary/70 hover:text-white px-3 py-2 flex items-center gap-2 hover:bg-white/10 transition-all text-sm rounded-lg" href="#">
+            <span class="material-symbols-outlined text-base">child_care</span>
+            <span>Children</span>
+        </a>
+        <a class="text-on-primary/70 hover:text-white px-3 py-2 flex items-center gap-2 hover:bg-white/10 transition-all text-sm rounded-lg" href="#">
+            <span class="material-symbols-outlined text-base">school</span>
+            <span>Academics</span>
+        </a>
+        <a class="text-on-primary/70 hover:text-white px-3 py-2 flex items-center gap-2 hover:bg-white/10 transition-all text-sm rounded-lg" href="#">
+            <span class="material-symbols-outlined text-base">payments</span>
+            <span>Payments</span>
+        </a>
+        <a class="relative text-on-primary/70 hover:text-white px-3 py-2 flex items-center gap-2 hover:bg-white/10 transition-all text-sm rounded-lg" href="{% url 'SchoolNowMgt:parent_message_inbox' %}">
+            <span class="material-symbols-outlined text-base">mail</span>
+            <span>Messages</span>
+            <span id="desktop-unread-badge" class="absolute -top-1 -right-1 bg-error text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold hidden">0</span>
+        </a>
+    </div>
+    
+    <!-- Right Side Actions -->
+    <div class="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+        <a class="text-on-primary/70 hover:text-white px-3 py-2 flex items-center gap-2 hover:bg-white/10 transition-all rounded-lg font-bold text-sm" href="{% url 'SchoolNowMgt:custom_logout' %}">
+            <span class="material-symbols-outlined text-base sm:text-lg">logout</span>
+            <span class="hidden sm:inline">Log out</span>
+        </a>
+    </div>
+</nav>
+
+<!-- Mobile Navigation Menu -->
+<div id="parentMobileMenu" class="fixed top-16 sm:top-20 left-0 right-0 bg-primary text-on-primary z-40 max-h-0 overflow-hidden transition-all duration-300 ease-in-out shadow-lg lg:hidden">
+    <div class="p-4 space-y-2">
+        <a class="text-on-primary/80 hover:text-white px-4 py-3 flex items-center gap-3 hover:bg-white/10 transition-all text-sm rounded-lg block w-full text-left" href="{% url 'SchoolNowMgt:parent_dashboard' %}">
+            <span class="material-symbols-outlined">dashboard</span>
+            <span>Dashboard</span>
+        </a>
+        <a class="text-on-primary/80 hover:text-white px-4 py-3 flex items-center gap-3 hover:bg-white/10 transition-all text-sm rounded-lg block w-full text-left" href="#">
+            <span class="material-symbols-outlined">child_care</span>
+            <span>Children</span>
+        </a>
+        <a class="text-on-primary/80 hover:text-white px-4 py-3 flex items-center gap-3 hover:bg-white/10 transition-all text-sm rounded-lg block w-full text-left" href="#">
+            <span class="material-symbols-outlined">school</span>
+            <span>Academics</span>
+        </a>
+        <a class="text-on-primary/80 hover:text-white px-4 py-3 flex items-center gap-3 hover:bg-white/10 transition-all text-sm rounded-lg block w-full text-left" href="#">
+            <span class="material-symbols-outlined">payments</span>
+            <span>Payments</span>
+        </a>
+        <a class="relative text-on-primary/80 hover:text-white px-4 py-3 flex items-center gap-3 hover:bg-white/10 transition-all text-sm rounded-lg block w-full text-left" href="{% url 'SchoolNowMgt:parent_message_inbox' %}">
+            <span class="material-symbols-outlined">mail</span>
+            <span>Messages</span>
+            <span id="mobile-unread-badge" class="absolute right-4 top-3 bg-error text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold hidden">0</span>
+        </a>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const menuToggle = document.getElementById('parentMobileMenuToggle');
+    const mobileMenu = document.getElementById('parentMobileMenu');
+    
+    if (menuToggle && mobileMenu) {
+        // Toggle menu when hamburger is clicked
+        menuToggle.addEventListener('click', function() {
+            const isOpen = mobileMenu.style.maxHeight && mobileMenu.style.maxHeight !== '0px';
+            if (isOpen) {
+                mobileMenu.style.maxHeight = '0px';
+            } else {
+                mobileMenu.style.maxHeight = mobileMenu.scrollHeight + 'px';
+            }
+        });
+        
+        // Close menu when a link is clicked
+        const menuLinks = mobileMenu.querySelectorAll('a');
+        menuLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                mobileMenu.style.maxHeight = '0px';
+            });
+        });
+    }
+    
+    // Fetch and display unread message count
+    function updateUnreadBadge() {
+        fetch('{% url "SchoolNowMgt:api_parent_unread_count" %}')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.unread_count > 0) {
+                    const desktopBadge = document.getElementById('desktop-unread-badge');
+                    const mobileBadge = document.getElementById('mobile-unread-badge');
+                    
+                    if (desktopBadge) {
+                        desktopBadge.textContent = data.unread_count;
+                        desktopBadge.classList.remove('hidden');
+                    }
+                    if (mobileBadge) {
+                        mobileBadge.textContent = data.unread_count;
+                        mobileBadge.classList.remove('hidden');
+                    }
+                }
+            })
+            .catch(error => console.error('Error fetching unread count:', error));
+    }
+    
+    // Update unread badge on page load
+    updateUnreadBadge();
+    
+    // Update unread badge every 30 seconds
+    setInterval(updateUnreadBadge, 30000);
+});
+</script>

@@ -906,18 +906,39 @@ class MessageTemplate(models.Model):
 
 class Message(models.Model):
     """
-    In-app messages sent by admins to stakeholders (teachers, staff, parents).
+    In-app messages sent by admins/staff to stakeholders or by parents to staff.
     
     Supports immediate delivery and scheduled delivery (processed by background cron).
     Each message creates MessageRecipient entries for targeted users.
+    
+    sender_type distinguishes between admin-sent bulk messages and parent-sent direct messages.
     """
+    
+    SENDER_TYPE_CHOICES = [
+        ('admin', 'Admin/Staff'),
+        ('parent', 'Parent'),
+    ]
+    
+    RECIPIENT_TYPE_CHOICES = [
+        ('all_teachers', 'All Teachers'),
+        ('all_staff', 'All Support Staff'),
+        ('all_staff_combined', 'All Teachers & Support Staff'),
+        ('all_parents', 'All Parents'),
+        ('class_specific', 'Parents of Specific Class'),
+        ('individual', 'Individual User'),
+    ]
     
     sender = models.ForeignKey(
         CustomUser,
         on_delete=models.SET_NULL,
         null=True,
-        related_name='messages_sent',
-        limit_choices_to={'role': 'admin'}
+        related_name='messages_sent'
+    )
+    sender_type = models.CharField(
+        max_length=10,
+        choices=SENDER_TYPE_CHOICES,
+        default='admin',
+        help_text="Whether message was sent by admin/staff or parent"
     )
     school = models.ForeignKey(
         School,
@@ -935,14 +956,7 @@ class Message(models.Model):
     )
     recipient_type = models.CharField(
         max_length=50,
-        choices=[
-            ('all_teachers', 'All Teachers'),
-            ('all_staff', 'All Support Staff'),
-            ('all_staff_combined', 'All Teachers & Support Staff'),
-            ('all_parents', 'All Parents'),
-            ('class_specific', 'Parents of Specific Class'),
-            ('individual', 'Individual User'),
-        ],
+        choices=RECIPIENT_TYPE_CHOICES,
         help_text="Targeting strategy for message recipients"
     )
     # For class_specific and individual targeting

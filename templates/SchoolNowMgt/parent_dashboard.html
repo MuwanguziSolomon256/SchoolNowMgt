@@ -5,61 +5,11 @@
 
 {% block content %}
 
-<div class="flex min-h-screen bg-background flex-col md:flex-row">
-    <!-- Mobile Menu Toggle -->
-    <button id="sidebarToggle" class="md:hidden fixed top-4 left-4 z-50 p-2 rounded-lg bg-primary text-white shadow-lg">
-        <span class="material-symbols-outlined">menu</span>
-    </button>
-    
-    <!-- Sidebar Navigation -->
-    <aside id="sidebar" class="h-screen w-full md:w-64 fixed md:relative left-0 top-0 sidebar-gradient flex flex-col py-4 md:py-base gap-2 shadow-xl shadow-primary/20 z-40 transform -translate-x-full md:translate-x-0 transition-transform duration-300 overflow-y-auto">
-        <div class="px-4 md:px-6 py-6 md:py-8">
-            <h1 class="font-headline-lg text-headline-lg font-black text-secondary-container text-lg md:text-2xl">Legacy Academy</h1>
-            <p class="font-label-md text-label-md text-on-primary/60 text-xs md:text-sm">Parent Portal</p>
-        </div>
-        
-        <nav class="flex-grow space-y-1 px-2">
-            <div class="text-on-primary/70 flex items-center gap-3 px-3 md:px-4 py-2 md:py-3 mx-0 md:mx-2 hover:bg-white/10 rounded-lg transition-all group cursor-pointer hover:translate-x-1 duration-300 nav-item text-sm md:text-base">
-                <span class="material-symbols-outlined text-lg md:text-xl">dashboard</span>
-                <span class="font-label-md text-label-md">Dashboard</span>
-            </div>
-            
-            <div class="bg-secondary-container text-on-secondary-container rounded-lg font-bold flex items-center gap-3 px-3 md:px-4 py-2 md:py-3 mx-0 md:mx-2 group cursor-pointer nav-item active text-sm md:text-base">
-                <span class="material-symbols-outlined text-lg md:text-xl">child_care</span>
-                <span class="font-label-md text-label-md">Children</span>
-            </div>
-            
-            <div class="text-on-primary/70 flex items-center gap-3 px-3 md:px-4 py-2 md:py-3 mx-0 md:mx-2 hover:bg-white/10 rounded-lg transition-all group cursor-pointer hover:translate-x-1 duration-300 nav-item text-sm md:text-base">
-                <span class="material-symbols-outlined text-lg md:text-xl">school</span>
-                <span class="font-label-md text-label-md">Academics</span>
-            </div>
-            
-            <div class="text-on-primary/70 flex items-center gap-3 px-3 md:px-4 py-2 md:py-3 mx-0 md:mx-2 hover:bg-white/10 rounded-lg transition-all group cursor-pointer hover:translate-x-1 duration-300 nav-item text-sm md:text-base">
-                <span class="material-symbols-outlined text-lg md:text-xl">payments</span>
-                <span class="font-label-md text-label-md">Payments</span>
-            </div>
-            
-            <div class="text-on-primary/70 flex items-center gap-3 px-3 md:px-4 py-2 md:py-3 mx-0 md:mx-2 hover:bg-white/10 rounded-lg transition-all group cursor-pointer hover:translate-x-1 duration-300 nav-item text-sm md:text-base">
-                <span class="material-symbols-outlined text-lg md:text-xl">chat_bubble</span>
-                <span class="font-label-md text-label-md">Messaging</span>
-            </div>
-        </nav>
-        
-        <!-- Bottom Support & Logout -->
-        <div class="px-2 mt-auto pb-4 space-y-1">
-            <div class="text-on-primary/70 flex items-center gap-3 px-3 md:px-4 py-2 md:py-3 mx-0 md:mx-2 hover:bg-white/10 rounded-lg transition-all cursor-pointer nav-item text-sm md:text-base">
-                <span class="material-symbols-outlined text-lg md:text-xl">contact_support</span>
-                <span class="font-label-md text-label-md">Support</span>
-            </div>
-            <a href="{% url 'SchoolNowMgt:custom_logout' %}" class="text-on-primary/70 flex items-center gap-3 px-3 md:px-4 py-2 md:py-3 mx-0 md:mx-2 hover:bg-white/10 rounded-lg transition-all cursor-pointer nav-item text-sm md:text-base">
-                <span class="material-symbols-outlined text-lg md:text-xl">logout</span>
-                <span class="font-label-md text-label-md">Logout</span>
-            </a>
-        </div>
-    </aside>
-    
-    <!-- Main Content -->
-    <main class="w-full flex flex-col md:ml-0">
+<!-- Include New Top Navigation Bar -->
+{% include "SchoolNowMgt/includes/parent_navigation_bar.html" %}
+
+<!-- Main Content -->
+<main class="w-full flex flex-col min-h-screen bg-background pt-24">
         <!-- Top Navigation Bar -->
         <header class="flex justify-between items-center px-4 md:px-container-padding w-full sticky top-0 z-40 bg-surface/70 backdrop-blur-2xl h-14 md:h-16 border-b border-white/20 shadow-sm shadow-primary/5">
             <div class="flex items-center gap-3 md:gap-6 flex-1">
@@ -78,9 +28,9 @@
                     <button class="p-2 hover:bg-surface-container-highest/50 rounded-full transition-all cursor-pointer active:scale-95">
                         <span class="material-symbols-outlined text-on-surface-variant text-lg md:text-xl">help</span>
                     </button>
-                    <button class="p-2 hover:bg-surface-container-highest/50 rounded-full transition-all cursor-pointer active:scale-95">
+                    <a href="{% url 'user_profile:edit_profile' %}" class="p-2 hover:bg-surface-container-highest/50 rounded-full transition-all cursor-pointer active:scale-95">
                         <span class="material-symbols-outlined text-on-surface-variant text-lg md:text-xl">settings</span>
-                    </button>
+                    </a>
                 </div>
                 <div class="hidden md:block h-8 w-px bg-outline-variant/30 mx-2"></div>
                 <div class="flex items-center gap-2 md:gap-3 cursor-pointer">
@@ -88,7 +38,13 @@
                         <p class="font-label-md text-label-md text-primary font-bold text-xs md:text-sm">{{ user.first_name|default:"Parent" }}</p>
                         <p class="text-[10px] text-outline uppercase tracking-wider">Parent Account</p>
                     </div>
-                    <img alt="Parent Profile" class="w-8 md:w-10 h-8 md:h-10 rounded-full border-2 border-secondary-container" src="https://via.placeholder.com/40"/>
+                    {% if user.profile_picture %}
+                        <img alt="Parent Profile" class="w-8 md:w-10 h-8 md:h-10 rounded-full border-2 border-secondary-container object-cover" src="{{ user.profile_picture.url }}"/>
+                    {% else %}
+                        <div class="w-8 md:w-10 h-8 md:h-10 rounded-full border-2 border-secondary-container bg-primary/20 flex items-center justify-center">
+                            <span class="material-symbols-outlined text-primary text-lg">person</span>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
         </header>
@@ -224,47 +180,9 @@
             </div>
         </div>
     </main>
-</div>
 
 <script>
-    // Sidebar Toggle
-    const sidebarToggle = document.getElementById('sidebarToggle');
-    const sidebar = document.getElementById('sidebar');
-
-    if (sidebarToggle) {
-        sidebarToggle.addEventListener('click', () => {
-            sidebar.classList.toggle('-translate-x-full');
-        });
-        
-        // Close sidebar when clicking on a nav item
-        document.querySelectorAll('.nav-item').forEach(item => {
-            item.addEventListener('click', () => {
-                if (window.innerWidth < 768) {
-                    sidebar.classList.add('-translate-x-full');
-                }
-            });
-        });
-    }
-
-    // Close sidebar when clicking outside on mobile
-    document.addEventListener('click', (e) => {
-        if (window.innerWidth < 768 && sidebar && !sidebar.contains(e.target) && !sidebarToggle.contains(e.target)) {
-            sidebar.classList.add('-translate-x-full');
-        }
-    });
-
-    // Responsive viewport handling
-    let resizeTimer;
-    window.addEventListener('resize', () => {
-        clearTimeout(resizeTimer);
-        resizeTimer = setTimeout(() => {
-            if (window.innerWidth >= 768) {
-                sidebar.classList.remove('-translate-x-full');
-            }
-        }, 250);
-    });
-
-    // Smooth animations
+    // Smooth animations for cards
     document.addEventListener('DOMContentLoaded', () => {
         const cards = document.querySelectorAll('.glass-card, .animate-in');
         cards.forEach((card, index) => {

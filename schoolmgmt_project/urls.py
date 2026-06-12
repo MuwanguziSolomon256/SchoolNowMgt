@@ -31,6 +31,7 @@ urlpatterns = [
         path('', include('allauth.urls')),
     ])),
     path('teacher/', include('teacher.urls', namespace='teacher')),
+    path('profile/', include('user_profile.urls', namespace='user_profile')),
     path('school/', include('SchoolNowMgt.urls')),
     path('register/', include('SchoolNowMgt.registration.urls', namespace='registration')),
 ]
