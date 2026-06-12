@@ -1,0 +1,385 @@
+{% extends "SchoolNowMgt/base_ethos.html" %}
+{% load static %}
+
+{% block title %}Payments - EduVision Pro Parent Portal{% endblock %}
+
+{% block content %}
+
+<!-- Include Parent Navigation Bar -->
+{% include "SchoolNowMgt/includes/parent_navigation_bar.html" %}
+
+<!-- Main Content -->
+<main class="w-full flex flex-col min-h-screen bg-background pt-24">
+    <!-- Top Navigation Bar -->
+    <header class="flex justify-between items-center px-4 md:px-container-padding w-full sticky top-24 z-40 bg-surface/70 backdrop-blur-2xl h-14 md:h-16 border-b border-white/20 shadow-sm shadow-primary/5">
+        <div class="flex items-center gap-3 md:gap-6 flex-1">
+            <h2 class="font-headline-md text-headline-md font-bold text-primary text-lg md:text-2xl">Payments</h2>
+        </div>
+    </header>
+
+    <!-- Page Content -->
+    <div class="p-3 sm:p-4 md:p-6 lg:p-8 space-y-6 md:space-y-8">
+        {% if payments_by_child %}
+            <!-- Outstanding Balance Overview -->
+            <div class="glass-card rounded-2xl md:rounded-[32px] p-4 md:p-6 shadow-sm">
+                <h3 class="font-headline-md text-headline-md text-primary text-base md:text-lg mb-4">Outstanding Balance</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="p-4 bg-surface-container-low rounded-xl">
+                        <p class="text-on-surface-variant text-xs uppercase tracking-wider mb-1">Total Outstanding</p>
+                        <p class="font-display-md text-display-md text-error text-xl md:text-2xl">{{ total_outstanding|floatformat:2 }}</p>
+                    </div>
+                    <div class="p-4 bg-surface-container-low rounded-xl">
+                        <p class="text-on-surface-variant text-xs uppercase tracking-wider mb-1">Children with Pending Payments</p>
+                        <p class="font-display-md text-display-md text-primary text-xl md:text-2xl">
+                            {% with pending_count=payments_by_child|dictsort:"child.full_name"|length %}
+                                {{ pending_count }}
+                            {% endwith %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Children Balance Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+                {% for payment in payments_by_child.values %}
+                    <div class="glass-card rounded-2xl md:rounded-[32px] p-4 md:p-6 shadow-sm">
+                        <!-- Child Header -->
+                        <div class="mb-4 pb-4 border-b border-outline-variant/20">
+                            <h4 class="font-headline-md text-headline-md text-primary text-sm md:text-base">{{ payment.child.full_name }}</h4>
+                            <p class="text-on-surface-variant text-xs md:text-sm">{{ payment.child.class_grade.name }} - {{ payment.child.class_grade.school.name }}</p>
+                        </div>
+
+                        <!-- Payment Status -->
+                        <div class="space-y-2 mb-4">
+                            <div class="flex justify-between items-center">
+                                <p class="text-on-surface-variant text-xs">Total Paid</p>
+                                <p class="font-bold text-green-600 text-sm">{{ payment.total_paid|floatformat:2 }}</p>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <p class="text-on-surface-variant text-xs">Outstanding</p>
+                                <p class="font-bold text-error text-sm">{{ payment.outstanding|floatformat:2 }}</p>
+                            </div>
+                            <div class="flex justify-between items-center pb-2 border-t border-outline-variant/10 pt-2">
+                                <p class="text-on-surface-variant text-xs font-bold">Status</p>
+                                {% if payment.status == 'Paid' %}
+                                    <span class="badge badge-success text-xs">Fully Paid</span>
+                                {% elif payment.status == 'Overdue' %}
+                                    <span class="badge badge-error text-xs">Overdue</span>
+                                {% else %}
+                                    <span class="badge badge-warning text-xs">Pending</span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Payment Progress -->
+                        <div class="mb-4">
+                            {% with total_due=payment.total_paid|add:payment.outstanding %}
+                                {% if total_due > 0 %}
+                                    {% widthratio payment.total_paid total_due 100 as percentage %}
+                                    <div class="w-full h-2 bg-surface-container-highest rounded-full overflow-hidden">
+                                        <div class="h-full bg-primary rounded-full transition-all" style="width: {{ percentage }}%"></div>
+                                    </div>
+                                    <p class="text-xs text-on-surface-variant mt-1">{{ percentage }}% paid</p>
+                                {% endif %}
+                            {% endwith %}
+                        </div>
+
+                        <!-- Action Button -->
+                        {% if payment.outstanding > 0 %}
+                            <button class="w-full py-2 md:py-3 bg-primary text-on-primary font-bold rounded-lg hover:brightness-110 transition-all text-xs md:text-sm flex items-center justify-center gap-2">
+                                <span class="material-symbols-outlined text-sm">payment</span>
+                                <span>Make Payment</span>
+                            </button>
+                        {% else %}
+                            <button disabled class="w-full py-2 md:py-3 bg-surface-container-highest text-on-surface-variant font-bold rounded-lg text-xs md:text-sm flex items-center justify-center gap-2">
+                                <span class="material-symbols-outlined text-sm">check_circle</span>
+                                <span>All Paid</span>
+                            </button>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+
+            <!-- Tabs Navigation -->
+            <div class="flex gap-2 border-b border-outline-variant/20 overflow-x-auto">
+                <button class="history-tab active px-4 py-3 font-bold text-primary border-b-2 border-primary transition-all text-sm md:text-base whitespace-nowrap">
+                    <span class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-base">history</span>
+                        <span>Payment History</span>
+                    </span>
+                </button>
+                <button class="invoices-tab px-4 py-3 font-bold text-on-surface-variant hover:text-primary border-b-2 border-transparent transition-all text-sm md:text-base whitespace-nowrap">
+                    <span class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-base">receipt</span>
+                        <span>Invoices</span>
+                    </span>
+                </button>
+                <button class="methods-tab px-4 py-3 font-bold text-on-surface-variant hover:text-primary border-b-2 border-transparent transition-all text-sm md:text-base whitespace-nowrap">
+                    <span class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-base">payment</span>
+                        <span>Payment Methods</span>
+                    </span>
+                </button>
+            </div>
+
+            <!-- Payment History Tab Content -->
+            <div class="history-content glass-card rounded-2xl md:rounded-[32px] p-4 md:p-6 shadow-sm">
+                <h3 class="font-headline-md text-headline-md text-primary text-base md:text-lg mb-4">Recent Transactions</h3>
+                {% if recent_payments %}
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-xs md:text-sm">
+                            <thead>
+                                <tr class="border-b border-outline-variant/20">
+                                    <th class="pb-3 md:pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-left">Child</th>
+                                    <th class="pb-3 md:pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-center">Amount</th>
+                                    <th class="pb-3 md:pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-center">Date</th>
+                                    <th class="pb-3 md:pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-left">Method</th>
+                                    <th class="pb-3 md:pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-left">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for payment in recent_payments %}
+                                    <tr class="border-b border-outline-variant/10 hover:bg-surface-container-low/50 transition-colors">
+                                        <td class="py-3 md:py-4 text-primary font-bold">{{ payment.student.full_name }}</td>
+                                        <td class="py-3 md:py-4 text-center font-bold text-green-600">{{ payment.amount|floatformat:2 }}</td>
+                                        <td class="py-3 md:py-4 text-center text-on-surface-variant">{{ payment.payment_date|date:"M d, Y" }}</td>
+                                        <td class="py-3 md:py-4">{{ payment.get_payment_method_display }}</td>
+                                        <td class="py-3 md:py-4">
+                                            <span class="px-2 py-1 bg-green-100 text-green-700 rounded-lg font-bold text-xs">Complete</span>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-8">
+                        <p class="text-on-surface-variant font-label-md">No payment history yet</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Invoices Tab Content -->
+            <div class="invoices-content hidden glass-card rounded-2xl md:rounded-[32px] p-4 md:p-6 shadow-sm">
+                <h3 class="font-headline-md text-headline-md text-primary text-base md:text-lg mb-4">All Fee Payments</h3>
+                {% if invoices %}
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-xs md:text-sm">
+                            <thead>
+                                <tr class="border-b border-outline-variant/20">
+                                    <th class="pb-3 md:pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-left">Child</th>
+                                    <th class="pb-3 md:pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-center">Amount Paid</th>
+                                    <th class="pb-3 md:pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-center">Payment Date</th>
+                                    <th class="pb-3 md:pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-left">Method</th>
+                                    <th class="pb-3 md:pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-left">Transaction ID</th>
+                                    <th class="pb-3 md:pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-center">Balance After</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for payment in invoices %}
+                                    <tr class="border-b border-outline-variant/10 hover:bg-surface-container-low/50 transition-colors">
+                                        <td class="py-3 md:py-4 text-primary font-bold">{{ payment.student.full_name }}</td>
+                                        <td class="py-3 md:py-4 text-center text-green-600 font-bold">{{ payment.amount_paid|floatformat:2 }}</td>
+                                        <td class="py-3 md:py-4 text-center text-on-surface-variant">{{ payment.payment_date|date:"M d, Y" }}</td>
+                                        <td class="py-3 md:py-4">{{ payment.get_payment_method_display }}</td>
+                                        <td class="py-3 md:py-4 text-on-surface-variant">{{ payment.transaction_id|default:"—" }}</td>
+                                        <td class="py-3 md:py-4 text-center">
+                                            {% if payment.balance_after <= 0 %}
+                                                <span class="px-2 py-1 bg-green-100 text-green-700 rounded-lg font-bold text-xs">Paid</span>
+                                            {% else %}
+                                                <span class="font-bold">{{ payment.balance_after|floatformat:2 }}</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-8">
+                        <p class="text-on-surface-variant font-label-md">No payments found</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Payment Methods Tab Content -->
+            <div class="methods-content hidden glass-card rounded-2xl md:rounded-[32px] p-4 md:p-6 shadow-sm">
+                <h3 class="font-headline-md text-headline-md text-primary text-base md:text-lg mb-6">Available Payment Methods</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                    <!-- Cash Payment -->
+                    <div class="bg-surface-container-low rounded-xl p-4 md:p-5 border-2 border-outline-variant/20 hover:border-primary/50 transition-all">
+                        <div class="flex items-start gap-4">
+                            <div class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                <span class="material-symbols-outlined text-primary text-xl">payments</span>
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="font-bold text-primary text-sm md:text-base">Cash Payment</h4>
+                                <p class="text-on-surface-variant text-xs md:text-sm mt-1">Pay directly at the school office during business hours</p>
+                                <p class="text-on-surface-variant text-xs mt-2">Operating Hours: Mon-Fri, 8:00 AM - 5:00 PM</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- MTN Money -->
+                    <div class="bg-surface-container-low rounded-xl p-4 md:p-5 border-2 border-outline-variant/20 hover:border-primary/50 transition-all">
+                        <div class="flex items-start gap-4">
+                            <div class="w-12 h-12 rounded-lg bg-yellow-100 flex items-center justify-center flex-shrink-0">
+                                <span class="font-bold text-yellow-700 text-lg">M</span>
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="font-bold text-primary text-sm md:text-base">MTN Money</h4>
+                                <p class="text-on-surface-variant text-xs md:text-sm mt-1">Send via MTN Mobile Money</p>
+                                <p class="text-primary font-bold text-xs mt-2">Number: 0701234567</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Airtel Money -->
+                    <div class="bg-surface-container-low rounded-xl p-4 md:p-5 border-2 border-outline-variant/20 hover:border-primary/50 transition-all">
+                        <div class="flex items-start gap-4">
+                            <div class="w-12 h-12 rounded-lg bg-red-100 flex items-center justify-center flex-shrink-0">
+                                <span class="font-bold text-red-700 text-lg">A</span>
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="font-bold text-primary text-sm md:text-base">Airtel Money</h4>
+                                <p class="text-on-surface-variant text-xs md:text-sm mt-1">Send via Airtel Mobile Money</p>
+                                <p class="text-primary font-bold text-xs mt-2">Number: 0705234567</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bank Transfer -->
+                    <div class="bg-surface-container-low rounded-xl p-4 md:p-5 border-2 border-outline-variant/20 hover:border-primary/50 transition-all">
+                        <div class="flex items-start gap-4">
+                            <div class="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
+                                <span class="material-symbols-outlined text-blue-700 text-xl">account_balance</span>
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="font-bold text-primary text-sm md:text-base">Bank Transfer</h4>
+                                <p class="text-on-surface-variant text-xs md:text-sm mt-1">Direct bank transfer to school account</p>
+                                <p class="text-primary font-bold text-xs mt-2">Account: 1234567890 (Stanbic Bank)</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card Payment -->
+                    <div class="bg-surface-container-low rounded-xl p-4 md:p-5 border-2 border-outline-variant/20 hover:border-primary/50 transition-all">
+                        <div class="flex items-start gap-4">
+                            <div class="w-12 h-12 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
+                                <span class="material-symbols-outlined text-purple-700 text-xl">credit_card</span>
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="font-bold text-primary text-sm md:text-base">Card Payment</h4>
+                                <p class="text-on-surface-variant text-xs md:text-sm mt-1">Pay securely using Visa or Mastercard</p>
+                                <p class="text-on-surface-variant text-xs mt-2">Available 24/7 online</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cheque Payment -->
+                    <div class="bg-surface-container-low rounded-xl p-4 md:p-5 border-2 border-outline-variant/20 hover:border-primary/50 transition-all">
+                        <div class="flex items-start gap-4">
+                            <div class="w-12 h-12 rounded-lg bg-green-100 flex items-center justify-center flex-shrink-0">
+                                <span class="material-symbols-outlined text-green-700 text-xl">receipt</span>
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="font-bold text-primary text-sm md:text-base">Cheque Payment</h4>
+                                <p class="text-on-surface-variant text-xs md:text-sm mt-1">Submit cheque at the school office</p>
+                                <p class="text-on-surface-variant text-xs mt-2">Please make cheque payable to the school</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        {% else %}
+            <!-- No Data State -->
+            <div class="glass-card rounded-2xl md:rounded-[32px] p-8 md:p-12 shadow-sm text-center">
+                <div class="flex justify-center mb-4">
+                    <div class="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-primary text-4xl">payments</span>
+                    </div>
+                </div>
+                <h3 class="font-headline-md text-headline-md text-primary text-lg md:text-xl mb-2">No Payment Information</h3>
+                <p class="text-on-surface-variant text-sm md:text-base">No payment records found for your children.</p>
+            </div>
+        {% endif %}
+    </div>
+</main>
+
+<script>
+    // Tab switching functionality
+    document.addEventListener('DOMContentLoaded', () => {
+        const historyTabs = document.querySelectorAll('.history-tab');
+        const invoicesTabs = document.querySelectorAll('.invoices-tab');
+        const methodsTabs = document.querySelectorAll('.methods-tab');
+        const historyContent = document.querySelector('.history-content');
+        const invoicesContent = document.querySelector('.invoices-content');
+        const methodsContent = document.querySelector('.methods-content');
+
+        // History tab
+        historyTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                historyTabs.forEach(t => {
+                    t.classList.add('active', 'border-primary', 'text-primary');
+                    t.classList.remove('border-transparent', 'text-on-surface-variant');
+                });
+                invoicesTabs.forEach(t => {
+                    t.classList.remove('active', 'border-primary', 'text-primary');
+                    t.classList.add('border-transparent', 'text-on-surface-variant');
+                });
+                methodsTabs.forEach(t => {
+                    t.classList.remove('active', 'border-primary', 'text-primary');
+                    t.classList.add('border-transparent', 'text-on-surface-variant');
+                });
+                historyContent.classList.remove('hidden');
+                invoicesContent.classList.add('hidden');
+                methodsContent.classList.add('hidden');
+            });
+        });
+
+        // Invoices tab
+        invoicesTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                invoicesTabs.forEach(t => {
+                    t.classList.add('active', 'border-primary', 'text-primary');
+                    t.classList.remove('border-transparent', 'text-on-surface-variant');
+                });
+                historyTabs.forEach(t => {
+                    t.classList.remove('active', 'border-primary', 'text-primary');
+                    t.classList.add('border-transparent', 'text-on-surface-variant');
+                });
+                methodsTabs.forEach(t => {
+                    t.classList.remove('active', 'border-primary', 'text-primary');
+                    t.classList.add('border-transparent', 'text-on-surface-variant');
+                });
+                invoicesContent.classList.remove('hidden');
+                historyContent.classList.add('hidden');
+                methodsContent.classList.add('hidden');
+            });
+        });
+
+        // Methods tab
+        methodsTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                methodsTabs.forEach(t => {
+                    t.classList.add('active', 'border-primary', 'text-primary');
+                    t.classList.remove('border-transparent', 'text-on-surface-variant');
+                });
+                historyTabs.forEach(t => {
+                    t.classList.remove('active', 'border-primary', 'text-primary');
+                    t.classList.add('border-transparent', 'text-on-surface-variant');
+                });
+                invoicesTabs.forEach(t => {
+                    t.classList.remove('active', 'border-primary', 'text-primary');
+                    t.classList.add('border-transparent', 'text-on-surface-variant');
+                });
+                methodsContent.classList.remove('hidden');
+                historyContent.classList.add('hidden');
+                invoicesContent.classList.add('hidden');
+            });
+        });
+    });
+</script>
+
+{% endblock %}

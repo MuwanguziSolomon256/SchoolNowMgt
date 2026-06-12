@@ -1,0 +1,132 @@
+{% extends "SchoolNowMgt/base_ethos.html" %}
+{% load static %}
+
+{% block title %}Your Children - EduVision Pro Parent Portal{% endblock %}
+
+{% block content %}
+
+<!-- Include Parent Navigation Bar -->
+{% include "SchoolNowMgt/includes/parent_navigation_bar.html" %}
+
+<!-- Main Content -->
+<main class="w-full flex flex-col min-h-screen bg-background pt-24">
+    <!-- Top Navigation Bar -->
+    <header class="flex justify-between items-center px-4 md:px-container-padding w-full sticky top-24 z-40 bg-surface/70 backdrop-blur-2xl h-14 md:h-16 border-b border-white/20 shadow-sm shadow-primary/5">
+        <div class="flex items-center gap-3 md:gap-6 flex-1">
+            <h2 class="font-headline-md text-headline-md font-bold text-primary text-lg md:text-2xl">Your Children</h2>
+        </div>
+        
+        <div class="flex items-center gap-2 md:gap-4">
+            <span class="text-on-surface-variant text-xs md:text-sm">{{ total_active_children }} enrolled</span>
+        </div>
+    </header>
+
+    <!-- Page Content -->
+    <div class="p-3 sm:p-4 md:p-6 lg:p-8 space-y-6 md:space-y-8">
+        {% if children_by_school %}
+            {% for school, children in children_by_school.items %}
+                <!-- School Section -->
+                <div class="space-y-4">
+                    <h3 class="font-headline-md text-headline-md text-primary text-lg md:text-xl">{{ school.name }}</h3>
+                    
+                    <!-- Children Grid -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+                        {% for child in children %}
+                            <div class="glass-card rounded-2xl md:rounded-[32px] p-4 md:p-6 shadow-sm overflow-hidden hover:shadow-md transition-all animate-in">
+                                <!-- Child Header -->
+                                <div class="flex items-start gap-4 mb-6">
+                                    <!-- Photo -->
+                                    {% if child.photo %}
+                                        <img src="{{ child.photo.url }}" alt="{{ child.full_name }}" class="w-16 md:w-20 h-16 md:h-20 rounded-2xl object-cover border-2 border-secondary-container flex-shrink-0"/>
+                                    {% else %}
+                                        <div class="w-16 md:w-20 h-16 md:h-20 rounded-2xl bg-primary/10 flex items-center justify-center flex-shrink-0 border-2 border-secondary-container">
+                                            <span class="material-symbols-outlined text-primary text-2xl md:text-3xl">person</span>
+                                        </div>
+                                    {% endif %}
+                                    
+                                    <!-- Info -->
+                                    <div class="flex-1">
+                                        <h4 class="font-headline-md text-headline-md text-primary text-base md:text-lg">{{ child.full_name }}</h4>
+                                        <p class="text-on-surface-variant text-xs md:text-sm">Adm. #{{ child.admission_number }}</p>
+                                        <div class="mt-2">
+                                            {% if child.status == 'active' %}
+                                                <span class="badge badge-success text-xs">Active</span>
+                                            {% elif child.status == 'graduated' %}
+                                                <span class="badge badge-info text-xs">Graduated</span>
+                                            {% elif child.status == 'dropped' %}
+                                                <span class="badge badge-warning text-xs">Dropped</span>
+                                            {% elif child.status == 'suspended' %}
+                                                <span class="badge badge-error text-xs">Suspended</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Academic Info -->
+                                <div class="space-y-3 mb-6 pb-6 border-b border-outline-variant/20">
+                                    <!-- Class -->
+                                    <div class="flex justify-between items-center">
+                                        <p class="text-on-surface-variant text-xs uppercase tracking-wider">Class</p>
+                                        <p class="font-label-md text-label-md text-primary text-sm">{{ child.class_grade.name }}</p>
+                                    </div>
+                                    
+                                    <!-- GPA -->
+                                    <div class="flex justify-between items-center">
+                                        <p class="text-on-surface-variant text-xs uppercase tracking-wider">GPA</p>
+                                        <p class="font-headline-md text-headline-md text-primary text-sm">{{ child.gpa|default:"N/A" }}</p>
+                                    </div>
+                                    
+                                    <!-- Attendance -->
+                                    <div class="flex justify-between items-center">
+                                        <p class="text-on-surface-variant text-xs uppercase tracking-wider">Attendance</p>
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-20 h-2 bg-surface-container-highest rounded-full overflow-hidden">
+                                                <div class="h-full bg-primary rounded-full" style="width: {{ child.attendance_percentage }}%"></div>
+                                            </div>
+                                            <p class="font-label-md text-label-md text-primary text-xs">{{ child.attendance_percentage }}%</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Action Buttons -->
+                                <div class="flex gap-2 md:gap-3">
+                                    <a href="{% url 'SchoolNowMgt:parent_academics_dashboard' %}?child_id={{ child.id }}" class="flex-1 py-2 md:py-3 bg-primary text-on-primary font-bold rounded-xl md:rounded-2xl flex items-center justify-center gap-1 md:gap-2 hover:brightness-110 transition-all text-xs md:text-sm">
+                                        <span class="material-symbols-outlined text-sm md:text-base">school</span>
+                                        <span>Academics</span>
+                                    </a>
+                                    <a href="{% url 'SchoolNowMgt:parent_payments_dashboard' %}?child_id={{ child.id }}" class="flex-1 py-2 md:py-3 bg-secondary text-on-secondary font-bold rounded-xl md:rounded-2xl flex items-center justify-center gap-1 md:gap-2 hover:brightness-110 transition-all text-xs md:text-sm">
+                                        <span class="material-symbols-outlined text-sm md:text-base">payments</span>
+                                        <span>Payments</span>
+                                    </a>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <!-- No Children State -->
+            <div class="glass-card rounded-2xl md:rounded-[32px] p-8 md:p-12 shadow-sm text-center">
+                <div class="flex justify-center mb-4">
+                    <div class="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-primary text-4xl">child_care</span>
+                    </div>
+                </div>
+                <h3 class="font-headline-md text-headline-md text-primary text-lg md:text-xl mb-2">No Children Enrolled</h3>
+                <p class="text-on-surface-variant text-sm md:text-base">You don't have any enrolled children in your account. Please contact the school to enroll your child.</p>
+            </div>
+        {% endif %}
+    </div>
+</main>
+
+<script>
+    // Smooth animations for cards
+    document.addEventListener('DOMContentLoaded', () => {
+        const cards = document.querySelectorAll('.glass-card, .animate-in');
+        cards.forEach((card, index) => {
+            card.style.animation = `fadeInUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) ${index * 0.1}s backwards`;
+        });
+    });
+</script>
+
+{% endblock %}

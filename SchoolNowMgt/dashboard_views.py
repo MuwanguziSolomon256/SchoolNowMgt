@@ -15,7 +15,7 @@ from .models import (
     Student, StaffProfile, StudentAttendance, StaffAttendance,
     RetentionAlert, SMSLog, Enquiry, FeePayment, Grade, ClassGrade,
     CustomUser, Message, MessageRecipient, MessageTemplate, School,
-    ActivityLog, Event, AdminProfile
+    ActivityLog, Event, AdminProfile, StudentAssignment, Subject, Assignment
 )
 from .forms import (
     StaffOnboardingForm, BulkStaffUploadForm,
@@ -2519,3 +2519,280 @@ def ensure_admin_profile(user):
     """
     if user.role == 'admin':
         AdminProfile.objects.get_or_create(user=user)
+
+
+# ==================================================================================
+# PARENT PORTAL SUBDASHBOARDS (Phase 8)
+# ==================================================================================
+
+@unified_login_required
+def parent_children_dashboard(request):
+    """
+    Parent subdashboard: View all enrolled children across multiple schools.
+    
+    Access Control: Parents only
+    
+    Displays:
+    - Children grouped by school
+    - Per-child: photo, name, admission #, class, GPA, attendance %, status
+    - Quick action buttons: View Academics | View Payments
+    
+    Multi-school Support: Parents with children in multiple schools see all grouped by school
+    
+    Renders: SchoolNowMgt/parent_children_subdashboard.html
+    """
+    if request.user.role != 'parent':
+        if request.user.role == 'admin':
+            return redirect('SchoolNowMgt:dashboard')
+        elif request.user.role == 'teacher':
+            return redirect('teacher:dashboard')
+        else:
+            return redirect('auth:unified_login')
+    
+    # Get all active children for this parent
+    children = Student.objects.filter(
+        parent_user=request.user,
+        status='active'
+    ).select_related('class_grade', 'class_grade__school').prefetch_related('grades', 'attendance_records')
+    
+    # Group children by school
+    from collections import defaultdict
+    children_by_school = defaultdict(list)
+    for child in children:
+        school = child.class_grade.school
+        children_by_school[school].append(child)
+    
+    # Calculate GPA and attendance for each child
+    for school, school_children in children_by_school.items():
+        for child in school_children:
+            # Calculate GPA (average of recent grades)
+            grades = child.grades.all()
+            if grades:
+                child.gpa = sum([g.score for g in grades]) / len(grades)
+                child.gpa = round(child.gpa, 2)
+            else:
+                child.gpa = 0.00
+            
+            # Calculate attendance percentage
+            attendance_records = child.attendance_records.all()
+            if attendance_records:
+                present_count = attendance_records.filter(status='present').count()
+                child.attendance_percentage = round((present_count / attendance_records.count()) * 100, 1)
+            else:
+                child.attendance_percentage = 0.0
+    
+    context = {
+        'children_by_school': dict(children_by_school),
+        'total_active_children': children.count(),
+        'today': timezone.localdate(),
+        'user': request.user,
+    }
+    
+    return render(request, 'SchoolNowMgt/parent_children_subdashboard.html', context)
+
+
+@unified_login_required
+def parent_academics_dashboard(request):
+    """
+    Parent subdashboard: View child's grades and assignments.
+    
+    Access Control: Parents only
+    
+    GET params:
+    - child_id: ID of child to display (required, or defaults to first child)
+    - year: Academic year filter (optional, defaults to current year)
+    - term: Term filter (optional)
+    
+    Displays:
+    - Child selector dropdown
+    - Year/term filter dropdowns
+    - Grades table: Subject | Score | Letter Grade | Remarks | Term/Year
+    - Assignments table: Title | Subject | Due Date | Submitted On | Status | Score
+    - Performance summary: GPA | Avg Score | Attendance % | Class Rank
+    
+    Renders: SchoolNowMgt/parent_academics_subdashboard.html
+    """
+    if request.user.role != 'parent':
+        if request.user.role == 'admin':
+            return redirect('SchoolNowMgt:dashboard')
+        elif request.user.role == 'teacher':
+            return redirect('teacher:dashboard')
+        else:
+            return redirect('auth:unified_login')
+    
+    # Get all active children for dropdown
+    all_children = Student.objects.filter(
+        parent_user=request.user,
+        status='active'
+    ).select_related('class_grade', 'class_grade__school').order_by('first_name')
+    
+    # Get selected child (from GET param or default to first)
+    child_id = request.GET.get('child_id')
+    if child_id:
+        try:
+            selected_child = all_children.get(id=child_id)
+        except Student.DoesNotExist:
+            selected_child = all_children.first()
+    else:
+        selected_child = all_children.first()
+    
+    if not selected_child:
+        # No children enrolled
+        context = {
+            'all_children': all_children,
+            'selected_child': None,
+            'grades': [],
+            'assignments': [],
+            'today': timezone.localdate(),
+        }
+        return render(request, 'SchoolNowMgt/parent_academics_subdashboard.html', context)
+    
+    # Get filter parameters
+    today = timezone.localdate()
+    year = request.GET.get('year', str(today.year))
+    term = request.GET.get('term', '')
+    
+    # Get grades for selected child
+    grades = selected_child.grades.select_related('subject').filter(
+        academic_year=year
+    ).order_by('term', 'subject__name')
+    
+    if term:
+        grades = grades.filter(term=term)
+    
+    # Get assignments for selected child
+    assignments = StudentAssignment.objects.filter(
+        student=selected_child
+    ).select_related('assignment', 'assignment__subject').order_by('-assignment__due_date')
+    
+    # Calculate academic metrics
+    all_grades = selected_child.grades.filter(academic_year=year)
+    if all_grades:
+        gpa = sum([g.score for g in all_grades]) / len(all_grades)
+        gpa = round(gpa, 2)
+    else:
+        gpa = 0.00
+    
+    avg_score = all_grades.aggregate(avg=Avg('score'))['avg']
+    if avg_score:
+        avg_score = round(avg_score, 1)
+    else:
+        avg_score = 0.0
+    
+    # Calculate attendance percentage
+    attendance_records = StudentAttendance.objects.filter(student=selected_child)
+    if attendance_records:
+        present_count = attendance_records.filter(status='present').count()
+        attendance_percentage = round((present_count / attendance_records.count()) * 100, 1)
+    else:
+        attendance_percentage = 0.0
+    
+    # Get available academic years
+    academic_years = selected_child.grades.values_list('academic_year', flat=True).distinct().order_by('-academic_year')
+    
+    # Get available terms
+    TERM_CHOICES = [
+        ('term_1', 'Term 1'),
+        ('term_2', 'Term 2'),
+        ('term_3', 'Term 3'),
+    ]
+    
+    context = {
+        'all_children': all_children,
+        'selected_child': selected_child,
+        'grades': grades,
+        'assignments': assignments,
+        'gpa': gpa,
+        'avg_score': avg_score,
+        'attendance_percentage': attendance_percentage,
+        'academic_years': academic_years,
+        'term_choices': TERM_CHOICES,
+        'selected_year': year,
+        'selected_term': term,
+        'today': timezone.localdate(),
+    }
+    
+    return render(request, 'SchoolNowMgt/parent_academics_subdashboard.html', context)
+
+
+@unified_login_required
+def parent_payments_dashboard(request):
+    """
+    Parent subdashboard: View payment status, history, and invoices.
+    
+    Access Control: Parents only
+    
+    Displays:
+    - Outstanding balance cards (per child) with Make Payment buttons
+    - Payment history table (all children): Child | Amount | Date | Method | Transaction ID
+    - Invoices table: Invoice # | Term | Amount Due | Amount Paid | Due Date | Status
+    - Payment methods reference guide
+    
+    Uses existing Invoice and FeePayment models
+    
+    Renders: SchoolNowMgt/parent_payments_subdashboard.html
+    """
+    if request.user.role != 'parent':
+        if request.user.role == 'admin':
+            return redirect('SchoolNowMgt:dashboard')
+        elif request.user.role == 'teacher':
+            return redirect('teacher:dashboard')
+        else:
+            return redirect('auth:unified_login')
+    
+    # Get all children
+    all_children = Student.objects.filter(
+        parent_user=request.user,
+        status='active'
+    ).select_related('class_grade', 'class_grade__school').order_by('first_name')
+    
+    # Get payments for all children
+    children_ids = all_children.values_list('id', flat=True)
+    
+    payments = FeePayment.objects.filter(
+        student_id__in=children_ids
+    ).select_related('student', 'student__class_grade', 'fee_structure').order_by('-payment_date')
+    
+    # Get invoices for all children (using FeePayment records as invoices)
+    invoices = payments.order_by('-payment_date')[:20]
+    
+    # Build payment summary per child (outstanding balance)
+    from django.db.models import Sum
+    payments_by_child = {}
+    outstanding_total = 0
+    
+    for child in all_children:
+        child_payments = payments.filter(student=child)
+        total_paid = child_payments.aggregate(total=Sum('amount_paid'))['total'] or 0
+        
+        # Get most recent outstanding balance
+        most_recent_payment = child_payments.first()
+        outstanding = most_recent_payment.balance_after if most_recent_payment else 0
+        
+        payments_by_child[child] = {
+            'payments': child_payments,
+            'total_paid': total_paid,
+            'outstanding': outstanding,
+            'status': 'Paid' if outstanding <= 0 else ('Overdue' if outstanding > 0 else 'Pending')
+        }
+        outstanding_total += outstanding
+    
+    # Payment methods reference
+    payment_methods = [
+        {'name': 'Cash', 'icon': 'payments', 'description': 'Direct payment at school office'},
+        {'name': 'MTN Mobile Money', 'icon': 'phone_iphone', 'description': 'Pay via MTN service'},
+        {'name': 'Airtel Money', 'icon': 'phone_iphone', 'description': 'Pay via Airtel service'},
+        {'name': 'Bank Transfer', 'icon': 'account_balance', 'description': 'Transfer to school bank account'},
+    ]
+    
+    context = {
+        'all_children': all_children,
+        'payments_by_child': payments_by_child,
+        'recent_payments': payments[:10],
+        'invoices': invoices,
+        'total_outstanding': outstanding_total,
+        'payment_methods': payment_methods,
+        'today': timezone.localdate(),
+    }
+    
+    return render(request, 'SchoolNowMgt/parent_payments_subdashboard.html', context)

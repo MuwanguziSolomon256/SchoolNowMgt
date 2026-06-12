@@ -1081,17 +1081,146 @@ class Event(models.Model):
     def __str__(self):
         return f"{self.title} ({self.start_date})"
     
-    @property
-    def is_upcoming(self):
-        """Check if event is in the future."""
-        from django.utils import timezone
-        return self.start_date >= timezone.now().date()
-    
     class Meta:
-        ordering = ['start_date']
+        ordering = ['-start_date']
         indexes = [
             models.Index(fields=['school', 'start_date']),
-            models.Index(fields=['event_type', 'start_date']),
+            models.Index(fields=['event_type']),
+        ]
+
+
+class Assignment(models.Model):
+    """
+    Represents a coursework assignment assigned to a class by a teacher.
+    
+    Each assignment is tied to a specific class, subject, and teacher.
+    Students' individual submissions and grades are tracked via StudentAssignment.
+    """
+    
+    title = models.CharField(max_length=200)
+    description = models.TextField(blank=True)
+    class_grade = models.ForeignKey(
+        ClassGrade,
+        on_delete=models.CASCADE,
+        related_name='assignments'
+    )
+    subject = models.ForeignKey(
+        Subject,
+        on_delete=models.PROTECT,
+        related_name='assignments'
+    )
+    created_by = models.ForeignKey(
+        CustomUser,
+        on_delete=models.SET_NULL,
+        null=True,
+        limit_choices_to={'role': 'teacher'},
+        related_name='assignments_created'
+    )
+    due_date = models.DateField()
+    created_date = models.DateTimeField(auto_now_add=True)
+    updated_date = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"{self.title} — {self.subject.name} ({self.class_grade.name})"
+    
+    class Meta:
+        ordering = ['-due_date']
+        indexes = [
+            models.Index(fields=['class_grade', 'subject']),
+            models.Index(fields=['due_date']),
+            models.Index(fields=['created_by']),
+        ]
+
+
+class StudentAssignment(models.Model):
+    """
+    Tracks individual student submissions, grades, and feedback for assignments.
+    
+    Through table linking Student → Assignment with submission tracking,
+    grading, and teacher feedback. Status is manually set by teachers based on
+    submission state and due date comparison.
+    """
+    
+    STATUS_CHOICES = [
+        ('pending', 'Pending Submission'),
+        ('submitted', 'Submitted'),
+        ('graded', 'Graded'),
+        ('late', 'Submitted Late'),
+        ('cancelled', 'Cancelled'),
+    ]
+    
+    student = models.ForeignKey(
+        Student,
+        on_delete=models.CASCADE,
+        related_name='student_assignments'
+    )
+    assignment = models.ForeignKey(
+        Assignment,
+        on_delete=models.CASCADE,
+        related_name='student_assignments'
+    )
+    submission_date = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="When the student submitted the assignment"
+    )
+    submission_text = models.TextField(
+        blank=True,
+        help_text="Student's assignment submission text or link to uploaded file"
+    )
+    status = models.CharField(
+        max_length=15,
+        choices=STATUS_CHOICES,
+        default='pending',
+        db_index=True
+    )
+    grade = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Grade out of 100 (if graded)"
+    )
+    feedback = models.TextField(
+        blank=True,
+        help_text="Teacher feedback on the assignment"
+    )
+    graded_by = models.ForeignKey(
+        CustomUser,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='assignments_graded'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"{self.student.full_name} — {self.assignment.title} ({self.status})"
+    
+    @property
+    def letter_grade(self):
+        """Compute letter grade from score."""
+        if self.grade is None:
+            return None
+        if self.grade >= 75:
+            return 'A'
+        elif self.grade >= 65:
+            return 'B'
+        elif self.grade >= 50:
+            return 'C'
+        elif self.grade >= 40:
+            return 'D'
+        else:
+            return 'F'
+    
+    class Meta:
+        unique_together = ('student', 'assignment')
+        ordering = ['-assignment__due_date']
+        indexes = [
+            models.Index(fields=['student', 'status']),
+            models.Index(fields=['assignment', 'status']),
+            models.Index(fields=['created_at']),
         ]
 
 

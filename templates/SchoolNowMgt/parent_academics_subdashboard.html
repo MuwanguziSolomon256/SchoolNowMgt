@@ -1,0 +1,266 @@
+{% extends "SchoolNowMgt/base_ethos.html" %}
+{% load static %}
+
+{% block title %}Academics - EduVision Pro Parent Portal{% endblock %}
+
+{% block content %}
+
+<!-- Include Parent Navigation Bar -->
+{% include "SchoolNowMgt/includes/parent_navigation_bar.html" %}
+
+<!-- Main Content -->
+<main class="w-full flex flex-col min-h-screen bg-background pt-24">
+    <!-- Top Navigation Bar -->
+    <header class="flex justify-between items-center px-4 md:px-container-padding w-full sticky top-24 z-40 bg-surface/70 backdrop-blur-2xl h-14 md:h-16 border-b border-white/20 shadow-sm shadow-primary/5">
+        <div class="flex items-center gap-3 md:gap-6 flex-1">
+            <h2 class="font-headline-md text-headline-md font-bold text-primary text-lg md:text-2xl">Academics</h2>
+        </div>
+    </header>
+
+    <!-- Page Content -->
+    <div class="p-3 sm:p-4 md:p-6 lg:p-8 space-y-6 md:space-y-8">
+        {% if selected_child %}
+            <!-- Filters Section -->
+            <div class="glass-card rounded-2xl md:rounded-[32px] p-4 md:p-6 shadow-sm">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <!-- Child Selector -->
+                    <div>
+                        <label class="block text-on-surface-variant text-xs uppercase tracking-wider font-bold mb-2">Select Child</label>
+                        <select id="childSelector" class="w-full bg-surface-container-low border border-outline-variant/30 rounded-lg px-3 py-2 text-primary focus:ring-2 focus:ring-primary/50 text-sm">
+                            {% for child in all_children %}
+                                <option value="{{ child.id }}" {% if child.id == selected_child.id %}selected{% endif %}>
+                                    {{ child.full_name }} - {{ child.class_grade.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Year Filter -->
+                    <div>
+                        <label class="block text-on-surface-variant text-xs uppercase tracking-wider font-bold mb-2">Academic Year</label>
+                        <select id="yearFilter" class="w-full bg-surface-container-low border border-outline-variant/30 rounded-lg px-3 py-2 text-primary focus:ring-2 focus:ring-primary/50 text-sm">
+                            {% for year in academic_years %}
+                                <option value="{{ year }}" {% if year == selected_year %}selected{% endif %}>{{ year }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Term Filter -->
+                    <div>
+                        <label class="block text-on-surface-variant text-xs uppercase tracking-wider font-bold mb-2">Term</label>
+                        <select id="termFilter" class="w-full bg-surface-container-low border border-outline-variant/30 rounded-lg px-3 py-2 text-primary focus:ring-2 focus:ring-primary/50 text-sm">
+                            <option value="">All Terms</option>
+                            {% for code, name in term_choices %}
+                                <option value="{{ code }}" {% if code == selected_term %}selected{% endif %}>{{ name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Filter Button -->
+                    <div class="flex items-end">
+                        <button id="applyFilters" class="w-full py-2 md:py-3 bg-primary text-on-primary font-bold rounded-lg hover:brightness-110 transition-all text-sm">
+                            Apply Filters
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Performance Summary Cards -->
+            <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+                <div class="glass-card rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-sm">
+                    <p class="text-on-surface-variant font-label-md uppercase tracking-wider text-xs mb-2">GPA This Year</p>
+                    <p class="font-display-lg text-display-lg text-primary text-xl md:text-3xl">{{ gpa|floatformat:2 }}</p>
+                </div>
+                <div class="glass-card rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-sm">
+                    <p class="text-on-surface-variant font-label-md uppercase tracking-wider text-xs mb-2">Avg Score</p>
+                    <p class="font-display-lg text-display-lg text-primary text-xl md:text-3xl">{{ avg_score|floatformat:1 }}%</p>
+                </div>
+                <div class="glass-card rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-sm">
+                    <p class="text-on-surface-variant font-label-md uppercase tracking-wider text-xs mb-2">Attendance</p>
+                    <p class="font-display-lg text-display-lg text-primary text-xl md:text-3xl">{{ attendance_percentage|floatformat:1 }}%</p>
+                </div>
+                <div class="glass-card rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-sm">
+                    <p class="text-on-surface-variant font-label-md uppercase tracking-wider text-xs mb-2">Child Info</p>
+                    <p class="font-label-md text-label-md text-primary text-sm">{{ selected_child.class_grade.name }}</p>
+                    <p class="text-on-surface-variant text-xs">{{ selected_child.class_grade.school.name }}</p>
+                </div>
+            </div>
+
+            <!-- Tabs Navigation -->
+            <div class="flex gap-2 border-b border-outline-variant/20">
+                <button class="grades-tab active px-4 py-3 font-bold text-primary border-b-2 border-primary transition-all text-sm md:text-base">
+                    <span class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-base">grades</span>
+                        <span>Grades</span>
+                    </span>
+                </button>
+                <button class="assignments-tab px-4 py-3 font-bold text-on-surface-variant hover:text-primary border-b-2 border-transparent transition-all text-sm md:text-base">
+                    <span class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-base">assignment</span>
+                        <span>Assignments</span>
+                    </span>
+                </button>
+            </div>
+
+            <!-- Grades Tab Content -->
+            <div class="grades-content glass-card rounded-2xl md:rounded-[32px] p-4 md:p-6 shadow-sm">
+                {% if grades %}
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-xs md:text-sm">
+                            <thead>
+                                <tr class="border-b border-outline-variant/20">
+                                    <th class="pb-3 md:pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-left">Subject</th>
+                                    <th class="pb-3 md:pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-center">Score</th>
+                                    <th class="pb-3 md:pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-center">Grade</th>
+                                    <th class="pb-3 md:pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-center">Term</th>
+                                    <th class="pb-3 md:pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-left">Remarks</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for grade in grades %}
+                                    <tr class="border-b border-outline-variant/10 hover:bg-surface-container-low/50 transition-colors">
+                                        <td class="py-3 md:py-4 text-primary font-bold">{{ grade.subject.name }}</td>
+                                        <td class="py-3 md:py-4 text-center">
+                                            <span class="px-2 py-1 bg-primary/10 text-primary rounded-lg font-bold">{{ grade.score|floatformat:0 }}</span>
+                                        </td>
+                                        <td class="py-3 md:py-4 text-center">
+                                            {% with grade_letter=grade.letter_grade %}
+                                                <span class="px-2 py-1 rounded-lg font-bold {% if grade_letter == 'A' %}bg-green-100 text-green-700{% elif grade_letter == 'B' %}bg-blue-100 text-blue-700{% elif grade_letter == 'C' %}bg-yellow-100 text-yellow-700{% elif grade_letter == 'D' %}bg-orange-100 text-orange-700{% else %}bg-red-100 text-red-700{% endif %}">{{ grade_letter }}</span>
+                                            {% endwith %}
+                                        </td>
+                                        <td class="py-3 md:py-4 text-center text-on-surface-variant">{{ grade.get_term_display }}</td>
+                                        <td class="py-3 md:py-4 text-on-surface-variant">{{ grade.remarks|default:"—" }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-8">
+                        <p class="text-on-surface-variant font-label-md">No grades recorded for this year and term</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Assignments Tab Content -->
+            <div class="assignments-content hidden glass-card rounded-2xl md:rounded-[32px] p-4 md:p-6 shadow-sm">
+                {% if assignments %}
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-xs md:text-sm">
+                            <thead>
+                                <tr class="border-b border-outline-variant/20">
+                                    <th class="pb-3 md:pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-left">Assignment</th>
+                                    <th class="pb-3 md:pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-left">Subject</th>
+                                    <th class="pb-3 md:pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-center">Due Date</th>
+                                    <th class="pb-3 md:pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-center">Status</th>
+                                    <th class="pb-3 md:pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-center">Score</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for assignment in assignments %}
+                                    <tr class="border-b border-outline-variant/10 hover:bg-surface-container-low/50 transition-colors">
+                                        <td class="py-3 md:py-4 text-primary font-bold">{{ assignment.assignment.title }}</td>
+                                        <td class="py-3 md:py-4">{{ assignment.assignment.subject.name }}</td>
+                                        <td class="py-3 md:py-4 text-center text-on-surface-variant">{{ assignment.assignment.due_date|date:"M d" }}</td>
+                                        <td class="py-3 md:py-4 text-center">
+                                            {% with status=assignment.status %}
+                                                <span class="px-2 py-1 rounded-lg font-bold text-xs {% if status == 'graded' %}bg-green-100 text-green-700{% elif status == 'submitted' %}bg-blue-100 text-blue-700{% elif status == 'pending' %}bg-yellow-100 text-yellow-700{% elif status == 'late' %}bg-red-100 text-red-700{% else %}bg-gray-100 text-gray-700{% endif %}">
+                                                    {{ assignment.get_status_display }}
+                                                </span>
+                                            {% endwith %}
+                                        </td>
+                                        <td class="py-3 md:py-4 text-center">
+                                            {% if assignment.grade %}
+                                                <span class="px-2 py-1 bg-primary/10 text-primary rounded-lg font-bold">{{ assignment.grade|floatformat:0 }}</span>
+                                            {% else %}
+                                                <span class="text-on-surface-variant">—</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-8">
+                        <p class="text-on-surface-variant font-label-md">No assignments assigned yet</p>
+                    </div>
+                {% endif %}
+            </div>
+        {% else %}
+            <!-- No Children State -->
+            <div class="glass-card rounded-2xl md:rounded-[32px] p-8 md:p-12 shadow-sm text-center">
+                <div class="flex justify-center mb-4">
+                    <div class="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-primary text-4xl">school</span>
+                    </div>
+                </div>
+                <h3 class="font-headline-md text-headline-md text-primary text-lg md:text-xl mb-2">No Children Enrolled</h3>
+                <p class="text-on-surface-variant text-sm md:text-base">You don't have any enrolled children in your account.</p>
+            </div>
+        {% endif %}
+    </div>
+</main>
+
+<script>
+    // Tab switching functionality
+    document.addEventListener('DOMContentLoaded', () => {
+        const gradesTabs = document.querySelectorAll('.grades-tab');
+        const assignmentsTabs = document.querySelectorAll('.assignments-tab');
+        const gradesContent = document.querySelector('.grades-content');
+        const assignmentsContent = document.querySelector('.assignments-content');
+
+        gradesTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                gradesTabs.forEach(t => {
+                    t.classList.add('active', 'border-primary', 'text-primary');
+                    t.classList.remove('border-transparent', 'text-on-surface-variant');
+                });
+                assignmentsTabs.forEach(t => {
+                    t.classList.remove('active', 'border-primary', 'text-primary');
+                    t.classList.add('border-transparent', 'text-on-surface-variant');
+                });
+                gradesContent.classList.remove('hidden');
+                assignmentsContent.classList.add('hidden');
+            });
+        });
+
+        assignmentsTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                assignmentsTabs.forEach(t => {
+                    t.classList.add('active', 'border-primary', 'text-primary');
+                    t.classList.remove('border-transparent', 'text-on-surface-variant');
+                });
+                gradesTabs.forEach(t => {
+                    t.classList.remove('active', 'border-primary', 'text-primary');
+                    t.classList.add('border-transparent', 'text-on-surface-variant');
+                });
+                assignmentsContent.classList.remove('hidden');
+                gradesContent.classList.add('hidden');
+            });
+        });
+
+        // Child selector change
+        const childSelector = document.getElementById('childSelector');
+        if (childSelector) {
+            childSelector.addEventListener('change', (e) => {
+                const url = new URL(window.location);
+                url.searchParams.set('child_id', e.target.value);
+                window.location.href = url.toString();
+            });
+        }
+
+        // Apply filters button
+        const applyFilters = document.getElementById('applyFilters');
+        if (applyFilters) {
+            applyFilters.addEventListener('click', () => {
+                const url = new URL(window.location);
+                url.searchParams.set('year', document.getElementById('yearFilter').value);
+                url.searchParams.set('term', document.getElementById('termFilter').value);
+                window.location.href = url.toString();
+            });
+        }
+    });
+</script>
+
+{% endblock %}
