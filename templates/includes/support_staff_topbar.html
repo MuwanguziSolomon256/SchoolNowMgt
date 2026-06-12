@@ -1,0 +1,48 @@
+<!-- Support Staff Top Navigation Bar -->
+<section class="flex justify-between items-end mb-8 pb-6 border-b border-outline/20">
+    <div>
+        <h3 class="font-display-lg text-display-lg text-primary">Good Morning, {{ user.first_name }}</h3>
+        <p class="font-body-lg text-body-lg text-on-surface-variant">Here is an overview of your dashboard at {{ school.name|default:"Your School" }}.</p>
+    </div>
+    <div class="flex gap-4 items-center">
+        {% if available_roles and available_roles|length > 1 %}
+        <!-- Role Switcher Dropdown (for multi-role staff) -->
+        <div class="relative group">
+            <button class="flex items-center gap-2 px-4 py-2 rounded-lg bg-surface-container-high hover:bg-surface-container-highest transition-all text-on-surface-variant">
+                <span class="material-symbols-outlined text-lg">person</span>
+                <span class="font-label-md text-label-md">{{ current_role|default:"Role" }}</span>
+                <span class="material-symbols-outlined text-lg">expand_more</span>
+            </button>
+            <div class="absolute right-0 mt-2 w-48 bg-surface rounded-xl shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 border border-outline/20">
+                {% for role in available_roles %}
+                <a href="?role={{ role }}" class="block px-4 py-2 text-on-surface hover:bg-surface-container-high rounded-lg text-body-sm {% if role == current_role %}bg-primary/10 text-primary font-semibold{% endif %}">
+                    {{ role|title }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Current Date/Time -->
+        <div class="text-right text-on-surface-variant">
+            <p class="font-label-sm text-label-sm">{{ now|date:"D, M d" }}</p>
+            <p class="font-label-sm text-label-sm" id="current-time">--:-- --</p>
+        </div>
+    </div>
+</section>
+
+<script>
+    // Update current time
+    function updateTime() {
+        const now = new Date();
+        const timeString = now.toLocaleTimeString('en-US', { 
+            hour: '2-digit', 
+            minute: '2-digit',
+            meridiem: 'short'
+        });
+        document.getElementById('current-time').textContent = timeString;
+    }
+    
+    updateTime();
+    setInterval(updateTime, 1000);
+</script>

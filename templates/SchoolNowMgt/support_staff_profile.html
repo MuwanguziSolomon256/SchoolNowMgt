@@ -1,0 +1,172 @@
+{% extends "SchoolNowMgt/base_ethos.html" %}
+{% load static %}
+
+{% block title %}Support Staff Profile - EduVision Pro{% endblock %}
+
+{% block content %}
+
+<style>
+    .glass-card {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        box-shadow: 0 8px 32px 0 rgba(30, 34, 79, 0.08);
+    }
+    .glass-edge {
+        border-top: 1px solid rgba(255, 255, 255, 0.8);
+        border-left: 1px solid rgba(255, 255, 255, 0.8);
+    }
+</style>
+
+<div class="p-8 space-y-8">
+    <!-- Top Navigation Bar -->
+    {% include "includes/support_staff_topbar.html" %}
+    
+    <!-- Sub-Dashboard Navigation -->
+    {% include "includes/support_staff_subnav.html" %}
+    
+    <!-- Profile Content -->
+    <div class="grid grid-cols-12 gap-6">
+        <!-- Profile Card -->
+        <div class="col-span-8 glass-card rounded-[32px] p-8 glass-edge">
+            <div class="flex justify-between items-start mb-8">
+                <div>
+                    <h4 class="font-headline-lg text-headline-lg text-primary">Profile Information</h4>
+                    <p class="text-body-md text-outline">Personal & Professional Details</p>
+                </div>
+                <a href="{% url 'user_profile:support_staff_edit_profile' %}" class="flex items-center gap-2 px-6 py-2 rounded-xl bg-primary text-white hover:bg-primary-dark transition-all font-label-md text-label-md shadow-lg">
+                    <span class="material-symbols-outlined text-lg">edit</span>
+                    <span>Edit Profile</span>
+                </a>
+            </div>
+            
+            <div class="space-y-6">
+                <!-- Personal Info -->
+                <div class="border-b border-outline/20 pb-6">
+                    <h5 class="font-label-lg text-label-lg text-primary mb-4 uppercase tracking-wider">Personal Information</h5>
+                    <div class="grid grid-cols-2 gap-6">
+                        <div>
+                            <p class="font-label-sm text-label-sm text-outline mb-2">Full Name</p>
+                            <p class="font-body-md text-on-surface">{{ user.first_name }} {{ user.last_name }}</p>
+                        </div>
+                        <div>
+                            <p class="font-label-sm text-label-sm text-outline mb-2">Email Address</p>
+                            <p class="font-body-md text-on-surface">{{ user.email }}</p>
+                        </div>
+                        <div>
+                            <p class="font-label-sm text-label-sm text-outline mb-2">Phone Number</p>
+                            <p class="font-body-md text-on-surface">{{ user.phone|default:"Not provided" }}</p>
+                        </div>
+                        <div>
+                            <p class="font-label-sm text-label-sm text-outline mb-2">Role</p>
+                            <p class="font-body-md text-on-surface">{{ user.get_role_display }}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Professional Info -->
+                <div class="border-b border-outline/20 pb-6">
+                    <h5 class="font-label-lg text-label-lg text-primary mb-4 uppercase tracking-wider">Professional Information</h5>
+                    <div class="grid grid-cols-2 gap-6">
+                        <div>
+                            <p class="font-label-sm text-label-sm text-outline mb-2">Employee ID</p>
+                            <p class="font-body-md text-on-surface">{{ staff_profile.employee_id }}</p>
+                        </div>
+                        <div>
+                            <p class="font-label-sm text-label-sm text-outline mb-2">Position</p>
+                            <p class="font-body-md text-on-surface">{{ staff_profile.position }}</p>
+                        </div>
+                        <div>
+                            <p class="font-label-sm text-label-sm text-outline mb-2">Date Joined</p>
+                            <p class="font-body-md text-on-surface">{{ staff_profile.date_joined|date:"M d, Y" }}</p>
+                        </div>
+                        <div>
+                            <p class="font-label-sm text-label-sm text-outline mb-2">Employment Type</p>
+                            <p class="font-body-md text-on-surface">{% if staff_profile.is_full_time %}Full-time{% else %}Part-time{% endif %}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Emergency Contact -->
+                <div class="border-b border-outline/20 pb-6">
+                    <h5 class="font-label-lg text-label-lg text-primary mb-4 uppercase tracking-wider">Emergency Contact</h5>
+                    <div class="grid grid-cols-2 gap-6">
+                        <div>
+                            <p class="font-label-sm text-label-sm text-outline mb-2">Contact Name</p>
+                            <p class="font-body-md text-on-surface">{{ staff_profile.emergency_contact_name|default:"Not provided" }}</p>
+                        </div>
+                        <div>
+                            <p class="font-label-sm text-label-sm text-outline mb-2">Contact Phone</p>
+                            <p class="font-body-md text-on-surface">{{ staff_profile.emergency_contact_phone|default:"Not provided" }}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Bank Details (Masked) -->
+                <div>
+                    <h5 class="font-label-lg text-label-lg text-primary mb-4 uppercase tracking-wider">Bank Account Information</h5>
+                    {% if staff_profile.bank_account_number %}
+                    <div class="grid grid-cols-2 gap-6">
+                        <div>
+                            <p class="font-label-sm text-label-sm text-outline mb-2">Bank Name</p>
+                            <p class="font-body-md text-on-surface">{{ staff_profile.bank_name|default:"Not provided" }}</p>
+                        </div>
+                        <div>
+                            <p class="font-label-sm text-label-sm text-outline mb-2">Account Number</p>
+                            <p class="font-body-md text-on-surface font-mono">****{{ staff_profile.bank_account_number|slice:"-4:" }}</p>
+                            <p class="font-label-xs text-outline text-xs mt-1">(Last 4 digits visible for security)</p>
+                        </div>
+                        <div>
+                            <p class="font-label-sm text-label-sm text-outline mb-2">Account Holder Name</p>
+                            <p class="font-body-md text-on-surface">{{ staff_profile.account_holder_name|default:"Not provided" }}</p>
+                        </div>
+                    </div>
+                    {% else %}
+                    <p class="font-body-md text-outline">No bank account information on file. Please edit your profile to add this information.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Profile Picture & Quick Actions -->
+        <div class="col-span-4 space-y-6">
+            <!-- Profile Picture Card -->
+            <div class="glass-card rounded-[32px] p-8 glass-edge">
+                <h5 class="font-label-lg text-label-lg text-primary mb-4 uppercase tracking-wider">Profile Picture</h5>
+                {% if user.profile_picture %}
+                <div class="w-full aspect-square rounded-2xl overflow-hidden bg-surface-container-high mb-4 flex items-center justify-center">
+                    <img src="{{ user.profile_picture.url }}" alt="Profile" class="w-full h-full object-cover">
+                </div>
+                {% else %}
+                <div class="w-full aspect-square rounded-2xl overflow-hidden bg-primary/10 mb-4 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-6xl text-primary/40">person</span>
+                </div>
+                {% endif %}
+                <a href="{% url 'user_profile:support_staff_edit_profile' %}" class="w-full block text-center px-4 py-2 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-all font-label-md text-label-md">
+                    Update Picture
+                </a>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="glass-card rounded-[32px] p-8 glass-edge">
+                <h5 class="font-label-lg text-label-lg text-primary mb-4 uppercase tracking-wider">Quick Actions</h5>
+                <div class="space-y-3">
+                    <a href="{% url 'user_profile:support_staff_edit_profile' %}" class="flex items-center gap-3 w-full px-4 py-3 rounded-lg bg-surface-container-high hover:bg-surface-container-highest transition-all">
+                        <span class="material-symbols-outlined text-lg text-primary">edit</span>
+                        <span class="font-label-md text-label-md">Edit Profile</span>
+                    </a>
+                    <a href="{% url 'SchoolNowMgt:support_payments' %}" class="flex items-center gap-3 w-full px-4 py-3 rounded-lg bg-surface-container-high hover:bg-surface-container-highest transition-all">
+                        <span class="material-symbols-outlined text-lg text-secondary">payment</span>
+                        <span class="font-label-md text-label-md">View Payslips</span>
+                    </a>
+                    <a href="{% url 'SchoolNowMgt:support_messages' %}" class="flex items-center gap-3 w-full px-4 py-3 rounded-lg bg-surface-container-high hover:bg-surface-container-highest transition-all">
+                        <span class="material-symbols-outlined text-lg text-tertiary">mail</span>
+                        <span class="font-label-md text-label-md">Messages</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

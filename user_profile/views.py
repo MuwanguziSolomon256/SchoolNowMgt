@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from SchoolNowMgt.models import StaffProfile, ClassGrade, Timetable, CustomUser
-from .forms import TeacherProfileForm, TeacherQualificationForm, ParentProfileForm
+from .forms import TeacherProfileForm, TeacherQualificationForm, ParentProfileForm, SupportStaffProfileForm, SupportStaffDetailsForm
 
 
 # NOTE: Ensure MEDIA_URL and MEDIA_ROOT are configured in settings.py
@@ -116,3 +116,83 @@ def edit_profile(request):
     
     context = {'form': form}
     return render(request, 'SchoolNowMgt/parent_profile_edit.html', context)
+
+
+@login_required
+def support_staff_profile_view(request):
+    """
+    Display support staff profile information (read-only view).
+    
+    Shows: basic info, position, department, qualifications, emergency contact, bank details (masked)
+    """
+    # Restrict access to support staff only
+    if request.user.role != 'non_teaching_staff':
+        messages.error(request, 'This page is only accessible to support staff.')
+        return redirect('SchoolNowMgt:dashboard')
+    
+    staff_profile = get_object_or_404(StaffProfile, user=request.user)
+    
+    context = {
+        'staff_profile': staff_profile,
+        'user': request.user,
+    }
+    
+    return render(request, 'SchoolNowMgt/support_staff_profile.html', context)
+
+
+@login_required
+def support_staff_edit_profile(request):
+    """
+    Display and edit support staff profile information.
+    
+    GET: Display support staff's profile edit forms with current information.
+    POST: Process profile updates (name, phone, profile picture, emergency contact, bank details).
+    
+    This view is accessible to support staff users from the dashboard.
+    """
+    # Restrict access to support staff only
+    if request.user.role != 'non_teaching_staff':
+        messages.error(request, 'This page is only accessible to support staff.')
+        return redirect('SchoolNowMgt:dashboard')
+    
+    staff_profile = get_object_or_404(StaffProfile, user=request.user)
+    
+    if request.method == 'POST':
+        # Bind forms to request data and files
+        profile_form = SupportStaffProfileForm(
+            request.POST,
+            request.FILES,
+            instance=request.user
+        )
+        details_form = SupportStaffDetailsForm(
+            request.POST,
+            instance=staff_profile
+        )
+        
+        # Validate and save both forms
+        if profile_form.is_valid() and details_form.is_valid():
+            profile_form.save()
+            details_form.save()
+            messages.success(request, 'Your profile has been updated successfully.')
+            return redirect('user_profile:support_staff_profile')
+        
+        # If either form is invalid, re-render with errors
+        context = {
+            'profile_form': profile_form,
+            'details_form': details_form,
+            'staff_profile': staff_profile,
+        }
+        return render(request, 'SchoolNowMgt/support_staff_profile_edit.html', context)
+    
+    # GET request: instantiate forms with current data
+    profile_form = SupportStaffProfileForm(instance=request.user)
+    details_form = SupportStaffDetailsForm(instance=staff_profile)
+    
+    context = {
+        'profile_form': profile_form,
+        'details_form': details_form,
+        'staff_profile': staff_profile,
+    }
+    
+    return render(request, 'SchoolNowMgt/support_staff_profile_edit.html', context)
+

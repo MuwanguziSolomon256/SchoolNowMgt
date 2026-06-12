@@ -1,0 +1,225 @@
+{% extends "SchoolNowMgt/base_ethos.html" %}
+{% load static %}
+
+{% block title %}Payments - Support Staff Dashboard - EduVision Pro{% endblock %}
+
+{% block content %}
+
+<style>
+    .glass-card {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        box-shadow: 0 8px 32px 0 rgba(30, 34, 79, 0.08);
+    }
+    .glass-edge {
+        border-top: 1px solid rgba(255, 255, 255, 0.8);
+        border-left: 1px solid rgba(255, 255, 255, 0.8);
+    }
+</style>
+
+<!-- Top Blue Navigation Bar -->
+<nav class="fixed top-0 left-0 right-0 bg-primary text-on-primary px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between z-50 shadow-lg gap-2 sm:gap-4">
+    <div class="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+        <div class="w-8 sm:w-10 h-8 sm:h-10 rounded-lg sm:rounded-xl bg-secondary-container flex items-center justify-center text-primary flex-shrink-0">
+            <span class="material-symbols-outlined text-lg sm:text-xl" style="font-variation-settings: 'FILL' 1;">school</span>
+        </div>
+        <h1 class="text-sm sm:text-base md:text-lg font-black text-secondary-fixed hidden xs:inline">SchoolNow</h1>
+        <button id="staffMobileMenuToggle" class="lg:hidden p-2 hover:bg-white/10 rounded-lg transition-all text-on-primary flex items-center ml-auto lg:ml-0">
+            <span class="material-symbols-outlined text-xl">menu</span>
+        </button>
+    </div>
+    <div class="hidden lg:flex items-center gap-1 flex-grow justify-center">
+        {% with current_page=request.resolver_match.url_name %}
+        <a class="{% if current_page == 'support_staff_dashboard' %}bg-secondary-container/20 text-secondary{% else %}text-on-primary/70 hover:text-white{% endif %} px-3 py-2 flex items-center gap-2 hover:bg-white/10 transition-all text-sm rounded-lg" href="{% url 'SchoolNowMgt:support_staff_dashboard' %}">
+            <span class="material-symbols-outlined text-base">dashboard</span>
+            <span>Dashboard</span>
+        </a>
+        <a class="{% if current_page == 'support_messages' %}bg-secondary-container/20 text-secondary{% else %}text-on-primary/70 hover:text-white{% endif %} px-3 py-2 flex items-center gap-2 hover:bg-white/10 transition-all text-sm rounded-lg" href="{% url 'SchoolNowMgt:support_messages' %}">
+            <span class="material-symbols-outlined text-base">mail</span>
+            <span>Messages</span>
+        </a>
+        <a class="{% if current_page == 'support_calendar' %}bg-secondary-container/20 text-secondary{% else %}text-on-primary/70 hover:text-white{% endif %} px-3 py-2 flex items-center gap-2 hover:bg-white/10 transition-all text-sm rounded-lg" href="{% url 'SchoolNowMgt:support_calendar' %}">
+            <span class="material-symbols-outlined text-base">calendar_month</span>
+            <span>Calendar</span>
+        </a>
+        <a class="{% if current_page == 'support_announcements' %}bg-secondary-container/20 text-secondary{% else %}text-on-primary/70 hover:text-white{% endif %} px-3 py-2 flex items-center gap-2 hover:bg-white/10 transition-all text-sm rounded-lg" href="{% url 'SchoolNowMgt:support_announcements' %}">
+            <span class="material-symbols-outlined text-base">notifications_active</span>
+            <span>Announcements</span>
+        </a>
+        <a class="{% if current_page == 'support_payments' %}bg-secondary-container/20 text-secondary{% else %}text-on-primary/70 hover:text-white{% endif %} px-3 py-2 flex items-center gap-2 hover:bg-white/10 transition-all text-sm rounded-lg" href="{% url 'SchoolNowMgt:support_payments' %}">
+            <span class="material-symbols-outlined text-base">payment</span>
+            <span>Payments</span>
+        </a>
+        {% endwith %}
+    </div>
+    <div class="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+        <a class="text-on-primary/70 hover:text-white px-3 py-2 flex items-center gap-2 hover:bg-white/10 transition-all rounded-lg font-bold text-sm" href="{% url 'SchoolNowMgt:custom_logout' %}">
+            <span class="material-symbols-outlined text-base sm:text-lg">logout</span>
+            <span class="hidden sm:inline">Log out</span>
+        </a>
+    </div>
+</nav>
+<div id="staffMobileMenu" class="fixed top-16 sm:top-20 left-0 right-0 bg-primary text-on-primary z-40 max-h-0 overflow-hidden transition-all duration-300 ease-in-out shadow-lg lg:hidden">
+    <div class="p-4 space-y-2">
+        {% with current_page=request.resolver_match.url_name %}
+        <a class="{% if current_page == 'support_staff_dashboard' %}bg-secondary-container/20 text-secondary{% else %}text-on-primary/80 hover:text-white{% endif %} px-4 py-3 flex items-center gap-3 hover:bg-white/10 transition-all text-sm rounded-lg block w-full text-left" href="{% url 'SchoolNowMgt:support_staff_dashboard' %}">
+            <span class="material-symbols-outlined">dashboard</span>
+            <span>Dashboard</span>
+        </a>
+        <a class="{% if current_page == 'support_messages' %}bg-secondary-container/20 text-secondary{% else %}text-on-primary/80 hover:text-white{% endif %} px-4 py-3 flex items-center gap-3 hover:bg-white/10 transition-all text-sm rounded-lg block w-full text-left" href="{% url 'SchoolNowMgt:support_messages' %}">
+            <span class="material-symbols-outlined">mail</span>
+            <span>Messages</span>
+        </a>
+        <a class="{% if current_page == 'support_calendar' %}bg-secondary-container/20 text-secondary{% else %}text-on-primary/80 hover:text-white{% endif %} px-4 py-3 flex items-center gap-3 hover:bg-white/10 transition-all text-sm rounded-lg block w-full text-left" href="{% url 'SchoolNowMgt:support_calendar' %}">
+            <span class="material-symbols-outlined">calendar_month</span>
+            <span>Calendar</span>
+        </a>
+        <a class="{% if current_page == 'support_announcements' %}bg-secondary-container/20 text-secondary{% else %}text-on-primary/80 hover:text-white{% endif %} px-4 py-3 flex items-center gap-3 hover:bg-white/10 transition-all text-sm rounded-lg block w-full text-left" href="{% url 'SchoolNowMgt:support_announcements' %}">
+            <span class="material-symbols-outlined">notifications_active</span>
+            <span>Announcements</span>
+        </a>
+        <a class="{% if current_page == 'support_payments' %}bg-secondary-container/20 text-secondary{% else %}text-on-primary/80 hover:text-white{% endif %} px-4 py-3 flex items-center gap-3 hover:bg-white/10 transition-all text-sm rounded-lg block w-full text-left" href="{% url 'SchoolNowMgt:support_payments' %}">
+            <span class="material-symbols-outlined">payment</span>
+            <span>Payments</span>
+        </a>
+        {% endwith %}
+    </div>
+</div>
+
+<div class="p-8 space-y-8 pt-24">
+    <!-- Top Navigation Bar -->
+    {% include "includes/support_staff_topbar.html" %}
+    
+    <!-- Sub-Dashboard Navigation -->
+    {% include "includes/support_staff_subnav.html" %}
+    
+    <!-- Payments Content -->
+    <div class="grid grid-cols-12 gap-6">
+        <!-- Outstanding Balance Card -->
+        <div class="col-span-8 glass-card rounded-[32px] p-8 glass-edge">
+            <div>
+                <h4 class="font-headline-lg text-headline-lg text-primary mb-2">Financial Summary</h4>
+                <p class="text-body-md text-outline mb-8">Current payment status and outstanding balance</p>
+            </div>
+            
+            <!-- Balance Status -->
+            <div class="mb-8 p-8 rounded-2xl bg-gradient-to-r from-primary/10 to-secondary/10 border border-primary/20">
+                <p class="font-label-md text-outline mb-2 uppercase tracking-wider">Outstanding Balance</p>
+                <div class="flex justify-between items-end">
+                    <span class="text-display-md font-black text-primary">₦{{ outstanding_balance|floatformat:2 }}</span>
+                    {% if due_date %}
+                    <div class="text-right">
+                        <p class="font-label-sm text-outline">Due Date</p>
+                        <p class="font-body-md text-on-surface">{{ due_date|date:"M d, Y" }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Current Salary -->
+            <div class="mb-8 p-6 rounded-xl bg-surface-container-high">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="font-label-md text-outline mb-2">Current Salary</p>
+                        <p class="font-headline-md text-on-surface">₦{{ salary|floatformat:2 }}</p>
+                    </div>
+                    <span class="material-symbols-outlined text-primary text-4xl">check_circle</span>
+                </div>
+            </div>
+            
+            <!-- Recent Transactions -->
+            <div>
+                <h5 class="font-headline-md text-headline-md text-primary mb-4">Recent Transactions</h5>
+                <div class="space-y-3">
+                    {% for transaction in recent_transactions %}
+                    <div class="flex items-center justify-between p-4 rounded-xl bg-surface-container-high hover:bg-surface-container-highest transition-all">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-lg bg-{% if transaction.status == 'paid' %}green{% else %}yellow{% endif %}-100 flex items-center justify-center">
+                                <span class="material-symbols-outlined text-{% if transaction.status == 'paid' %}green{% else %}yellow{% endif %}-700">
+                                    {% if transaction.status == 'paid' %}check{% else %}schedule{% endif %}
+                                </span>
+                            </div>
+                            <div>
+                                <p class="font-label-md text-on-surface">{{ transaction.description }}</p>
+                                <p class="text-label-sm text-outline">{{ transaction.date }}</p>
+                            </div>
+                        </div>
+                        <span class="font-bold text-on-surface">{{ transaction.amount }}</span>
+                    </div>
+                    {% empty %}
+                    <p class="text-center py-8 text-outline">No recent transactions</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Actions & Info Sidebar -->
+        <div class="col-span-4 space-y-6">
+            <!-- Quick Actions -->
+            <div class="glass-card rounded-[32px] p-8 glass-edge">
+                <h5 class="font-label-lg text-label-lg text-primary mb-6 uppercase tracking-wider">Actions</h5>
+                <div class="space-y-3">
+                    <button class="w-full px-6 py-3 rounded-xl bg-primary text-white hover:bg-primary/90 transition-all font-label-md flex items-center justify-center gap-2 shadow-lg">
+                        <span class="material-symbols-outlined">download</span>
+                        <span>Download Payslip</span>
+                    </button>
+                    <button class="w-full px-6 py-3 rounded-xl bg-surface-container-high hover:bg-surface-container-highest transition-all font-label-md flex items-center justify-center gap-2 text-on-surface">
+                        <span class="material-symbols-outlined">receipt</span>
+                        <span>View All Payslips</span>
+                    </button>
+                    <button class="w-full px-6 py-3 rounded-xl bg-surface-container-high hover:bg-surface-container-highest transition-all font-label-md flex items-center justify-center gap-2 text-on-surface">
+                        <span class="material-symbols-outlined">request_quote</span>
+                        <span>Request Advance</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Info Card -->
+            <div class="glass-card rounded-[32px] p-8 glass-edge">
+                <h5 class="font-label-lg text-label-lg text-primary mb-4 uppercase tracking-wider">Payment Information</h5>
+                <div class="space-y-4 text-body-sm text-on-surface-variant">
+                    <div class="flex gap-3">
+                        <span class="material-symbols-outlined text-primary flex-shrink-0">info</span>
+                        <p>Your salary is processed on the last working day of each month.</p>
+                    </div>
+                    <div class="flex gap-3">
+                        <span class="material-symbols-outlined text-primary flex-shrink-0">account_balance</span>
+                        <p>Make sure your bank account details are up to date in your profile.</p>
+                    </div>
+                    <div class="flex gap-3">
+                        <span class="material-symbols-outlined text-primary flex-shrink-0">support_agent</span>
+                        <p>Contact HR for payment inquiries or concerns.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const menuToggle = document.getElementById('staffMobileMenuToggle');
+    const mobileMenu = document.getElementById('staffMobileMenu');
+    
+    if (menuToggle && mobileMenu) {
+        menuToggle.addEventListener('click', function() {
+            const isOpen = mobileMenu.style.maxHeight && mobileMenu.style.maxHeight !== '0px';
+            if (isOpen) {
+                mobileMenu.style.maxHeight = '0px';
+            } else {
+                mobileMenu.style.maxHeight = mobileMenu.scrollHeight + 'px';
+            }
+        });
+        
+        const menuLinks = mobileMenu.querySelectorAll('a');
+        menuLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                mobileMenu.style.maxHeight = '0px';
+            });
+        });
+    }
+});
+</script>
+
+{% endblock %}

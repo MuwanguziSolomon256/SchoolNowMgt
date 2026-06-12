@@ -1,5 +1,6 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from django.utils import timezone
 from django.db.models import Count, Avg, Q, Sum
 from django.http import JsonResponse, HttpResponse
@@ -15,7 +16,8 @@ from .models import (
     Student, StaffProfile, StudentAttendance, StaffAttendance,
     RetentionAlert, SMSLog, Enquiry, FeePayment, Grade, ClassGrade,
     CustomUser, Message, MessageRecipient, MessageTemplate, School,
-    ActivityLog, Event, AdminProfile, StudentAssignment, Subject, Assignment
+    ActivityLog, Event, AdminProfile, StudentAssignment, Subject, Assignment,
+    StaffBill
 )
 from .forms import (
     StaffOnboardingForm, BulkStaffUploadForm,
@@ -811,6 +813,10 @@ def support_staff_dashboard(request):
     
     next_delivery_info = 'Wednesday, 10:00 AM - Office & Cleaning Supplies'
     
+    # Get available roles for staff (for potential role switching)
+    available_roles = []  # Can be extended if staff has multiple assigned roles
+    current_role = request.session.get('current_role', 'Support Staff')
+    
     context = {
         'today': today,
         'user': request.user,
@@ -825,9 +831,226 @@ def support_staff_dashboard(request):
         'schedule_events': schedule_events,
         'inventory_items': inventory_items,
         'next_delivery_info': next_delivery_info,
+        'available_roles': available_roles,
+        'current_role': current_role,
+        'now': timezone.now(),
     }
     
     return render(request, 'SchoolNowMgt/support_staff_dashboard.html', context)
+
+
+# ===== SUPPORT STAFF SUB-DASHBOARDS =====
+
+@login_required
+def support_staff_messages_dashboard(request):
+    """Support Staff Messages Sub-Dashboard"""
+    if request.user.role != 'non_teaching_staff':
+        messages.error(request, 'Access denied.')
+        return redirect('SchoolNowMgt:dashboard')
+    
+    staff_profile = get_object_or_404(StaffProfile, user=request.user)
+    today = datetime.now()
+    
+    # Sample messages data (in production, fetch from Message model)
+    messages_list = [
+        {
+            'id': 1,
+            'sender': 'Principal',
+            'subject': 'Staff Meeting Reminder',
+            'preview': 'Please remember we have a staff meeting...',
+            'date': (today - timedelta(hours=2)).strftime('%H:%M'),
+            'unread': True,
+            'timestamp': today - timedelta(hours=2),
+        },
+        {
+            'id': 2,
+            'sender': 'HR Department',
+            'subject': 'Leave Request Approved',
+            'preview': 'Your leave request for June 20-25 has been...',
+            'date': (today - timedelta(days=1)).strftime('%d %b'),
+            'unread': False,
+            'timestamp': today - timedelta(days=1),
+        },
+    ]
+    
+    context = {
+        'user': request.user,
+        'staff_profile': staff_profile,
+        'school': getattr(request.user, 'school', None),
+        'messages': messages_list,
+        'unread_count': sum(1 for m in messages_list if m['unread']),
+    }
+    
+    return render(request, 'SchoolNowMgt/support_staff_messages_subdashboard.html', context)
+
+
+@login_required
+def support_staff_payments_dashboard(request):
+    """Support Staff Payments Sub-Dashboard"""
+    if request.user.role != 'non_teaching_staff':
+        messages.error(request, 'Access denied.')
+        return redirect('SchoolNowMgt:dashboard')
+    
+    from SchoolNowMgt.models import StaffBill
+    
+    staff_profile = get_object_or_404(StaffProfile, user=request.user)
+    today = datetime.now()
+    
+    # Get latest bill
+    latest_bill = StaffBill.objects.filter(staff=staff_profile).order_by('-month').first()
+    
+    # Sample bill data if none exists
+    if not latest_bill:
+        outstanding_balance = 0
+        salary = staff_profile.salary
+        due_date = None
+    else:
+        outstanding_balance = latest_bill.outstanding_balance()
+        salary = latest_bill.salary
+        due_date = latest_bill.due_date
+    
+    # Recent transactions
+    recent_transactions = [
+        {
+            'date': (today - timedelta(days=5)).strftime('%d %b %Y'),
+            'description': 'May 2026 Salary',
+            'amount': f"₦{salary:,.2f}",
+            'status': 'paid',
+        },
+        {
+            'date': (today - timedelta(days=35)).strftime('%d %b %Y'),
+            'description': 'April 2026 Salary',
+            'amount': f"₦{salary:,.2f}",
+            'status': 'paid',
+        },
+    ]
+    
+    context = {
+        'user': request.user,
+        'staff_profile': staff_profile,
+        'school': getattr(request.user, 'school', None),
+        'outstanding_balance': outstanding_balance,
+        'salary': salary,
+        'due_date': due_date,
+        'recent_transactions': recent_transactions,
+    }
+    
+    return render(request, 'SchoolNowMgt/support_staff_payments_subdashboard.html', context)
+
+
+@login_required
+def support_staff_calendar_dashboard(request):
+    """Support Staff Calendar Sub-Dashboard"""
+    if request.user.role != 'non_teaching_staff':
+        messages.error(request, 'Access denied.')
+        return redirect('SchoolNowMgt:dashboard')
+    
+    staff_profile = get_object_or_404(StaffProfile, user=request.user)
+    today = datetime.now()
+    
+    # Generate calendar days
+    calendar_days = []
+    start_date = today - timedelta(days=today.weekday())  # Start of current week
+    
+    for i in range(7):
+        date = start_date + timedelta(days=i)
+        calendar_days.append({
+            'date': date,
+            'day_name': date.strftime('%a'),
+            'day_number': date.day,
+            'is_today': date.date() == today.date(),
+            'events': [],
+        })
+    
+    # Sample events
+    events = [
+        {
+            'title': 'School Holiday - Independence Day',
+            'date': today + timedelta(days=2),
+            'color': 'primary',
+            'type': 'holiday',
+        },
+        {
+            'title': 'Staff Meeting',
+            'date': today + timedelta(days=3),
+            'color': 'secondary',
+            'type': 'meeting',
+        },
+        {
+            'title': 'Maintenance Day',
+            'date': today + timedelta(days=5),
+            'color': 'tertiary',
+            'type': 'maintenance',
+        },
+    ]
+    
+    # Add events to calendar days
+    for event in events:
+        for day in calendar_days:
+            if day['date'].date() == event['date'].date():
+                day['events'].append(event)
+    
+    context = {
+        'user': request.user,
+        'staff_profile': staff_profile,
+        'school': getattr(request.user, 'school', None),
+        'calendar_days': calendar_days,
+        'events': events,
+    }
+    
+    return render(request, 'SchoolNowMgt/support_staff_calendar_subdashboard.html', context)
+
+
+@login_required
+def support_staff_announcements_dashboard(request):
+    """Support Staff Announcements Sub-Dashboard"""
+    if request.user.role != 'non_teaching_staff':
+        messages.error(request, 'Access denied.')
+        return redirect('SchoolNowMgt:dashboard')
+    
+    staff_profile = get_object_or_404(StaffProfile, user=request.user)
+    today = datetime.now()
+    
+    # Sample announcements
+    announcements = [
+        {
+            'id': 1,
+            'title': 'System Maintenance - June 15',
+            'excerpt': 'The school management system will be undergoing maintenance...',
+            'content': 'The school management system will be undergoing scheduled maintenance on June 15, 2026 from 10:00 PM to 2:00 AM. This is to improve system performance and security.',
+            'date': (today - timedelta(hours=3)).strftime('%H:%M today'),
+            'type': 'system',
+            'read': False,
+        },
+        {
+            'id': 2,
+            'title': 'Updated Leave Policy',
+            'excerpt': 'Please review the new leave request guidelines...',
+            'content': 'Effective from July 1st, 2026, the leave policy has been updated. All leave requests must now be submitted 2 weeks in advance...',
+            'date': (today - timedelta(days=1)).strftime('%d %b'),
+            'type': 'finance',
+            'read': False,
+        },
+        {
+            'id': 3,
+            'title': 'Staff Training Schedule',
+            'excerpt': 'Professional development training sessions have been scheduled...',
+            'content': 'We are pleased to announce that professional development training will be held during the term holidays. Attendance is optional.',
+            'date': (today - timedelta(days=2)).strftime('%d %b'),
+            'type': 'event',
+            'read': True,
+        },
+    ]
+    
+    context = {
+        'user': request.user,
+        'staff_profile': staff_profile,
+        'school': getattr(request.user, 'school', None),
+        'announcements': announcements,
+        'unread_count': sum(1 for a in announcements if not a['read']),
+    }
+    
+    return render(request, 'SchoolNowMgt/support_staff_announcements_subdashboard.html', context)
 
 
 # ============================================================================

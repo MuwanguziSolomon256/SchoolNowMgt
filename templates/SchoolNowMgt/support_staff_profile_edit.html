@@ -1,0 +1,221 @@
+{% extends "SchoolNowMgt/base_ethos.html" %}
+{% load static %}
+
+{% block title %}Edit Support Staff Profile - EduVision Pro{% endblock %}
+
+{% block content %}
+
+<style>
+    .glass-card {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        box-shadow: 0 8px 32px 0 rgba(30, 34, 79, 0.08);
+    }
+    .glass-edge {
+        border-top: 1px solid rgba(255, 255, 255, 0.8);
+        border-left: 1px solid rgba(255, 255, 255, 0.8);
+    }
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+        color: var(--md-sys-color-on-surface);
+    }
+    .form-group input,
+    .form-group textarea {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid var(--md-sys-color-outline);
+        border-radius: 0.5rem;
+        font-size: 1rem;
+        font-family: inherit;
+    }
+    .form-group input:focus,
+    .form-group textarea:focus {
+        outline: none;
+        border-color: var(--md-sys-color-primary);
+        box-shadow: 0 0 0 3px var(--md-sys-color-primary-container);
+    }
+    .form-errors {
+        background-color: var(--md-sys-color-error-container);
+        color: var(--md-sys-color-error);
+        padding: 0.75rem;
+        border-radius: 0.5rem;
+        margin-bottom: 1rem;
+    }
+    .form-errors ul {
+        margin: 0;
+        padding-left: 1.25rem;
+    }
+    .help-text {
+        display: block;
+        font-size: 0.875rem;
+        color: var(--md-sys-color-outline);
+        margin-top: 0.25rem;
+    }
+</style>
+
+<div class="p-8 space-y-8">
+    <!-- Back Button -->
+    <div class="flex items-center gap-4">
+        <a href="{% url 'user_profile:support_staff_profile' %}" class="flex items-center gap-2 text-primary hover:text-primary/80 font-label-md">
+            <span class="material-symbols-outlined">arrow_back</span>
+            <span>Back to Profile</span>
+        </a>
+    </div>
+    
+    <!-- Header -->
+    <div>
+        <h3 class="font-display-lg text-display-lg text-primary">Edit Your Profile</h3>
+        <p class="font-body-lg text-body-lg text-on-surface-variant">Update your personal information, emergency contact, and bank details.</p>
+    </div>
+    
+    <!-- Form Content -->
+    <div class="grid grid-cols-12 gap-6">
+        <div class="col-span-8">
+            <form method="post" enctype="multipart/form-data" class="space-y-8">
+                {% csrf_token %}
+                
+                <!-- Personal Information Section -->
+                <div class="glass-card rounded-[32px] p-8 glass-edge">
+                    <h4 class="font-headline-md text-headline-md text-primary mb-6">Personal Information</h4>
+                    
+                    <div class="grid grid-cols-2 gap-6">
+                        <!-- First Name -->
+                        <div class="form-group">
+                            <label for="{{ profile_form.first_name.id_for_label }}">First Name</label>
+                            {{ profile_form.first_name }}
+                            {% if profile_form.first_name.errors %}
+                            <div class="form-errors">{{ profile_form.first_name.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Last Name -->
+                        <div class="form-group">
+                            <label for="{{ profile_form.last_name.id_for_label }}">Last Name</label>
+                            {{ profile_form.last_name }}
+                            {% if profile_form.last_name.errors %}
+                            <div class="form-errors">{{ profile_form.last_name.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Phone -->
+                    <div class="form-group">
+                        <label for="{{ profile_form.phone.id_for_label }}">Phone Number</label>
+                        {{ profile_form.phone }}
+                        {% if profile_form.phone.errors %}
+                        <div class="form-errors">{{ profile_form.phone.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Profile Picture -->
+                    <div class="form-group">
+                        <label for="{{ profile_form.profile_picture.id_for_label }}">Profile Picture</label>
+                        {{ profile_form.profile_picture }}
+                        <span class="help-text">{{ profile_form.profile_picture.help_text|safe }}</span>
+                        {% if profile_form.profile_picture.errors %}
+                        <div class="form-errors">{{ profile_form.profile_picture.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Emergency Contact Section -->
+                <div class="glass-card rounded-[32px] p-8 glass-edge">
+                    <h4 class="font-headline-md text-headline-md text-primary mb-6">Emergency Contact Information</h4>
+                    
+                    <div class="grid grid-cols-2 gap-6">
+                        <!-- Emergency Contact Name -->
+                        <div class="form-group">
+                            <label for="{{ details_form.emergency_contact_name.id_for_label }}">Contact Name</label>
+                            {{ details_form.emergency_contact_name }}
+                            {% if details_form.emergency_contact_name.errors %}
+                            <div class="form-errors">{{ details_form.emergency_contact_name.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Emergency Contact Phone -->
+                        <div class="form-group">
+                            <label for="{{ details_form.emergency_contact_phone.id_for_label }}">Contact Phone Number</label>
+                            {{ details_form.emergency_contact_phone }}
+                            {% if details_form.emergency_contact_phone.errors %}
+                            <div class="form-errors">{{ details_form.emergency_contact_phone.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Bank Information Section -->
+                <div class="glass-card rounded-[32px] p-8 glass-edge">
+                    <h4 class="font-headline-md text-headline-md text-primary mb-6">Bank Account Information</h4>
+                    
+                    <div class="grid grid-cols-2 gap-6">
+                        <!-- Bank Name -->
+                        <div class="form-group">
+                            <label for="{{ details_form.bank_name.id_for_label }}">Bank Name</label>
+                            {{ details_form.bank_name }}
+                            {% if details_form.bank_name.errors %}
+                            <div class="form-errors">{{ details_form.bank_name.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Bank Account Number -->
+                        <div class="form-group">
+                            <label for="{{ details_form.bank_account_number.id_for_label }}">Bank Account Number</label>
+                            {{ details_form.bank_account_number }}
+                            {% if details_form.bank_account_number.errors %}
+                            <div class="form-errors">{{ details_form.bank_account_number.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Account Holder Name -->
+                    <div class="form-group">
+                        <label for="{{ details_form.account_holder_name.id_for_label }}">Account Holder Name</label>
+                        {{ details_form.account_holder_name }}
+                        {% if details_form.account_holder_name.errors %}
+                        <div class="form-errors">{{ details_form.account_holder_name.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Form Actions -->
+                <div class="flex gap-4 justify-end">
+                    <a href="{% url 'user_profile:support_staff_profile' %}" class="px-6 py-3 rounded-xl bg-surface-container-high text-on-surface hover:bg-surface-container-highest transition-all font-label-md">
+                        Cancel
+                    </a>
+                    <button type="submit" class="px-6 py-3 rounded-xl bg-primary text-white hover:bg-primary/90 transition-all font-label-md shadow-lg">
+                        Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Info Sidebar -->
+        <div class="col-span-4">
+            <div class="glass-card rounded-[32px] p-8 glass-edge sticky top-8">
+                <h5 class="font-label-lg text-label-lg text-primary mb-4 uppercase tracking-wider">Important Notes</h5>
+                <div class="space-y-4 text-body-sm text-on-surface-variant">
+                    <div class="flex gap-3">
+                        <span class="material-symbols-outlined text-primary flex-shrink-0 mt-1">info</span>
+                        <p>All fields are important for accurate payment processing and emergency communications.</p>
+                    </div>
+                    <div class="flex gap-3">
+                        <span class="material-symbols-outlined text-primary flex-shrink-0 mt-1">security</span>
+                        <p>Your bank account information is securely encrypted and only accessible to authorized personnel.</p>
+                    </div>
+                    <div class="flex gap-3">
+                        <span class="material-symbols-outlined text-primary flex-shrink-0 mt-1">update</span>
+                        <p>Keep your emergency contact information up to date for your safety.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

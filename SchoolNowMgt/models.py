@@ -119,6 +119,15 @@ class StaffProfile(models.Model):
     date_left = models.DateField(null=True, blank=True)
     is_full_time = models.BooleanField(default=True)
     
+    # Emergency Contact Information
+    emergency_contact_name = models.CharField(max_length=200, blank=True, null=True)
+    emergency_contact_phone = models.CharField(max_length=20, blank=True, null=True)
+    
+    # Bank Account Details
+    bank_account_number = models.CharField(max_length=50, blank=True, null=True)
+    bank_name = models.CharField(max_length=200, blank=True, null=True)
+    account_holder_name = models.CharField(max_length=200, blank=True, null=True)
+    
     def __str__(self):
         return f"{self.user.get_full_name()} — {self.position}"
     
@@ -420,6 +429,52 @@ class StaffAttendance(models.Model):
     class Meta:
         unique_together = ('staff', 'date')
         ordering = ['-date']
+
+
+class StaffBill(models.Model):
+    """
+    Tracks financial information for staff members including salary, deductions, and outstanding balance.
+    
+    Records monthly/periodic salary, deductions, advances, and calculates outstanding balance.
+    """
+    
+    PAYMENT_STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('paid', 'Paid'),
+        ('partial', 'Partially Paid'),
+        ('overdue', 'Overdue'),
+    ]
+    
+    staff = models.ForeignKey(
+        StaffProfile,
+        on_delete=models.CASCADE,
+        related_name='bills'
+    )
+    month = models.DateField(help_text="Month/date for this billing period")
+    salary = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    deductions = models.DecimalField(max_digits=10, decimal_places=2, default=0, help_text="Total deductions (tax, loans, etc.)")
+    advances = models.DecimalField(max_digits=10, decimal_places=2, default=0, help_text="Salary advances given")
+    amount_paid = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='pending')
+    due_date = models.DateField(null=True, blank=True)
+    paid_date = models.DateField(null=True, blank=True)
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def outstanding_balance(self):
+        """Calculate outstanding balance."""
+        net_amount = self.salary - self.deductions - self.advances
+        return max(0, net_amount - self.amount_paid)
+    
+    def __str__(self):
+        return f"{self.staff} — {self.month.strftime('%B %Y')} — {self.status}"
+    
+    class Meta:
+        unique_together = ('staff', 'month')
+        ordering = ['-month']
+        verbose_name = 'Staff Bill'
+        verbose_name_plural = 'Staff Bills'
 
 
 class FeeStructure(models.Model):

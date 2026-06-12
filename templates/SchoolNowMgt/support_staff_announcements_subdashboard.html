@@ -1,0 +1,282 @@
+{% extends "SchoolNowMgt/base_ethos.html" %}
+{% load static %}
+
+{% block title %}Announcements - Support Staff Dashboard - EduVision Pro{% endblock %}
+
+{% block content %}
+
+<style>
+    .glass-card {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        box-shadow: 0 8px 32px 0 rgba(30, 34, 79, 0.08);
+    }
+    .glass-edge {
+        border-top: 1px solid rgba(255, 255, 255, 0.8);
+        border-left: 1px solid rgba(255, 255, 255, 0.8);
+    }
+    .announcement-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+    }
+    .announcement-modal.active {
+        display: flex;
+    }
+    .announcement-modal-content {
+        background: white;
+        border-radius: 2rem;
+        padding: 2rem;
+        max-width: 600px;
+        max-height: 80vh;
+        overflow-y-auto;
+    }
+</style>
+
+<!-- Top Blue Navigation Bar -->
+<nav class="fixed top-0 left-0 right-0 bg-primary text-on-primary px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between z-50 shadow-lg gap-2 sm:gap-4">
+    <div class="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+        <div class="w-8 sm:w-10 h-8 sm:h-10 rounded-lg sm:rounded-xl bg-secondary-container flex items-center justify-center text-primary flex-shrink-0">
+            <span class="material-symbols-outlined text-lg sm:text-xl" style="font-variation-settings: 'FILL' 1;">school</span>
+        </div>
+        <h1 class="text-sm sm:text-base md:text-lg font-black text-secondary-fixed hidden xs:inline">SchoolNow</h1>
+        <button id="staffMobileMenuToggle" class="lg:hidden p-2 hover:bg-white/10 rounded-lg transition-all text-on-primary flex items-center ml-auto lg:ml-0">
+            <span class="material-symbols-outlined text-xl">menu</span>
+        </button>
+    </div>
+    <div class="hidden lg:flex items-center gap-1 flex-grow justify-center">
+        {% with current_page=request.resolver_match.url_name %}
+        <a class="{% if current_page == 'support_staff_dashboard' %}bg-secondary-container/20 text-secondary{% else %}text-on-primary/70 hover:text-white{% endif %} px-3 py-2 flex items-center gap-2 hover:bg-white/10 transition-all text-sm rounded-lg" href="{% url 'SchoolNowMgt:support_staff_dashboard' %}">
+            <span class="material-symbols-outlined text-base">dashboard</span>
+            <span>Dashboard</span>
+        </a>
+        <a class="{% if current_page == 'support_messages' %}bg-secondary-container/20 text-secondary{% else %}text-on-primary/70 hover:text-white{% endif %} px-3 py-2 flex items-center gap-2 hover:bg-white/10 transition-all text-sm rounded-lg" href="{% url 'SchoolNowMgt:support_messages' %}">
+            <span class="material-symbols-outlined text-base">mail</span>
+            <span>Messages</span>
+        </a>
+        <a class="{% if current_page == 'support_calendar' %}bg-secondary-container/20 text-secondary{% else %}text-on-primary/70 hover:text-white{% endif %} px-3 py-2 flex items-center gap-2 hover:bg-white/10 transition-all text-sm rounded-lg" href="{% url 'SchoolNowMgt:support_calendar' %}">
+            <span class="material-symbols-outlined text-base">calendar_month</span>
+            <span>Calendar</span>
+        </a>
+        <a class="{% if current_page == 'support_announcements' %}bg-secondary-container/20 text-secondary{% else %}text-on-primary/70 hover:text-white{% endif %} px-3 py-2 flex items-center gap-2 hover:bg-white/10 transition-all text-sm rounded-lg" href="{% url 'SchoolNowMgt:support_announcements' %}">
+            <span class="material-symbols-outlined text-base">notifications_active</span>
+            <span>Announcements</span>
+        </a>
+        <a class="{% if current_page == 'support_payments' %}bg-secondary-container/20 text-secondary{% else %}text-on-primary/70 hover:text-white{% endif %} px-3 py-2 flex items-center gap-2 hover:bg-white/10 transition-all text-sm rounded-lg" href="{% url 'SchoolNowMgt:support_payments' %}">
+            <span class="material-symbols-outlined text-base">payment</span>
+            <span>Payments</span>
+        </a>
+        {% endwith %}
+    </div>
+    <div class="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+        <a class="text-on-primary/70 hover:text-white px-3 py-2 flex items-center gap-2 hover:bg-white/10 transition-all rounded-lg font-bold text-sm" href="{% url 'SchoolNowMgt:custom_logout' %}">
+            <span class="material-symbols-outlined text-base sm:text-lg">logout</span>
+            <span class="hidden sm:inline">Log out</span>
+        </a>
+    </div>
+</nav>
+<div id="staffMobileMenu" class="fixed top-16 sm:top-20 left-0 right-0 bg-primary text-on-primary z-40 max-h-0 overflow-hidden transition-all duration-300 ease-in-out shadow-lg lg:hidden">
+    <div class="p-4 space-y-2">
+        {% with current_page=request.resolver_match.url_name %}
+        <a class="{% if current_page == 'support_staff_dashboard' %}bg-secondary-container/20 text-secondary{% else %}text-on-primary/80 hover:text-white{% endif %} px-4 py-3 flex items-center gap-3 hover:bg-white/10 transition-all text-sm rounded-lg block w-full text-left" href="{% url 'SchoolNowMgt:support_staff_dashboard' %}">
+            <span class="material-symbols-outlined">dashboard</span>
+            <span>Dashboard</span>
+        </a>
+        <a class="{% if current_page == 'support_messages' %}bg-secondary-container/20 text-secondary{% else %}text-on-primary/80 hover:text-white{% endif %} px-4 py-3 flex items-center gap-3 hover:bg-white/10 transition-all text-sm rounded-lg block w-full text-left" href="{% url 'SchoolNowMgt:support_messages' %}">
+            <span class="material-symbols-outlined">mail</span>
+            <span>Messages</span>
+        </a>
+        <a class="{% if current_page == 'support_calendar' %}bg-secondary-container/20 text-secondary{% else %}text-on-primary/80 hover:text-white{% endif %} px-4 py-3 flex items-center gap-3 hover:bg-white/10 transition-all text-sm rounded-lg block w-full text-left" href="{% url 'SchoolNowMgt:support_calendar' %}">
+            <span class="material-symbols-outlined">calendar_month</span>
+            <span>Calendar</span>
+        </a>
+        <a class="{% if current_page == 'support_announcements' %}bg-secondary-container/20 text-secondary{% else %}text-on-primary/80 hover:text-white{% endif %} px-4 py-3 flex items-center gap-3 hover:bg-white/10 transition-all text-sm rounded-lg block w-full text-left" href="{% url 'SchoolNowMgt:support_announcements' %}">
+            <span class="material-symbols-outlined">notifications_active</span>
+            <span>Announcements</span>
+        </a>
+        <a class="{% if current_page == 'support_payments' %}bg-secondary-container/20 text-secondary{% else %}text-on-primary/80 hover:text-white{% endif %} px-4 py-3 flex items-center gap-3 hover:bg-white/10 transition-all text-sm rounded-lg block w-full text-left" href="{% url 'SchoolNowMgt:support_payments' %}">
+            <span class="material-symbols-outlined">payment</span>
+            <span>Payments</span>
+        </a>
+        {% endwith %}
+    </div>
+</div>
+
+<div class="p-8 space-y-8 pt-24">
+    <!-- Top Navigation Bar -->
+    {% include "includes/support_staff_topbar.html" %}
+    
+    <!-- Sub-Dashboard Navigation -->
+    {% include "includes/support_staff_subnav.html" %}
+    
+    <!-- Announcements Content -->
+    <div class="grid grid-cols-12 gap-6">
+        <!-- Announcements List -->
+        <div class="col-span-8 glass-card rounded-[32px] p-8 glass-edge">
+            <div class="flex justify-between items-center mb-8">
+                <div>
+                    <h4 class="font-headline-lg text-headline-lg text-primary">Announcements</h4>
+                    <p class="text-body-md text-outline">{{ announcements|length }} announcement{% if announcements|length != 1 %}s{% endif %} • {{ unread_count }} unread</p>
+                </div>
+                <div class="flex gap-2">
+                    <button class="px-4 py-2 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-on-surface transition-all font-label-md flex items-center gap-2">
+                        <span class="material-symbols-outlined">filter_list</span>
+                        <span>Filter</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Announcements List -->
+            <div class="space-y-3 max-h-[600px] overflow-y-auto">
+                {% for announcement in announcements %}
+                <div class="p-6 rounded-xl bg-surface-container-high hover:bg-surface-container-highest transition-all cursor-pointer border-l-4 {% if not announcement.read %}border-primary bg-primary/5{% else %}border-outline/20{% endif %}" onclick="openAnnouncement({{ announcement.id }}, '{{ announcement.title }}', '{{ announcement.content }}')">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex items-center gap-3 flex-1">
+                            <div class="w-2 h-2 rounded-full {% if not announcement.read %}bg-primary{% else %}bg-outline/50{% endif %} flex-shrink-0 mt-2"></div>
+                            <div class="flex-1">
+                                <h5 class="font-label-lg text-label-lg text-on-surface {% if not announcement.read %}font-bold{% endif %}">{{ announcement.title }}</h5>
+                            </div>
+                        </div>
+                        <span class="px-3 py-1 rounded-lg text-xs font-semibold {% if announcement.type == 'system' %}bg-primary/10 text-primary{% elif announcement.type == 'finance' %}bg-secondary/10 text-secondary{% else %}bg-tertiary/10 text-tertiary{% endif %}">
+                            {{ announcement.type|title }}
+                        </span>
+                    </div>
+                    <p class="text-body-sm text-outline mb-3 line-clamp-2">{{ announcement.excerpt }}</p>
+                    <p class="text-label-sm text-outline">{{ announcement.date }}</p>
+                </div>
+                {% empty %}
+                <div class="text-center py-12">
+                    <span class="material-symbols-outlined text-6xl text-outline/20 block mb-4">notifications</span>
+                    <p class="text-on-surface-variant font-body-md">No announcements at this time</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Filter & Info Sidebar -->
+        <div class="col-span-4 space-y-6">
+            <!-- Filter Card -->
+            <div class="glass-card rounded-[32px] p-8 glass-edge">
+                <h5 class="font-label-lg text-label-lg text-primary mb-6 uppercase tracking-wider">Filter by Type</h5>
+                <div class="space-y-3">
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" checked class="w-4 h-4 rounded accent-primary">
+                        <span class="text-body-sm text-on-surface">General</span>
+                    </label>
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" checked class="w-4 h-4 rounded accent-primary">
+                        <span class="text-body-sm text-on-surface">Finance</span>
+                    </label>
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" checked class="w-4 h-4 rounded accent-primary">
+                        <span class="text-body-sm text-on-surface">Events</span>
+                    </label>
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" checked class="w-4 h-4 rounded accent-primary">
+                        <span class="text-body-sm text-on-surface">System Updates</span>
+                    </label>
+                </div>
+            </div>
+            
+            <!-- Stats Card -->
+            <div class="glass-card rounded-[32px] p-8 glass-edge">
+                <h5 class="font-label-lg text-label-lg text-primary mb-4 uppercase tracking-wider">Notification Stats</h5>
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center py-3 border-b border-outline/20">
+                        <span class="text-on-surface-variant font-label-md">Unread</span>
+                        <span class="text-primary font-headline-md">{{ unread_count }}</span>
+                    </div>
+                    <div class="flex justify-between items-center py-3 border-b border-outline/20">
+                        <span class="text-on-surface-variant font-label-md">Total</span>
+                        <span class="text-on-surface font-headline-md">{{ announcements|length }}</span>
+                    </div>
+                    <div class="flex justify-between items-center py-3">
+                        <span class="text-on-surface-variant font-label-md">This Week</span>
+                        <span class="text-on-surface font-headline-md">{{ announcements|length }}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Preferences -->
+            <div class="glass-card rounded-[32px] p-8 glass-edge">
+                <h5 class="font-label-lg text-label-lg text-primary mb-4 uppercase tracking-wider">Preferences</h5>
+                <label class="flex items-center gap-3 cursor-pointer">
+                    <input type="checkbox" checked class="w-4 h-4 rounded accent-primary">
+                    <span class="text-body-sm text-on-surface">Email Notifications</span>
+                </label>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Announcement Detail Modal -->
+<div id="announcementModal" class="announcement-modal">
+    <div class="announcement-modal-content rounded-2xl max-w-2xl">
+        <div class="flex justify-between items-center mb-6">
+            <h4 class="font-headline-lg text-headline-lg text-primary" id="modalTitle">Announcement</h4>
+            <button onclick="closeAnnouncement()" class="p-2 hover:bg-surface-container-high rounded-lg transition-all">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <div id="modalContent" class="text-body-md text-on-surface space-y-4 mb-6"></div>
+        <div class="flex gap-4 justify-end">
+            <button onclick="closeAnnouncement()" class="px-6 py-2 rounded-lg bg-surface-container-high text-on-surface hover:bg-surface-container-highest transition-all">
+                Close
+            </button>
+            <button class="px-6 py-2 rounded-lg bg-primary text-white hover:bg-primary/90 transition-all">
+                Mark as Read
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openAnnouncement(id, title, content) {
+        document.getElementById('modalTitle').textContent = title;
+        document.getElementById('modalContent').innerHTML = content;
+        document.getElementById('announcementModal').classList.add('active');
+    }
+    
+    function closeAnnouncement() {
+        document.getElementById('announcementModal').classList.remove('active');
+    }
+    
+    // Close modal when clicking outside
+    document.getElementById('announcementModal').addEventListener('click', (e) => {
+        if (e.target.id === 'announcementModal') {
+            closeAnnouncement();
+        }
+    });
+
+    // Mobile menu toggle
+    const menuToggle = document.getElementById('staffMobileMenuToggle');
+    const mobileMenu = document.getElementById('staffMobileMenu');
+    
+    if (menuToggle && mobileMenu) {
+        menuToggle.addEventListener('click', function() {
+            const isOpen = mobileMenu.style.maxHeight && mobileMenu.style.maxHeight !== '0px';
+            if (isOpen) {
+                mobileMenu.style.maxHeight = '0px';
+            } else {
+                mobileMenu.style.maxHeight = mobileMenu.scrollHeight + 'px';
+            }
+        });
+        
+        const menuLinks = mobileMenu.querySelectorAll('a');
+        menuLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                mobileMenu.style.maxHeight = '0px';
+            });
+        });
+    }
+</script>
+
+{% endblock %}

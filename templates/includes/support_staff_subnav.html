@@ -1,0 +1,32 @@
+<!-- Support Staff Sub-Dashboard Navigation -->
+<nav class="flex gap-3 mb-8 overflow-x-auto pb-2">
+    <a href="{% url 'SchoolNowMgt:support_staff_dashboard' %}" class="flex items-center gap-2 px-6 py-3 rounded-xl text-label-md font-label-md whitespace-nowrap transition-all {% if request.resolver_match.url_name == 'support_staff_dashboard' %}bg-primary text-white shadow-lg{% else %}bg-surface-container-high text-on-surface-variant hover:bg-surface-container-highest{% endif %}">
+        <span class="material-symbols-outlined text-lg">dashboard</span>
+        <span>Dashboard</span>
+    </a>
+    
+    <a href="{% url 'user_profile:support_staff_profile' %}" class="flex items-center gap-2 px-6 py-3 rounded-xl text-label-md font-label-md whitespace-nowrap transition-all {% if request.resolver_match.url_name == 'support_staff_profile' %}bg-primary text-white shadow-lg{% else %}bg-surface-container-high text-on-surface-variant hover:bg-surface-container-highest{% endif %}">
+        <span class="material-symbols-outlined text-lg">person</span>
+        <span>Profile</span>
+    </a>
+    
+    <a href="{% url 'SchoolNowMgt:support_messages' %}" class="flex items-center gap-2 px-6 py-3 rounded-xl text-label-md font-label-md whitespace-nowrap transition-all {% if request.resolver_match.url_name == 'support_messages' %}bg-primary text-white shadow-lg{% else %}bg-surface-container-high text-on-surface-variant hover:bg-surface-container-highest{% endif %}">
+        <span class="material-symbols-outlined text-lg">mail</span>
+        <span>Messages</span>
+    </a>
+    
+    <a href="{% url 'SchoolNowMgt:support_payments' %}" class="flex items-center gap-2 px-6 py-3 rounded-xl text-label-md font-label-md whitespace-nowrap transition-all {% if request.resolver_match.url_name == 'support_payments' %}bg-primary text-white shadow-lg{% else %}bg-surface-container-high text-on-surface-variant hover:bg-surface-container-highest{% endif %}">
+        <span class="material-symbols-outlined text-lg">payment</span>
+        <span>Payments</span>
+    </a>
+    
+    <a href="{% url 'SchoolNowMgt:support_calendar' %}" class="flex items-center gap-2 px-6 py-3 rounded-xl text-label-md font-label-md whitespace-nowrap transition-all {% if request.resolver_match.url_name == 'support_calendar' %}bg-primary text-white shadow-lg{% else %}bg-surface-container-high text-on-surface-variant hover:bg-surface-container-highest{% endif %}">
+        <span class="material-symbols-outlined text-lg">calendar_month</span>
+        <span>Calendar</span>
+    </a>
+    
+    <a href="{% url 'SchoolNowMgt:support_announcements' %}" class="flex items-center gap-2 px-6 py-3 rounded-xl text-label-md font-label-md whitespace-nowrap transition-all {% if request.resolver_match.url_name == 'support_announcements' %}bg-primary text-white shadow-lg{% else %}bg-surface-container-high text-on-surface-variant hover:bg-surface-container-highest{% endif %}">
+        <span class="material-symbols-outlined text-lg">notifications_active</span>
+        <span>Announcements</span>
+    </a>
+</nav>
