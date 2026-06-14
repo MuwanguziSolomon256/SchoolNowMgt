@@ -1,0 +1,28 @@
+<!-- Time-Based Greeting Section -->
+<!-- Parameters: current_time (datetime), user.first_name (string) -->
+
+{% with hour=current_time|date:"H"|add:0 %}
+    <div class="bg-gradient-to-r from-primary/5 via-transparent to-secondary-container/5 border-b border-outline-variant/20 px-container-padding py-6">
+        <div class="flex items-center gap-3">
+            <div>
+                {% if hour >= 5 and hour < 12 %}
+                    <span class="material-symbols-outlined text-4xl text-secondary-container">light_mode</span>
+                {% elif hour >= 12 and hour < 17 %}
+                    <span class="material-symbols-outlined text-4xl text-secondary-container">sunny</span>
+                {% else %}
+                    <span class="material-symbols-outlined text-4xl text-primary">nights_stay</span>
+                {% endif %}
+            </div>
+            <div>
+                {% if hour >= 5 and hour < 12 %}
+                    <h2 class="font-headline-lg text-headline-lg text-primary">Good Morning, <span class="text-secondary-container">{{ user.first_name }}</span>!</h2>
+                {% elif hour >= 12 and hour < 17 %}
+                    <h2 class="font-headline-lg text-headline-lg text-primary">Good Afternoon, <span class="text-secondary-container">{{ user.first_name }}</span>!</h2>
+                {% else %}
+                    <h2 class="font-headline-lg text-headline-lg text-primary">Good Evening, <span class="text-secondary-container">{{ user.first_name }}</span>!</h2>
+                {% endif %}
+                <p class="text-on-surface-variant text-sm mt-1">{{ current_time|date:"l, F j, Y" }} • {{ current_time|time:"H:i A" }}</p>
+            </div>
+        </div>
+    </div>
+{% endwith %}

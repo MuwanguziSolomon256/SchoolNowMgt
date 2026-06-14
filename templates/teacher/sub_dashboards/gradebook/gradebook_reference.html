@@ -1,0 +1,134 @@
+{% extends "teacher/sub_dashboards/base.html" %}
+
+{% block title %}Gradebook Reference - Teacher Portal{% endblock %}
+
+{% block sub_content %}
+<div class="gradebook-reference">
+    <h1 class="page-title">Grading Standards - Uganda National Curriculum</h1>
+    
+    <div class="card" style="margin-bottom: 32px; background-color: #f8f9fc; border: 1px solid #e1e2e5; padding: 20px;">
+        <p style="margin: 0; font-size: 14px; color: #2d2d3d; line-height: 1.6;">
+            This is the official grading scale used in Uganda's national curriculum. Use this reference
+            to understand the grade ranges and their descriptions.
+        </p>
+    </div>
+    
+    <!-- Grade Scale Table -->
+    <div class="scale-table-container" style="margin-bottom: 40px;">
+        <h2 class="section-title">Grade Scale</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Grade</th>
+                    <th>Score Range</th>
+                    <th>Description</th>
+                    <th>Interpretation</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for grade in grading_scale %}
+                <tr class="grade-row">
+                    <td style="text-align: center; font-weight: 700; color: #080b3a;">
+                        {{ grade.grade }}
+                    </td>
+                    <td>{{ grade.min_score }}–{{ grade.max_score }}</td>
+                    <td>{{ grade.description }}</td>
+                    <td>
+                        {% if grade.grade == 'A' %}
+                            Excellent performance
+                        {% elif grade.grade == 'B' %}
+                            Good performance
+                        {% elif grade.grade == 'C' %}
+                            Satisfactory performance
+                        {% elif grade.grade == 'D' %}
+                            Fair/Passing performance
+                        {% else %}
+                            Poor/Below passing
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Score Lookup Tool -->
+    <div class="lookup-tool card" style="margin-bottom: 40px;">
+        <h2 class="section-title" style="margin-bottom: 16px;">Quick Score Lookup</h2>
+        <p style="margin: 0 0 20px 0; font-size: 14px; color: #2d2d3d;">Enter a score (0-100) to see what grade it corresponds to:</p>
+        
+        <div class="lookup-form" style="display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap;">
+            <div class="form-group" style="margin-bottom: 0; flex: 1; min-width: 150px;">
+                <label for="lookupScore">Score:</label>
+                <input type="number" id="lookupScore" name="score" min="0" max="100" class="form-input" placeholder="Enter score" style="width: 100%;">
+            </div>
+            <button type="button" class="btn btn-primary" onclick="performLookup()">
+                Look Up Grade
+            </button>
+        </div>
+        
+        <div id="lookupResult" class="lookup-result" style="display: none; margin-top: 20px; padding: 16px; background-color: #f8f9fc; border-radius: 12px;">
+            <div class="result-card">
+                <h3 style="margin: 0 0 12px 0; font-size: 14px; font-weight: 600; color: #0a0d3f;">Result:</h3>
+                <div class="result-content" style="display: grid; grid-template-columns: auto 1fr; gap: 24px;">
+                    <div class="result-grade" id="resultGrade" style="font-size: 48px; font-weight: 700; color: #080b3a; text-align: center;">—</div>
+                    <div class="result-info">
+                        <p style="margin: 0 0 8px 0; font-size: 14px;"><strong>Score Range:</strong> <span id="resultRange">—</span></p>
+                        <p style="margin: 0; font-size: 14px;"><strong>Description:</strong> <span id="resultDesc">—</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Print Guide -->
+    <!-- Print Guide -->
+    <div class="print-section">
+        <button type="button" class="btn btn-secondary" onclick="window.print()">
+            <span>🖨️</span> Print Reference
+        </button>
+    </div>
+</div>
+
+<style>
+    .gradebook-reference {
+        max-width: 900px;
+    }
+</style>
+
+<script>
+    function performLookup() {
+        const score = parseFloat(document.getElementById('lookupScore').value);
+        
+        if (isNaN(score) || score < 0 || score > 100) {
+            alert('Please enter a valid score between 0 and 100');
+            return;
+        }
+        
+        // Determine grade
+        let gradeData;
+        if (score >= 75) {
+            gradeData = { grade: 'A', min: 75, max: 100, desc: 'Excellent' };
+        } else if (score >= 65) {
+            gradeData = { grade: 'B', min: 65, max: 74, desc: 'Good' };
+        } else if (score >= 50) {
+            gradeData = { grade: 'C', min: 50, max: 64, desc: 'Satisfactory' };
+        } else if (score >= 40) {
+            gradeData = { grade: 'D', min: 40, max: 49, desc: 'Fair' };
+        } else {
+            gradeData = { grade: 'E', min: 0, max: 39, desc: 'Poor' };
+        }
+        
+        // Display result
+        document.getElementById('resultGrade').textContent = gradeData.grade;
+        document.getElementById('resultRange').textContent = gradeData.min + ' – ' + gradeData.max;
+        document.getElementById('resultDesc').textContent = gradeData.desc;
+        document.getElementById('lookupResult').style.display = 'block';
+    }
+    
+    // Allow Enter key to trigger lookup
+    document.getElementById('lookupScore')?.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') performLookup();
+    });
+</script>
+{% endblock %}

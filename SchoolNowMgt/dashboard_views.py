@@ -22,7 +22,7 @@ from .models import (
 from .forms import (
     StaffOnboardingForm, BulkStaffUploadForm,
     StudentOnboardingForm, BulkStudentUploadForm,
-    AdminMessageForm, StaffPasswordResetForm, ParentMessageForm,
+    AdminMessageForm, StaffPasswordResetForm, ParentMessageForm, StaffMessageForm,
     EventForm, AdminProfileForm, ProfilePictureForm
 )
 from .utils import (
@@ -316,6 +316,7 @@ def dashboard(request):
     
     # Current date for filtering
     today = timezone.localdate()
+    current_time = timezone.now()
     
     # Get user's school for data isolation
     user_school = request.user.school
@@ -507,6 +508,7 @@ def dashboard(request):
     context = {
         # Metadata
         'today': today,
+        'current_time': current_time,
         'user': request.user,
         'school': getattr(request.user, 'school', None),
         
@@ -605,6 +607,7 @@ def parent_dashboard(request):
             return redirect('auth:unified_login')
     
     today = timezone.localdate()
+    current_time = timezone.now()
     
     # Get user's school for data isolation
     user_school = request.user.school
@@ -664,6 +667,7 @@ def parent_dashboard(request):
     
     context = {
         'today': today,
+        'current_time': current_time,
         'user': request.user,
         'school': getattr(request.user, 'school', None),
         'children': children,
@@ -817,6 +821,13 @@ def support_staff_dashboard(request):
     available_roles = []  # Can be extended if staff has multiple assigned roles
     current_role = request.session.get('current_role', 'Support Staff')
     
+    # Fetch announcements (admin messages to support staff)
+    announcements = Message.objects.filter(
+        school=user_school,
+        sender_type='admin',
+        recipient_type__in=['all_staff', 'all_staff_combined']
+    ).select_related('sender').order_by('-created_at')[:5]
+    
     context = {
         'today': today,
         'user': request.user,
@@ -834,9 +845,28 @@ def support_staff_dashboard(request):
         'available_roles': available_roles,
         'current_role': current_role,
         'now': timezone.now(),
+        'announcements': announcements,
     }
     
     return render(request, 'SchoolNowMgt/support_staff_dashboard.html', context)
+
+
+@login_required
+def support_staff_profile_view(request):
+    """Support Staff Profile View (Read-only)"""
+    if request.user.role != 'non_teaching_staff':
+        messages.error(request, 'Access denied.')
+        return redirect('SchoolNowMgt:dashboard')
+    
+    staff_profile = get_object_or_404(StaffProfile, user=request.user)
+    
+    context = {
+        'user': request.user,
+        'staff_profile': staff_profile,
+        'school': getattr(request.user, 'school', None),
+    }
+    
+    return render(request, 'SchoolNowMgt/support_staff_profile.html', context)
 
 
 # ===== SUPPORT STAFF SUB-DASHBOARDS =====
@@ -849,29 +879,41 @@ def support_staff_messages_dashboard(request):
         return redirect('SchoolNowMgt:dashboard')
     
     staff_profile = get_object_or_404(StaffProfile, user=request.user)
-    today = datetime.now()
+    user_school = request.user.school
     
-    # Sample messages data (in production, fetch from Message model)
-    messages_list = [
-        {
-            'id': 1,
-            'sender': 'Principal',
-            'subject': 'Staff Meeting Reminder',
-            'preview': 'Please remember we have a staff meeting...',
-            'date': (today - timedelta(hours=2)).strftime('%H:%M'),
-            'unread': True,
-            'timestamp': today - timedelta(hours=2),
-        },
-        {
-            'id': 2,
-            'sender': 'HR Department',
-            'subject': 'Leave Request Approved',
-            'preview': 'Your leave request for June 20-25 has been...',
-            'date': (today - timedelta(days=1)).strftime('%d %b'),
-            'unread': False,
-            'timestamp': today - timedelta(days=1),
-        },
-    ]
+    # Fetch real messages from database
+    user_messages = MessageRecipient.objects.filter(
+        recipient=request.user
+    ).select_related('message__sender').order_by('-created_at')
+    
+    # Format messages for template
+    messages_list = []
+    for msg_recipient in user_messages:
+        message = msg_recipient.message
+        created_time = message.created_at
+        
+        # Format date/time
+        now = timezone.now()
+        if (now - created_time).days == 0:
+            date_str = created_time.strftime('%H:%M')
+        elif (now - created_time).days == 1:
+            date_str = 'Yesterday'
+        else:
+            date_str = created_time.strftime('%d %b')
+        
+        # Get preview (first 100 chars of body)
+        preview = message.body[:100] + ('...' if len(message.body) > 100 else '')
+        
+        messages_list.append({
+            'id': message.id,
+            'sender': message.sender.get_full_name() if message.sender else 'System',
+            'subject': message.subject,
+            'preview': preview,
+            'body': message.body,
+            'date': date_str,
+            'unread': msg_recipient.read_at is None,
+            'timestamp': created_time,
+        })
     
     context = {
         'user': request.user,
@@ -1009,38 +1051,49 @@ def support_staff_announcements_dashboard(request):
         return redirect('SchoolNowMgt:dashboard')
     
     staff_profile = get_object_or_404(StaffProfile, user=request.user)
-    today = datetime.now()
+    user_school = request.user.school
     
-    # Sample announcements
-    announcements = [
-        {
-            'id': 1,
-            'title': 'System Maintenance - June 15',
-            'excerpt': 'The school management system will be undergoing maintenance...',
-            'content': 'The school management system will be undergoing scheduled maintenance on June 15, 2026 from 10:00 PM to 2:00 AM. This is to improve system performance and security.',
-            'date': (today - timedelta(hours=3)).strftime('%H:%M today'),
-            'type': 'system',
-            'read': False,
-        },
-        {
-            'id': 2,
-            'title': 'Updated Leave Policy',
-            'excerpt': 'Please review the new leave request guidelines...',
-            'content': 'Effective from July 1st, 2026, the leave policy has been updated. All leave requests must now be submitted 2 weeks in advance...',
-            'date': (today - timedelta(days=1)).strftime('%d %b'),
-            'type': 'finance',
-            'read': False,
-        },
-        {
-            'id': 3,
-            'title': 'Staff Training Schedule',
-            'excerpt': 'Professional development training sessions have been scheduled...',
-            'content': 'We are pleased to announce that professional development training will be held during the term holidays. Attendance is optional.',
-            'date': (today - timedelta(days=2)).strftime('%d %b'),
-            'type': 'event',
-            'read': True,
-        },
-    ]
+    # Fetch real announcements (admin messages to support staff) from database
+    announcement_messages = Message.objects.filter(
+        school=user_school,
+        sender_type='admin',
+        recipient_type__in=['all_staff', 'all_staff_combined']
+    ).select_related('sender').order_by('-created_at')
+    
+    # Format announcements for template
+    announcements = []
+    for message in announcement_messages:
+        created_time = message.created_at
+        
+        # Format date/time
+        now = timezone.now()
+        if (now - created_time).days == 0:
+            date_str = created_time.strftime('%H:%M today')
+        elif (now - created_time).days == 1:
+            date_str = 'Yesterday'
+        else:
+            date_str = created_time.strftime('%d %b')
+        
+        # Get excerpt (first 100 chars of body)
+        excerpt = message.body[:100] + ('...' if len(message.body) > 100 else '')
+        
+        # Check if user has read this announcement
+        has_read = MessageRecipient.objects.filter(
+            message=message,
+            recipient=request.user,
+            read_at__isnull=False
+        ).exists()
+        
+        announcements.append({
+            'id': message.id,
+            'title': message.subject,
+            'excerpt': excerpt,
+            'content': message.body,
+            'sender': message.sender.get_full_name() if message.sender else 'Administration',
+            'date': date_str,
+            'type': 'announcement',
+            'read': has_read,
+        })
     
     context = {
         'user': request.user,
@@ -1513,6 +1566,85 @@ def send_message_ajax(request):
                     'message_id': message.id,
                     'recipient_count': recipient_count,
                     'scheduled_for': scheduled_info
+                }
+            })
+    
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error sending message: {str(e)}'
+        }, status=500)
+
+
+@login_required
+@require_POST
+def staff_send_message_ajax(request):
+    """
+    AJAX endpoint for support staff to create and send messages.
+    
+    Supports messages to teachers, other staff, parents, and students within same school.
+    
+    Returns JSON with:
+    - success (bool)
+    - message (str)
+    - data: { message_id, recipient_count } if successful
+    """
+    # Verify user is support staff
+    if request.user.role != 'non_teaching_staff':
+        return JsonResponse({
+            'success': False,
+            'message': 'Unauthorized. Only support staff can send messages.'
+        }, status=403)
+    
+    form = StaffMessageForm(request.POST)
+    
+    if not form.is_valid():
+        return JsonResponse({
+            'success': False,
+            'message': 'Form validation failed',
+            'errors': form.errors
+        }, status=400)
+    
+    try:
+        with transaction.atomic():
+            # Create Message with sender_type='support_staff'
+            message = Message.objects.create(
+                sender=request.user,
+                sender_type='support_staff',
+                school=request.user.school,
+                subject=form.cleaned_data['subject'],
+                body=form.cleaned_data['body'],
+                recipient_type=form.cleaned_data['recipient_type'],
+                target_class=form.cleaned_data.get('target_class'),
+                target_user=form.cleaned_data.get('target_user')
+            )
+            
+            # Resolve recipients based on recipient_type
+            recipients = resolve_message_recipients(message)
+            
+            # Create MessageRecipient entries
+            recipient_count = create_message_recipients(message, recipients)
+            
+            # Mark as sent
+            message.is_sent = True
+            message.save()
+            
+            # Log activity
+            if hasattr(request.user, 'staffprofile'):
+                ActivityLog.objects.create(
+                    teacher=request.user.staffprofile,
+                    activity_type='message_sent',
+                    description=f"Sent message '{message.subject}' to {recipient_count} recipient(s)",
+                    icon_name='mail',
+                    severity='info'
+                )
+            
+            return JsonResponse({
+                'success': True,
+                'message': f'Message sent to {recipient_count} recipient(s).',
+                'data': {
+                    'message_id': message.id,
+                    'recipient_count': recipient_count
                 }
             })
     

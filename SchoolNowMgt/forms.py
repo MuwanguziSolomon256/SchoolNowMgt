@@ -398,6 +398,68 @@ class AdminMessageForm(forms.Form):
         return cleaned_data
 
 
+class StaffMessageForm(forms.Form):
+    """
+    Support staff message creation form for sending targeted in-app messages.
+    Allows staff to message teachers, other staff, parents, and students within their school.
+    """
+    
+    RECIPIENT_CHOICES = [
+        ('all_teachers', 'All Teachers'),
+        ('all_staff', 'All Support Staff'),
+        ('all_staff_combined', 'All Teachers & Support Staff'),
+        ('all_parents', 'All Parents'),
+        ('class_specific', 'Parents of Specific Class'),
+        ('individual', 'Individual User'),
+    ]
+    
+    subject = forms.CharField(
+        max_length=200,
+        widget=forms.TextInput(attrs={'placeholder': 'Message subject', 'class': 'form-input'})
+    )
+    recipient_type = forms.ChoiceField(
+        choices=RECIPIENT_CHOICES,
+        widget=forms.Select(attrs={'class': 'form-input'}),
+        label="Send to"
+    )
+    body = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'placeholder': 'Message body (max 1000 chars)',
+            'rows': 6,
+            'class': 'form-input',
+            'maxlength': 1000
+        })
+    )
+    target_class = forms.ModelChoiceField(
+        queryset=ClassGrade.objects.all(),
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-input'}),
+        label="Select class (required for 'Parents of Specific Class')"
+    )
+    target_user = forms.ModelChoiceField(
+        queryset=CustomUser.objects.filter(is_active=True),
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-input'}),
+        label="Select user (required for 'Individual User')"
+    )
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        recipient_type = cleaned_data.get('recipient_type')
+        target_class = cleaned_data.get('target_class')
+        target_user = cleaned_data.get('target_user')
+        
+        # Validate class_specific requires target_class
+        if recipient_type == 'class_specific' and not target_class:
+            raise ValidationError("Select a class when sending to 'Parents of Specific Class'.")
+        
+        # Validate individual requires target_user
+        if recipient_type == 'individual' and not target_user:
+            raise ValidationError("Select a user when sending to 'Individual User'.")
+        
+        return cleaned_data
+
+
 class StaffPasswordResetForm(forms.Form):
     """
     Form for admins to reset staff password and generate temporary password.

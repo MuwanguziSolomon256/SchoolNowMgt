@@ -20,12 +20,11 @@
 
 <div class="max-w-7xl mx-auto px-container-padding py-section-margin">
 
-  <!-- Welcome & Student Switcher -->
-  <section class="flex justify-between items-end mb-section-margin">
-    <div>
-      <h2 class="font-display-lg text-display-lg text-primary">Good Morning, {{ user.first_name }}</h2>
-      <p class="font-body-lg text-body-lg text-on-surface-variant">Here is an overview of your {{ children|length|pluralize:"child's,children's" }} progress at {{ school.name }}.</p>
-    </div>
+  <!-- Greeting Section -->
+  {% include "includes/greeting_section.html" %}
+
+  <!-- Student Switcher -->
+  <section class="flex justify-end items-center mb-section-margin mt-section-margin">
     <div class="flex gap-4 bg-surface-container-high/50 p-1.5 rounded-2xl glass-card">
       {% for child in children %}
         <button class="flex items-center gap-3 px-6 py-3 rounded-xl {% if forloop.first %}bg-primary text-white shadow-lg{% else %}hover:bg-surface-container-highest transition-all{% endif %}">

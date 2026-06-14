@@ -323,6 +323,72 @@ def get_parent_messageable_recipients(parent_user):
     return recipients
 
 
+def get_staff_messageable_recipients(staff_user, recipient_type):
+    """
+    Get list of users that a support staff member can send messages to.
+    
+    Returns users (teachers, staff, parents, students) within the same school
+    filtered by recipient_type.
+    
+    Args:
+        staff_user: CustomUser instance with role='non_teaching_staff'
+        recipient_type: str - one of: all_teachers, all_staff, all_staff_combined, 
+                        all_parents, all_students, class_specific, individual
+        
+    Returns:
+        QuerySet: CustomUser objects the staff can message, ordered by name
+    """
+    from .models import Student
+    
+    if staff_user.role != 'non_teaching_staff':
+        return CustomUser.objects.none()
+    
+    school = staff_user.school
+    
+    if recipient_type == 'all_teachers':
+        return CustomUser.objects.filter(
+            school=school,
+            is_active=True,
+            role='teacher'
+        ).exclude(id=staff_user.id).order_by('first_name', 'last_name')
+    
+    elif recipient_type == 'all_staff':
+        return CustomUser.objects.filter(
+            school=school,
+            is_active=True,
+            role='non_teaching_staff'
+        ).exclude(id=staff_user.id).order_by('first_name', 'last_name')
+    
+    elif recipient_type == 'all_staff_combined':
+        return CustomUser.objects.filter(
+            school=school,
+            is_active=True,
+            role__in=['teacher', 'non_teaching_staff']
+        ).exclude(id=staff_user.id).order_by('first_name', 'last_name')
+    
+    elif recipient_type == 'all_parents':
+        return CustomUser.objects.filter(
+            school=school,
+            is_active=True,
+            role='parent'
+        ).order_by('first_name', 'last_name')
+    
+    elif recipient_type == 'all_students':
+        return CustomUser.objects.filter(
+            school=school,
+            is_active=True,
+            role='student'
+        ).order_by('first_name', 'last_name')
+    
+    else:
+        # For class_specific and individual, return all active users
+        # (filtering happens at view/form level)
+        return CustomUser.objects.filter(
+            school=school,
+            is_active=True
+        ).exclude(id=staff_user.id).order_by('first_name', 'last_name')
+
+
 def get_parent_unread_count(parent_user):
     """
     Get count of unread messages for a parent.

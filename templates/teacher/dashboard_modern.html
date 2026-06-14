@@ -129,88 +129,121 @@
     </style>
 </head>
 <body class="font-body-md text-on-surface min-h-screen">
-<!-- SideNavBar Anchor -->
-<aside class="h-screen w-64 fixed left-0 top-0 sidebar-gradient flex flex-col py-base gap-2 z-50 shadow-xl shadow-primary/20">
-    <div class="px-6 py-8">
-        <h1 class="font-headline-lg text-headline-lg font-black text-secondary-container tracking-tighter">EduVision</h1>
-        <p class="font-label-md text-label-md text-on-primary/60 uppercase tracking-widest mt-1">Teacher Portal</p>
-    </div>
-    <nav class="flex-1 flex flex-col gap-1">
-        <a class="bg-secondary-container text-on-secondary-container rounded-lg font-bold flex items-center gap-3 px-4 py-3 mx-4 group cursor-pointer transition-all" href="{% url 'teacher_auth:dashboard' %}">
-            <span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
-            <span class="font-label-md text-label-md">Dashboard</span>
-        </a>
-        <a class="text-on-primary/70 flex items-center gap-3 px-4 py-3 mx-4 hover:bg-white/10 rounded-lg transition-all group cursor-pointer hover:translate-x-1 duration-300" href="#">
-            <span class="material-symbols-outlined" data-icon="school">school</span>
-            <span class="font-label-md text-label-md">Students</span>
-        </a>
-        <a class="text-on-primary/70 flex items-center gap-3 px-4 py-3 mx-4 hover:bg-white/10 rounded-lg transition-all group cursor-pointer hover:translate-x-1 duration-300" href="#">
-            <span class="material-symbols-outlined" data-icon="menu_book">menu_book</span>
-            <span class="font-label-md text-label-md">Lessons</span>
-        </a>
-        <a class="text-on-primary/70 flex items-center gap-3 px-4 py-3 mx-4 hover:bg-white/10 rounded-lg transition-all group cursor-pointer hover:translate-x-1 duration-300" href="#">
-            <span class="material-symbols-outlined" data-icon="assessment">assessment</span>
-            <span class="font-label-md text-label-md">Grades</span>
-        </a>
-        <a class="text-on-primary/70 flex items-center gap-3 px-4 py-3 mx-4 hover:bg-white/10 rounded-lg transition-all group cursor-pointer hover:translate-x-1 duration-300" href="#">
-            <span class="material-symbols-outlined" data-icon="chat_bubble">chat_bubble</span>
-            <span class="font-label-md text-label-md">Communication</span>
-        </a>
-    </nav>
-    <div class="px-4 py-6 mt-auto border-t border-white/10">
-        <div class="mt-6 flex flex-col gap-2">
-            <a class="text-on-primary/60 flex items-center gap-3 px-4 py-2 hover:text-on-primary transition-colors" href="{% url 'teacher_auth:profile' %}">
-                <span class="material-symbols-outlined text-sm" data-icon="person">person</span>
-                <span class="text-xs font-semibold">Profile</span>
-            </a>
-            <form method="post" action="{% url 'teacher_auth:logout' %}" style="display: contents;">
-                {% csrf_token %}
-                <button type="submit" class="text-on-primary/60 flex items-center gap-3 px-4 py-2 hover:text-error transition-colors" onclick="return confirm('Are you sure you want to logout?');">
-                    <span class="material-symbols-outlined text-sm" data-icon="logout">logout</span>
-                    <span class="text-xs font-semibold">Logout</span>
-                </button>
-            </form>
-        </div>
-    </div>
-</aside>
+
+<!-- Teacher Navigation Bar (Reusable Include) -->
+{% include "includes/teacher_navigation_bar.html" %}
 
 <!-- Main Canvas -->
-<main class="ml-64 min-h-screen">
-    <!-- TopAppBar Anchor -->
-    <header class="flex justify-between items-center px-container-padding w-full sticky top-0 z-40 bg-surface/70 backdrop-blur-2xl h-16 border-b border-white/20 shadow-sm shadow-primary/5">
-        <div class="flex items-center gap-6">
-            <div class="relative group">
-                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline" data-icon="search">search</span>
-                <input class="bg-surface-container-low border-none rounded-full pl-10 pr-4 py-2 w-80 focus:ring-2 focus:ring-primary/20 transition-all font-body-md text-body-md" id="student-search" placeholder="Search students, lessons..." type="text"/>
-                <div id="search-results" class="absolute top-full left-0 mt-2 w-full bg-white rounded-lg shadow-lg hidden z-50"></div>
-            </div>
-        </div>
-        <div class="flex items-center gap-4">
-            <div class="flex items-center gap-1">
-                <a href="{% url 'teacher_auth:dashboard' %}" class="p-2 rounded-full hover:bg-surface-container-highest/50 transition-all cursor-pointer active:scale-95">
-                    <span class="material-symbols-outlined text-on-surface-variant" data-icon="notifications">notifications</span>
-                </a>
-                <a href="{% url 'teacher_auth:profile' %}" class="p-2 rounded-full hover:bg-surface-container-highest/50 transition-all cursor-pointer active:scale-95">
-                    <span class="material-symbols-outlined text-on-surface-variant" data-icon="settings">settings</span>
-                </a>
-            </div>
-            <div class="h-8 w-[1px] bg-outline-variant/30 mx-2"></div>
-            <div class="flex items-center gap-3 cursor-pointer group">
-                <div class="text-right">
-                    <p class="font-label-md text-label-md text-primary leading-none">{{ user.get_full_name }}</p>
-                    <p class="text-[10px] text-outline font-bold uppercase tracking-tighter">{{ user.get_role_display }}</p>
+<main class="min-h-screen">
+    <!-- Content Area -->
+    <div>
+    <!-- Greeting Section -->
+    {% include "includes/greeting_section.html" %}
+
+    <!-- Shift Status Card -->
+    <div class="px-4 md:px-container-padding pt-gutter">
+        <section class="bg-primary rounded-2xl md:rounded-3xl p-4 md:p-8 flex flex-col md:flex-row md:items-center md:justify-between overflow-hidden relative inner-glow gap-4 md:gap-0">
+            <div class="absolute -top-12 -right-12 w-48 h-48 bg-secondary-container/10 rounded-full blur-3xl"></div>
+            <div class="flex items-center gap-3 md:gap-6 z-10 flex-1 flex-wrap">
+                <!-- Icon -->
+                <div class="p-2 md:p-3 bg-secondary-container/20 text-secondary-container rounded-xl md:rounded-2xl flex-shrink-0">
+                    <span class="material-symbols-outlined text-xl md:text-2xl">schedule</span>
                 </div>
-                <img alt="Teacher Profile" class="w-10 h-10 rounded-full border-2 border-secondary-container object-cover" src="{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}https://via.placeholder.com/40{% endif %}"/>
+                <!-- Content -->
+                <div class="flex-1 min-w-0">
+                    <p class="text-on-primary/70 font-label-md text-xs md:text-sm uppercase tracking-widest mb-0.5 md:mb-1">Shift Status</p>
+                    <h2 class="font-display-md text-base md:text-2xl text-on-primary font-black mb-1 md:mb-2 break-words">Active since {{ shift_start_time|date:"h:i A" }}</h2>
+                    <p class="text-on-primary/90 font-body-md text-xs md:text-sm flex items-center gap-2">
+                        <span class="w-2 h-2 flex-shrink-0 {% if is_on_duty %}bg-green-400{% else %}bg-red-400{% endif %} rounded-full {% if is_on_duty %}animate-pulse{% endif %}"></span>
+                        <span class="truncate">{% if is_on_duty %}ON DUTY{% else %}OFF DUTY{% endif %}</span>
+                        <span class="hidden sm:inline">- {{ today|date:"l" }}</span>
+                    </p>
+                </div>
+            </div>
+            <!-- Buttons -->
+            <div class="flex gap-2 md:gap-3 z-10 flex-shrink-0 w-full md:w-auto">
+                <button class="flex-1 md:flex-none px-3 md:px-6 py-2 md:py-3 bg-secondary-container text-on-secondary-container rounded-full font-bold hover:bg-secondary-container/90 transition-all shadow-md flex items-center justify-center gap-1 md:gap-2 text-xs md:text-sm whitespace-nowrap">
+                    <span class="material-symbols-outlined text-lg md:text-base">{% if is_on_duty %}logout{% else %}login{% endif %}</span>
+                    <span class="hidden sm:inline">{% if is_on_duty %}Clock Out{% else %}Clock In{% endif %}</span>
+                    <span class="sm:hidden">{% if is_on_duty %}Out{% else %}In{% endif %}</span>
+                </button>
+                <button class="flex-1 md:flex-none px-3 md:px-6 py-2 md:py-3 bg-surface text-primary rounded-full font-bold hover:bg-surface/90 transition-all flex items-center justify-center gap-1 md:gap-2 text-xs md:text-sm whitespace-nowrap">
+                    <span class="material-symbols-outlined text-lg md:text-base">coffee</span>
+                    <span class="hidden sm:inline">Break</span>
+                </button>
+            </div>
+        </section>
+    </div>
+
+    <!-- Page Title -->
+    <div class="px-4 md:px-container-padding pt-6 md:pt-section-margin pb-4 md:pb-6">
+        <h1 class="font-display-md text-xl md:text-3xl text-primary font-black mb-1 md:mb-2">Dashboard</h1>
+        <p class="text-body-md text-sm md:text-base text-on-surface-variant">Welcome back. Here's your dashboard overview.</p>
+    </div>
+
+    <!-- Profile Overview Cards -->
+    <div class="px-4 md:px-container-padding pb-6 md:pb-section-margin">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+            <!-- My Profile Card -->
+            <div class="glass-card rounded-2xl md:rounded-3xl p-4 md:p-8 relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-secondary-container/10 rounded-full blur-2xl -mr-10 -mt-10"></div>
+                <div class="relative z-10">
+                    <div class="flex justify-between items-start mb-4 md:mb-6 gap-2">
+                        <div class="min-w-0 flex-1">
+                            <p class="text-xs md:text-sm text-outline uppercase font-bold tracking-widest mb-1 md:mb-2">MY PROFILE</p>
+                            <h3 class="font-headline-md text-sm md:text-lg text-primary truncate">{{ user.get_full_name }}</h3>
+                            <p class="text-xs md:text-sm text-on-surface-variant mt-1">{{ user.get_role_display }}</p>
+                        </div>
+                        <a href="{% url 'teacher:profile' %}" class="p-2 md:p-3 bg-secondary-container/20 text-primary rounded-lg md:rounded-xl hover:bg-secondary-container/30 transition-colors flex-shrink-0">
+                            <span class="material-symbols-outlined text-lg md:text-xl">settings</span>
+                        </a>
+                    </div>
+                    <div class="mt-4 md:mt-8 pt-4 md:pt-6 border-t border-outline/10">
+                        <p class="text-xs md:text-sm text-on-surface-variant mb-2 md:mb-4">Click the settings icon to update your profile</p>
+                        <a href="{% url 'teacher:profile' %}" class="text-secondary font-semibold flex items-center gap-2 hover:gap-3 transition-all text-xs md:text-sm">
+                            <span>View Profile</span>
+                            <span class="material-symbols-outlined text-xs">arrow_forward</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- My Students Card -->
+            <div class="glass-card rounded-2xl md:rounded-3xl p-4 md:p-8 relative overflow-hidden flex flex-col items-center justify-center">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-secondary-container/10 rounded-full blur-2xl -mr-10 -mt-10"></div>
+                <div class="relative z-10 text-center w-full">
+                    <div class="flex justify-center mb-2 md:mb-4">
+                        <div class="p-2 md:p-4 bg-secondary-container/20 text-primary rounded-xl md:rounded-2xl">
+                            <span class="material-symbols-outlined text-lg md:text-2xl">school</span>
+                        </div>
+                    </div>
+                    <p class="text-xs md:text-sm text-outline uppercase font-bold tracking-widest mb-2 md:mb-3">MY STUDENTS</p>
+                    <h3 class="font-headline-md text-lg md:text-3xl text-primary font-black">{{ my_student_count }}</h3>
+                </div>
+            </div>
+
+            <!-- My Classes Card -->
+            <div class="glass-card rounded-2xl md:rounded-3xl p-4 md:p-8 relative overflow-hidden flex flex-col items-center justify-center">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-secondary-container/10 rounded-full blur-2xl -mr-10 -mt-10"></div>
+                <div class="relative z-10 text-center w-full">
+                    <div class="flex justify-center mb-2 md:mb-4">
+                        <div class="p-2 md:p-4 bg-secondary-container/20 text-primary rounded-xl md:rounded-2xl">
+                            <span class="material-symbols-outlined text-lg md:text-2xl">class</span>
+                        </div>
+                    </div>
+                    <p class="text-xs md:text-sm text-outline uppercase font-bold tracking-widest mb-2 md:mb-3">MY CLASSES</p>
+                    <h3 class="font-headline-md text-lg md:text-3xl text-primary font-black">{% if my_classes %}{{ my_classes|length }}{% else %}0{% endif %}</h3>
+                </div>
             </div>
         </div>
-    </header>
+    </div>
 
     <!-- Content Grid -->
-    <div class="p-container-padding space-y-gutter">
+    <div class="px-4 md:px-container-padding md:py-gutter space-y-4 md:space-y-gutter">
         <!-- Hero Bento Section -->
-        <div class="grid grid-cols-12 gap-gutter">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-gutter">
             <!-- Current Class Card (Glassmorphic) -->
-            <div class="col-span-8 glass-card rounded-3xl p-8 relative overflow-hidden group">
+            <div class="col-span-1 lg:col-span-8 glass-card rounded-2xl md:rounded-3xl p-4 md:p-8 relative overflow-hidden group">
                 <div class="absolute top-0 right-0 w-64 h-64 bg-secondary-container/10 rounded-full blur-3xl -mr-20 -mt-20 group-hover:bg-secondary-container/20 transition-colors"></div>
                 <div class="relative z-10 flex flex-col h-full justify-between">
                     <div>
@@ -252,7 +285,7 @@
             </div>
 
             <!-- Task Management Widget -->
-            <div class="col-span-4 glass-card rounded-3xl p-6 border-l-4 border-l-secondary-container">
+            <div class="col-span-1 lg:col-span-4 glass-card rounded-2xl md:rounded-3xl p-4 md:p-6 border-l-4 border-l-secondary-container">
                 <div class="flex justify-between items-center mb-6">
                     <h3 class="font-headline-md text-headline-md text-primary">Task Priority</h3>
                     <button class="text-primary hover:bg-primary/5 p-1 rounded-lg transition-colors">
@@ -280,62 +313,62 @@
             </div>
 
             <!-- Secondary Grid -->
-            <div class="col-span-12 grid grid-cols-12 gap-gutter">
+            <div class="col-span-1 lg:col-span-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-4 md:gap-gutter">
                 <!-- Recent Activity Feed -->
-                <div class="col-span-4 flex flex-col gap-gutter">
-                    <div class="glass-card rounded-3xl p-6 flex-1">
-                        <h3 class="font-headline-md text-headline-md text-primary mb-6">Recent Activity</h3>
-                        <div class="relative border-l-2 border-outline-variant/30 ml-2 pl-6 space-y-8">
+                <div class="col-span-1 md:col-span-1 lg:col-span-4 flex flex-col gap-4 md:gap-gutter">
+                    <div class="glass-card rounded-2xl md:rounded-3xl p-4 md:p-6 flex-1">
+                        <h3 class="font-headline-md text-sm md:text-lg text-primary mb-4 md:mb-6">Recent Activity</h3>
+                        <div class="relative border-l-2 border-outline-variant/30 ml-2 pl-4 md:pl-6 space-y-4 md:space-y-8 max-h-96 overflow-y-auto">
                             {% for activity in activities %}
                                 <div class="relative">
-                                    <span class="absolute -left-[33px] top-0 bg-primary w-4 h-4 rounded-full border-4 border-white activity-dot-{{ activity.severity }}"></span>
-                                    <p class="font-label-md text-label-md text-primary">{{ activity.description }}</p>
+                                    <span class="absolute -left-[26px] md:-left-[33px] top-0 bg-primary w-3 md:w-4 h-3 md:h-4 rounded-full border-2 md:border-4 border-white activity-dot-{{ activity.severity }}"></span>
+                                    <p class="font-label-md text-xs md:text-sm text-primary">{{ activity.description }}</p>
                                     <p class="text-[10px] text-outline font-bold uppercase tracking-widest">{{ activity.created_at|timesince }} ago</p>
                                 </div>
                             {% empty %}
-                                <p class="text-outline font-body-md text-center py-4">No recent activity</p>
+                                <p class="text-outline font-body-md text-xs md:text-sm text-center py-4">No recent activity</p>
                             {% endfor %}
                         </div>
-                        <button class="w-full mt-6 text-primary font-label-md text-label-md hover:underline decoration-secondary-container decoration-2 underline-offset-4">View All Logs</button>
+                        <button class="w-full mt-4 md:mt-6 text-primary font-label-md text-xs md:text-sm hover:underline decoration-secondary-container decoration-2 underline-offset-4">View All Logs</button>
                     </div>
                 </div>
 
                 <!-- Quick Actions Grid -->
-                <div class="col-span-8">
-                    <div class="grid grid-cols-3 gap-gutter h-full">
-                        <a href="#" class="glass-card rounded-3xl p-6 group cursor-pointer hover:bg-primary transition-all duration-300" onclick="handleAttendanceClick(event)">
-                            <div class="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-white/20 transition-colors">
-                                <span class="material-symbols-outlined text-primary group-hover:text-white" data-icon="assignment_ind">assignment_ind</span>
+                <div class="col-span-1 md:col-span-1 lg:col-span-8">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-gutter h-full">
+                        <a href="#" class="glass-card rounded-2xl md:rounded-3xl p-4 md:p-6 group cursor-pointer hover:bg-primary transition-all duration-300" onclick="handleAttendanceClick(event)">
+                            <div class="w-10 md:w-12 h-10 md:h-12 rounded-xl md:rounded-2xl bg-primary/10 flex items-center justify-center mb-2 md:mb-4 group-hover:bg-white/20 transition-colors">
+                                <span class="material-symbols-outlined text-lg md:text-xl text-primary group-hover:text-white" data-icon="assignment_ind">assignment_ind</span>
                             </div>
-                            <h4 class="font-headline-md text-headline-md text-primary group-hover:text-white transition-colors">Attendance</h4>
-                            <p class="text-on-surface-variant group-hover:text-on-primary/70 text-sm mt-2 transition-colors">Mark today's presence for your classes.</p>
+                            <h4 class="font-headline-md text-sm md:text-base text-primary group-hover:text-white transition-colors">Attendance</h4>
+                            <p class="text-on-surface-variant group-hover:text-on-primary/70 text-xs md:text-sm mt-1 md:mt-2 transition-colors">Mark today's presence for your classes.</p>
                         </a>
 
-                        <button class="glass-card rounded-3xl p-6 group cursor-pointer hover:bg-secondary-container transition-all duration-300 text-left" onclick="openGradeModal()">
-                            <div class="w-12 h-12 rounded-2xl bg-secondary-container/10 flex items-center justify-center mb-4 group-hover:bg-white/20 transition-colors">
-                                <span class="material-symbols-outlined text-secondary group-hover:text-on-secondary-container" data-icon="draw">draw</span>
+                        <button class="glass-card rounded-2xl md:rounded-3xl p-4 md:p-6 group cursor-pointer hover:bg-secondary-container transition-all duration-300 text-left" onclick="openGradeModal()">
+                            <div class="w-10 md:w-12 h-10 md:h-12 rounded-xl md:rounded-2xl bg-secondary-container/10 flex items-center justify-center mb-2 md:mb-4 group-hover:bg-white/20 transition-colors">
+                                <span class="material-symbols-outlined text-lg md:text-xl text-secondary group-hover:text-on-secondary-container" data-icon="draw">draw</span>
                             </div>
-                            <h4 class="font-headline-md text-headline-md text-primary group-hover:text-on-secondary-container transition-colors">Gradebook</h4>
-                            <p class="text-on-surface-variant group-hover:text-on-secondary-container/70 text-sm mt-2 transition-colors">Enter grades quickly.</p>
+                            <h4 class="font-headline-md text-sm md:text-base text-primary group-hover:text-on-secondary-container transition-colors">Gradebook</h4>
+                            <p class="text-on-surface-variant group-hover:text-on-secondary-container/70 text-xs md:text-sm mt-1 md:mt-2 transition-colors">Enter grades quickly.</p>
                         </button>
 
-                        <button class="glass-card rounded-3xl p-6 group cursor-pointer hover:bg-primary-container transition-all duration-300 text-left" onclick="openCircularModal()">
-                            <div class="w-12 h-12 rounded-2xl bg-primary-container/10 flex items-center justify-center mb-4 group-hover:bg-white/20 transition-colors">
-                                <span class="material-symbols-outlined text-primary-container group-hover:text-white" data-icon="mail">mail</span>
+                        <button class="glass-card rounded-2xl md:rounded-3xl p-4 md:p-6 group cursor-pointer hover:bg-primary-container transition-all duration-300 text-left" onclick="openCircularModal()">
+                            <div class="w-10 md:w-12 h-10 md:h-12 rounded-xl md:rounded-2xl bg-primary-container/10 flex items-center justify-center mb-2 md:mb-4 group-hover:bg-white/20 transition-colors">
+                                <span class="material-symbols-outlined text-lg md:text-xl text-primary-container group-hover:text-white" data-icon="mail">mail</span>
                             </div>
-                            <h4 class="font-headline-md text-headline-md text-primary group-hover:text-white transition-colors">Circulars</h4>
-                            <p class="text-on-surface-variant group-hover:text-on-primary/70 text-sm mt-2 transition-colors">Send SMS to parents.</p>
+                            <h4 class="font-headline-md text-sm md:text-base text-primary group-hover:text-white transition-colors">Circulars</h4>
+                            <p class="text-on-surface-variant group-hover:text-on-primary/70 text-xs md:text-sm mt-1 md:mt-2 transition-colors">Send SMS to parents.</p>
                         </button>
 
-                        <div class="col-span-3 glass-card rounded-3xl p-6 flex items-center justify-between group overflow-hidden relative">
+                        <div class="col-span-1 sm:col-span-2 md:col-span-3 glass-card rounded-2xl md:rounded-3xl p-4 md:p-6 flex flex-col md:flex-row md:items-center md:justify-between group overflow-hidden relative">
                             <div class="absolute inset-0 bg-gradient-to-r from-secondary-container/5 to-transparent"></div>
-                            <div class="relative z-10">
-                                <h4 class="font-headline-md text-headline-md text-primary">Classroom Performance</h4>
-                                <p class="text-on-surface-variant text-sm mt-1">Weekly average: {{ performance_metric }}</p>
+                            <div class="relative z-10 mb-4 md:mb-0">
+                                <h4 class="font-headline-md text-sm md:text-base text-primary">Classroom Performance</h4>
+                                <p class="text-on-surface-variant text-xs md:text-sm mt-1">Weekly average: {{ performance_metric }}</p>
                             </div>
-                            <div class="relative z-10 flex items-end gap-2 h-16">
+                            <div class="relative z-10 flex items-end gap-1 h-12 md:h-16 flex-shrink-0">
                                 {% for stat in performance_stats %}
-                                    <div class="w-6 bg-secondary-container rounded-t-lg transition-all" style="height: {{ stat.height }}%; min-height: 4px;"></div>
+                                    <div class="flex-1 bg-secondary-container rounded-t-lg transition-all" style="height: {{ stat }}%; min-height: 4px;"></div>
                                 {% endfor %}
                             </div>
                         </div>
@@ -347,22 +380,22 @@
 </main>
 
 <!-- Quick Task Modal -->
-<div id="quickTaskModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center" onclick="closeQuickTaskModal(event)">
-    <div class="bg-white rounded-3xl p-8 w-96 shadow-2xl" onclick="event.stopPropagation()">
-        <h2 class="font-headline-md text-headline-md text-primary mb-6">Create Quick Task</h2>
+<div id="quickTaskModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onclick="closeQuickTaskModal(event)">
+    <div class="bg-white rounded-2xl md:rounded-3xl p-4 md:p-8 w-full md:w-96 shadow-2xl" onclick="event.stopPropagation()">
+        <h2 class="font-headline-md text-lg md:text-xl text-primary mb-4 md:mb-6">Create Quick Task</h2>
         <form id="quickTaskForm" onsubmit="handleCreateTask(event)">
-            <div class="space-y-4">
+            <div class="space-y-3 md:space-y-4">
                 <div>
-                    <label class="block font-label-md text-label-md text-primary mb-2">Task Title *</label>
-                    <input type="text" name="title" required class="w-full px-4 py-2 border border-outline rounded-lg focus:ring-2 focus:ring-primary"/>
+                    <label class="block font-label-md text-xs md:text-sm text-primary mb-1 md:mb-2">Task Title *</label>
+                    <input type="text" name="title" required class="w-full px-3 md:px-4 py-2 border border-outline rounded-lg text-sm focus:ring-2 focus:ring-primary"/>
                 </div>
                 <div>
-                    <label class="block font-label-md text-label-md text-primary mb-2">Description</label>
-                    <textarea name="description" rows="3" class="w-full px-4 py-2 border border-outline rounded-lg focus:ring-2 focus:ring-primary"></textarea>
+                    <label class="block font-label-md text-xs md:text-sm text-primary mb-1 md:mb-2">Description</label>
+                    <textarea name="description" rows="3" class="w-full px-3 md:px-4 py-2 border border-outline rounded-lg text-sm focus:ring-2 focus:ring-primary"></textarea>
                 </div>
                 <div>
-                    <label class="block font-label-md text-label-md text-primary mb-2">Due Date *</label>
-                    <input type="datetime-local" name="due_date" required class="w-full px-4 py-2 border border-outline rounded-lg focus:ring-2 focus:ring-primary"/>
+                    <label class="block font-label-md text-xs md:text-sm text-primary mb-1 md:mb-2">Due Date *</label>
+                    <input type="datetime-local" name="due_date" required class="w-full px-3 md:px-4 py-2 border border-outline rounded-lg text-sm focus:ring-2 focus:ring-primary"/>
                 </div>
                 <div>
                     <label class="block font-label-md text-label-md text-primary mb-2">Priority</label>

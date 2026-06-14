@@ -1,0 +1,411 @@
+{% extends "teacher/sub_dashboards/base.html" %}
+
+{% block title %}Grade History - Teacher Portal{% endblock %}
+
+{% block sub_content %}
+<div class="grade-history">
+    <h1 class="page-title">Grade History & Trends</h1>
+    
+    <div class="student-selector mb-4">
+        <form method="get" class="filter-form">
+            <label for="student_search">Find Student:</label>
+            <input type="text" id="student_search" name="q" placeholder="Search student name..." class="form-input">
+            <button type="submit" class="btn btn-search">Search</button>
+        </form>
+    </div>
+    
+    {% if selected_student %}
+    <div class="history-content">
+        <div class="student-header">
+            <div class="student-info">
+                <h2>{{ selected_student.get_full_name }}</h2>
+                <p class="student-meta">
+                    <span class="meta-item">Class: {{ selected_student.class_grade.name }}</span>
+                    <span class="meta-item">Admission: {{ selected_student.admission_number }}</span>
+                </p>
+            </div>
+        </div>
+        
+        <!-- Term-to-Term Progression Chart -->
+        <div class="charts-container">
+            <div class="chart-section">
+                <h3>Grade Progression</h3>
+                <canvas id="progressionChart" height="300"></canvas>
+            </div>
+        </div>
+        
+        <!-- Historical Grades Table -->
+        <div class="history-table">
+            <h3>All Grades - Term-by-Term Breakdown</h3>
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Year</th>
+                            <th>Term</th>
+                            <th>Subject</th>
+                            <th>Score</th>
+                            <th>Grade</th>
+                            <th>Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if grade_history %}
+                            {% for grade in grade_history %}
+                            <tr>
+                                <td class="year-cell">{{ grade.academic_year }}</td>
+                                <td class="term-cell">{{ grade.get_term_display }}</td>
+                                <td>{{ grade.subject.name }}</td>
+                                <td class="score-cell">{{ grade.score }}</td>
+                                <td class="grade-cell">
+                                    <span class="grade-badge grade-{{ grade.letter_grade|lower }}">
+                                        {{ grade.letter_grade }}
+                                    </span>
+                                </td>
+                                <td class="remarks-cell">{{ grade.remarks|default:"—"|truncatewords:10 }}</td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                        <tr>
+                            <td colspan="6" style="text-align:center; padding: 30px; color: #999;">
+                                No grades found for {{ selected_student.get_full_name }}
+                            </td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Summary Statistics -->
+        {% if summary_stats %}
+        <div class="summary-stats">
+            <h3>Performance Summary</h3>
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <label>Overall Average</label>
+                    <div class="stat-value">{{ summary_stats.overall_avg|floatformat:1 }}</div>
+                </div>
+                <div class="stat-box">
+                    <label>Highest Score</label>
+                    <div class="stat-value">{{ summary_stats.highest|floatformat:1 }}</div>
+                </div>
+                <div class="stat-box">
+                    <label>Lowest Score</label>
+                    <div class="stat-value">{{ summary_stats.lowest|floatformat:1 }}</div>
+                </div>
+                <div class="stat-box">
+                    <label>Total Subjects</label>
+                    <div class="stat-value">{{ summary_stats.subject_count }}</div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    {% else %}
+    <div class="select-student-message">
+        <p>Search for and select a student above to view their grade history.</p>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .grade-history {
+        max-width: 1100px;
+    }
+    
+    .page-title {
+        font-size: 1.8rem;
+        margin-bottom: 1.5rem;
+        color: #333;
+        font-weight: 600;
+    }
+    
+    .student-selector {
+        background: #f5f5f5;
+        padding: 15px;
+        border-radius: 6px;
+    }
+    
+    .filter-form {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+    
+    .filter-form label {
+        font-weight: 600;
+    }
+    
+    .form-input {
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        min-width: 250px;
+        font-size: 0.95rem;
+    }
+    
+    .form-input:focus {
+        outline: none;
+        border-color: #0066cc;
+        box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+    }
+    
+    .btn {
+        padding: 8px 16px;
+        background: #0066cc;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.95rem;
+    }
+    
+    .btn:hover {
+        background: #0052a3;
+    }
+    
+    .student-header {
+        background: white;
+        border-left: 4px solid #0066cc;
+        padding: 20px;
+        margin-bottom: 25px;
+        border-radius: 4px;
+    }
+    
+    .student-info h2 {
+        margin: 0 0 10px 0;
+        color: #333;
+        font-size: 1.3rem;
+    }
+    
+    .student-meta {
+        margin: 0;
+        color: #666;
+        font-size: 0.9rem;
+        display: flex;
+        gap: 20px;
+    }
+    
+    .meta-item {
+        display: inline-block;
+    }
+    
+    .charts-container {
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 25px;
+        margin-bottom: 30px;
+    }
+    
+    .chart-section {
+        margin-bottom: 0;
+    }
+    
+    .chart-section h3 {
+        font-size: 1.1rem;
+        margin-bottom: 15px;
+        color: #333;
+    }
+    
+    .history-table {
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 25px;
+        margin-bottom: 30px;
+    }
+    
+    .history-table h3 {
+        font-size: 1.1rem;
+        margin: 0 0 15px 0;
+        color: #333;
+    }
+    
+    .table-responsive {
+        overflow-x: auto;
+    }
+    
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    .data-table thead {
+        background: #f5f5f5;
+        border-bottom: 2px solid #ddd;
+    }
+    
+    .data-table th {
+        padding: 12px 15px;
+        text-align: left;
+        font-weight: 600;
+        color: #333;
+    }
+    
+    .data-table td {
+        padding: 12px 15px;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .data-table tbody tr:hover {
+        background: #f9f9f9;
+    }
+    
+    .year-cell, .term-cell {
+        font-weight: 500;
+    }
+    
+    .score-cell {
+        text-align: center;
+        font-weight: 600;
+        color: #0066cc;
+    }
+    
+    .grade-cell {
+        text-align: center;
+    }
+    
+    .grade-badge {
+        display: inline-block;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        color: white;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.85rem;
+    }
+    
+    .grade-a { background: #10b981; }
+    .grade-b { background: #3b82f6; }
+    .grade-c { background: #f59e0b; }
+    .grade-d { background: #f97316; }
+    .grade-e { background: #ef4444; }
+    .grade-f { background: #ef4444; }
+    
+    .remarks-cell {
+        color: #666;
+        font-size: 0.9rem;
+    }
+    
+    .summary-stats {
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 25px;
+    }
+    
+    .summary-stats h3 {
+        font-size: 1.1rem;
+        margin: 0 0 20px 0;
+        color: #333;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+    }
+    
+    .stat-box {
+        background: #f5f5f5;
+        padding: 15px;
+        border-radius: 6px;
+        text-align: center;
+    }
+    
+    .stat-box label {
+        display: block;
+        font-size: 0.9rem;
+        color: #666;
+        margin-bottom: 8px;
+    }
+    
+    .stat-value {
+        font-size: 1.6rem;
+        font-weight: 600;
+        color: #0066cc;
+    }
+    
+    .select-student-message {
+        text-align: center;
+        padding: 50px 30px;
+        background: #f9f9f9;
+        border-radius: 6px;
+        color: #666;
+        font-size: 0.95rem;
+    }
+    
+    @media (max-width: 768px) {
+        .filter-form {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        
+        .form-input {
+            width: 100%;
+            min-width: auto;
+        }
+        
+        .data-table {
+            font-size: 0.85rem;
+        }
+        
+        .data-table th, .data-table td {
+            padding: 8px 10px;
+        }
+        
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Initialize progression chart if selected
+    {% if selected_student %}
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('progressionChart');
+        if (ctx) {
+            // Sample data - would be populated from backend
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Term 1', 'Term 2', 'Term 3'],
+                    datasets: [{
+                        label: 'Average Score',
+                        data: [],
+                        borderColor: '#0066cc',
+                        backgroundColor: 'rgba(0, 102, 204, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                        }
+                    },
+                    scales: {
+                        y: {
+                            min: 0,
+                            max: 100,
+                        }
+                    }
+                }
+            });
+        }
+    });
+    {% endif %}
+</script>
+{% endblock %}

@@ -28,8 +28,8 @@ teacher_user, created = CustomUser.objects.get_or_create(
     username='teacher1',
     defaults={
         'email': 'teacher@test.com',
-        'first_name': 'Sarah',
-        'last_name': 'Jenkins',
+        'first_name': 'John',
+        'last_name': 'Smith',
         'role': 'teacher',
         'school': school
     }

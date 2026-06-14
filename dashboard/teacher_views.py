@@ -5,7 +5,7 @@ from django.db.models import Count, Q, Avg
 from SchoolNowMgt.models import (
     StaffProfile, Timetable, Student, ClassGrade,
     StudentAttendance, RetentionAlert, Grade,
-    TeacherTask, ActivityLog
+    TeacherTask, ActivityLog, TeacherAttendance
 )
 from datetime import timedelta
 
@@ -32,6 +32,24 @@ def teacher_dashboard(request):
     # Get today's date
     today = timezone.localdate()
     day_of_week = today.strftime('%A').lower()
+    
+    # ===== TEACHER ATTENDANCE / SHIFT STATUS =====
+    # Get or create today's attendance record for the teacher
+    teacher_attendance_today, created = TeacherAttendance.objects.get_or_create(
+        staff=staff,
+        date=today,
+        defaults={'status': 'absent'}
+    )
+    
+    is_on_duty = teacher_attendance_today.status == 'present'
+    shift_start_time = timezone.now()  # Current time, will be replaced with time_in if available
+    if teacher_attendance_today.time_in:
+        # Combine date with time_in to create a datetime
+        shift_start_time = timezone.make_aware(
+            timezone.datetime.combine(today, teacher_attendance_today.time_in)
+        )
+    
+    current_time = timezone.now()
     
     # ===== TODAY'S SCHEDULE / CURRENT LESSON =====
     todays_classes = Timetable.objects.filter(
@@ -93,18 +111,26 @@ def teacher_dashboard(request):
     # Build context
     context = {
         'today': today,
+        'now': current_time,
+        'is_on_duty': is_on_duty,
+        'shift_start_time': shift_start_time,
+        'current_time': current_time,
+        'teacher_attendance_today': teacher_attendance_today,
         'current_lesson': current_lesson,
         'tasks': tasks,
         'total_tasks_pending': total_tasks_pending,
         'activities': activities,
         'my_classes': my_classes,
         'my_students': my_students,
+        'students': my_students,
+        'my_student_count': len(my_students),
         'performance_metric': performance_metric,
         'performance_stats': performance_stats,
         'todays_classes': todays_classes,
+        'teacher_name': request.user.get_full_name(),
     }
     
-    return render(request, 'SchoolNowMgt/teacher_dashboard.html', context)
+    return render(request, 'teacher/dashboard_modern.html', context)
 
 
 # ===== API ENDPOINTS FOR AJAX OPERATIONS =====

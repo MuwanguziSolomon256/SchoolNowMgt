@@ -12,6 +12,17 @@ from dashboard.teacher_views import (
     student_search, quick_grade_entry, send_circular,
     teacher_students_list, teacher_lessons_list
 )
+from dashboard.teacher_sub_views import (
+    # Grades sub-dashboard
+    grades_dashboard, grade_entry_interface, grade_statistics,
+    grade_export, grade_history,
+    # Communication sub-dashboard
+    message_inbox, message_detail, send_message_ajax, mark_message_read_ajax,
+    # Attendances sub-dashboard
+    attendance_marking, attendance_history, mark_attendance_ajax,
+    # Gradebook reference
+    gradebook_reference, grade_lookup_ajax,
+)
 from curriculum.views import enter_grade_uganda
 from curriculum.international_views import enter_grade_international
 
@@ -28,11 +39,31 @@ urlpatterns = [
     path('students/',    teacher_students_list, name='students'),
     path('lessons/',     teacher_lessons_list,  name='lessons'),
     
-    path('grades/uganda/',
-         enter_grade_uganda,     name='enter_grade_uganda'),
-    path('grades/international/',
-         enter_grade_international,
-         name='enter_grade_international'),
+    # ===== GRADES SUB-DASHBOARD =====
+    path('grades/',                 grades_dashboard,        name='grades_dashboard'),
+    path('grades/entry/',           grade_entry_interface,   name='grade_entry'),
+    path('grades/statistics/',      grade_statistics,        name='grade_statistics'),
+    path('grades/export/',          grade_export,            name='grade_export'),
+    path('grades/history/',         grade_history,           name='grade_history'),
+    
+    # ===== COMMUNICATION SUB-DASHBOARD =====
+    path('communication/',                message_inbox,              name='message_inbox'),
+    path('communication/message/<int:message_id>/',  message_detail,     name='message_detail'),
+    path('api/communication/send/',       send_message_ajax,          name='send_message_ajax'),
+    path('api/communication/message/<int:message_id>/read/',  mark_message_read_ajax,  name='mark_message_read'),
+    
+    # ===== ATTENDANCES SUB-DASHBOARD =====
+    path('attendances/',            attendance_marking,       name='attendance_marking'),
+    path('attendances/history/',    attendance_history,       name='attendance_history'),
+    path('api/attendances/mark/',   mark_attendance_ajax,     name='mark_attendance_ajax'),
+    
+    # ===== GRADEBOOK REFERENCE =====
+    path('gradebook/',              gradebook_reference,      name='gradebook_reference'),
+    path('api/gradebook/lookup/',   grade_lookup_ajax,        name='grade_lookup_ajax'),
+    
+    # ===== LEGACY GRADE ENTRY (Keeping for backward compatibility) =====
+    path('grades/uganda/',          enter_grade_uganda,       name='enter_grade_uganda'),
+    path('grades/international/',   enter_grade_international, name='enter_grade_international'),
 
     # API Endpoints
     path('api/tasks/<int:task_id>/toggle/', toggle_task_status, name='toggle_task'),

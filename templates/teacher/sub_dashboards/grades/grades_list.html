@@ -1,0 +1,91 @@
+{% extends "teacher/sub_dashboards/base.html" %}
+
+{% block title %}Grades Dashboard - Teacher Portal{% endblock %}
+
+{% block sub_content %}
+<div class="grades-dashboard">
+    <h1 class="page-title">Grades Dashboard</h1>
+    
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+        <a href="{% url 'teacher:grade_entry' %}" class="btn btn-primary">
+            <span>✎</span> Enter Grades
+        </a>
+        <a href="{% url 'teacher:grade_statistics' %}" class="btn btn-secondary">
+            <span>📊</span> Statistics
+        </a>
+        <a href="{% url 'teacher:grade_export' %}" class="btn btn-secondary">
+            <span>⬇️</span> Export
+        </a>
+        <a href="{% url 'teacher:grade_history' %}" class="btn btn-secondary">
+            <span>📈</span> History
+        </a>
+    </div>
+    
+    <!-- Class Selector -->
+    <div class="class-selector">
+        <form method="get" class="filter-form">
+            <label for="class_id">Select Class:</label>
+            <select name="class_id" id="class_id" class="form-select" onchange="this.form.submit()">
+                <option value="">-- Choose a class --</option>
+                {% for class in classes %}
+                    <option value="{{ class.id }}" {% if selected_class.id == class.id %}selected{% endif %}>
+                        {{ class.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </form>
+    </div>
+    
+    <!-- Grades Table -->
+    {% if selected_class %}
+    <div class="grades-table-container">
+        <h2 class="section-title">Current Grades: {{ selected_class.name }}</h2>
+        
+        {% if grades_by_subject %}
+        <div class="table-responsive">
+            {% for subject, grades in grades_by_subject.items %}
+                <div class="subject-section" style="margin-bottom: 32px;">
+                    <h3 class="section-title">{{ subject.name }}</h3>
+                    
+                    {% if grades %}
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Student</th>
+                                <th>Score</th>
+                                <th>Grade</th>
+                                <th>Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for grade in grades %}
+                            <tr>
+                                <td>{{ grade.student.get_full_name }}</td>
+                                <td>{{ grade.score }}</td>
+                                <td style="font-weight: 600; color: #080b3a;">{{ grade.get_grade_display }}</td>
+                                <td>{{ grade.remarks|default:"—" }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <div class="no-data">No grades entered yet for this subject.</div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="no-data">
+            <p>No grades found for {{ selected_class.name }}.</p>
+            <a href="{% url 'teacher:grade_entry' %}" class="btn btn-primary" style="margin-top: 16px;">Enter Grades Now</a>
+        </div>
+        {% endif %}
+    </div>
+    {% else %}
+    <div class="select-class-message">
+        <p>Select a class above to view grades.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

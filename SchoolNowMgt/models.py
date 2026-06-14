@@ -431,6 +431,48 @@ class StaffAttendance(models.Model):
         ordering = ['-date']
 
 
+class TeacherAttendance(models.Model):
+    """
+    Tracks daily attendance and time tracking for teachers.
+    
+    Similar to StaffAttendance, this tracks when teachers clock in/out,
+    their daily status (present, absent, late), and any remarks.
+    """
+    
+    STATUS_CHOICES = [
+        ('present', 'Present'),
+        ('absent', 'Absent'),
+        ('late', 'Late'),
+    ]
+    
+    staff = models.ForeignKey(
+        StaffProfile,
+        on_delete=models.CASCADE,
+        related_name='teacher_attendance_records',
+        limit_choices_to={'user__role': 'teacher'}
+    )
+    date = models.DateField(db_index=True)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES)
+    time_in = models.TimeField(null=True, blank=True)
+    time_out = models.TimeField(null=True, blank=True)
+    reason = models.TextField(blank=True)
+    marked_by = models.ForeignKey(
+        CustomUser,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='teacher_attendance_marked'
+    )
+    synced = models.BooleanField(default=True, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"{self.staff} — {self.date} — {self.status}"
+    
+    class Meta:
+        unique_together = ('staff', 'date')
+        ordering = ['-date']
+
+
 class StaffBill(models.Model):
     """
     Tracks financial information for staff members including salary, deductions, and outstanding balance.
@@ -972,6 +1014,8 @@ class Message(models.Model):
     SENDER_TYPE_CHOICES = [
         ('admin', 'Admin/Staff'),
         ('parent', 'Parent'),
+        ('support_staff', 'Support Staff'),
+        ('teacher', 'Teacher'),
     ]
     
     RECIPIENT_TYPE_CHOICES = [
@@ -980,7 +1024,11 @@ class Message(models.Model):
         ('all_staff_combined', 'All Teachers & Support Staff'),
         ('all_parents', 'All Parents'),
         ('class_specific', 'Parents of Specific Class'),
+        ('class_announcement', 'Class Announcement (Parents)'),
+        ('individual_parent', 'Individual Parent'),
+        ('specific_teacher', 'Specific Teacher'),
         ('individual', 'Individual User'),
+        ('admin', 'School Admin'),
     ]
     
     sender = models.ForeignKey(
@@ -990,10 +1038,10 @@ class Message(models.Model):
         related_name='messages_sent'
     )
     sender_type = models.CharField(
-        max_length=10,
+        max_length=15,
         choices=SENDER_TYPE_CHOICES,
         default='admin',
-        help_text="Whether message was sent by admin/staff or parent"
+        help_text="Whether message was sent by admin/staff, parent, support staff, or teacher"
     )
     school = models.ForeignKey(
         School,

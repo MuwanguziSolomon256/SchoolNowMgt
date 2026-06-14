@@ -1,0 +1,359 @@
+{% extends "teacher/sub_dashboards/base.html" %}
+
+{% block title %}Mark Attendance - Teacher Portal{% endblock %}
+
+{% block sub_content %}
+<div class="attendance-marking">
+    <h1 class="page-title">Mark Attendance</h1>
+    
+    <div class="class-selector">
+        <form method="get" class="filter-form">
+            <label for="class_id">Select Class:</label>
+            <select name="class_id" id="class_id" class="form-select" onchange="this.form.submit()">
+                <option value="">-- Choose a class --</option>
+                {% for class in classes %}
+                    <option value="{{ class.id }}" {% if selected_class.id == class.id %}selected{% endif %}>
+                        {{ class.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </form>
+    </div>
+    
+    {% if selected_class %}
+    <div class="attendance-form-container card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+            <h2 class="section-title" style="margin-bottom: 0;">{{ selected_class.name }} - {{ today|date:"M d, Y" }}</h2>
+            {% if students_marked %}
+            <span style="background-color: #feb700; color: #6b4b00; padding: 8px 16px; border-radius: 12px; font-weight: 600; font-size: 13px;">
+                ✓ Attendance marked ({{ students_marked|length }} records)
+            </span>
+            {% endif %}
+        </div>
+        
+        <form id="attendanceForm" method="post" class="attendance-table-form">
+            {% csrf_token %}
+            
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Student Name</th>
+                            <th style="text-align: center;">Present</th>
+                            <th style="text-align: center;">Absent</th>
+                            <th style="text-align: center;">Late</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for student in students %}
+                        <tr class="student-row">
+                            <td class="student-name">{{ student.full_name }}</td>
+                            <td class="status-cell">
+                                <input type="radio" name="student_{{ student.id }}" value="present" class="attendance-radio" checked>
+                            </td>
+                            <td class="status-cell">
+                                <input type="radio" name="student_{{ student.id }}" value="absent" class="attendance-radio">
+                            </td>
+                            <td class="status-cell">
+                                <input type="radio" name="student_{{ student.id }}" value="late" class="attendance-radio">
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary" onclick="submitAttendance(event)">
+                    <span class="btn-icon">✓</span> Save Attendance
+                </button>
+                <a href="{% url 'teacher:dashboard' %}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+    {% else %}
+    <div class="select-class-message">
+        <p>Select a class above to mark attendance.</p>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .attendance-marking {
+        max-width: 1000px;
+    }
+    
+    .page-title {
+        font-size: 1.8rem;
+        margin-bottom: 1.5rem;
+        color: #333;
+        font-weight: 600;
+    }
+    
+    .class-selector {
+        background: #f5f5f5;
+        padding: 15px;
+        border-radius: 6px;
+    }
+    
+    .filter-form {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+    
+    .filter-form label {
+        font-weight: 600;
+    }
+    
+    .form-select {
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        min-width: 250px;
+    }
+    
+    .attendance-form-container {
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .form-header {
+        background: #f9f9f9;
+        padding: 15px 20px;
+        border-bottom: 1px solid #e0e0e0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .form-header h2 {
+        margin: 0;
+        color: #333;
+        font-size: 1.1rem;
+    }
+    
+    .attendance-status {
+        background: #d1fae5;
+        color: #065f46;
+        padding: 6px 12px;
+        border-radius: 4px;
+        font-size: 0.9rem;
+    }
+    
+    .attendance-table-form {
+        padding: 20px;
+    }
+    
+    .table-responsive {
+        overflow-x: auto;
+        margin-bottom: 20px;
+    }
+    
+    .attendance-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+    }
+    
+    .attendance-table thead {
+        background: #f5f5f5;
+        border-bottom: 2px solid #e0e0e0;
+    }
+    
+    .attendance-table th {
+        padding: 12px 15px;
+        text-align: left;
+        font-weight: 600;
+        color: #333;
+    }
+    
+    .status-header {
+        text-align: center;
+    }
+    
+    .attendance-table td {
+        padding: 12px 15px;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .attendance-table tbody tr:hover {
+        background: #f9f9f9;
+    }
+    
+    .student-name {
+        font-weight: 500;
+        color: #333;
+    }
+    
+    .status-cell {
+        text-align: center;
+    }
+    
+    .attendance-radio {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+    }
+    
+    .form-actions {
+        display: flex;
+        gap: 10px;
+        padding: 20px;
+        background: #f9f9f9;
+        border-top: 1px solid #e0e0e0;
+    }
+    
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        text-decoration: none;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-primary {
+        background: #0066cc;
+        color: white;
+        flex: 1;
+    }
+    
+    .btn-primary:hover {
+        background: #0052a3;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 102, 204, 0.3);
+    }
+    
+    .btn-secondary {
+        background: #e8e8e8;
+        color: #333;
+        flex: 1;
+    }
+    
+    .btn-secondary:hover {
+        background: #d4d4d4;
+    }
+    
+    .select-class-message {
+        text-align: center;
+        padding: 40px;
+        background: #f9f9f9;
+        border-radius: 6px;
+        color: #666;
+    }
+    
+    @media (max-width: 768px) {
+        .filter-form {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .form-select {
+            width: 100%;
+            min-width: auto;
+        }
+        
+        .form-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        
+        .attendance-table {
+            font-size: 0.9rem;
+        }
+        
+        .attendance-table th, .attendance-table td {
+            padding: 8px 10px;
+        }
+        
+        .form-actions {
+            flex-direction: column;
+        }
+        
+        .btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+
+<script>
+    function submitAttendance(event) {
+        event.preventDefault();
+        
+        // Get class ID
+        const classSelect = document.querySelector('select[name="class_id"]');
+        const classId = classSelect ? classSelect.value : null;
+        
+        if (!classId) {
+            alert('Please select a class first.');
+            return;
+        }
+        
+        // Collect attendance data from form
+        const form = document.getElementById('attendanceForm');
+        const formData = new FormData(form);
+        const attendanceData = {};
+        
+        // Parse radio button selections
+        const rows = document.querySelectorAll('.student-row');
+        rows.forEach(row => {
+            const nameCell = row.querySelector('.student-name');
+            const studentNameMatch = nameCell.textContent.trim();
+            
+            // Find the selected radio button in this row
+            const selectedRadio = row.querySelector('input[type="radio"]:checked');
+            if (selectedRadio) {
+                // Extract student ID from radio name (format: student_XX)
+                const radioName = selectedRadio.name; // e.g., "student_5"
+                const studentId = radioName.replace('student_', '');
+                attendanceData[studentId] = selectedRadio.value;
+            }
+        });
+        
+        // Prepare request payload
+        const payload = {
+            class_id: parseInt(classId),
+            attendance_data: attendanceData,
+            is_online: navigator.onLine  // Detect if browser is online
+        };
+        
+        // Get CSRF token
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        
+        // Send AJAX request
+        fetch('{% url "teacher:mark_attendance_ajax" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify(payload)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const message = `✓ Attendance saved successfully!\n` +
+                    `Created: ${data.data.created_count}, Updated: ${data.data.updated_count}`;
+                alert(message);
+                // Reload page to show updated state
+                setTimeout(() => location.reload(), 500);
+            } else {
+                alert(`Error: ${data.error}`);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to save attendance. Please try again.');
+        });
+    }
+</script>
+{% endblock %}

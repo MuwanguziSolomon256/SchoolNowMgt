@@ -1,0 +1,341 @@
+{% extends "teacher/sub_dashboards/base.html" %}
+
+{% block title %}Grade Statistics - Teacher Portal{% endblock %}
+
+{% block sub_content %}
+<div class="grade-statistics">
+    <h1 class="page-title">Grade Statistics & Analytics</h1>
+    
+    <div class="class-selector mb-4">
+        <form method="get" class="filter-form">
+            <label for="class_id">Select Class:</label>
+            <select name="class_id" id="class_id" class="form-select" onchange="this.form.submit()">
+                <option value="">-- Choose a class --</option>
+                {% for class in classes %}
+                    <option value="{{ class.id }}" {% if selected_class.id == class.id %}selected{% endif %}>
+                        {{ class.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </form>
+    </div>
+    
+    {% if selected_class %}
+    <div class="stats-content">
+        {% if class_stats %}
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Class Average</h3>
+                <div class="stat-value">{{ class_stats.average|floatformat:1 }}</div>
+                <p class="stat-description">Out of 100</p>
+            </div>
+            
+            <div class="stat-card">
+                <h3>Highest Score</h3>
+                <div class="stat-value">{{ class_stats.highest|floatformat:1 }}</div>
+                <p class="stat-description">Best performing student</p>
+            </div>
+            
+            <div class="stat-card">
+                <h3>Lowest Score</h3>
+                <div class="stat-value">{{ class_stats.lowest|floatformat:1 }}</div>
+                <p class="stat-description">Lowest performing student</p>
+            </div>
+            
+            <div class="stat-card">
+                <h3>Total Records</h3>
+                <div class="stat-value">{{ class_stats.total_records }}</div>
+                <p class="stat-description">Grades entered this term</p>
+            </div>
+        </div>
+        
+        <!-- Grade Distribution Chart -->
+        {% if grade_distribution %}
+        <div class="charts-container">
+            <div class="chart-section">
+                <h2>Grade Distribution</h2>
+                <canvas id="distributionChart" height="300"></canvas>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Subject Statistics Table -->
+        {% if subject_stats %}
+        <div class="subject-stats">
+            <h2>Subject Performance</h2>
+            <table class="stats-table">
+                <thead>
+                    <tr>
+                        <th>Subject</th>
+                        <th>Average Score</th>
+                        <th>Records</th>
+                        <th>Grade</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for subject in subject_stats %}
+                    <tr>
+                        <td>{{ subject.name }}</td>
+                        <td class="score-cell">{{ subject.average|floatformat:1 }}</td>
+                        <td class="count-cell">{{ subject.count }}</td>
+                        <td class="grade-cell">
+                            {% if subject.average >= 75 %}
+                                <span class="grade-badge grade-a">A</span>
+                            {% elif subject.average >= 65 %}
+                                <span class="grade-badge grade-b">B</span>
+                            {% elif subject.average >= 50 %}
+                                <span class="grade-badge grade-c">C</span>
+                            {% elif subject.average >= 40 %}
+                                <span class="grade-badge grade-d">D</span>
+                            {% else %}
+                                <span class="grade-badge grade-e">E</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+        {% else %}
+        <div class="no-data-message">
+            <p>No grades found for {{ selected_class.name }} this term.</p>
+            <a href="{% url 'teacher:grade_entry' %}" class="btn btn-primary">Enter Grades Now</a>
+        </div>
+        {% endif %}
+    </div>
+    {% else %}
+    <div class="select-class-message">
+        <p>Select a class above to view statistics.</p>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .grade-statistics {
+        max-width: 1200px;
+    }
+    
+    .page-title {
+        font-size: 1.8rem;
+        margin-bottom: 1.5rem;
+        color: #333;
+        font-weight: 600;
+    }
+    
+    .class-selector {
+        background: #f5f5f5;
+        padding: 15px;
+        border-radius: 6px;
+        margin-bottom: 20px;
+    }
+    
+    .filter-form {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+    
+    .filter-form label {
+        font-weight: 600;
+    }
+    
+    .form-select {
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        min-width: 250px;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 15px;
+        margin-bottom: 30px;
+    }
+    
+    .stat-card {
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 20px;
+        text-align: center;
+    }
+    
+    .stat-card h3 {
+        color: #666;
+        font-size: 0.95rem;
+        margin-bottom: 10px;
+        text-transform: uppercase;
+    }
+    
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 600;
+        color: #0066cc;
+        margin: 10px 0;
+    }
+    
+    .stat-description {
+        color: #999;
+        font-size: 0.85rem;
+        margin: 10px 0 0 0;
+    }
+    
+    .charts-container {
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 25px;
+        margin-bottom: 30px;
+    }
+    
+    .chart-section {
+        margin-bottom: 30px;
+    }
+    
+    .chart-section h2 {
+        font-size: 1.1rem;
+        margin-bottom: 15px;
+        color: #333;
+    }
+    
+    .subject-stats {
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 25px;
+    }
+    
+    .subject-stats h2 {
+        font-size: 1.1rem;
+        margin-bottom: 15px;
+        color: #333;
+    }
+    
+    .stats-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    .stats-table thead {
+        background: #f5f5f5;
+        border-bottom: 2px solid #ddd;
+    }
+    
+    .stats-table th {
+        padding: 12px 15px;
+        text-align: left;
+        font-weight: 600;
+        color: #333;
+    }
+    
+    .stats-table td {
+        padding: 12px 15px;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .stats-table tbody tr:hover {
+        background: #f9f9f9;
+    }
+    
+    .score-cell, .count-cell, .grade-cell {
+        text-align: center;
+    }
+    
+    .grade-badge {
+        display: inline-block;
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        color: white;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .grade-a { background: #10b981; }
+    .grade-b { background: #3b82f6; }
+    .grade-c { background: #f59e0b; }
+    .grade-d { background: #f97316; }
+    .grade-e { background: #ef4444; }
+    
+    .no-data-message, .select-class-message {
+        text-align: center;
+        padding: 40px;
+        background: #f9f9f9;
+        border-radius: 6px;
+        color: #666;
+    }
+    
+    .btn {
+        display: inline-block;
+        padding: 10px 20px;
+        background: #0066cc;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        text-decoration: none;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        margin-top: 15px;
+    }
+    
+    .btn:hover {
+        background: #0052a3;
+    }
+    
+    @media (max-width: 768px) {
+        .filter-form {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .form-select {
+            width: 100%;
+            min-width: auto;
+        }
+        
+        .stats-table {
+            font-size: 0.9rem;
+        }
+        
+        .stats-table th, .stats-table td {
+            padding: 8px 10px;
+        }
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Initialize grade distribution chart if data exists
+    {% if grade_distribution %}
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('distributionChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: {{ grade_distribution.labels|safe }},
+                datasets: [{
+                    data: {{ grade_distribution.data|safe }},
+                    backgroundColor: {{ grade_distribution.colors|safe }},
+                    borderColor: 'white',
+                    borderWidth: 2,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    }
+                }
+            }
+        });
+    });
+    {% endif %}
+</script>
+{% endblock %}

@@ -18,7 +18,7 @@ class TeacherProfileForm(forms.ModelForm):
     
     class Meta:
         model = CustomUser
-        fields = ['first_name', 'last_name', 'phone', 'profile_picture']
+        fields = ['first_name', 'last_name', 'email', 'phone', 'profile_picture']
     
     def clean_profile_picture(self):
         """Validate profile picture file size (max 2 MB)."""

@@ -17,11 +17,14 @@
 <!-- Main Container -->
 <div class="max-w-7xl mx-auto px-container-padding py-section-margin">
 
+  <!-- Greeting Section -->
+  {% include "includes/greeting_section.html" %}
+
   <!-- Header Section -->
-  <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-section-margin">
+  <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-section-margin mt-section-margin">
     <div>
       <h2 class="font-display-lg text-display-lg text-primary">School Overview</h2>
-      <p class="font-body-lg text-body-lg text-on-surface-variant">Welcome back. Here is what's happening at {{ school.name }} today.</p>
+      <p class="font-body-lg text-body-lg text-on-surface-variant">Here is what's happening at {{ school.name }} today.</p>
     </div>
     <div class="flex gap-3">
     </div>

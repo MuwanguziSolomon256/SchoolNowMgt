@@ -1,0 +1,292 @@
+{% extends "teacher/sub_dashboards/base.html" %}
+
+{% block title %}Export Grades - Teacher Portal{% endblock %}
+
+{% block sub_content %}
+<div class="grade-export">
+    <h1 class="page-title">Export Grades</h1>
+    
+    <form method="post" class="export-form" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label for="class_id">Class:</label>
+            <select name="class_id" id="class_id" class="form-select" required>
+                <option value="">-- Select a class --</option>
+                {% for class in classes %}
+                    <option value="{{ class.id }}">{{ class.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="subject_id">Subject (Optional - leave blank for all):</label>
+            <select name="subject_id" id="subject_id" class="form-select">
+                <option value="">-- All Subjects --</option>
+                {% for subject in subjects %}
+                    <option value="{{ subject.id }}">{{ subject.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="term">Term:</label>
+                <select name="term" id="term" class="form-select" required>
+                    <option value="">-- Select term --</option>
+                    <option value="1">Term 1</option>
+                    <option value="2">Term 2</option>
+                    <option value="3">Term 3</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="year">Year:</label>
+                <input type="number" name="year" id="year" class="form-input" value="{{ current_year }}" required>
+            </div>
+        </div>
+        
+        <div class="format-section">
+            <h3>Export Format</h3>
+            
+            <div class="format-options">
+                <label class="format-option">
+                    <input type="radio" name="format" value="csv" checked>
+                    <div class="format-card">
+                        <h4>📊 CSV (Spreadsheet)</h4>
+                        <p>Export as comma-separated values for use in Excel or Google Sheets. Recommended for data analysis and bulk editing.</p>
+                    </div>
+                </label>
+                
+                <label class="format-option">
+                    <input type="radio" name="format" value="pdf">
+                    <div class="format-card">
+                        <h4>📄 PDF (Report)</h4>
+                        <p>Export as a formatted PDF report for printing. Includes grade distribution and statistics.</p>
+                    </div>
+                </label>
+            </div>
+        </div>
+        
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                <span class="btn-icon">⬇️</span> Export
+            </button>
+            <a href="{% url 'teacher:grades_dashboard' %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+    
+    <div class="info-box">
+        <h3>Export Information</h3>
+        <ul>
+            <li><strong>CSV:</strong> Compatible with Microsoft Excel, Google Sheets, and other spreadsheet applications</li>
+            <li><strong>PDF:</strong> Ready to print or share via email. Includes summary statistics.</li>
+            <li>Only grades for the selected class and term will be exported</li>
+            <li>All data is filtered to show only your classes</li>
+        </ul>
+    </div>
+</div>
+
+<style>
+    .grade-export {
+        max-width: 700px;
+    }
+    
+    .page-title {
+        font-size: 1.8rem;
+        margin-bottom: 2rem;
+        color: #333;
+        font-weight: 600;
+    }
+    
+    .export-form {
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 25px;
+        margin-bottom: 30px;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-group label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: #333;
+    }
+    
+    .form-select, .form-input {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 0.95rem;
+    }
+    
+    .form-select:focus, .form-input:focus {
+        outline: none;
+        border-color: #0066cc;
+        box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+    }
+    
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+    
+    .format-section {
+        margin-top: 30px;
+        padding-top: 25px;
+        border-top: 2px solid #f0f0f0;
+    }
+    
+    .format-section h3 {
+        font-size: 1.1rem;
+        margin: 0 0 15px 0;
+        color: #333;
+    }
+    
+    .format-options {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .format-option {
+        display: block;
+        cursor: pointer;
+    }
+    
+    .format-option input {
+        display: none;
+    }
+    
+    .format-card {
+        border: 2px solid #e0e0e0;
+        border-radius: 6px;
+        padding: 15px;
+        transition: all 0.3s ease;
+        background: white;
+    }
+    
+    .format-option input:checked + .format-card {
+        border-color: #0066cc;
+        background: #f0f4ff;
+        box-shadow: 0 4px 12px rgba(0, 102, 204, 0.15);
+    }
+    
+    .format-card h4 {
+        margin: 0 0 8px 0;
+        color: #333;
+        font-size: 0.95rem;
+    }
+    
+    .format-card p {
+        margin: 0;
+        color: #666;
+        font-size: 0.85rem;
+    }
+    
+    .form-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 25px;
+    }
+    
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+    
+    .btn-primary {
+        background: #0066cc;
+        color: white;
+        flex: 1;
+    }
+    
+    .btn-primary:hover {
+        background: #0052a3;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 102, 204, 0.3);
+    }
+    
+    .btn-secondary {
+        background: #e8e8e8;
+        color: #333;
+        flex: 1;
+    }
+    
+    .btn-secondary:hover {
+        background: #d4d4d4;
+    }
+    
+    .info-box {
+        background: #f0f4ff;
+        border-left: 4px solid #0066cc;
+        border-radius: 6px;
+        padding: 20px;
+    }
+    
+    .info-box h3 {
+        margin: 0 0 12px 0;
+        color: #333;
+        font-size: 0.95rem;
+        text-transform: uppercase;
+        font-weight: 600;
+    }
+    
+    .info-box ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .info-box li {
+        padding: 6px 0;
+        color: #555;
+        font-size: 0.9rem;
+        border-bottom: 1px solid rgba(0, 102, 204, 0.1);
+    }
+    
+    .info-box li:last-child {
+        border-bottom: none;
+    }
+    
+    @media (max-width: 768px) {
+        .export-form {
+            padding: 20px;
+        }
+        
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+        
+        .format-options {
+            grid-template-columns: 1fr;
+        }
+        
+        .form-actions {
+            flex-direction: column;
+        }
+        
+        .btn {
+            flex: auto;
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}

@@ -1,261 +1,320 @@
-{% extends "teacher/base.html" %}
+{% load static %}
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Edit Profile - EduVision</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Hanken+Grotesk:wght@600;700;900&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "error-container": "#ffdad6",
+                        "surface-dim": "#d9dadd",
+                        "on-primary-fixed": "#121643",
+                        "on-primary-container": "#868abd",
+                        "surface-container-highest": "#e1e2e5",
+                        "tertiary": "#2b0400",
+                        "outline-variant": "#c7c5d0",
+                        "primary-fixed-dim": "#bfc2fa",
+                        "on-secondary": "#ffffff",
+                        "on-primary-fixed-variant": "#3f4371",
+                        "secondary-container": "#feb700",
+                        "inverse-primary": "#bfc2fa",
+                        "secondary-fixed-dim": "#ffba20",
+                        "on-error": "#ffffff",
+                        "on-background": "#191c1e",
+                        "inverse-on-surface": "#f0f1f4",
+                        "surface-bright": "#f8f9fc",
+                        "surface": "#f8f9fc",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface-variant": "#46464f",
+                        "on-secondary-fixed-variant": "#5e4200",
+                        "outline": "#777680",
+                        "primary-container": "#1e224f",
+                        "error": "#ba1a1a",
+                        "background": "#f8f9fc",
+                        "surface-container-low": "#f2f3f6",
+                        "on-secondary-fixed": "#271900",
+                        "tertiary-fixed-dim": "#ffb4a2",
+                        "on-tertiary-fixed-variant": "#881f01",
+                        "on-primary": "#ffffff",
+                        "secondary-fixed": "#ffdea8",
+                        "surface-tint": "#565a8b",
+                        "on-surface": "#191c1e",
+                        "on-tertiary-container": "#e96442",
+                        "surface-container": "#edeef1",
+                        "on-secondary-container": "#6b4b00",
+                        "primary": "#080b3a",
+                        "tertiary-container": "#500d00",
+                        "secondary": "#7c5800",
+                        "on-error-container": "#93000a",
+                        "surface-variant": "#e1e2e5",
+                        "on-tertiary": "#ffffff",
+                        "inverse-surface": "#2e3133",
+                        "surface-container-high": "#e7e8eb",
+                        "on-tertiary-fixed": "#3c0800",
+                        "primary-fixed": "#e0e0ff",
+                        "tertiary-fixed": "#ffdbd2"
+                    },
+                    "spacing": {
+                        "gutter": "16px",
+                        "card-gap": "12px",
+                        "base": "8px",
+                        "section-margin": "32px",
+                        "container-padding": "20px"
+                    },
+                    "fontFamily": {
+                        "label-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-md": ["Hanken Grotesk"],
+                        "headline-lg": ["Hanken Grotesk"],
+                        "display-lg": ["Hanken Grotesk"],
+                        "body-md": ["Inter"],
+                    },
+                    "fontSize": {
+                        "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-md": ["22px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "headline-lg": ["28px", {"lineHeight": "36px", "fontWeight": "600"}],
+                        "display-lg": ["36px", {"lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 8px 32px 0 rgba(30, 34, 79, 0.08);
+        }
+        .sidebar-gradient {
+            background: linear-gradient(180deg, #080b3a 0%, #1e224f 100%);
+        }
+        body {
+            background-color: #f8f9fc;
+            background-image: radial-gradient(at 0% 0%, rgba(254, 183, 0, 0.05) 0px, transparent 50%),
+                              radial-gradient(at 100% 100%, rgba(8, 11, 58, 0.03) 0px, transparent 50%);
+        }
+    </style>
+</head>
+<body class="font-body-md text-on-surface min-h-screen">
 
-{% block title %}Teacher Profile{% endblock %}
-
-{% block content %}
-<div class="profile-container" style="max-width: 900px; margin: 0 auto; padding: 20px;">
-  
-  <!-- SECTION 1: Identity Card (Read-Only) -->
-  <section class="identity-card" style="background: #f9f9f9; border: 1px solid #ddd; border-radius: 8px; padding: 30px; margin-bottom: 40px;">
-    
-    <!-- Profile Photo or Initials Placeholder -->
-    <div style="display: flex; align-items: flex-start; gap: 30px; margin-bottom: 30px;">
-      <div class="profile-photo" style="flex-shrink: 0;">
-        {% if request.user.profile_picture %}
-          <img src="{{ request.user.profile_picture.url }}" 
-               alt="Profile" 
-               style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 2px solid #ccc;">
-        {% else %}
-          <div class="initials-placeholder" 
-               style="width: 100px; height: 100px; border-radius: 50%; background: #e0e0e0; display: flex; align-items: center; justify-content: center; font-size: 36px; font-weight: bold; color: #666; border: 2px solid #ccc;">
-            {{ request.user.first_name|first }}{{ request.user.last_name|first }}
-          </div>
-        {% endif %}
-      </div>
-      
-      <!-- Identity Information -->
-      <div class="identity-info" style="flex: 1;">
-        <h1 style="margin: 0 0 10px 0; font-size: 28px; color: #333;">
-          {{ request.user.first_name }} {{ request.user.last_name }}
-        </h1>
-        
-        <div style="margin-bottom: 15px;">
-          <strong>Employee ID:</strong> {{ staff_profile.employee_id }}
+<!-- Top Navigation Bar (matching dashboard) -->
+<nav class="flex items-center justify-between bg-primary text-on-primary px-3 sm:px-6 py-3 sm:py-4 sticky top-0 z-50 shadow-lg gap-2 sm:gap-4">
+    <!-- Logo Section -->
+    <div class="flex items-center flex-shrink-0">
+        <div class="w-8 sm:w-10 h-8 sm:h-10 rounded-lg sm:rounded-xl bg-secondary-container flex items-center justify-center text-primary">
+            <span class="material-symbols-outlined text-lg sm:text-xl" style="font-variation-settings: 'FILL' 1;">school</span>
         </div>
-        
-        <div style="margin-bottom: 15px;">
-          <strong>Position:</strong> {{ staff_profile.position }}
-        </div>
-        
-        <div style="margin-bottom: 15px;">
-          <strong>School:</strong> {{ request.user.school.name }}
-        </div>
-        
-        <div style="margin-bottom: 15px;">
-          <strong>Date Joined:</strong> {{ staff_profile.date_joined|date:"d M Y" }}
-        </div>
-        
-        <div>
-          {% if staff_profile.is_full_time %}
-            <span style="display: inline-block; background: #28a745; color: white; padding: 4px 12px; border-radius: 4px; font-size: 12px; font-weight: bold;">
-              Full time
-            </span>
-          {% else %}
-            <span style="display: inline-block; background: #ffc107; color: #333; padding: 4px 12px; border-radius: 4px; font-size: 12px; font-weight: bold;">
-              Part time
-            </span>
-          {% endif %}
-        </div>
-      </div>
     </div>
-  </section>
-  
-  <!-- Success Message (if present) -->
-  {% if messages %}
-    {% for message in messages %}
-      {% if message.tags == 'success' %}
-        <div class="success-message" style="background: #d4edda; border: 1px solid #c3e6cb; color: #155724; padding: 12px 16px; border-radius: 4px; margin-bottom: 20px;">
-          {{ message }}
-        </div>
-      {% endif %}
-    {% endfor %}
-  {% endif %}
-  
-  <!-- SECTION 2: Edit Profile Form -->
-  <section class="edit-profile" style="background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 30px; margin-bottom: 40px;">
-    <h2 style="margin-top: 0; margin-bottom: 20px; font-size: 20px; color: #333;">
-      Edit your profile
-    </h2>
     
-    <form method="post" enctype="multipart/form-data">
-      {% csrf_token %}
-      
-      <!-- Personal Information (TeacherProfileForm) -->
-      <div style="margin-bottom: 20px;">
-        <label for="{{ profile_form.first_name.id_for_label }}" style="display: block; margin-bottom: 6px; font-weight: bold; color: #333;">
-          First name
-        </label>
-        {{ profile_form.first_name }}
-        {% if profile_form.first_name.errors %}
-          <div style="color: #dc3545; font-size: 12px; margin-top: 4px;">
-            {{ profile_form.first_name.errors.0 }}
-          </div>
-        {% endif %}
-        <style>
-          input[type="text"], input[type="email"], input[type="tel"] {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-family: inherit;
-            box-sizing: border-box;
-          }
-        </style>
-      </div>
-      
-      <div style="margin-bottom: 20px;">
-        <label for="{{ profile_form.last_name.id_for_label }}" style="display: block; margin-bottom: 6px; font-weight: bold; color: #333;">
-          Last name
-        </label>
-        {{ profile_form.last_name }}
-        {% if profile_form.last_name.errors %}
-          <div style="color: #dc3545; font-size: 12px; margin-top: 4px;">
-            {{ profile_form.last_name.errors.0 }}
-          </div>
-        {% endif %}
-      </div>
-      
-      <div style="margin-bottom: 20px;">
-        <label for="{{ profile_form.phone.id_for_label }}" style="display: block; margin-bottom: 6px; font-weight: bold; color: #333;">
-          Phone
-        </label>
-        {{ profile_form.phone }}
-        {% if profile_form.phone.errors %}
-          <div style="color: #dc3545; font-size: 12px; margin-top: 4px;">
-            {{ profile_form.phone.errors.0 }}
-          </div>
-        {% endif %}
-      </div>
-      
-      <div style="margin-bottom: 20px;">
-        <label for="{{ profile_form.profile_picture.id_for_label }}" style="display: block; margin-bottom: 6px; font-weight: bold; color: #333;">
-          Profile photo
-        </label>
-        {{ profile_form.profile_picture }}
-        <div style="font-size: 12px; color: #666; margin-top: 4px;">
-          {{ profile_form.profile_picture.help_text }}
-        </div>
-        {% if profile_form.profile_picture.errors %}
-          <div style="color: #dc3545; font-size: 12px; margin-top: 4px;">
-            {{ profile_form.profile_picture.errors.0 }}
-          </div>
-        {% endif %}
-      </div>
-      
-      <!-- Qualification Information (TeacherQualificationForm) -->
-      <div style="margin-bottom: 20px;">
-        <label for="{{ qualification_form.qualification.id_for_label }}" style="display: block; margin-bottom: 6px; font-weight: bold; color: #333;">
-          Qualification
-        </label>
-        {{ qualification_form.qualification }}
-        {% if qualification_form.qualification.errors %}
-          <div style="color: #dc3545; font-size: 12px; margin-top: 4px;">
-            {{ qualification_form.qualification.errors.0 }}
-          </div>
-        {% endif %}
-        <style>
-          textarea {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-family: inherit;
-            box-sizing: border-box;
-            resize: vertical;
-          }
-        </style>
-      </div>
-      
-      <div style="margin-bottom: 20px;">
-        <label for="{{ qualification_form.position.id_for_label }}" style="display: block; margin-bottom: 6px; font-weight: bold; color: #333;">
-          Position
-        </label>
-        {{ qualification_form.position }}
-        <div style="font-size: 12px; color: #999; margin-top: 4px;">
-          {{ qualification_form.position.help_text }}
-        </div>
-        {% if qualification_form.position.errors %}
-          <div style="color: #dc3545; font-size: 12px; margin-top: 4px;">
-            {{ qualification_form.position.errors.0 }}
-          </div>
-        {% endif %}
-      </div>
-      
-      <!-- Submit Button -->
-      <button type="submit" style="background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; font-size: 16px; font-weight: bold; cursor: pointer;">
-        Save changes
-      </button>
-    </form>
-  </section>
-  
-  <!-- SECTION 3: My Classes (Read-Only) -->
-  <section class="my-classes" style="background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 30px; margin-bottom: 40px;">
-    <h2 style="margin-top: 0; margin-bottom: 20px; font-size: 20px; color: #333;">
-      My classes
-    </h2>
-    
-    {% if my_classes %}
-      <table style="width: 100%; border-collapse: collapse;">
-        <thead>
-          <tr style="border-bottom: 2px solid #ddd; background: #f9f9f9;">
-            <th style="padding: 12px; text-align: left; font-weight: bold;">Class</th>
-            <th style="padding: 12px; text-align: left; font-weight: bold;">Level</th>
-            <th style="padding: 12px; text-align: left; font-weight: bold;">Students</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for class_grade in my_classes %}
-            <tr style="border-bottom: 1px solid #eee;">
-              <td style="padding: 12px;">{{ class_grade.name }}</td>
-              <td style="padding: 12px;">P{{ class_grade.level }}</td>
-              <td style="padding: 12px;">—</td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    {% else %}
-      <p style="color: #666; font-style: italic;">No class assigned yet.</p>
-    {% endif %}
-  </section>
-  
-  <!-- SECTION 4: My Timetable (Read-Only) -->
-  <section class="my-timetable" style="background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 30px;">
-    <h2 style="margin-top: 0; margin-bottom: 20px; font-size: 20px; color: #333;">
-      My timetable
-    </h2>
-    
-    {% if my_timetable %}
-      <table style="width: 100%; border-collapse: collapse;">
-        <thead>
-          <tr style="border-bottom: 2px solid #ddd; background: #f9f9f9;">
-            <th style="padding: 12px; text-align: left; font-weight: bold;">Day</th>
-            <th style="padding: 12px; text-align: left; font-weight: bold;">Time</th>
-            <th style="padding: 12px; text-align: left; font-weight: bold;">Class</th>
-            <th style="padding: 12px; text-align: left; font-weight: bold;">Subject</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% regroup my_timetable by day_of_week as timetable_by_day %}
-          {% for day_group in timetable_by_day %}
-            {% for entry in day_group.list %}
-              <tr style="border-bottom: 1px solid #eee;">
-                {% if forloop.first %}
-                  <td rowspan="{{ day_group.list|length }}" style="padding: 12px; font-weight: bold; vertical-align: top;">
-                    {{ entry.get_day_of_week_display|title }}
-                  </td>
-                {% endif %}
-                <td style="padding: 12px;">{{ entry.start_time|time:"H:i" }} – {{ entry.end_time|time:"H:i" }}</td>
-                <td style="padding: 12px;">{{ entry.class_grade.name }}</td>
-                <td style="padding: 12px;">{{ entry.subject.name }}</td>
-              </tr>
-            {% endfor %}
-          {% endfor %}
-        </tbody>
-      </table>
-    {% else %}
-      <p style="color: #666; font-style: italic;">No timetable assigned yet.</p>
-    {% endif %}
-  </section>
+    <!-- Navigation Links - Hidden on mobile -->
+    <div class="hidden md:flex items-center gap-1 lg:gap-2 flex-1 ml-4">
+        <a class="text-on-primary/70 hover:text-white rounded-lg font-semibold px-2 lg:px-4 py-2 flex items-center gap-2 transition-all text-xs lg:text-label-md" href="{% url 'teacher:dashboard' %}">
+            <span class="material-symbols-outlined text-base lg:text-lg">dashboard</span>
+            <span class="hidden lg:inline">Dashboard</span>
+        </a>
+        <a class="bg-secondary-container text-on-secondary-container rounded-lg font-semibold px-2 lg:px-4 py-2 flex items-center gap-2 transition-all text-xs lg:text-label-md" href="{% url 'teacher:profile' %}">
+            <span class="material-symbols-outlined text-base lg:text-lg">person</span>
+            <span class="hidden lg:inline">Profile</span>
+        </a>
+    </div>
 
-</div>
-{% endblock %}
+    <!-- Mobile Menu Button -->
+    <button class="md:hidden text-on-primary/70 hover:text-white p-2 rounded-lg transition-colors" id="mobile-menu-btn">
+        <span class="material-symbols-outlined">menu</span>
+    </button>
+    
+    <!-- Right Section: Logout -->
+    <div class="flex items-center gap-2 ml-auto flex-shrink-0">
+        <form method="post" action="{% url 'teacher:logout' %}" style="display: inline;">
+            {% csrf_token %}
+            <button type="submit" class="text-on-primary/70 hover:text-error transition-colors flex items-center gap-2 text-xs sm:text-label-md p-1 sm:p-0" onclick="return confirm('Are you sure you want to logout?');">
+                <span class="material-symbols-outlined text-base sm:text-lg">logout</span>
+                <span class="hidden sm:inline">Log out</span>
+            </button>
+        </form>
+    </div>
+</nav>
+
+<!-- Main Content -->
+<main class="min-h-screen pb-12">
+    <!-- Page Header -->
+    <div class="px-4 md:px-container-padding pt-6 md:pt-section-margin pb-4 md:pb-6">
+        <h1 class="font-display-lg text-2xl md:text-4xl text-primary font-black mb-1 md:mb-2">Edit Profile</h1>
+        <p class="text-body-md text-sm md:text-base text-on-surface-variant">Update your personal information and profile picture.</p>
+    </div>
+
+    <!-- Success Message -->
+    <div class="px-4 md:px-container-padding pb-6 md:pb-6">
+        {% if messages %}
+            {% for message in messages %}
+                {% if message.tags == 'success' %}
+                    <div class="glass-card rounded-2xl md:rounded-3xl p-4 md:p-6 border-l-4 border-l-green-500 flex items-start gap-4">
+                        <div class="flex-shrink-0 text-green-500 text-2xl">✓</div>
+                        <div class="flex-1">
+                            <p class="font-headline-md text-sm md:text-base text-on-surface">{{ message }}</p>
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        {% else %}
+            <div class="glass-card rounded-2xl md:rounded-3xl p-4 md:p-6 border-l-4 border-l-green-500 flex items-start gap-4">
+                <div class="flex-shrink-0 text-green-500 text-2xl">✓</div>
+                <div class="flex-1">
+                    <p class="font-headline-md text-sm md:text-base text-on-surface">Welcome My! Your account has been created.</p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Profile Edit Form -->
+    <div class="px-4 md:px-container-padding pb-6 md:pb-section-margin">
+        <div class="glass-card rounded-2xl md:rounded-3xl p-6 md:p-8">
+            <h2 class="font-headline-lg text-lg md:text-2xl text-primary font-bold mb-6 md:mb-8">My Profile</h2>
+
+            <form method="post" enctype="multipart/form-data" class="space-y-6 md:space-y-8">
+                {% csrf_token %}
+                
+                <!-- Profile Picture Section -->
+                <div class="pb-6 md:pb-8 border-b border-surface-variant">
+                    <h3 class="font-headline-md text-base md:text-lg text-on-surface font-bold mb-4 md:mb-6">Change Profile Picture</h3>
+                    
+                    <div class="flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-8">
+                        <!-- Picture Preview -->
+                        <div class="flex-shrink-0">
+                            {% if request.user.profile_picture %}
+                                <img src="{{ request.user.profile_picture.url }}" 
+                                     alt="Profile" 
+                                     class="w-24 md:w-28 h-24 md:h-28 rounded-2xl md:rounded-3xl object-cover border-4 border-secondary-container shadow-lg">
+                            {% else %}
+                                <div class="w-24 md:w-28 h-24 md:h-28 rounded-2xl md:rounded-3xl bg-gradient-to-br from-secondary-container/20 to-secondary-container/10 flex items-center justify-center font-headline-lg text-4xl md:text-5xl font-bold text-secondary-container border-4 border-secondary-container shadow-lg">
+                                    {{ request.user.first_name|first|upper }}{{ request.user.last_name|first|upper }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Upload Area -->
+                        <div class="flex-1 w-full md:w-auto">
+                            <div class="flex gap-3 items-center mb-3">
+                                <button type="button" id="upload-btn" class="px-4 md:px-6 py-2 md:py-3 bg-primary text-on-primary rounded-full font-bold hover:bg-primary/90 transition-all text-xs md:text-sm flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-lg">upload_file</span>
+                                    <span>Choose File</span>
+                                </button>
+                                <span id="file-name" class="text-outline text-xs md:text-sm">No file chosen</span>
+                            </div>
+                            <p class="text-on-surface-variant text-xs md:text-sm mb-3">
+                                Accepted formats: JPG, JPEG, PNG. Max size: 2 MB.
+                            </p>
+                            <!-- Hidden file input -->
+                            <input type="file" name="profile_picture" id="{{ profile_form.profile_picture.id_for_label }}" 
+                                   accept="image/jpeg,image/png" class="hidden">
+                            {% if profile_form.profile_picture.errors %}
+                                <div class="text-error text-xs md:text-sm">
+                                    {{ profile_form.profile_picture.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Fields Grid -->
+                <div class="space-y-6 md:space-y-0 md:grid md:grid-cols-2 md:gap-6">
+                    <!-- First Name -->
+                    <div>
+                        <label class="block font-headline-md text-on-surface text-sm md:text-base mb-2 md:mb-3">
+                            First Name
+                        </label>
+                        <input type="text" name="first_name" value="{{ profile_form.first_name.value }}" 
+                               class="w-full px-4 md:px-5 py-2 md:py-3 rounded-lg md:rounded-xl border border-outline-variant bg-surface-container-lowest text-on-surface placeholder-on-surface-variant focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm md:text-base">
+                        {% if profile_form.first_name.errors %}
+                            <p class="text-error text-xs md:text-sm mt-2">{{ profile_form.first_name.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Last Name -->
+                    <div>
+                        <label class="block font-headline-md text-on-surface text-sm md:text-base mb-2 md:mb-3">
+                            Last Name
+                        </label>
+                        <input type="text" name="last_name" value="{{ profile_form.last_name.value }}" 
+                               class="w-full px-4 md:px-5 py-2 md:py-3 rounded-lg md:rounded-xl border border-outline-variant bg-surface-container-lowest text-on-surface placeholder-on-surface-variant focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm md:text-base">
+                        {% if profile_form.last_name.errors %}
+                            <p class="text-error text-xs md:text-sm mt-2">{{ profile_form.last_name.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Email Address -->
+                <div>
+                    <label class="block font-headline-md text-on-surface text-sm md:text-base mb-2 md:mb-3">
+                        Email Address
+                    </label>
+                    <input type="email" name="email" value="{{ profile_form.email.value }}" 
+                           class="w-full px-4 md:px-5 py-2 md:py-3 rounded-lg md:rounded-xl border border-outline-variant bg-surface-container-lowest text-on-surface placeholder-on-surface-variant focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm md:text-base">
+                    {% if profile_form.email.errors %}
+                        <p class="text-error text-xs md:text-sm mt-2">{{ profile_form.email.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Phone Number -->
+                <div>
+                    <label class="block font-headline-md text-on-surface text-sm md:text-base mb-2 md:mb-3">
+                        Phone Number
+                    </label>
+                    <input type="tel" name="phone" value="{{ profile_form.phone.value|default:'' }}" 
+                           class="w-full px-4 md:px-5 py-2 md:py-3 rounded-lg md:rounded-xl border border-outline-variant bg-surface-container-lowest text-on-surface placeholder-on-surface-variant focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm md:text-base">
+                    {% if profile_form.phone.errors %}
+                        <p class="text-error text-xs md:text-sm mt-2">{{ profile_form.phone.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex flex-col md:flex-row gap-3 md:gap-4 justify-end pt-6 md:pt-8 border-t border-surface-variant">
+                    <a href="{% url 'teacher:dashboard' %}" class="px-6 md:px-8 py-3 bg-surface text-primary rounded-full font-bold hover:bg-surface-container-high transition-all text-xs md:text-sm text-center flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined">close</span>
+                        <span>Cancel</span>
+                    </a>
+                    <button type="submit" class="px-6 md:px-8 py-3 bg-primary text-on-primary rounded-full font-bold hover:bg-primary/90 transition-all text-xs md:text-sm flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined">save</span>
+                        <span>Save Changes</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</main>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const uploadBtn = document.getElementById('upload-btn');
+        const fileInput = document.getElementById('{{ profile_form.profile_picture.id_for_label }}');
+        const fileName = document.getElementById('file-name');
+        
+        if (uploadBtn && fileInput) {
+            uploadBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                fileInput.click();
+            });
+            
+            fileInput.addEventListener('change', function() {
+                if (this.files && this.files[0]) {
+                    fileName.textContent = this.files[0].name;
+                }
+            });
+        }
+    });
+</script>
+
+</body>
+</html>
+
