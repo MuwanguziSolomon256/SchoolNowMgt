@@ -125,26 +125,30 @@ class InternationalGradeEntryForm(forms.Form):
         Args:
             teacher (StaffProfile, optional): Teacher whose students/subjects to filter.
                 If provided, filters student queryset to only active students in
-                this teacher's classes, and subject queryset to only subjects
-                the teacher teaches (via Timetable).
+                this teacher's international curriculum classes, and subject queryset
+                to only international subjects the teacher teaches (via Timetable).
         """
         super().__init__(*args, **kwargs)
         
         if teacher:
-            # Filter students: only active students in this teacher's classes
+            # Filter students: only active students in international curriculum classes
             self.fields['student'].queryset = Student.objects.filter(
                 class_grade__class_teacher=teacher,
+                class_grade__curriculum='international',
+                curriculum='international',
                 status='active'
             ).order_by('class_grade__name', 'last_name')
             
-            # Filter subjects: only subjects in this teacher's timetable
+            # Filter subjects: only international curriculum subjects taught by this teacher
             subject_queryset = Subject.objects.filter(
-                timetable_entries__teacher=teacher
+                timetable_entries__teacher=teacher,
+                timetable_entries__curriculum='international',
+                curriculum='international'
             ).distinct()
             
-            # Fallback to all subjects if teacher has no timetable entries
+            # Fallback to all international subjects if teacher has no timetable entries
             if not subject_queryset.exists():
-                subject_queryset = Subject.objects.all()
+                subject_queryset = Subject.objects.filter(curriculum='international')
             
             self.fields['subject'].queryset = subject_queryset
     

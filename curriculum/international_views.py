@@ -35,7 +35,8 @@ def enter_grade_international(request):
         form = InternationalGradeEntryForm(teacher=staff)
         
         recent_grades = Grade.objects.filter(
-            recorded_by=request.user
+            recorded_by=request.user,
+            curriculum='international'
         ).select_related('student', 'subject').order_by('-created_at')[:10]
         
         context = {
@@ -66,7 +67,8 @@ def enter_grade_international(request):
             Grade.objects.update_or_create(
                 student=cd['student'],
                 subject=cd['subject'],
-                term=cd['semester'],
+                curriculum='international',
+                semester=cd['semester'],
                 academic_year=cd['academic_year'],
                 defaults={
                     'score': score_value,
@@ -89,7 +91,8 @@ def enter_grade_international(request):
         else:
             # Re-render form with errors
             recent_grades = Grade.objects.filter(
-                recorded_by=request.user
+                recorded_by=request.user,
+                curriculum='international'
             ).select_related('student', 'subject').order_by('-created_at')[:10]
             
             context = {

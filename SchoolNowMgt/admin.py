@@ -5,7 +5,7 @@ from django.utils import timezone
 from .models import (
     School, CustomUser, StaffProfile,
     ClassGrade, Subject, Student, Enquiry,
-    StudentAttendance, StaffAttendance,
+    StudentAttendance, StaffAttendance, TeacherAttendance, BreakSession,
     Grade, FeeStructure, FeePayment,
     Timetable, RetentionAlert, SMSLog,
 )
@@ -213,6 +213,145 @@ class StaffAttendanceAdmin(admin.ModelAdmin):
     search_fields = ['staff__user__first_name', 'staff__user__last_name',
                      'staff__employee_id']
     date_hierarchy = 'date'
+
+
+# ============================================================================
+# 9b. BreakSessionInline
+# ============================================================================
+
+class BreakSessionInline(admin.TabularInline):
+    model = BreakSession
+    extra = 0
+    fields = ['break_in_time', 'break_out_time', 'reason', 'get_duration_display']
+    readonly_fields = ['get_duration_display', 'created_at', 'updated_at']
+    ordering = ['break_in_time']
+    
+    def get_duration_display(self, obj):
+        duration = obj.get_break_duration()
+        if duration is None:
+            return "Active" if obj.get_is_active() else "—"
+        hours = duration // 60
+        minutes = duration % 60
+        return f"{hours}h {minutes}m"
+    get_duration_display.short_description = "Duration"
+
+
+# ============================================================================
+# 9c. TeacherAttendanceAdmin
+# ============================================================================
+
+@admin.register(TeacherAttendance)
+class TeacherAttendanceAdmin(admin.ModelAdmin):
+    list_display = ['staff', 'date', 'status', 'time_in', 'time_out',
+                    'break_count', 'total_break_duration_display', 'shift_duration_display']
+    list_filter = ['status', 'date', 'staff__user__school']
+    search_fields = ['staff__user__first_name', 'staff__user__last_name',
+                     'staff__employee_id']
+    date_hierarchy = 'date'
+    readonly_fields = ['created_at', 'updated_at', 'shift_duration_display',
+                       'shift_duration_excluding_breaks_display', 'break_count_info']
+    inlines = [BreakSessionInline]
+    
+    fieldsets = (
+        ('Teacher Information', {
+            'fields': ('staff', 'date', 'status')
+        }),
+        ('Clock In/Out Times', {
+            'fields': ('time_in', 'time_out')
+        }),
+        ('Break Information', {
+            'fields': ('break_count', 'break_count_info', 'total_break_duration')
+        }),
+        ('Shift Duration Summary', {
+            'fields': ('shift_duration_display', 'shift_duration_excluding_breaks_display')
+        }),
+        ('Additional Information', {
+            'fields': ('reason', 'marked_by', 'synced')
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def total_break_duration_display(self, obj):
+        """Display break duration in human-readable format."""
+        hours = obj.total_break_duration // 60
+        minutes = obj.total_break_duration % 60
+        return f"{hours}h {minutes}m" if hours > 0 or minutes > 0 else "—"
+    total_break_duration_display.short_description = "Break Duration"
+    
+    def shift_duration_display(self, obj):
+        """Display total shift duration (including breaks)."""
+        return obj.get_shift_hours()
+    shift_duration_display.short_description = "Total Shift Duration"
+    
+    def shift_duration_excluding_breaks_display(self, obj):
+        """Display shift duration excluding breaks."""
+        duration = obj.get_shift_duration_excluding_breaks()
+        if duration is None:
+            return "Not clocked out"
+        hours = duration // 60
+        minutes = duration % 60
+        return f"{hours}h {minutes}m"
+    shift_duration_excluding_breaks_display.short_description = "Shift Duration (Excl. Breaks)"
+    
+    def break_count_info(self, obj):
+        """Display break count with additional info."""
+        return f"{obj.break_count} break(s) taken"
+    break_count_info.short_description = "Break Summary"
+
+
+# ============================================================================
+# 9d. BreakSessionAdmin
+# ============================================================================
+
+@admin.register(BreakSession)
+class BreakSessionAdmin(admin.ModelAdmin):
+    list_display = ['get_teacher_name', 'get_attendance_date', 'break_in_time', 
+                    'break_out_time', 'get_duration_display', 'reason']
+    list_filter = ['created_at', 'teacher_attendance__date', 'teacher_attendance__staff__user__school']
+    search_fields = ['teacher_attendance__staff__user__first_name',
+                     'teacher_attendance__staff__user__last_name',
+                     'teacher_attendance__staff__employee_id']
+    readonly_fields = ['created_at', 'updated_at', 'get_duration_display']
+    ordering = ['-teacher_attendance__date', '-break_in_time']
+    
+    fieldsets = (
+        ('Break Session Information', {
+            'fields': ('teacher_attendance', 'break_in_time', 'break_out_time')
+        }),
+        ('Duration', {
+            'fields': ('get_duration_display',)
+        }),
+        ('Notes', {
+            'fields': ('reason',)
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def get_teacher_name(self, obj):
+        """Display teacher name."""
+        return obj.teacher_attendance.staff.user.get_full_name()
+    get_teacher_name.short_description = 'Teacher'
+    
+    def get_attendance_date(self, obj):
+        """Display attendance date."""
+        return obj.teacher_attendance.date
+    get_attendance_date.short_description = 'Date'
+    
+    def get_duration_display(self, obj):
+        """Display break duration in human-readable format."""
+        duration = obj.get_break_duration()
+        if duration is None:
+            return "Active" if obj.get_is_active() else "—"
+        hours = duration // 60
+        minutes = duration % 60
+        return f"{hours}h {minutes}m" if hours > 0 or minutes > 0 else f"{minutes}m"
+    get_duration_display.short_description = 'Duration'
 
 
 # ============================================================================

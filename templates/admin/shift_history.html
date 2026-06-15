@@ -1,0 +1,337 @@
+{% extends "SchoolNowMgt/base.html" %}
+{% load static %}
+
+{% block title %}Shift History - {{ school.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid bg-light min-vh-100 py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h2 mb-0">Shift History</h1>
+                    <p class="text-muted small">Historical shift records for {{ school.name }}</p>
+                </div>
+                <div class="text-end">
+                    <a href="{% url 'SchoolNowMgt:admin_shift_dashboard' %}" class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Filter & Search</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Teacher</label>
+                            <select name="teacher" class="form-select">
+                                <option value="">All Teachers</option>
+                                {% for teacher in all_teachers %}
+                                    <option value="{{ teacher.id }}" {% if filter_teacher|stringformat:"s" == teacher.id|stringformat:"s" %}selected{% endif %}>
+                                        {{ teacher.user.get_full_name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">From Date</label>
+                            <input type="date" name="date_from" class="form-control" 
+                                   value="{% if filter_date_from %}{{ filter_date_from|date:'Y-m-d' }}{% endif %}">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">To Date</label>
+                            <input type="date" name="date_to" class="form-control" 
+                                   value="{% if filter_date_to %}{{ filter_date_to|date:'Y-m-d' }}{% endif %}">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Status</label>
+                            <select name="status" class="form-select">
+                                <option value="">All Statuses</option>
+                                <option value="present" {% if filter_status == "present" %}selected{% endif %}>Present</option>
+                                <option value="absent" {% if filter_status == "absent" %}selected{% endif %}>Absent</option>
+                                <option value="late" {% if filter_status == "late" %}selected{% endif %}>Late</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Search</label>
+                            <input type="text" name="search" class="form-control" 
+                                   placeholder="Name or ID" value="{{ search_query|default:'' }}">
+                        </div>
+                        <div class="col-md-1 d-flex gap-2 align-items-end">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-search"></i> Filter
+                            </button>
+                            <a href="{% url 'SchoolNowMgt:admin_shift_history' %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-clockwise"></i>
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export Button -->
+    <div class="row mb-3">
+        <div class="col-12 text-end">
+            <a href="?{{ request.GET.urlencode }}&export=csv" class="btn btn-sm btn-success">
+                <i class="bi bi-download"></i> Export to CSV
+            </a>
+        </div>
+    </div>
+
+    <!-- Results Summary -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <p class="text-muted">Showing {{ shifts.paginator.count }} total shift records</p>
+        </div>
+    </div>
+
+    <!-- Shift Records Table -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Teacher Name</th>
+                                    <th>Employee ID</th>
+                                    <th>Status</th>
+                                    <th>Clock In</th>
+                                    <th>Clock Out</th>
+                                    <th>Total Shift</th>
+                                    <th>Breaks</th>
+                                    <th>Break Time</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for shift in shifts %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ shift.date|date:"M d, Y" }}</strong>
+                                        <br>
+                                        <small class="text-muted">{{ shift.date|date:"l" }}</small>
+                                    </td>
+                                    <td>{{ shift.staff.user.get_full_name }}</td>
+                                    <td><code>{{ shift.staff.employee_id }}</code></td>
+                                    <td>
+                                        {% if shift.status == "present" %}
+                                            <span class="badge bg-success">Present</span>
+                                        {% elif shift.status == "absent" %}
+                                            <span class="badge bg-danger">Absent</span>
+                                        {% elif shift.status == "late" %}
+                                            <span class="badge bg-warning">Late</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if shift.time_in %}
+                                            <strong>{{ shift.time_in|time:"H:i" }}</strong>
+                                        {% else %}
+                                            <span class="text-muted">—</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if shift.time_out %}
+                                            <strong>{{ shift.time_out|time:"H:i" }}</strong>
+                                        {% else %}
+                                            <span class="badge bg-info">Still clocked in</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if shift.time_in and shift.time_out %}
+                                            <span class="badge bg-secondary">{{ shift.get_shift_hours }}</span>
+                                        {% else %}
+                                            <span class="text-muted">—</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">{{ shift.break_count }}</span>
+                                    </td>
+                                    <td>
+                                        {% with total_mins=shift.total_break_duration %}
+                                            {% if total_mins > 0 %}
+                                                {{ total_mins|add:0|stringformat:"d" }}m
+                                            {% else %}
+                                                —
+                                            {% endif %}
+                                        {% endwith %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <button type="button" class="btn btn-outline-primary" 
+                                                    onclick="showEditModal({{ shift.id }}, '{{ shift.time_in|time:'H:i'|default:'' }}', '{{ shift.time_out|time:'H:i'|default:'' }}')">
+                                                <i class="bi bi-pencil"></i> Edit
+                                            </button>
+                                            <a href="#" class="btn btn-outline-secondary" title="View Details">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="10" class="text-center py-4 text-muted">
+                                        No shift records found for the selected filters.
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if shifts.has_other_pages %}
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    {% if shifts.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">First</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ shifts.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Previous</a>
+                        </li>
+                    {% endif %}
+
+                    {% for num in shifts.paginator.page_range %}
+                        {% if shifts.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > shifts.number|add:'-3' and num < shifts.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if shifts.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ shifts.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Next</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ shifts.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Last</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Edit Shift Modal -->
+<div class="modal fade" id="editModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Shift Times</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editForm">
+                    <div class="mb-3">
+                        <label class="form-label">Clock In Time</label>
+                        <input type="time" id="timeInInput" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Clock Out Time</label>
+                        <input type="time" id="timeOutInput" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Reason for Change</label>
+                        <textarea class="form-control" id="reasonInput" rows="3" 
+                                  placeholder="Explain why the shift time was modified..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="submitEditForm()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentAttendanceId = null;
+
+    function showEditModal(attendanceId, timeIn, timeOut) {
+        currentAttendanceId = attendanceId;
+        document.getElementById('timeInInput').value = timeIn;
+        document.getElementById('timeOutInput').value = timeOut;
+        document.getElementById('reasonInput').value = '';
+        new bootstrap.Modal(document.getElementById('editModal')).show();
+    }
+
+    function submitEditForm() {
+        const timeIn = document.getElementById('timeInInput').value;
+        const timeOut = document.getElementById('timeOutInput').value;
+        const reason = document.getElementById('reasonInput').value;
+
+        if (!timeIn || !timeOut) {
+            alert('Please enter both clock in and clock out times');
+            return;
+        }
+
+        fetch(`/admin/shifts/${currentAttendanceId}/edit/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                time_in: timeIn,
+                time_out: timeOut,
+                reason: reason
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Shift times updated successfully');
+                bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
+                location.reload();
+            } else {
+                alert('Error: ' + (data.error || 'Failed to update shift'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while updating the shift');
+        });
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
+{% endblock %}

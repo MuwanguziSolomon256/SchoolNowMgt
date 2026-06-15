@@ -31,7 +31,8 @@ def enter_grade_uganda(request):
         form = UgandaGradeEntryForm(teacher=staff)
         
         recent_grades = Grade.objects.filter(
-            recorded_by=request.user
+            recorded_by=request.user,
+            curriculum='national'
         ).select_related('student', 'subject').order_by('-created_at')[:10]
         
         context = {
@@ -49,10 +50,11 @@ def enter_grade_uganda(request):
             # Extract data
             grade_obj = form.save(commit=False)
             
-            # Use update_or_create to prevent duplicates
+            # Use update_or_create to prevent duplicates (with curriculum field)
             Grade.objects.update_or_create(
                 student=grade_obj.student,
                 subject=grade_obj.subject,
+                curriculum='national',
                 term=grade_obj.term,
                 academic_year=grade_obj.academic_year,
                 defaults={
@@ -76,7 +78,8 @@ def enter_grade_uganda(request):
         else:
             # Re-render form with errors
             recent_grades = Grade.objects.filter(
-                recorded_by=request.user
+                recorded_by=request.user,
+                curriculum='national'
             ).select_related('student', 'subject').order_by('-created_at')[:10]
             
             context = {

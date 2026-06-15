@@ -1,0 +1,337 @@
+{% extends "SchoolNowMgt/base.html" %}
+{% load static %}
+
+{% block title %}Shift Status Dashboard - {{ school.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid bg-light min-vh-100 py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h2 mb-0">Shift Status Dashboard</h1>
+                    <p class="text-muted small">Real-time teacher shift tracking for {{ school.name }}</p>
+                </div>
+                <div class="text-end">
+                    <p class="small mb-1"><strong>Last Updated:</strong> <span id="lastUpdate">{{ current_time|time:"H:i" }}</span></p>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="location.reload()">
+                        <i class="bi bi-arrow-clockwise"></i> Refresh
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-success">
+                <div class="card-body">
+                    <h6 class="card-title text-success">
+                        <i class="bi bi-play-circle-fill"></i> On Duty
+                    </h6>
+                    <h2 class="display-4 text-success">{{ active_teachers|length }}</h2>
+                    <small class="text-muted">Currently working</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-warning">
+                <div class="card-body">
+                    <h6 class="card-title text-warning">
+                        <i class="bi bi-pause-circle-fill"></i> On Break
+                    </h6>
+                    <h2 class="display-4 text-warning">{{ on_break_teachers|length }}</h2>
+                    <small class="text-muted">Currently on break</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-info">
+                <div class="card-body">
+                    <h6 class="card-title text-info">
+                        <i class="bi bi-stop-circle-fill"></i> Clocked Out
+                    </h6>
+                    <h2 class="display-4 text-info">{{ clocked_out_teachers|length }}</h2>
+                    <small class="text-muted">Finished shift</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-secondary">
+                <div class="card-body">
+                    <h6 class="card-title text-secondary">
+                        <i class="bi bi-x-circle-fill"></i> Not Clocked In
+                    </h6>
+                    <h2 class="display-4 text-secondary">{{ not_clocked_in|length }}</h2>
+                    <small class="text-muted">Haven't clocked in</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Currently On Duty -->
+    {% if active_teachers %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-play-circle-fill"></i> Currently On Duty
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Teacher Name</th>
+                                    <th>Clock In Time</th>
+                                    <th>Elapsed Time</th>
+                                    <th>Breaks Taken</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for teacher in active_teachers %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ teacher.teacher.user.get_full_name }}</strong>
+                                        <br>
+                                        <small class="text-muted">{{ teacher.teacher.employee_id }}</small>
+                                    </td>
+                                    <td>{{ teacher.attendance.time_in|time:"H:i" }}</td>
+                                    <td>
+                                        <span class="badge bg-success">{{ teacher.shift_elapsed }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">{{ teacher.break_count }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-success">
+                                            <i class="bi bi-check-circle"></i> On Duty
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'SchoolNowMgt:admin_shift_history' %}?teacher={{ teacher.teacher.id }}" 
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-eye"></i> View
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Currently On Break -->
+    {% if on_break_teachers %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">
+                        <i class="bi bi-pause-circle-fill"></i> Currently On Break
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Teacher Name</th>
+                                    <th>Clock In Time</th>
+                                    <th>Break Started</th>
+                                    <th>Total Breaks</th>
+                                    <th>Total Break Time</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for teacher in on_break_teachers %}
+                                <tr class="table-warning">
+                                    <td>
+                                        <strong>{{ teacher.teacher.user.get_full_name }}</strong>
+                                        <br>
+                                        <small class="text-muted">{{ teacher.teacher.employee_id }}</small>
+                                    </td>
+                                    <td>{{ teacher.attendance.time_in|time:"H:i" }}</td>
+                                    <td>
+                                        {% with active_break=teacher.attendance.break_sessions.all|dictsort:"break_in_time"|last %}
+                                            {% if active_break.break_out_time == None %}
+                                                <span class="badge bg-warning">{{ active_break.break_in_time|time:"H:i" }}</span>
+                                            {% endif %}
+                                        {% endwith %}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">{{ teacher.break_count }}</span>
+                                    </td>
+                                    <td>
+                                        {% with total_mins=teacher.attendance.total_break_duration %}
+                                            {{ total_mins|add:0|stringformat:"d" }}m
+                                        {% endwith %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'SchoolNowMgt:admin_shift_history' %}?teacher={{ teacher.teacher.id }}" 
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-eye"></i> View
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Clocked Out Today -->
+    {% if clocked_out_teachers %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-stop-circle-fill"></i> Clocked Out Today
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Teacher Name</th>
+                                    <th>Clock In</th>
+                                    <th>Clock Out</th>
+                                    <th>Total Shift</th>
+                                    <th>Breaks Taken</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for teacher in clocked_out_teachers %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ teacher.teacher.user.get_full_name }}</strong>
+                                        <br>
+                                        <small class="text-muted">{{ teacher.teacher.employee_id }}</small>
+                                    </td>
+                                    <td>{{ teacher.attendance.time_in|time:"H:i" }}</td>
+                                    <td>{{ teacher.attendance.time_out|time:"H:i" }}</td>
+                                    <td>
+                                        <span class="badge bg-secondary">{{ teacher.shift_duration }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">{{ teacher.break_count }}</span>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'SchoolNowMgt:admin_shift_history' %}?teacher={{ teacher.teacher.id }}" 
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-eye"></i> View
+                                        </a>
+                                        <a href="{% url 'SchoolNowMgt:api_edit_shift' teacher.attendance.id %}" 
+                                           class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" data-bs-target="#editModal">
+                                            <i class="bi bi-pencil"></i> Edit
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Not Yet Clocked In -->
+    {% if not_clocked_in %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-secondary">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-x-circle-fill"></i> Not Yet Clocked In ({{ not_clocked_in|length }})
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for teacher in not_clocked_in %}
+                        <div class="col-md-4 col-lg-3 mb-3">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6 class="card-title">{{ teacher.user.get_full_name }}</h6>
+                                    <p class="text-muted small">{{ teacher.employee_id }}</p>
+                                    <p class="small">{{ teacher.position }}</p>
+                                    <a href="{% url 'SchoolNowMgt:admin_shift_history' %}?teacher={{ teacher.id }}" 
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-eye"></i> History
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Quick Links -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card bg-light">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Quick Actions</h5>
+                    <div class="btn-group" role="group">
+                        <a href="{% url 'SchoolNowMgt:admin_shift_history' %}" class="btn btn-outline-primary">
+                            <i class="bi bi-clock-history"></i> Shift History
+                        </a>
+                        <a href="{% url 'SchoolNowMgt:admin_shift_report' %}?report_type=daily" class="btn btn-outline-primary">
+                            <i class="bi bi-graph-up"></i> Daily Report
+                        </a>
+                        <a href="{% url 'SchoolNowMgt:admin_shift_report' %}?report_type=punctuality" class="btn btn-outline-primary">
+                            <i class="bi bi-clock"></i> Punctuality Report
+                        </a>
+                        <a href="{% url 'SchoolNowMgt:admin_shift_report' %}?report_type=breaks" class="btn btn-outline-primary">
+                            <i class="bi bi-cup-straw"></i> Break Analysis
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Auto-refresh every 60 seconds -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        function updateLastUpdate() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            document.getElementById('lastUpdate').textContent = hours + ':' + minutes;
+        }
+        
+        // Update time display every minute
+        updateLastUpdate();
+        setInterval(updateLastUpdate, 60000);
+        
+        // Auto-refresh page every 60 seconds
+        setInterval(function() {
+            location.reload();
+        }, 60000);
+    });
+</script>
+{% endblock %}

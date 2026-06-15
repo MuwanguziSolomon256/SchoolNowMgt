@@ -76,20 +76,24 @@ class UgandaGradeEntryForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         
         if teacher:
-            # Filter students: only active students in this teacher's classes
+            # Filter students: only active students in national curriculum classes
             self.fields['student'].queryset = Student.objects.filter(
                 class_grade__class_teacher=teacher,
+                class_grade__curriculum='national',
+                curriculum='national',
                 status='active'
             ).order_by('class_grade__name', 'last_name')
             
-            # Filter subjects: only subjects in this teacher's timetable
+            # Filter subjects: only national curriculum subjects taught by this teacher
             subject_queryset = Subject.objects.filter(
-                timetable_entries__teacher=teacher
+                timetable_entries__teacher=teacher,
+                timetable_entries__curriculum='national',
+                curriculum='national'
             ).distinct()
             
-            # Fallback to all subjects if teacher has no timetable entries
+            # Fallback to all national subjects if teacher has no timetable entries
             if not subject_queryset.exists():
-                subject_queryset = Subject.objects.all()
+                subject_queryset = Subject.objects.filter(curriculum='national')
             
             self.fields['subject'].queryset = subject_queryset
     

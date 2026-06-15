@@ -139,8 +139,19 @@ class StaffProfile(models.Model):
 class ClassGrade(models.Model):
     """Represents a class/grade level within a school."""
     
+    CURRICULUM_CHOICES = [
+        ('national', 'Uganda National Curriculum'),
+        ('international', 'International Curriculum'),
+    ]
+    
     name = models.CharField(max_length=50)
-    level = models.IntegerField()  # 1-7 for P1-P7
+    level = models.IntegerField()  # 1-7 for P1-P7, 9-12 for international
+    curriculum = models.CharField(
+        max_length=20,
+        choices=CURRICULUM_CHOICES,
+        default='national',
+        db_index=True
+    )
     school = models.ForeignKey(
         School,
         on_delete=models.CASCADE,
@@ -159,17 +170,31 @@ class ClassGrade(models.Model):
         return self.name
     
     class Meta:
-        unique_together = ('name', 'school')
+        unique_together = ('name', 'school', 'curriculum')
 
 
 class Subject(models.Model):
     """Represents a curriculum subject."""
     
+    CURRICULUM_CHOICES = [
+        ('national', 'Uganda National Curriculum'),
+        ('international', 'International Curriculum'),
+    ]
+    
     name = models.CharField(max_length=100)
-    code = models.CharField(max_length=10, unique=True)
+    code = models.CharField(max_length=10)
+    curriculum = models.CharField(
+        max_length=20,
+        choices=CURRICULUM_CHOICES,
+        default='national',
+        db_index=True
+    )
     
     def __str__(self):
         return f"{self.code} — {self.name}"
+    
+    class Meta:
+        unique_together = ('name', 'code', 'curriculum')
 
 
 class Student(models.Model):
@@ -187,11 +212,22 @@ class Student(models.Model):
         ('suspended', 'Suspended'),
     ]
     
+    CURRICULUM_CHOICES = [
+        ('national', 'Uganda National Curriculum'),
+        ('international', 'International Curriculum'),
+    ]
+    
     admission_number = models.CharField(max_length=50, unique=True)
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     date_of_birth = models.DateField()
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES)
+    curriculum = models.CharField(
+        max_length=20,
+        choices=CURRICULUM_CHOICES,
+        default='national',
+        db_index=True
+    )
     class_grade = models.ForeignKey(
         ClassGrade,
         on_delete=models.PROTECT,
@@ -236,6 +272,16 @@ class Grade(models.Model):
         ('term_3', 'Term 3'),
     ]
     
+    SEMESTER_CHOICES = [
+        ('semester_1', 'Semester 1'),
+        ('semester_2', 'Semester 2'),
+    ]
+    
+    CURRICULUM_CHOICES = [
+        ('national', 'Uganda National Curriculum'),
+        ('international', 'International Curriculum'),
+    ]
+    
     student = models.ForeignKey(
         Student,
         on_delete=models.CASCADE,
@@ -246,10 +292,25 @@ class Grade(models.Model):
         on_delete=models.PROTECT,
         related_name='grades'
     )
+    curriculum = models.CharField(
+        max_length=20,
+        choices=CURRICULUM_CHOICES,
+        default='national',
+        db_index=True
+    )
     term = models.CharField(
         max_length=10,
         choices=TERM_CHOICES,
-        db_index=True
+        blank=True,
+        db_index=True,
+        help_text="For Uganda National curriculum"
+    )
+    semester = models.CharField(
+        max_length=10,
+        choices=SEMESTER_CHOICES,
+        blank=True,
+        db_index=True,
+        help_text="For International curriculum"
     )
     academic_year = models.CharField(
         max_length=4,
@@ -287,7 +348,7 @@ class Grade(models.Model):
             return 'F'
     
     class Meta:
-        unique_together = ('student', 'subject', 'term', 'academic_year')
+        unique_together = ('student', 'subject', 'curriculum', 'term', 'semester', 'academic_year')
         ordering = ['-academic_year', 'term']
 
 
@@ -437,6 +498,7 @@ class TeacherAttendance(models.Model):
     
     Similar to StaffAttendance, this tracks when teachers clock in/out,
     their daily status (present, absent, late), and any remarks.
+    Also tracks break sessions and durations for comprehensive shift management.
     """
     
     STATUS_CHOICES = [
@@ -455,6 +517,11 @@ class TeacherAttendance(models.Model):
     status = models.CharField(max_length=10, choices=STATUS_CHOICES)
     time_in = models.TimeField(null=True, blank=True)
     time_out = models.TimeField(null=True, blank=True)
+    break_count = models.IntegerField(default=0, help_text="Number of breaks taken during the shift")
+    total_break_duration = models.IntegerField(
+        default=0,
+        help_text="Total break duration in minutes"
+    )
     reason = models.TextField(blank=True)
     marked_by = models.ForeignKey(
         CustomUser,
@@ -464,13 +531,65 @@ class TeacherAttendance(models.Model):
     )
     synced = models.BooleanField(default=True, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     
     def __str__(self):
         return f"{self.staff} — {self.date} — {self.status}"
     
+    def get_shift_duration(self):
+        """
+        Calculate total shift duration in minutes (including break time).
+        Returns None if teacher is still clocked in or hasn't clocked in.
+        """
+        if not self.time_in or not self.time_out:
+            return None
+        
+        from datetime import datetime, timedelta
+        # Convert time objects to datetime for calculation
+        time_in_dt = datetime.combine(self.date, self.time_in)
+        time_out_dt = datetime.combine(self.date, self.time_out)
+        
+        # Handle case where time_out is next day
+        if time_out_dt < time_in_dt:
+            time_out_dt += timedelta(days=1)
+        
+        delta = time_out_dt - time_in_dt
+        return int(delta.total_seconds() / 60)  # Return in minutes
+    
+    def get_shift_duration_excluding_breaks(self):
+        """
+        Calculate shift duration excluding break time in minutes.
+        Returns None if teacher hasn't clocked out yet.
+        """
+        total_duration = self.get_shift_duration()
+        if total_duration is None:
+            return None
+        return total_duration - self.total_break_duration
+    
+    def get_shift_hours(self):
+        """
+        Return shift duration as formatted string (e.g., "8h 30m").
+        Includes break time in total.
+        """
+        duration = self.get_shift_duration()
+        if duration is None:
+            return "Not clocked out"
+        
+        hours = duration // 60
+        minutes = duration % 60
+        return f"{hours}h {minutes}m"
+    
+    def get_is_clocked_in(self):
+        """Check if teacher is currently clocked in (has time_in but no time_out)."""
+        return self.time_in is not None and self.time_out is None
+    
     class Meta:
         unique_together = ('staff', 'date')
         ordering = ['-date']
+        indexes = [
+            models.Index(fields=['staff', '-date']),
+            models.Index(fields=['date']),
+        ]
 
 
 class StaffBill(models.Model):
@@ -638,6 +757,11 @@ class Timetable(models.Model):
         ('friday', 'Friday'),
     ]
     
+    CURRICULUM_CHOICES = [
+        ('national', 'Uganda National Curriculum'),
+        ('international', 'International Curriculum'),
+    ]
+    
     class_grade = models.ForeignKey(
         ClassGrade,
         on_delete=models.CASCADE,
@@ -647,6 +771,12 @@ class Timetable(models.Model):
         Subject,
         on_delete=models.PROTECT,
         related_name='timetable_entries'
+    )
+    curriculum = models.CharField(
+        max_length=20,
+        choices=CURRICULUM_CHOICES,
+        default='national',
+        db_index=True
     )
     teacher = models.ForeignKey(
         StaffProfile,
@@ -1363,3 +1493,68 @@ class AdminProfile(models.Model):
     class Meta:
         verbose_name = 'Admin Profile'
         verbose_name_plural = 'Admin Profiles'
+
+
+class BreakSession(models.Model):
+    """
+    Tracks individual break sessions for teachers during a shift.
+    
+    Linked to TeacherAttendance, allows detailed tracking of when
+    teachers take breaks and for how long.
+    """
+    
+    teacher_attendance = models.ForeignKey(
+        TeacherAttendance,
+        on_delete=models.CASCADE,
+        related_name='break_sessions',
+        help_text="Link to the teacher's shift attendance record"
+    )
+    break_in_time = models.TimeField(
+        help_text="Time when break started"
+    )
+    break_out_time = models.TimeField(
+        null=True,
+        blank=True,
+        help_text="Time when break ended. Null if break is still active."
+    )
+    reason = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="Reason for break (e.g., lunch, restroom, personal)"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"{self.teacher_attendance.staff} — Break at {self.break_in_time}"
+    
+    def get_break_duration(self):
+        """
+        Calculate break duration in minutes.
+        Returns None if break is still active (break_out_time is null).
+        """
+        if self.break_out_time is None:
+            return None
+        
+        from datetime import datetime, timedelta
+        break_in_dt = datetime.combine(self.teacher_attendance.date, self.break_in_time)
+        break_out_dt = datetime.combine(self.teacher_attendance.date, self.break_out_time)
+        
+        # Handle case where break_out_time is on next day (unusual but possible for edge cases)
+        if break_out_dt < break_in_dt:
+            break_out_dt += timedelta(days=1)
+        
+        delta = break_out_dt - break_in_dt
+        return int(delta.total_seconds() / 60)  # Return in minutes
+    
+    def get_is_active(self):
+        """Check if this break session is currently active."""
+        return self.break_out_time is None
+    
+    class Meta:
+        ordering = ['teacher_attendance', 'break_in_time']
+        indexes = [
+            models.Index(fields=['teacher_attendance', '-break_in_time']),
+        ]
+        verbose_name = 'Break Session'
+        verbose_name_plural = 'Break Sessions'

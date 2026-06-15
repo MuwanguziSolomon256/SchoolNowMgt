@@ -25,6 +25,13 @@ from dashboard.teacher_sub_views import (
 )
 from curriculum.views import enter_grade_uganda
 from curriculum.international_views import enter_grade_international
+from curriculum.gradebook_views import (
+    gradebook_list, gradebook_detail, grade_report,
+    student_transcript, export_grades
+)
+from teacher.shift_views import (
+    clock_in, clock_out, break_start, break_end, shift_status
+)
 
 app_name = 'teacher'
 
@@ -57,9 +64,12 @@ urlpatterns = [
     path('attendances/history/',    attendance_history,       name='attendance_history'),
     path('api/attendances/mark/',   mark_attendance_ajax,     name='mark_attendance_ajax'),
     
-    # ===== GRADEBOOK REFERENCE =====
-    path('gradebook/',              gradebook_reference,      name='gradebook_reference'),
-    path('api/gradebook/lookup/',   grade_lookup_ajax,        name='grade_lookup_ajax'),
+    # ===== GRADEBOOK (NEW CURRICULUM-AWARE VIEWS) =====
+    path('gradebook/',              gradebook_list,         name='gradebook_list'),
+    path('gradebook/<int:student_id>/',  gradebook_detail,  name='gradebook_detail'),
+    path('gradebook/report/',       grade_report,           name='grade_report'),
+    path('gradebook/<int:student_id>/transcript/',  student_transcript,  name='student_transcript'),
+    path('gradebook/export/',       export_grades,          name='export_grades'),
     
     # ===== LEGACY GRADE ENTRY (Keeping for backward compatibility) =====
     path('grades/uganda/',          enter_grade_uganda,       name='enter_grade_uganda'),
@@ -71,6 +81,13 @@ urlpatterns = [
     path('api/students/search/', student_search, name='student_search'),
     path('api/grades/quick-add/', quick_grade_entry, name='quick_grade_entry'),
     path('api/circulars/send/', send_circular, name='send_circular'),
+
+    # ===== SHIFT MANAGEMENT API =====
+    path('api/shift/clock-in/', clock_in, name='api_clock_in'),
+    path('api/shift/clock-out/', clock_out, name='api_clock_out'),
+    path('api/shift/break-start/', break_start, name='api_break_start'),
+    path('api/shift/break-end/', break_end, name='api_break_end'),
+    path('api/shift/status/', shift_status, name='api_shift_status'),
 
     path('password/reset/',
          teacher_password_reset,

@@ -1,6 +1,7 @@
 from django.urls import path
 from . import views
 from . import dashboard_views
+from . import admin_shift_views
 
 app_name = 'SchoolNowMgt'
 
@@ -58,4 +59,10 @@ urlpatterns = [
     path('admin/events/create/', dashboard_views.create_event, name='create_event'),
     path('admin/events/<int:event_id>/edit/', dashboard_views.edit_event, name='edit_event'),
     path('admin/events/<int:event_id>/delete/', dashboard_views.delete_event, name='delete_event'),
+    
+    # ===== SHIFT MANAGEMENT (ADMIN) =====
+    path('admin/shifts/', admin_shift_views.shift_dashboard, name='admin_shift_dashboard'),
+    path('admin/shifts/history/', admin_shift_views.shift_history, name='admin_shift_history'),
+    path('admin/shifts/<int:attendance_id>/edit/', admin_shift_views.edit_shift_times, name='api_edit_shift'),
+    path('admin/shifts/reports/', admin_shift_views.shift_report, name='admin_shift_report'),
 ]

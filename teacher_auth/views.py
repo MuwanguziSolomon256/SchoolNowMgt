@@ -9,7 +9,7 @@ from django.http import JsonResponse
 from .forms import TeacherLoginForm, TeacherRegistrationForm
 from SchoolNowMgt.models import (
     StaffProfile, Timetable, Student, ClassGrade,
-    StudentAttendance, RetentionAlert, Grade, TeacherTask, ActivityLog
+    StudentAttendance, RetentionAlert, Grade, TeacherTask, ActivityLog, Subject
 )
 
 
@@ -182,6 +182,10 @@ def teacher_dashboard(request):
     else:
         performance_metric = "No data"
     
+    # ===== GET ALL TEACHER'S SUBJECTS (FOR GRADE MODAL) =====
+    subject_ids = Timetable.objects.filter(teacher=staff).values_list('subject_id', flat=True).distinct()
+    subjects = Subject.objects.filter(id__in=subject_ids)
+    
     # Build context
     context = {
         'today': today,
@@ -204,6 +208,7 @@ def teacher_dashboard(request):
         'activities': recent_activities,
         'performance_stats': performance_stats,
         'performance_metric': performance_metric,
+        'subjects': subjects,
     }
     
     return render(request, 'teacher/dashboard_modern.html', context)

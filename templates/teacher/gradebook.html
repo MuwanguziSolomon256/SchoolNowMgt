@@ -1,0 +1,250 @@
+{% extends "teacher/app_base.html" %}
+{% load gradebook_tags %}
+
+{% block title %}Gradebook - {{ class_grade.name }} | SchoolNow{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Gradebook specific styles */
+    .gradebook-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid #e7e8eb;
+    }
+    
+    .gradebook-title-section {
+        flex: 1;
+    }
+    
+    .gradebook-title {
+        font-size: 32px;
+        font-weight: 700;
+        color: #080b3a;
+        margin: 0 0 8px 0;
+    }
+    
+    .class-info {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+    
+    .class-name {
+        font-weight: 600;
+        font-size: 16px;
+        color: #46464f;
+    }
+    
+    .curriculum-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: linear-gradient(135deg, #feb700 0%, #ffba20 100%);
+        color: #6b4b00;
+        padding: 4px 12px;
+        border-radius: 16px;
+        font-size: 12px;
+        font-weight: 600;
+        box-shadow: 0 4px 12px rgba(254, 183, 0, 0.2);
+    }
+    
+    .breadcrumb-nav {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        color: #46464f;
+        margin-bottom: 16px;
+    }
+    
+    .breadcrumb-nav a {
+        color: #080b3a;
+        text-decoration: none;
+        transition: color 0.2s ease;
+    }
+    
+    .breadcrumb-nav a:hover {
+        color: #feb700;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb Navigation -->
+<div class="breadcrumb-nav">
+    <a href="{% url 'teacher:dashboard' %}">Dashboard</a>
+    <span class="text-outline-variant">/</span>
+    <a href="{% url 'teacher:gradebook_list' %}">Gradebook</a>
+    <span class="text-outline-variant">/</span>
+    <span>{{ class_grade.name }}</span>
+</div>
+
+<!-- Page Header -->
+<div class="gradebook-header">
+    <div class="gradebook-title-section">
+        <h1 class="gradebook-title">Gradebook</h1>
+        <div class="class-info">
+            <span class="class-name">{{ class_grade.name }}</span>
+            <span class="curriculum-badge">
+                <span class="material-symbols-outlined text-sm">school</span>
+                {{ curriculum_type }}
+            </span>
+        </div>
+    </div>
+
+    <!-- Filter Controls -->
+    <div class="flex gap-3 items-center">
+        <a href="?class_id={{ class_grade.id }}" class="btn-secondary">
+            <span class="material-symbols-outlined text-sm">clear_all</span>
+            Clear Filters
+        </a>
+    </div>
+</div>
+
+<!-- Filters Card -->
+<div class="glass-card rounded-2xl p-6 mb-6">
+    <form method="get" class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- Academic Year -->
+            <div class="flex flex-col">
+                <label for="academic-year" class="font-label-md text-label-md text-on-surface mb-2">Academic Year</label>
+                <input type="text" name="academic_year" id="academic-year" value="{{ academic_year }}" class="form-input bg-surface-container-low border border-outline-variant/30 rounded-lg px-3 py-2 font-body-md focus:ring-2 focus:ring-primary/20 focus:outline-none">
+            </div>
+            
+            <!-- Period Filter (Term/Semester) -->
+            {% if period_choices %}
+            <div class="flex flex-col">
+                <label for="period" class="font-label-md text-label-md text-on-surface mb-2">{{ period_param|upper }}</label>
+                <select name="{{ period_param }}" id="period" class="form-input bg-surface-container-low border border-outline-variant/30 rounded-lg px-3 py-2 font-body-md focus:ring-2 focus:ring-primary/20 focus:outline-none">
+                    <option value="">-- All --</option>
+                    {% for code, label in period_choices %}
+                    <option value="{{ code }}" {% if code == selected_period %}selected{% endif %}>
+                        {{ label }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% endif %}
+            
+            <!-- Action Buttons -->
+            <div class="flex flex-col justify-end">
+                <button type="submit" class="btn-primary">
+                    <span class="material-symbols-outlined text-sm">filter_list</span>
+                    Filter
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Export & Report Actions -->
+<div class="flex gap-3 mb-6">
+    <a href="{% url 'teacher:export_grades' %}?class_id={{ class_grade.id }}&academic_year={{ academic_year }}&{{ period_param }}={{ selected_period }}" 
+       class="glass-card rounded-xl px-4 py-3 flex items-center gap-2 hover:shadow-lg transition-all" title="Export to CSV">
+        <span class="material-symbols-outlined">download</span>
+        <span class="font-label-md">Export to CSV</span>
+    </a>
+    
+    <a href="{% url 'teacher:grade_report' %}?class_id={{ class_grade.id }}&academic_year={{ academic_year }}&{{ period_param }}={{ selected_period }}" 
+       class="glass-card rounded-xl px-4 py-3 flex items-center gap-2 hover:shadow-lg transition-all" title="View detailed report">
+        <span class="material-symbols-outlined">analytics</span>
+        <span class="font-label-md">View Report</span>
+    </a>
+</div>
+
+<!-- Gradebook Grid -->
+{% if students and subjects %}
+<div class="glass-card rounded-2xl overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="w-full border-collapse">
+            <thead>
+                <tr class="bg-surface-container-low border-b border-outline-variant/30">
+                    <th class="px-4 py-3 text-left font-label-md text-label-md text-on-surface">Student</th>
+                    <th class="px-4 py-3 text-left font-label-md text-label-md text-on-surface">Admission #</th>
+                    {% for subject in subjects %}
+                    <th class="px-3 py-3 text-center font-label-md text-label-md text-on-surface" title="{{ subject.name }}">
+                        <div class="whitespace-nowrap">{{ subject.code }}</div>
+                    </th>
+                    {% endfor %}
+                    <th class="px-4 py-3 text-center font-label-md text-label-md text-on-surface">Average</th>
+                    <th class="px-4 py-3 text-center font-label-md text-label-md text-on-surface">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-outline-variant/20">
+                {% for student_row in student_grades %}
+                <tr class="hover:bg-surface-container-low/50 transition-colors">
+                    <td class="px-4 py-4">
+                        <strong class="text-on-surface">{{ student_row.student.full_name }}</strong>
+                    </td>
+                    <td class="px-4 py-4 font-label-md text-on-surface-variant">{{ student_row.student.admission_number }}</td>
+                    
+                    {% for grade_item in student_row.grades %}
+                    <td class="px-3 py-4 text-center">
+                        {% if grade_item.grade %}
+                            <div class="flex flex-col items-center gap-1">
+                                <div class="bg-gradient-to-br from-primary to-primary-container text-white rounded-lg px-2 py-1 min-w-[40px] font-bold text-sm">
+                                    {{ grade_item.score }}
+                                </div>
+                                <div class="text-xs text-on-surface-variant font-medium">
+                                    {% if curriculum_type == "Uganda National Curriculum" %}
+                                        {{ grade_item.letter_grade }}
+                                    {% else %}
+                                        {{ grade_item.remarks|truncatechars:8 }}
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% else %}
+                            <span class="text-outline-variant font-bold">—</span>
+                        {% endif %}
+                    </td>
+                    {% endfor %}
+                    
+                    <!-- Average -->
+                    <td class="px-4 py-4 text-center">
+                        {% if student_row.average %}
+                            <div class="bg-secondary-container/20 text-secondary-container rounded-lg px-3 py-2 font-bold inline-block">
+                                {{ student_row.average|floatformat:1 }}%
+                            </div>
+                        {% else %}
+                            <span class="text-outline-variant font-bold">—</span>
+                        {% endif %}
+                    </td>
+                    
+                    <!-- Actions -->
+                    <td class="px-4 py-4 text-center">
+                        <a href="{% url 'teacher:gradebook_detail' student_row.student.id %}" class="inline-flex items-center gap-1 px-3 py-2 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors font-label-md">
+                            <span class="material-symbols-outlined text-sm">visibility</span>
+                            View
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% else %}
+<div class="glass-card rounded-2xl p-8 text-center">
+    <span class="material-symbols-outlined text-4xl text-outline-variant/50 block mb-4">folder_open</span>
+    <p class="font-body-md text-on-surface-variant">No grades to display for the selected filters.</p>
+</div>
+{% endif %}
+
+<!-- Navigation Footer -->
+<div class="mt-6 flex items-center justify-between">
+    <a href="{% url 'teacher:gradebook_list' %}" class="inline-flex items-center gap-2 text-primary hover:text-primary-container transition-colors font-label-md">
+        <span class="material-symbols-outlined text-sm">arrow_back</span>
+        Back to Class Selection
+    </a>
+    
+    <div class="text-sm text-on-surface-variant">
+        Showing <strong>{{ student_grades|length }}</strong> students with <strong>{{ subjects|length }}</strong> subjects
+    </div>
+</div>
+
+{% endblock %}

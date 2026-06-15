@@ -42,38 +42,56 @@ if teacher:
     if not classes_as_teacher.exists():
         print(f"✗ No classes assigned as teacher - creating test data...")
         school = teacher.school
-        cls = ClassGrade.objects.create(
+        cls, created = ClassGrade.objects.get_or_create(
             name='Form 1A',
             school=school,
-            class_teacher=staff,
-            level=1
+            defaults={
+                'class_teacher': staff,
+                'level': 1
+            }
         )
-        print(f"✓ ClassGrade created: {cls}")
+        if created:
+            cls.class_teacher = staff
+            cls.save()
+            print(f"✓ ClassGrade created: {cls}")
+        else:
+            cls.class_teacher = staff
+            cls.save()
+            print(f"✓ ClassGrade exists (updated teacher): {cls}")
         
         # Add a subject and timetable
-        subject = Subject.objects.first() or Subject.objects.create(name='Mathematics', code='MAT')
-        timetable = Timetable.objects.create(
+        subject = Subject.objects.first()
+        if not subject:
+            subject = Subject.objects.create(name='Mathematics', code='MAT')
+        timetable, _ = Timetable.objects.get_or_create(
             class_grade=cls,
             subject=subject,
-            teacher=staff,
             day_of_week='monday',
-            start_time='09:00',
-            end_time='10:00'
+            defaults={
+                'teacher': staff,
+                'start_time': '09:00',
+                'end_time': '10:00'
+            }
         )
         print(f"✓ Timetable created for {subject.name}")
         
         # Create test students
         for i in range(3):
-            student = Student.objects.create(
+            student, created = Student.objects.get_or_create(
                 admission_number=f"STU{cls.id}{i+1:03d}",
-                first_name=f"Student{i+1}",
-                last_name="Test",
-                date_of_birth=date(2008, 1, 1),
-                gender='M',
-                class_grade=cls,
-                status='active'
+                defaults={
+                    'first_name': f"Student{i+1}",
+                    'last_name': "Test",
+                    'date_of_birth': date(2008, 1, 1),
+                    'gender': 'M',
+                    'class_grade': cls,
+                    'status': 'active'
+                }
             )
-            print(f"✓ Student created: {student.full_name}")
+            if created:
+                print(f"✓ Student created: {student.full_name}")
+            else:
+                print(f"✓ Student exists: {student.full_name}")
 else:
     print("✗ No teacher found in database")
 

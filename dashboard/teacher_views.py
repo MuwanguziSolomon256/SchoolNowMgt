@@ -5,7 +5,7 @@ from django.db.models import Count, Q, Avg
 from SchoolNowMgt.models import (
     StaffProfile, Timetable, Student, ClassGrade,
     StudentAttendance, RetentionAlert, Grade,
-    TeacherTask, ActivityLog, TeacherAttendance
+    TeacherTask, ActivityLog, TeacherAttendance, Subject
 )
 from datetime import timedelta
 
@@ -95,7 +95,7 @@ def teacher_dashboard(request):
         created_at__date__gte=week_ago
     ).aggregate(avg=Avg('score'))
     
-    performance_metric = weekly_grades['avg'] or 0.0
+    performance_metric = float(weekly_grades['avg'] or 0.0)
     
     # Generate performance data for chart (simplified)
     performance_stats = [
@@ -107,6 +107,10 @@ def teacher_dashboard(request):
         performance_metric * 0.92,  # Sat
         performance_metric,          # Sun
     ]
+    
+    # ===== GET ALL TEACHER'S SUBJECTS (FOR GRADE MODAL) =====
+    subject_ids = Timetable.objects.filter(teacher=staff).values_list('subject_id', flat=True).distinct()
+    subjects = Subject.objects.filter(id__in=subject_ids)
     
     # Build context
     context = {
@@ -128,6 +132,7 @@ def teacher_dashboard(request):
         'performance_stats': performance_stats,
         'todays_classes': todays_classes,
         'teacher_name': request.user.get_full_name(),
+        'subjects': subjects,
     }
     
     return render(request, 'teacher/dashboard_modern.html', context)
@@ -307,7 +312,7 @@ def send_circular(request):
         # Get parent count for response
         parent_count = Student.objects.filter(
             class_grade_id=class_id
-        ).values('parent_contact').distinct().count()
+        ).values('parent_phone').distinct().count()
         
         return JsonResponse({
             'success': True,

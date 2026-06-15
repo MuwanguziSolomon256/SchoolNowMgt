@@ -1,0 +1,372 @@
+{% extends "teacher/base.html" %}
+
+{% block title %}Grade Report - {{ class_grade.name }}{% endblock %}
+
+{% block content %}
+<div class="report-container">
+    <div class="report-header">
+        <h1>Grade Report</h1>
+        <div class="class-info">
+            <span class="class-name">{{ class_grade.name }}</span>
+            <span class="curriculum-badge">{{ curriculum_type }}</span>
+            <span class="year">{{ academic_year }}</span>
+        </div>
+    </div>
+
+    <!-- Summary Stats -->
+    <div class="summary-stats">
+        <div class="stat-card">
+            <div class="stat-label">Total Students</div>
+            <div class="stat-value">{{ student_count }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Subjects</div>
+            <div class="stat-value">{{ subject_averages|length }}</div>
+        </div>
+    </div>
+
+    <!-- Subject Averages -->
+    <div class="report-section">
+        <h2>Subject Averages</h2>
+        <div class="subject-averages">
+            {% for subject_name, avg in subject_averages.items %}
+            <div class="subject-row">
+                <span class="subject-name">{{ subject_name }}</span>
+                <div class="progress-bar">
+                    <div class="progress" style="width: {{ avg }}%"></div>
+                </div>
+                <span class="subject-avg">{{ avg|floatformat:1 }}</span>
+            </div>
+            {% empty %}
+            <p>No grades recorded yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Grade Distribution -->
+    <div class="report-section">
+        <h2>Grade Distribution</h2>
+        {% if grade_distribution %}
+        <div class="grade-distribution">
+            {% for grade_band, count in grade_distribution.items %}
+            <div class="grade-dist-item">
+                <span class="grade-band">{{ grade_band }}</span>
+                <div class="bar" style="height: {% widthratio count student_count 100 %}%">
+                    <span class="count">{{ count }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p>No grade data available.</p>
+        {% endif %}
+    </div>
+
+    <!-- Top Students -->
+    <div class="report-section">
+        <h2>Top Students</h2>
+        {% if top_students %}
+        <table class="students-table">
+            <thead>
+                <tr>
+                    <th>Rank</th>
+                    <th>Student Name</th>
+                    <th>Average Score</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student, avg in top_students %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ student.full_name }}</td>
+                    <td><strong>{{ avg|floatformat:1 }}</strong></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>No student data available.</p>
+        {% endif %}
+    </div>
+
+    <!-- Bottom Students -->
+    {% if bottom_students %}
+    <div class="report-section">
+        <h2>Students Needing Support</h2>
+        <table class="students-table">
+            <thead>
+                <tr>
+                    <th>Rank</th>
+                    <th>Student Name</th>
+                    <th>Average Score</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student, avg in bottom_students %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ student.full_name }}</td>
+                    <td><strong>{{ avg|floatformat:1 }}</strong></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    <!-- Actions -->
+    <div class="report-actions">
+        <button class="btn btn-primary" onclick="window.print()">🖨️ Print Report</button>
+        <a href="javascript:history.back()" class="btn btn-secondary">← Back</a>
+    </div>
+</div>
+
+<style>
+.report-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.report-header {
+    margin-bottom: 2rem;
+    border-bottom: 2px solid #e0e0e0;
+    padding-bottom: 1rem;
+}
+
+.report-header h1 {
+    margin: 0 0 0.5rem 0;
+    font-size: 28px;
+}
+
+.class-info {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.class-name {
+    font-weight: 600;
+    color: #333;
+}
+
+.curriculum-badge {
+    background: #ffc107;
+    color: #000;
+    padding: 0.25rem 0.75rem;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.year {
+    color: #666;
+}
+
+/* Summary Stats */
+.summary-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: white;
+    border-left: 4px solid #007bff;
+    padding: 1rem;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.stat-label {
+    font-size: 12px;
+    color: #666;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+}
+
+.stat-value {
+    font-size: 32px;
+    font-weight: 700;
+    color: #007bff;
+}
+
+/* Report Sections */
+.report-section {
+    background: white;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.report-section h2 {
+    margin: 0 0 1rem 0;
+    font-size: 18px;
+    color: #333;
+    border-bottom: 1px solid #e0e0e0;
+    padding-bottom: 0.5rem;
+}
+
+/* Subject Averages */
+.subject-averages {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.subject-row {
+    display: grid;
+    grid-template-columns: 150px 1fr 60px;
+    gap: 1rem;
+    align-items: center;
+}
+
+.subject-name {
+    font-weight: 600;
+    color: #333;
+}
+
+.progress-bar {
+    height: 20px;
+    background: #e0e0e0;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress {
+    height: 100%;
+    background: linear-gradient(90deg, #007bff, #0056b3);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 4px;
+    color: white;
+    font-size: 11px;
+}
+
+.subject-avg {
+    text-align: center;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+/* Grade Distribution */
+.grade-distribution {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+    gap: 1rem;
+}
+
+.grade-dist-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.grade-band {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.bar {
+    width: 40px;
+    background: #007bff;
+    border-radius: 4px;
+    min-height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.count {
+    color: white;
+    font-weight: 600;
+    font-size: 12px;
+}
+
+/* Students Table */
+.students-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.students-table thead {
+    background: #f8f9fa;
+}
+
+.students-table th {
+    padding: 0.75rem;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.students-table td {
+    padding: 0.75rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.students-table tbody tr:hover {
+    background: #f9f9f9;
+}
+
+/* Actions */
+.report-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 2rem;
+}
+
+.btn {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.btn-primary {
+    background: #007bff;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #0056b3;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #545b62;
+}
+
+/* Print styles */
+@media print {
+    body {
+        background: white;
+    }
+    
+    .report-container {
+        padding: 0;
+    }
+    
+    .report-actions {
+        display: none;
+    }
+    
+    .report-section {
+        page-break-inside: avoid;
+    }
+}
+</style>
+{% endblock %}

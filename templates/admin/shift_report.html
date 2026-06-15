@@ -1,0 +1,346 @@
+{% extends "SchoolNowMgt/base.html" %}
+{% load static %}
+
+{% block title %}Shift Reports - {{ school.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid bg-light min-vh-100 py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h2 mb-0">Shift Reports & Analytics</h1>
+                    <p class="text-muted small">Detailed analysis of teacher shift patterns for {{ school.name }}</p>
+                </div>
+                <div class="text-end">
+                    <a href="{% url 'SchoolNowMgt:admin_shift_dashboard' %}" class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Selection & Filters -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Report Configuration</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Report Type</label>
+                            <select name="report_type" class="form-select" onchange="updateReportType(this.value)">
+                                <option value="daily" {% if report_type == "daily" %}selected{% endif %}>Daily Summary</option>
+                                <option value="weekly" {% if report_type == "weekly" %}selected{% endif %}>Weekly Summary</option>
+                                <option value="monthly" {% if report_type == "monthly" %}selected{% endif %}>Monthly Summary</option>
+                                <option value="punctuality" {% if report_type == "punctuality" %}selected{% endif %}>Punctuality Report</option>
+                                <option value="breaks" {% if report_type == "breaks" %}selected{% endif %}>Break Analysis</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">From Date</label>
+                            <input type="date" name="date_from" class="form-control" 
+                                   value="{% if date_from %}{{ date_from|date:'Y-m-d' }}{% endif %}">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">To Date</label>
+                            <input type="date" name="date_to" class="form-control" 
+                                   value="{% if date_to %}{{ date_to|date:'Y-m-d' }}{% endif %}">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">&nbsp;</label>
+                            <div class="btn-group w-100" role="group">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-arrow-clockwise"></i> Generate
+                                </button>
+                                <a href="?report_type={{ report_type }}&date_from={{ date_from|date:'Y-m-d' }}&date_to={{ date_to|date:'Y-m-d' }}&export=csv" 
+                                   class="btn btn-success">
+                                    <i class="bi bi-download"></i> Export CSV
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Content -->
+    <div class="row">
+        <div class="col-12">
+            {% if report_type == "daily" or report_type == "monthly" %}
+                <!-- Summary Report (Daily/Monthly) -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            {% if report_type == "daily" %}
+                                Daily Attendance Summary
+                            {% else %}
+                                Monthly Attendance Summary
+                            {% endif %}
+                        </h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Teachers Worked</th>
+                                        <th>Teachers Absent</th>
+                                        <th>Total Hours</th>
+                                        <th>Avg Hours/Teacher</th>
+                                        <th>Total Breaks</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for row in report_data %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ row.date|date:"M d, Y" }}</strong>
+                                            {% if report_type == "daily" %}
+                                                <br><small class="text-muted">{{ row.date|date:"l" }}</small>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-success">{{ row.teachers_worked }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-danger">{{ row.teachers_absent }}</span>
+                                        </td>
+                                        <td>
+                                            <strong>{{ row.total_hours|floatformat:1 }}h</strong>
+                                        </td>
+                                        <td>
+                                            <strong>{{ row.avg_hours_per_teacher|floatformat:1 }}h</strong>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-info">{{ row.total_breaks }}</span>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="6" class="text-center py-4 text-muted">
+                                            No data available for the selected date range.
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            {% elif report_type == "punctuality" %}
+                <!-- Punctuality Report -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Punctuality Issues</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if report_data %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Teacher Name</th>
+                                            <th>Date</th>
+                                            <th>Issue Type</th>
+                                            <th>Time</th>
+                                            <th>Minutes</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for item in report_data %}
+                                        <tr>
+                                            <td><strong>{{ item.teacher }}</strong></td>
+                                            <td>{{ item.date|date:"M d, Y" }}</td>
+                                            <td>
+                                                {% if item.type == "late_arrival" %}
+                                                    <span class="badge bg-warning">Late Arrival</span>
+                                                {% elif item.type == "early_departure" %}
+                                                    <span class="badge bg-info">Early Departure</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ item.time|time:"H:i" }}</td>
+                                            <td>
+                                                <strong>
+                                                    {% if item.type == "late_arrival" %}
+                                                        +{{ item.minutes_late }}m
+                                                    {% else %}
+                                                        {{ item.minutes_early }}m
+                                                    {% endif %}
+                                                </strong>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle"></i> All teachers have been punctual during the selected period!
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+            {% elif report_type == "breaks" %}
+                <!-- Break Analysis Report -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Break Pattern Analysis</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if report_data %}
+                            <div class="alert alert-warning">
+                                <i class="bi bi-exclamation-triangle"></i> The following records show potential break-related patterns:
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Teacher Name</th>
+                                            <th>Date</th>
+                                            <th>Issue Type</th>
+                                            <th>Details</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for item in report_data %}
+                                        <tr>
+                                            <td><strong>{{ item.teacher }}</strong></td>
+                                            <td>{{ item.date|date:"M d, Y" }}</td>
+                                            <td>
+                                                {% if item.type == "excessive_breaks" %}
+                                                    <span class="badge bg-warning">Excessive Breaks</span>
+                                                {% elif item.type == "excessive_break_time" %}
+                                                    <span class="badge bg-danger">Excessive Break Time</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if item.type == "excessive_breaks" %}
+                                                    {{ item.break_count }} breaks taken (>3)
+                                                {% elif item.type == "excessive_break_time" %}
+                                                    {{ item.total_break_mins }}min total break time (>2h)
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-success">
+                                <i class="bi bi-check-circle"></i> No excessive break patterns detected during the selected period.
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+            {% else %}
+                <!-- Weekly Report -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Weekly Attendance Summary</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> Weekly report data will be generated based on your selected date range.
+                        </div>
+                        <p class="text-muted">Select a date range and click "Generate" to view weekly summary.</p>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Summary Statistics (if applicable) -->
+    {% if report_type == "daily" or report_type == "monthly" %}
+    <div class="row mt-4">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h6 class="card-title text-muted">Total Hours Logged</h6>
+                    <h2 class="display-5">
+                        {% with total=0 %}
+                            {% for row in report_data %}
+                                {% comment %}TODO: Calculate total{% endcomment %}
+                            {% endfor %}
+                            {{ total|floatformat:0 }}h
+                        {% endwith %}
+                    </h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h6 class="card-title text-muted">Avg Hours/Teacher</h6>
+                    <h2 class="display-5">
+                        {% comment %}TODO: Calculate average{% endcomment %}
+                        0h
+                    </h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h6 class="card-title text-muted">Teachers Worked</h6>
+                    <h2 class="display-5">
+                        {% with total=0 %}
+                            {% for row in report_data %}
+                                {% comment %}TODO: Calculate total{% endcomment %}
+                            {% endfor %}
+                            {{ total }}
+                        {% endwith %}
+                    </h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h6 class="card-title text-muted">Absences</h6>
+                    <h2 class="display-5">
+                        {% with total=0 %}
+                            {% for row in report_data %}
+                                {% comment %}TODO: Calculate total{% endcomment %}
+                            {% endfor %}
+                            {{ total }}
+                        {% endwith %}
+                    </h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Data Download Links -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card bg-light">
+                <div class="card-body">
+                    <h5 class="card-title">Data Export</h5>
+                    <p class="text-muted mb-3">Download your report data in various formats for further analysis:</p>
+                    <a href="?report_type={{ report_type }}&date_from={{ date_from|date:'Y-m-d' }}&date_to={{ date_to|date:'Y-m-d' }}&export=csv" 
+                       class="btn btn-outline-success">
+                        <i class="bi bi-file-earmark-csv"></i> Download as CSV
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function updateReportType(type) {
+        // Optional: Add custom behavior when report type changes
+        console.log('Report type changed to:', type);
+    }
+</script>
+{% endblock %}

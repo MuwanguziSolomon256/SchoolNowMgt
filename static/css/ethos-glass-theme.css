@@ -74,41 +74,41 @@
   --font-display: 'Hanken Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   
-  /* Display Large */
-  --display-lg-size: 36px;
+  /* Display Large - Responsive with clamp() */
+  --display-lg-size: clamp(28px, 5vw, 36px);
   --display-lg-weight: 700;
-  --display-lg-height: 44px;
+  --display-lg-height: clamp(36px, 6.5vw, 44px);
   --display-lg-letter-spacing: -0.02em;
   
-  /* Headline Large */
-  --headline-lg-size: 28px;
+  /* Headline Large - Responsive with clamp() */
+  --headline-lg-size: clamp(24px, 4vw, 28px);
   --headline-lg-weight: 600;
-  --headline-lg-height: 36px;
+  --headline-lg-height: clamp(32px, 5vw, 36px);
   
-  /* Headline Medium */
-  --headline-md-size: 22px;
+  /* Headline Medium - Responsive with clamp() */
+  --headline-md-size: clamp(18px, 3.5vw, 22px);
   --headline-md-weight: 600;
-  --headline-md-height: 28px;
+  --headline-md-height: clamp(24px, 4.5vw, 28px);
   
   /* Headline Large Mobile */
-  --headline-lg-mobile-size: 24px;
+  --headline-lg-mobile-size: clamp(22px, 3.5vw, 24px);
   --headline-lg-mobile-weight: 600;
-  --headline-lg-mobile-height: 32px;
+  --headline-lg-mobile-height: clamp(30px, 4.5vw, 32px);
   
-  /* Body Large */
-  --body-lg-size: 16px;
+  /* Body Large - Responsive with clamp() */
+  --body-lg-size: clamp(14px, 2.2vw, 16px);
   --body-lg-weight: 400;
-  --body-lg-height: 24px;
+  --body-lg-height: clamp(22px, 3.5vw, 24px);
   
-  /* Body Medium */
-  --body-md-size: 14px;
+  /* Body Medium - Responsive with clamp() */
+  --body-md-size: clamp(12px, 2vw, 14px);
   --body-md-weight: 400;
-  --body-md-height: 20px;
+  --body-md-height: clamp(18px, 3.2vw, 20px);
   
-  /* Label Medium */
-  --label-md-size: 12px;
+  /* Label Medium - Responsive with clamp() */
+  --label-md-size: clamp(10px, 1.5vw, 12px);
   --label-md-weight: 600;
-  --label-md-height: 16px;
+  --label-md-height: clamp(14px, 2.2vw, 16px);
   --label-md-letter-spacing: 0.05em;
   
   /* ─── SPACING ──────────────────────────────────────────────────────────── */
@@ -219,9 +219,48 @@ a:hover {
 }
 
 @media (max-width: 640px) {
+  :root {
+    /* Mobile fine-tuning: Ensure minimum sizes are readable on small phones */
+    --display-lg-size: clamp(24px, 4.5vw, 28px);
+    --headline-lg-size: clamp(20px, 3.5vw, 24px);
+    --headline-md-size: clamp(16px, 3vw, 20px);
+    --body-lg-size: clamp(13px, 2vw, 14px);
+    --body-md-size: clamp(11px, 1.8vw, 12px);
+    --label-md-size: clamp(9px, 1.3vw, 10px);
+  }
+
   .headline-lg {
     font-size: var(--headline-lg-mobile-size);
     line-height: var(--headline-lg-mobile-height);
+  }
+
+  /* Improve mobile readability for table and small screens */
+  table {
+    font-size: var(--body-md-size);
+  }
+
+  th, td {
+    padding: clamp(8px, 2vw, 12px) clamp(12px, 3vw, 16px);
+  }
+
+  /* Ensure buttons are touch-friendly (min 44px height on mobile) */
+  button, .btn {
+    min-height: 44px;
+    padding: clamp(8px, 2vw, 12px) clamp(12px, 3vw, 16px);
+  }
+}
+
+@media (min-width: 768px) {
+  /* Tablet optimization */
+  :root {
+    /* Slightly increase scale on tablets for better visual hierarchy */
+  }
+}
+
+@media (min-width: 1024px) {
+  /* Desktop optimization - fonts reach their maximum intended sizes */
+  :root {
+    /* Fonts will naturally reach their clamp() maximum values */
   }
 }
 

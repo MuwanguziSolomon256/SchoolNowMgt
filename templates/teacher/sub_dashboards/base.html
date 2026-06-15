@@ -1,7 +1,6 @@
-{% extends "teacher/teacher_no_sidebar_base.html" %}
+{% extends "teacher/app_base.html" %}
 
 {% block content %}
-{% include "includes/teacher_navigation_bar.html" %}
 <div class="sub-dashboard-container">
     <!-- Sub-Dashboard Content -->
     <div class="sub-dashboard-content">
@@ -12,33 +11,20 @@
 </div>
 
 <style>
-    /* Navigation bar styling */
-    nav.flex.items-center.justify-between {
-        width: 100vw;
-        position: sticky !important;
-        top: 0 !important;
-        z-index: 999;
-        margin-left: calc(-50vw + 50%);
-        margin-right: calc(-50vw + 50%);
-    }
-    
     /* Sub-dashboard container with gradient background */
     .sub-dashboard-container { 
         width: 100%;
         padding: 0;
         margin: 0 !important;
-        background: linear-gradient(135deg, #fafbfd 0%, #f5f6fa 50%, #fafbfd 100%);
-        background-attachment: fixed;
-        min-height: calc(100vh - 80px);
     }
     
     /* Sub-dashboard content wrapper */
     .sub-dashboard-content {
         width: 100%;
-        padding: 24px 20px;
+        padding: 0;
         box-sizing: border-box;
         overflow-x: hidden;
-        max-width: 1400px;
+        max-width: 100%;
         margin: 0 auto;
     }
     
