@@ -3692,12 +3692,10 @@ def get_subjects_ajax(request):
     Returns JSON with:
     - success (bool)
     - message (str)
-    - data: {
-        subjects: [
-            { id, name, code, curriculum },
-            ...
-        ]
-    }
+    - data: [
+        { id, name, code, curriculum },
+        ...
+    ]
     """
     try:
         subjects = Subject.objects.all().values(
@@ -3707,9 +3705,7 @@ def get_subjects_ajax(request):
         return JsonResponse({
             'success': True,
             'message': 'Subjects fetched successfully',
-            'data': {
-                'subjects': list(subjects)
-            }
+            'data': list(subjects)
         })
     
     except Exception as e:
@@ -3939,7 +3935,7 @@ def get_curriculums_ajax(request):
         }, status=500)
 
 
-@require_POST
+@require_http_methods(["GET", "POST"])
 @login_required
 @admin_required
 def edit_teacher_ajax(request, teacher_id):
@@ -3960,11 +3956,12 @@ def edit_teacher_ajax(request, teacher_id):
     - position: Position (from POSITION_CHOICES)
     - date_joined: Date joined
     - is_active: Active status (checkbox)
+    - subjects: Subject IDs (multiple choice)
     
     Returns JSON with:
     - success (bool)
     - message (str)
-    - data: { user_id, full_name, email, position } if successful
+    - data: { user_id, full_name, email, position, subjects } if successful
     """
     from .forms import TeacherEditForm
     
@@ -3979,6 +3976,7 @@ def edit_teacher_ajax(request, teacher_id):
     
     if request.method == 'GET':
         # Return form data for modal population
+        subject_ids = list(staff_profile.subjects.values_list('id', flat=True))
         return JsonResponse({
             'success': True,
             'data': {
@@ -3990,6 +3988,7 @@ def edit_teacher_ajax(request, teacher_id):
                 'position': staff_profile.position,
                 'date_joined': staff_profile.date_joined.strftime('%Y-%m-%d'),
                 'is_active': user.is_active,
+                'subjects': subject_ids,
             }
         })
     
@@ -4016,6 +4015,10 @@ def edit_teacher_ajax(request, teacher_id):
             staff_profile.position = form.cleaned_data['position']
             staff_profile.date_joined = form.cleaned_data['date_joined']
             staff_profile.save()
+            
+            # Update subjects
+            subjects = form.cleaned_data.get('subjects', [])
+            staff_profile.subjects.set(subjects)
             
             return JsonResponse({
                 'success': True,
@@ -4076,7 +4079,7 @@ def delete_teacher_ajax(request, teacher_id):
         }, status=500)
 
 
-@require_POST
+@require_http_methods(["GET", "POST"])
 @login_required
 @admin_required
 def edit_support_staff_ajax(request, staff_id):

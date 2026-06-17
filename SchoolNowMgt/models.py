@@ -128,6 +128,14 @@ class StaffProfile(models.Model):
     bank_name = models.CharField(max_length=200, blank=True, null=True)
     account_holder_name = models.CharField(max_length=200, blank=True, null=True)
     
+    # Subjects taught by this teacher
+    subjects = models.ManyToManyField(
+        'Subject',
+        blank=True,
+        related_name='teachers',
+        help_text="Subjects this teacher is qualified to teach"
+    )
+    
     def __str__(self):
         return f"{self.user.get_full_name()} — {self.position}"
     

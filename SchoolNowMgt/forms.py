@@ -859,6 +859,14 @@ class TeacherEditForm(forms.Form):
         }),
         label='Active'
     )
+    subjects = forms.ModelMultipleChoiceField(
+        queryset=Subject.objects.all().order_by('name'),
+        widget=forms.CheckboxSelectMultiple(attrs={
+            'class': 'form-checkbox'
+        }),
+        required=False,
+        label='Subjects'
+    )
     
     def clean_email(self):
         email = self.cleaned_data.get('email', '').lower()
