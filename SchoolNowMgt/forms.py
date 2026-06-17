@@ -10,7 +10,7 @@ import string
 from .models import (
     Enquiry, StudentAttendance, ClassGrade, Student, 
     CustomUser, StaffProfile, Message, MessageTemplate,
-    School, Event, AdminProfile
+    School, Event, AdminProfile, Subject, Curriculum
 )
 
 
@@ -702,3 +702,258 @@ class ProfilePictureForm(forms.Form):
             raise ValidationError("Only JPG, PNG, and GIF images are allowed.")
         
         return picture
+
+
+# ============================================================================
+# SUBJECT MANAGEMENT & STAFF EDITING FORMS (Phase 4)
+# ============================================================================
+
+class CurriculumForm(forms.ModelForm):
+    """
+    Form for creating and editing curriculums.
+    """
+    
+    class Meta:
+        model = Curriculum
+        fields = ['name', 'code', 'description']
+        widgets = {
+            'name': forms.TextInput(attrs={
+                'placeholder': 'Curriculum name (e.g., National Curriculum)',
+                'class': 'form-input'
+            }),
+            'code': forms.TextInput(attrs={
+                'placeholder': 'Curriculum code (e.g., NC, IC)',
+                'class': 'form-input'
+            }),
+            'description': forms.Textarea(attrs={
+                'placeholder': 'Description of this curriculum...',
+                'class': 'form-input',
+                'rows': 4
+            }),
+        }
+    
+    def clean_code(self):
+        code = self.cleaned_data.get('code', '').strip().upper()
+        if not code:
+            raise ValidationError("Curriculum code is required.")
+        return code
+    
+    def clean_name(self):
+        name = self.cleaned_data.get('name', '').strip()
+        if not name:
+            raise ValidationError("Curriculum name is required.")
+        return name
+
+
+class SubjectForm(forms.ModelForm):
+    """
+    Form for creating and editing subjects with curriculum assignment.
+    """
+    
+    CURRICULUM_CHOICES = [
+        ('national', 'National Curriculum'),
+        ('international', 'International Curriculum'),
+    ]
+    
+    curriculum = forms.ChoiceField(
+        choices=CURRICULUM_CHOICES,
+        widget=forms.Select(attrs={
+            'class': 'form-input'
+        }),
+        label='Curriculum'
+    )
+    
+    class Meta:
+        model = Subject
+        fields = ['name', 'code', 'curriculum']
+        widgets = {
+            'name': forms.TextInput(attrs={
+                'placeholder': 'Subject name (e.g., Mathematics)',
+                'class': 'form-input'
+            }),
+            'code': forms.TextInput(attrs={
+                'placeholder': 'Subject code (e.g., MTH01)',
+                'class': 'form-input'
+            }),
+        }
+    
+    def clean_code(self):
+        code = self.cleaned_data.get('code', '').strip().upper()
+        if not code:
+            raise ValidationError("Subject code is required.")
+        return code
+    
+    def clean_name(self):
+        name = self.cleaned_data.get('name', '').strip()
+        if not name:
+            raise ValidationError("Subject name is required.")
+        return name
+
+
+class TeacherEditForm(forms.Form):
+    """
+    Form for editing teacher information.
+    Updates both CustomUser and StaffProfile fields.
+    """
+    
+    POSITION_CHOICES = [
+        ('Class Teacher', 'Class Teacher'),
+        ('Head Teacher', 'Head Teacher'),
+        ('Subject Teacher', 'Subject Teacher'),
+        ('Deputy Head', 'Deputy Head'),
+        ('Senior Teacher', 'Senior Teacher'),
+        ('Teacher', 'Teacher'),
+    ]
+    
+    first_name = forms.CharField(
+        max_length=150,
+        widget=forms.TextInput(attrs={
+            'placeholder': 'First name',
+            'class': 'form-input'
+        }),
+        label='First Name'
+    )
+    last_name = forms.CharField(
+        max_length=150,
+        widget=forms.TextInput(attrs={
+            'placeholder': 'Last name',
+            'class': 'form-input'
+        }),
+        label='Last Name'
+    )
+    email = forms.EmailField(
+        widget=forms.EmailInput(attrs={
+            'placeholder': 'Email address',
+            'class': 'form-input'
+        }),
+        label='Email'
+    )
+    phone = forms.CharField(
+        max_length=20,
+        required=False,
+        widget=forms.TextInput(attrs={
+            'placeholder': 'Phone number (optional)',
+            'class': 'form-input'
+        }),
+        label='Phone Number'
+    )
+    position = forms.ChoiceField(
+        choices=POSITION_CHOICES,
+        widget=forms.Select(attrs={
+            'class': 'form-input'
+        }),
+        label='Position'
+    )
+    date_joined = forms.DateField(
+        widget=forms.DateInput(attrs={
+            'type': 'date',
+            'class': 'form-input'
+        }),
+        label='Date Joined'
+    )
+    is_active = forms.BooleanField(
+        required=False,
+        initial=True,
+        widget=forms.CheckboxInput(attrs={
+            'class': 'form-checkbox'
+        }),
+        label='Active'
+    )
+    
+    def clean_email(self):
+        email = self.cleaned_data.get('email', '').lower()
+        if not email:
+            raise ValidationError("Email is required.")
+        return email
+    
+    def clean_date_joined(self):
+        date_joined = self.cleaned_data.get('date_joined')
+        if date_joined and date_joined > timezone.now().date():
+            raise ValidationError("Date joined cannot be in the future.")
+        return date_joined
+
+
+class SupportStaffEditForm(forms.Form):
+    """
+    Form for editing support staff information.
+    Updates both CustomUser and StaffProfile fields.
+    """
+    
+    POSITION_CHOICES = [
+        ('Cleaner', 'Cleaner'),
+        ('Security', 'Security'),
+        ('Groundskeeper', 'Groundskeeper'),
+        ('Administrator', 'Administrator'),
+        ('Support Staff', 'Support Staff'),
+        ('Driver', 'Driver'),
+        ('Cook', 'Cook'),
+        ('Nurse', 'Nurse'),
+        ('Maintenance', 'Maintenance'),
+    ]
+    
+    first_name = forms.CharField(
+        max_length=150,
+        widget=forms.TextInput(attrs={
+            'placeholder': 'First name',
+            'class': 'form-input'
+        }),
+        label='First Name'
+    )
+    last_name = forms.CharField(
+        max_length=150,
+        widget=forms.TextInput(attrs={
+            'placeholder': 'Last name',
+            'class': 'form-input'
+        }),
+        label='Last Name'
+    )
+    email = forms.EmailField(
+        widget=forms.EmailInput(attrs={
+            'placeholder': 'Email address',
+            'class': 'form-input'
+        }),
+        label='Email'
+    )
+    phone = forms.CharField(
+        max_length=20,
+        required=False,
+        widget=forms.TextInput(attrs={
+            'placeholder': 'Phone number (optional)',
+            'class': 'form-input'
+        }),
+        label='Phone Number'
+    )
+    position = forms.ChoiceField(
+        choices=POSITION_CHOICES,
+        widget=forms.Select(attrs={
+            'class': 'form-input'
+        }),
+        label='Position'
+    )
+    date_joined = forms.DateField(
+        widget=forms.DateInput(attrs={
+            'type': 'date',
+            'class': 'form-input'
+        }),
+        label='Date Joined'
+    )
+    is_active = forms.BooleanField(
+        required=False,
+        initial=True,
+        widget=forms.CheckboxInput(attrs={
+            'class': 'form-checkbox'
+        }),
+        label='Active'
+    )
+    
+    def clean_email(self):
+        email = self.cleaned_data.get('email', '').lower()
+        if not email:
+            raise ValidationError("Email is required.")
+        return email
+    
+    def clean_date_joined(self):
+        date_joined = self.cleaned_data.get('date_joined')
+        if date_joined and date_joined > timezone.now().date():
+            raise ValidationError("Date joined cannot be in the future.")
+        return date_joined

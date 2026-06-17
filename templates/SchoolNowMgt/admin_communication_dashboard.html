@@ -5,19 +5,172 @@
 
 {% block content %}
 
+<!-- Top Navigation Bar -->
+<nav class="fixed top-0 left-0 right-0 bg-primary text-on-primary px-2 xs:px-3 sm:px-4 md:px-6 lg:px-8 py-2 xs:py-2.5 sm:py-3 md:py-3.5 flex items-center justify-between z-50 shadow-lg gap-1 xs:gap-2 sm:gap-3 md:gap-4" style="overflow: visible;">
+    <style>
+        nav {
+            overflow: visible !important;
+        }
+        
+        /* Staff dropdown hover visibility */
+        .relative.group > div[class~="absolute"] {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+        }
+        
+        .relative.group:hover > div[class~="absolute"] {
+            opacity: 1 !important;
+            visibility: visible !important;
+            pointer-events: auto;
+        }
+    </style>
+    <!-- Left Section: Logo -->
+    <div class="flex items-center gap-1.5 xs:gap-2 sm:gap-3 flex-shrink-0 min-w-0">
+        <div class="w-7 xs:w-8 sm:w-9 md:w-10 h-7 xs:h-8 sm:h-9 md:h-10 rounded-lg sm:rounded-xl bg-secondary-container flex items-center justify-center text-primary flex-shrink-0">
+            <span class="material-symbols-outlined text-base xs:text-lg sm:text-lg md:text-xl" style="font-variation-settings: 'FILL' 1;">school</span>
+        </div>
+        <h1 class="text-xs xs:text-sm sm:text-base md:text-lg font-black text-secondary-fixed hidden xs:inline truncate">SchoolNow</h1>
+    </div>
+    
+    <!-- Navigation Links - Desktop -->
+    <div class="hidden lg:flex items-center gap-0 xl:gap-0.5 flex-grow justify-center overflow-visible" style="overflow: visible !important;">
+        <a class="text-on-primary/70 hover:text-white px-2 xl:px-3 py-1.5 xl:py-2 flex items-center gap-1.5 xl:gap-2 hover:bg-white/10 transition-all text-xs xl:text-sm whitespace-nowrap rounded-lg min-h-10" href="{% url 'SchoolNowMgt:dashboard' %}">
+            <span class="material-symbols-outlined text-sm xl:text-base">dashboard</span>
+            <span class="inline">Dashboard</span>
+        </a>
+        <a class="text-on-primary/70 hover:text-white px-2 xl:px-3 py-1.5 xl:py-2 flex items-center gap-1.5 xl:gap-2 hover:bg-white/10 transition-all text-xs xl:text-sm whitespace-nowrap rounded-lg min-h-10" href="{% url 'SchoolNowMgt:admin_students' %}">
+            <span class="material-symbols-outlined text-sm xl:text-base">school</span>
+            <span>Students</span>
+        </a>
+        <!-- Staff Dropdown -->
+        <div class="relative group">
+            <button class="text-on-primary/70 hover:text-white px-2 xl:px-3 py-1.5 xl:py-2 flex items-center gap-1.5 xl:gap-2 hover:bg-white/10 transition-all text-xs xl:text-sm whitespace-nowrap rounded-lg min-h-10">
+                <span class="material-symbols-outlined text-sm xl:text-base">groups</span>
+                <span>Staff</span>
+                <span class="material-symbols-outlined text-xs xl:text-sm ml-0.5">expand_more</span>
+            </button>
+            <div class="absolute left-0 mt-0 w-40 lg:w-48 bg-primary-container text-on-primary-container rounded-lg shadow-lg transition-all duration-200" style="z-index: 9999; pointer-events: auto;">
+                <a class="block px-3 lg:px-4 py-2.5 lg:py-3 text-xs lg:text-sm hover:bg-secondary-container rounded-t-lg first:rounded-t-lg min-h-10 flex items-center" href="{% url 'SchoolNowMgt:admin_teachers' %}">
+                    <span class="material-symbols-outlined text-sm lg:text-base mr-2 align-middle">person</span>Teachers
+                </a>
+                <a class="block px-3 lg:px-4 py-2.5 lg:py-3 text-xs lg:text-sm hover:bg-secondary-container rounded-b-lg last:rounded-b-lg min-h-10 flex items-center" href="{% url 'SchoolNowMgt:admin_support_staff_dashboard' %}">
+                    <span class="material-symbols-outlined text-sm lg:text-base mr-2 align-middle">support_agent</span>Support Staff
+                </a>
+            </div>
+        </div>
+        <a class="text-on-primary/70 hover:text-white px-2 xl:px-3 py-1.5 xl:py-2 flex items-center gap-1.5 xl:gap-2 hover:bg-white/10 transition-all text-xs xl:text-sm whitespace-nowrap rounded-lg min-h-10" href="{% url 'SchoolNowMgt:admin_communication' %}">
+            <span class="material-symbols-outlined text-sm xl:text-base">chat_bubble</span>
+            <span>Communication</span>
+        </a>
+        <a class="text-on-primary/70 hover:text-white px-2 xl:px-3 py-1.5 xl:py-2 flex items-center gap-1.5 xl:gap-2 hover:bg-white/10 transition-all text-xs xl:text-sm whitespace-nowrap rounded-lg min-h-10" href="{% url 'SchoolNowMgt:admin_finance' %}">
+            <span class="material-symbols-outlined text-sm xl:text-base">payments</span>
+            <span>Finance</span>
+        </a>
+        <a class="text-on-primary/70 hover:text-white px-2 xl:px-3 py-1.5 xl:py-2 flex items-center gap-1.5 xl:gap-2 hover:bg-white/10 transition-all text-xs xl:text-sm whitespace-nowrap rounded-lg min-h-10" href="{% url 'SchoolNowMgt:events_dashboard' %}">
+            <span class="material-symbols-outlined text-sm xl:text-base">event</span>
+            <span>Events</span>
+        </a>
+        <a class="text-on-primary/70 hover:text-white px-2 xl:px-3 py-1.5 xl:py-2 flex items-center gap-1.5 xl:gap-2 hover:bg-white/10 transition-all text-xs xl:text-sm whitespace-nowrap rounded-lg min-h-10" href="{% url 'SchoolNowMgt:admin_reports' %}">
+            <span class="material-symbols-outlined text-sm xl:text-base">analytics</span>
+            <span>Reports</span>
+        </a>
+        </a>
+    </div>
+    
+    <!-- Right Side Actions -->
+    <div class="flex items-center gap-0.5 xs:gap-1 sm:gap-2 flex-shrink-0">
+        <!-- Mobile Menu Button -->
+        <button id="mobileMenuToggle" class="lg:hidden p-1.5 xs:p-2 hover:bg-white/10 rounded-lg transition-all text-on-primary flex items-center min-h-10 min-w-10 relative z-51" style="pointer-events: auto;">
+            <span class="material-symbols-outlined text-lg xs:text-xl">menu</span>
+        </button>
+        
+        <a class="text-on-primary/70 hover:text-white px-1.5 xs:px-2 sm:px-3 py-1.5 xs:py-2 flex items-center gap-1 xs:gap-1.5 sm:gap-2 hover:bg-white/10 transition-all rounded-lg font-bold text-xs xs:text-sm min-h-10 min-w-10" href="{% url 'SchoolNowMgt:custom_logout' %}">
+            <span class="material-symbols-outlined text-base xs:text-lg sm:text-lg">logout</span>
+            <span class="hidden sm:inline">Log out</span>
+        </a>
+    </div>
+</nav>
+
+<!-- Mobile Navigation Menu -->
+<div id="mobileMenu" class="fixed top-12 xs:top-14 sm:top-16 md:top-20 left-0 right-0 bg-primary text-on-primary z-40 max-h-0 overflow-hidden transition-all duration-300 ease-in-out shadow-lg lg:hidden">
+    <div class="p-2 xs:p-3 sm:p-4 space-y-1 xs:space-y-1.5 sm:space-y-2 max-h-[calc(100vh-3rem)] xs:max-h-[calc(100vh-3.5rem)] sm:max-h-[70vh] overflow-hidden">
+        <a class="text-on-primary/80 hover:text-white px-2.5 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 flex items-center gap-2.5 xs:gap-3 hover:bg-white/10 transition-all text-xs xs:text-sm rounded-lg block w-full text-left min-h-10" href="{% url 'SchoolNowMgt:dashboard' %}">
+            <span class="material-symbols-outlined text-base xs:text-lg">dashboard</span>
+            <span>Dashboard</span>
+        </a>
+        <a class="text-on-primary/80 hover:text-white px-2.5 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 flex items-center gap-2.5 xs:gap-3 hover:bg-white/10 transition-all text-xs xs:text-sm rounded-lg block w-full text-left min-h-10" href="{% url 'SchoolNowMgt:admin_students' %}">
+            <span class="material-symbols-outlined text-base xs:text-lg">school</span>
+            <span>Students</span>
+        </a>
+        <button class="staffToggleMobile text-on-primary/80 hover:text-white px-2.5 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 flex items-center gap-2.5 xs:gap-3 hover:bg-white/10 transition-all text-xs xs:text-sm rounded-lg w-full text-left min-h-10" onclick="toggleStaffMenu(this)">
+            <span class="material-symbols-outlined text-base xs:text-lg">groups</span>
+            <span>Staff</span>
+            <span class="material-symbols-outlined text-base xs:text-lg ml-auto expand-icon">expand_more</span>
+        </button>
+        <div class="staffSubmenu hidden pl-4 xs:pl-6 sm:pl-8 space-y-1 xs:space-y-1.5 sm:space-y-2">
+            <a class="text-on-primary/80 hover:text-white px-2.5 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 flex items-center gap-2.5 xs:gap-3 hover:bg-white/10 transition-all text-xs xs:text-sm rounded-lg block w-full text-left min-h-10" href="{% url 'SchoolNowMgt:admin_shift_dashboard' %}">
+                <span class="material-symbols-outlined text-base xs:text-lg">schedule</span>
+                <span>Shifts</span>
+            </a>
+            <a class="text-on-primary/80 hover:text-white px-2.5 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 flex items-center gap-2.5 xs:gap-3 hover:bg-white/10 transition-all text-xs xs:text-sm rounded-lg block w-full text-left min-h-10" href="{% url 'SchoolNowMgt:admin_support_staff_dashboard' %}">
+                <span class="material-symbols-outlined text-base xs:text-lg">support_agent</span>
+                <span>Support Staff</span>
+            </a>
+            <a class="text-on-primary/80 hover:text-white px-2.5 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 flex items-center gap-2.5 xs:gap-3 hover:bg-white/10 transition-all text-xs xs:text-sm rounded-lg block w-full text-left min-h-10" href="{% url 'SchoolNowMgt:admin_teachers' %}">
+                <span class="material-symbols-outlined text-base xs:text-lg">person</span>
+                <span>Teachers</span>
+            </a>
+        </div>
+        <a class="text-on-primary/80 hover:text-white px-2.5 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 flex items-center gap-2.5 xs:gap-3 hover:bg-white/10 transition-all text-xs xs:text-sm rounded-lg block w-full text-left min-h-10" href="{% url 'SchoolNowMgt:admin_communication' %}">
+            <span class="material-symbols-outlined text-base xs:text-lg">chat_bubble</span>
+            <span>Communication</span>
+        </a>
+        <a class="text-on-primary/80 hover:text-white px-2.5 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 flex items-center gap-2.5 xs:gap-3 hover:bg-white/10 transition-all text-xs xs:text-sm rounded-lg block w-full text-left min-h-10" href="{% url 'SchoolNowMgt:admin_finance' %}">
+            <span class="material-symbols-outlined text-base xs:text-lg">payments</span>
+            <span>Finance</span>
+        </a>
+        <a class="text-on-primary/80 hover:text-white px-2.5 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 flex items-center gap-2.5 xs:gap-3 hover:bg-white/10 transition-all text-xs xs:text-sm rounded-lg block w-full text-left min-h-10" href="{% url 'SchoolNowMgt:events_dashboard' %}">
+            <span class="material-symbols-outlined text-base xs:text-lg">event</span>
+            <span>Events</span>
+        </a>
+        <a class="text-on-primary/80 hover:text-white px-2.5 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 flex items-center gap-2.5 xs:gap-3 hover:bg-white/10 transition-all text-xs xs:text-sm rounded-lg block w-full text-left min-h-10" href="{% url 'SchoolNowMgt:admin_reports' %}">
+            <span class="material-symbols-outlined text-base xs:text-lg">analytics</span>
+            <span>Reports</span>
+        </a>
+    </div>
+</div>
+
 <!-- Main Content Area -->
 <div class="w-full min-h-screen pt-24">
     
     <!-- Header Section -->
-    <header class="flex justify-between items-center px-container-padding w-full sticky top-24 z-40 bg-surface/70 backdrop-blur-2xl border-b border-white/20 shadow-sm h-14 md:h-16">
-        <div class="flex items-center gap-4">
-            <a href="{% url 'SchoolNowMgt:dashboard' %}" class="text-primary hover:text-secondary-container flex items-center gap-2 text-sm font-bold">
-                <span class="material-symbols-outlined">arrow_back</span>
-                <span>Dashboard</span>
+    <header class="flex justify-between items-center px-container-padding w-full sticky top-24 z-40 bg-surface/70 backdrop-blur-2xl border-b border-white/20 shadow-sm h-auto md:h-16 py-3 md:py-0">
+        <!-- Left: Search Bar (hidden on mobile) -->
+        <div class="hidden md:flex relative items-center bg-surface-container-low rounded-full px-4 py-2 w-80">
+            <span class="material-symbols-outlined text-outline">search</span>
+            <input class="bg-transparent border-none focus:ring-0 text-body-md w-full ml-2 text-sm" placeholder="Search messages..." type="text"/>
+        </div>
+        
+        <!-- Center: Title -->
+        <h2 class="text-primary font-bold text-lg md:text-xl md:flex-grow md:text-center">Communication Center</h2>
+        
+        <!-- Right: Icons -->
+        <div class="flex items-center gap-3 md:gap-4 flex-shrink-0">
+            <button class="p-2 rounded-full hover:bg-surface-container-highest/50 cursor-pointer transition-all active:scale-95 md:hidden">
+                <span class="material-symbols-outlined text-on-surface-variant">search</span>
+            </button>
+            <a href="{% url 'SchoolNowMgt:admin_communication' %}" class="p-2 rounded-full hover:bg-surface-container-highest/50 cursor-pointer transition-all active:scale-95 relative">
+                <span class="material-symbols-outlined text-on-surface-variant">notifications</span>
+                <span class="absolute top-1 right-1 w-2 h-2 bg-error rounded-full"></span>
+            </a>
+            <a href="{% url 'SchoolNowMgt:admin_profile' %}" class="hidden md:block p-2 rounded-full hover:bg-surface-container-highest/50 cursor-pointer transition-all active:scale-95">
+                <span class="material-symbols-outlined text-on-surface-variant">settings</span>
             </a>
         </div>
-        <h2 class="text-primary font-bold text-lg md:text-xl">Communication Center</h2>
-        <div class="w-32"></div>
     </header>
 
     <!-- Page Content -->
@@ -184,5 +337,91 @@
 
 <!-- Send Message Modal -->
 {% include "includes/message_modal.html" %}
+
+<script>
+    // Staff Menu Toggle Function
+    function toggleStaffMenu(button) {
+        const submenu = button.nextElementSibling;
+        const icon = button.querySelector('.expand-icon');
+        
+        if (submenu.classList.contains('hidden')) {
+            submenu.classList.remove('hidden');
+            icon.textContent = 'expand_less';
+        } else {
+            submenu.classList.add('hidden');
+            icon.textContent = 'expand_more';
+        }
+    }
+
+    // Handle Desktop Staff Dropdown Hover
+    const attachStaffDropdownHandlers = function() {
+        const staffDropdownContainers = document.querySelectorAll('nav .relative.group');
+        const header = document.querySelector('header');
+        
+        staffDropdownContainers.forEach(container => {
+            const staffButton = container.querySelector('button');
+            const dropdown = container.querySelector('[class~="absolute"]');
+            
+            if (staffButton && dropdown && staffButton.textContent.includes('Staff')) {
+                container.addEventListener('mouseenter', () => {
+                    dropdown.style.opacity = '1';
+                    dropdown.style.visibility = 'visible';
+                    dropdown.style.pointerEvents = 'auto';
+                    if (header) {
+                        header.style.pointerEvents = 'none';
+                    }
+                });
+                
+                container.addEventListener('mouseleave', () => {
+                    dropdown.style.opacity = '0';
+                    dropdown.style.visibility = 'hidden';
+                    dropdown.style.pointerEvents = 'none';
+                    if (header) {
+                        header.style.pointerEvents = 'auto';
+                    }
+                });
+            }
+        });
+    };
+    
+    // Run immediately and also on DOMContentLoaded
+    attachStaffDropdownHandlers();
+    document.addEventListener('DOMContentLoaded', attachStaffDropdownHandlers);
+
+    // Mobile Menu Toggle
+    const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+    const mobileMenu = document.getElementById('mobileMenu');
+    
+    if (mobileMenuToggle) {
+        mobileMenuToggle.addEventListener('click', () => {
+            if (mobileMenu.style.maxHeight === '0px' || !mobileMenu.style.maxHeight) {
+                mobileMenu.style.maxHeight = mobileMenu.scrollHeight + 'px';
+            } else {
+                mobileMenu.style.maxHeight = '0px';
+            }
+        });
+        
+        // Close menu when clicking on a link
+        document.querySelectorAll('#mobileMenu a').forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.style.maxHeight = '0px';
+            });
+        });
+    }
+    
+    // Close menu when clicking outside
+    document.addEventListener('click', (e) => {
+        if (mobileMenu && !mobileMenu.contains(e.target) && !mobileMenuToggle.contains(e.target)) {
+            mobileMenu.style.maxHeight = '0px';
+        }
+    });
+    
+    // Handle screen resize - close menu on larger screens
+    window.addEventListener('resize', () => {
+        if (window.innerWidth >= 1024 && mobileMenu) {
+            mobileMenu.style.maxHeight = '0px';
+        }
+    });
+</script>
 
 {% endblock %}

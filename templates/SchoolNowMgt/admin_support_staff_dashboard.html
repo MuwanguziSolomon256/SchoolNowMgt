@@ -1,7 +1,7 @@
 {% extends "SchoolNowMgt/base_ethos.html" %}
 {% load static %}
 
-{% block title %}Staff Dashboard - Admin Panel{% endblock %}
+{% block title %}Support Staff Dashboard - Admin Panel{% endblock %}
 
 {% block content %}
 
@@ -110,17 +110,13 @@
             <span class="material-symbols-outlined text-base xs:text-lg ml-auto expand-icon">expand_more</span>
         </button>
         <div class="staffSubmenu hidden pl-4 xs:pl-6 sm:pl-8 space-y-1 xs:space-y-1.5 sm:space-y-2">
-            <a class="text-on-primary/80 hover:text-white px-2.5 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 flex items-center gap-2.5 xs:gap-3 hover:bg-white/10 transition-all text-xs xs:text-sm rounded-lg block w-full text-left min-h-10" href="{% url 'SchoolNowMgt:admin_shift_dashboard' %}">
-                <span class="material-symbols-outlined text-base xs:text-lg">schedule</span>
-                <span>Shifts</span>
+            <a class="text-on-primary/80 hover:text-white px-2.5 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 flex items-center gap-2.5 xs:gap-3 hover:bg-white/10 transition-all text-xs xs:text-sm rounded-lg block w-full text-left min-h-10" href="{% url 'SchoolNowMgt:admin_teachers' %}">
+                <span class="material-symbols-outlined text-base xs:text-lg">person</span>
+                <span>Teachers</span>
             </a>
             <a class="text-on-primary/80 hover:text-white px-2.5 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 flex items-center gap-2.5 xs:gap-3 hover:bg-white/10 transition-all text-xs xs:text-sm rounded-lg block w-full text-left min-h-10" href="{% url 'SchoolNowMgt:admin_support_staff_dashboard' %}">
                 <span class="material-symbols-outlined text-base xs:text-lg">support_agent</span>
                 <span>Support Staff</span>
-            </a>
-            <a class="text-on-primary/80 hover:text-white px-2.5 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 flex items-center gap-2.5 xs:gap-3 hover:bg-white/10 transition-all text-xs xs:text-sm rounded-lg block w-full text-left min-h-10" href="{% url 'SchoolNowMgt:admin_teachers' %}">
-                <span class="material-symbols-outlined text-base xs:text-lg">person</span>
-                <span>Teachers</span>
             </a>
         </div>
         <a class="text-on-primary/80 hover:text-white px-2.5 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 flex items-center gap-2.5 xs:gap-3 hover:bg-white/10 transition-all text-xs xs:text-sm rounded-lg block w-full text-left min-h-10" href="{% url 'SchoolNowMgt:admin_communication' %}">
@@ -139,9 +135,6 @@
             <span class="material-symbols-outlined text-base xs:text-lg">analytics</span>
             <span>Reports</span>
         </a>
-            <span class="material-symbols-outlined">family_restroom</span>
-            <span>Parents</span>
-        </a>
     </div>
 </div>
 
@@ -153,11 +146,11 @@
         <!-- Left: Search Bar (hidden on mobile) -->
         <div class="hidden md:flex relative items-center bg-surface-container-low rounded-full px-4 py-2 w-80">
             <span class="material-symbols-outlined text-outline">search</span>
-            <input class="bg-transparent border-none focus:ring-0 text-body-md w-full ml-2 text-sm" placeholder="Search staff..." type="text"/>
+            <input class="bg-transparent border-none focus:ring-0 text-body-md w-full ml-2 text-sm" placeholder="Search support staff..." type="text"/>
         </div>
         
         <!-- Center: Title -->
-        <h2 class="text-primary font-bold text-lg md:text-xl md:flex-grow md:text-center">Staff & Shift Management</h2>
+        <h2 class="text-primary font-bold text-lg md:text-xl md:flex-grow md:text-center">Support Staff Management</h2>
         
         <!-- Right: Icons -->
         <div class="flex items-center gap-3 md:gap-4 flex-shrink-0">
@@ -180,22 +173,22 @@
         <!-- Header Section -->
         <div class="flex flex-col gap-4 md:gap-0 md:flex-row md:items-end justify-between">
             <div>
-                <h1 class="font-display-lg text-display-lg text-primary text-2xl md:text-4xl">Staff & Shifts</h1>
+                <h1 class="font-display-lg text-display-lg text-primary text-2xl md:text-4xl">Support Staff</h1>
                 <p class="font-body-lg text-body-lg text-on-surface-variant text-xs md:text-sm">
-                    Manage staff members, track attendance, and monitor teacher shifts in real-time.
+                    Manage support staff members, track attendance, assigned tasks, and monitor schedules in real-time.
                 </p>
             </div>
             <div class="flex gap-2">
-                <a href="{% url 'SchoolNowMgt:export_staff' %}" 
+                <button type="button" onclick="openAddSupportStaffModal()" 
+                   class="bg-primary text-on-primary rounded-lg font-bold px-3 md:px-4 py-2 flex items-center gap-2 hover:brightness-110 transition-all text-sm">
+                    <span class="material-symbols-outlined text-sm">person_add</span>
+                    <span class="hidden md:inline">Add New Support Staff</span>
+                </button>
+                <a href="{% url 'SchoolNowMgt:support_export_schedule' %}" 
                    class="bg-tertiary text-on-tertiary rounded-lg font-bold px-3 md:px-4 py-2 flex items-center gap-2 hover:brightness-110 transition-all text-sm">
                     <span class="material-symbols-outlined text-sm">download</span>
                     <span class="hidden md:inline">Export</span>
                 </a>
-                <button onclick="document.getElementById('staffOnboardModal').classList.remove('hidden')" 
-                        class="bg-secondary-fixed text-on-secondary-fixed rounded-lg font-bold px-3 md:px-4 py-2 flex items-center gap-2 hover:brightness-110 transition-all text-sm">
-                    <span class="material-symbols-outlined">group_add</span>
-                    <span>Add Staff</span>
-                </button>
             </div>
         </div>
 
@@ -203,30 +196,30 @@
         <div class="flex gap-2 md:gap-4 border-b border-outline-variant/20">
             <button onclick="switchTab('staff')" id="staffTab" 
                     class="px-4 py-3 font-bold text-sm border-b-2 border-primary text-primary transition-all tab-active">
-                <span class="material-symbols-outlined inline text-lg">people</span> Staff
+                <span class="material-symbols-outlined inline text-lg">people</span> Support Staff
             </button>
             <button onclick="switchTab('shifts')" id="shiftsTab" 
                     class="px-4 py-3 font-bold text-sm border-b-2 border-transparent text-on-surface-variant hover:text-primary transition-all tab-inactive">
-                <span class="material-symbols-outlined inline text-lg">schedule</span> Shifts
+                <span class="material-symbols-outlined inline text-lg">task_alt</span> Tasks
             </button>
         </div>
 
-        <!-- Staff Tab Content -->
+        <!-- Support Staff Tab Content -->
         <div id="staffContent" class="space-y-6">
             <!-- Stats Cards -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-gutter">
-            <!-- Total Staff -->
+            <!-- Total Support Staff -->
             <div class="glass-card p-4 md:p-6 rounded-2xl md:rounded-3xl shadow-sm">
                 <div class="flex justify-between items-start mb-4">
                     <div class="p-2 md:p-3 bg-primary/5 rounded-2xl">
-                        <span class="material-symbols-outlined text-primary text-lg md:text-xl">groups</span>
+                        <span class="material-symbols-outlined text-primary text-lg md:text-xl">support_agent</span>
                     </div>
                     <span class="text-green-600 font-bold text-label-md flex items-center gap-1 text-xs md:text-sm">
                         <span class="material-symbols-outlined text-sm">trending_up</span>
                         +{{ new_staff_this_month }}
                     </span>
                 </div>
-                <h3 class="text-on-surface-variant font-label-md uppercase tracking-wider text-xs">Total Staff</h3>
+                <h3 class="text-on-surface-variant font-label-md uppercase tracking-wider text-xs">Total Support Staff</h3>
                 <p class="font-display-lg text-display-lg text-primary mt-1 text-2xl md:text-4xl">{{ total_staff }}</p>
             </div>
 
@@ -254,7 +247,7 @@
             </div>
         </div>
 
-        <!-- Filter & Search Section (Phase 1.5) -->
+        <!-- Filter & Search Section -->
         <div class="glass-card rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-sm">
             <form method="GET" class="space-y-4">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
@@ -284,49 +277,17 @@
                     <button type="submit" class="bg-primary text-on-primary rounded-lg font-bold px-4 py-2 hover:brightness-110 transition-all text-sm">
                         <span class="material-symbols-outlined inline text-sm">search</span> Filter
                     </button>
-                    <a href="{% url 'SchoolNowMgt:admin_staff' %}" class="bg-surface-container text-on-surface rounded-lg font-bold px-4 py-2 hover:brightness-90 transition-all text-sm">
+                    <a href="{% url 'SchoolNowMgt:admin_support_staff_dashboard' %}" class="bg-surface-container text-on-surface rounded-lg font-bold px-4 py-2 hover:brightness-90 transition-all text-sm">
                         Clear
                     </a>
                 </div>
             </form>
         </div>
 
-        <!-- Staff by Position -->
-        <div class="glass-card rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-sm">
-            <h3 class="font-headline-md text-headline-md text-primary mb-4 md:mb-6 text-lg md:text-xl">Staff Distribution by Position</h3>
-            
-            <div class="overflow-x-auto">
-                <table class="w-full text-xs md:text-sm">
-                    <thead>
-                        <tr class="border-b border-outline-variant/20">
-                            <th class="pb-3 md:pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-left">Position</th>
-                            <th class="pb-3 md:pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-center">Count</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for position in staff_positions %}
-                        <tr class="border-b border-outline-variant/10 hover:bg-surface-container-low/50 transition-colors">
-                            <td class="py-3 md:py-4 text-primary font-bold">{{ position.position }}</td>
-                            <td class="py-3 md:py-4 text-center">
-                                <span class="badge badge-info">{{ position.position_count }}</span>
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="2" class="py-6 text-center text-on-surface-variant">
-                                <p class="font-label-md">No staff members</p>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- Recent Staff -->
+        <!-- Support Staff List -->
         <div class="glass-card rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-sm">
             <div class="flex justify-between items-center mb-4 md:mb-6">
-                <h3 class="font-headline-md text-headline-md text-primary text-lg md:text-xl">Recent Hires</h3>
+                <h3 class="font-headline-md text-headline-md text-primary text-lg md:text-xl">Support Staff List</h3>
                 <span class="text-on-surface-variant text-xs md:text-sm">
                     Page {{ recent_staff.number }} of {{ paginator.num_pages }}
                 </span>
@@ -340,7 +301,8 @@
                             <th class="pb-3 md:pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-left">Employee ID</th>
                             <th class="pb-3 md:pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-left">Position</th>
                             <th class="pb-3 md:pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-left">Date Joined</th>
-                            <th class="pb-3 md:pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-left">Type</th>
+                            <th class="pb-3 md:pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-center">Type</th>
+                            <th class="pb-3 md:pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-center">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -357,16 +319,30 @@
                             <td class="py-3 md:py-4 text-on-surface-variant">{{ staff.employee_id }}</td>
                             <td class="py-3 md:py-4 text-on-surface-variant">{{ staff.position }}</td>
                             <td class="py-3 md:py-4 text-on-surface-variant">{{ staff.date_joined|date:"M d, Y" }}</td>
-                            <td class="py-3 md:py-4">
+                            <td class="py-3 md:py-4 text-center">
                                 <span class="badge {% if staff.is_full_time %}badge-success{% else %}badge-warning{% endif %} text-xs md:text-sm">
                                     {% if staff.is_full_time %}Full-time{% else %}Part-time{% endif %}
                                 </span>
                             </td>
+                            <td class="py-3 md:py-4 text-center">
+                                <div class="flex gap-2 justify-center">
+                                    <button type="button" onclick="openEditSupportStaffModal({{ staff.user.id }})"
+                                           class="p-2 rounded-lg hover:bg-primary/10 text-primary transition-all group"
+                                           title="Edit Support Staff">
+                                        <span class="material-symbols-outlined text-lg">edit</span>
+                                    </button>
+                                    <button type="button" onclick="confirmDeleteSupportStaff({{ staff.user.id }}, '{{ staff.user.get_full_name }}')"
+                                           class="p-2 rounded-lg hover:bg-error/10 text-error transition-all group"
+                                           title="Delete Support Staff">
+                                        <span class="material-symbols-outlined text-lg">delete</span>
+                                    </button>
+                                </div>
+                            </td>
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="5" class="py-8 text-center text-on-surface-variant">
-                                <p class="font-label-md">No staff members found</p>
+                            <td colspan="6" class="py-8 text-center text-on-surface-variant">
+                                <p class="font-label-md">No support staff found</p>
                             </td>
                         </tr>
                         {% endfor %}
@@ -374,7 +350,7 @@
                 </table>
             </div>
 
-            <!-- Pagination Controls (Phase 1.5) -->
+            <!-- Pagination Controls -->
             {% if paginator.num_pages > 1 %}
             <div class="mt-4 md:mt-6 flex justify-center items-center gap-2">
                 {% if recent_staff.has_previous %}
@@ -408,144 +384,80 @@
 
         </div><!-- End staffContent -->
 
-        <!-- Shifts Tab Content -->
+        <!-- Tasks Tab Content -->
         <div id="shiftsContent" class="space-y-6 hidden">
             
-            <!-- Shift Status Summary Cards -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-gutter">
-                <!-- On Duty -->
+            <!-- Task Status Summary Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-gutter">
+                <!-- Total Tasks -->
+                <div class="glass-card p-4 md:p-6 rounded-2xl md:rounded-3xl shadow-sm">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="p-2 md:p-3 bg-primary/10 rounded-2xl">
+                            <span class="material-symbols-outlined text-primary text-lg md:text-xl">task_alt</span>
+                        </div>
+                    </div>
+                    <h3 class="text-on-surface-variant font-label-md uppercase tracking-wider text-xs">Total Tasks</h3>
+                    <p class="font-display-lg text-display-lg text-primary mt-1 text-2xl md:text-4xl">{{ total_tasks }}</p>
+                    <p class="text-on-surface-variant text-xs mt-1">Assigned</p>
+                </div>
+
+                <!-- Completed -->
                 <div class="glass-card p-4 md:p-6 rounded-2xl md:rounded-3xl shadow-sm">
                     <div class="flex justify-between items-start mb-4">
                         <div class="p-2 md:p-3 bg-green-500/10 rounded-2xl">
                             <span class="material-symbols-outlined text-green-600 text-lg md:text-xl">check_circle</span>
                         </div>
                     </div>
-                    <h3 class="text-on-surface-variant font-label-md uppercase tracking-wider text-xs">On Duty</h3>
-                    <p class="font-display-lg text-display-lg text-green-600 mt-1 text-2xl md:text-4xl">{{ on_duty_count }}</p>
-                    <p class="text-on-surface-variant text-xs mt-1">Currently working</p>
+                    <h3 class="text-on-surface-variant font-label-md uppercase tracking-wider text-xs">Completed</h3>
+                    <p class="font-display-lg text-display-lg text-green-600 mt-1 text-2xl md:text-4xl">{{ completed_tasks }}</p>
+                    <p class="text-on-surface-variant text-xs mt-1">Done</p>
                 </div>
 
-                <!-- On Break -->
-                <div class="glass-card p-4 md:p-6 rounded-2xl md:rounded-3xl shadow-sm">
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="p-2 md:p-3 bg-blue-500/10 rounded-2xl">
-                            <span class="material-symbols-outlined text-blue-600 text-lg md:text-xl">coffee</span>
-                        </div>
-                    </div>
-                    <h3 class="text-on-surface-variant font-label-md uppercase tracking-wider text-xs">On Break</h3>
-                    <p class="font-display-lg text-display-lg text-blue-600 mt-1 text-2xl md:text-4xl">{{ on_break_count }}</p>
-                    <p class="text-on-surface-variant text-xs mt-1">Taking a break</p>
-                </div>
-
-                <!-- Clocked Out -->
+                <!-- Pending -->
                 <div class="glass-card p-4 md:p-6 rounded-2xl md:rounded-3xl shadow-sm">
                     <div class="flex justify-between items-start mb-4">
                         <div class="p-2 md:p-3 bg-yellow-500/10 rounded-2xl">
-                            <span class="material-symbols-outlined text-yellow-600 text-lg md:text-xl">logout</span>
+                            <span class="material-symbols-outlined text-yellow-600 text-lg md:text-xl">schedule</span>
                         </div>
                     </div>
-                    <h3 class="text-on-surface-variant font-label-md uppercase tracking-wider text-xs">Clocked Out</h3>
-                    <p class="font-display-lg text-display-lg text-yellow-600 mt-1 text-2xl md:text-4xl">{{ clocked_out_count }}</p>
-                    <p class="text-on-surface-variant text-xs mt-1">Finished shift</p>
-                </div>
-
-                <!-- Not Clocked In -->
-                <div class="glass-card p-4 md:p-6 rounded-2xl md:rounded-3xl shadow-sm">
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="p-2 md:p-3 bg-red-500/10 rounded-2xl">
-                            <span class="material-symbols-outlined text-red-600 text-lg md:text-xl">schedule</span>
-                        </div>
-                    </div>
-                    <h3 class="text-on-surface-variant font-label-md uppercase tracking-wider text-xs">Not Clocked In</h3>
-                    <p class="font-display-lg text-display-lg text-red-600 mt-1 text-2xl md:text-4xl">{{ not_clocked_in_count }}</p>
-                    <p class="text-on-surface-variant text-xs mt-1">Haven't started</p>
+                    <h3 class="text-on-surface-variant font-label-md uppercase tracking-wider text-xs">Pending</h3>
+                    <p class="font-display-lg text-display-lg text-yellow-600 mt-1 text-2xl md:text-4xl">{{ pending_tasks }}</p>
+                    <p class="text-on-surface-variant text-xs mt-1">Not started</p>
                 </div>
             </div>
 
-            <!-- Shift Quick Actions -->
+            <!-- Tasks Table -->
+            {% if tasks %}
             <div class="glass-card rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-sm">
-                <h3 class="font-headline-md text-headline-md text-primary mb-4 md:mb-6 text-lg md:text-xl">Quick Actions</h3>
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
-                    <a href="{% url 'SchoolNowMgt:admin_shift_dashboard' %}" 
-                       class="bg-primary text-on-primary rounded-lg font-bold px-4 py-2 hover:brightness-110 transition-all text-sm text-center">
-                        <span class="material-symbols-outlined inline text-lg">dashboard</span> Shift Dashboard
-                    </a>
-                    <a href="{% url 'SchoolNowMgt:admin_shift_history' %}" 
-                       class="bg-secondary text-on-secondary rounded-lg font-bold px-4 py-2 hover:brightness-110 transition-all text-sm text-center">
-                        <span class="material-symbols-outlined inline text-lg">history</span> Shift History
-                    </a>
-                    <a href="{% url 'SchoolNowMgt:admin_shift_report' %}?report_type=daily" 
-                       class="bg-tertiary text-on-tertiary rounded-lg font-bold px-4 py-2 hover:brightness-110 transition-all text-sm text-center">
-                        <span class="material-symbols-outlined inline text-lg">analytics</span> Reports
-                    </a>
-                    <a href="{% url 'SchoolNowMgt:admin_shift_history' %}?export=csv" 
-                       class="bg-secondary-container text-on-secondary-container rounded-lg font-bold px-4 py-2 hover:brightness-110 transition-all text-sm text-center">
-                        <span class="material-symbols-outlined inline text-lg">download</span> Export
-                    </a>
-                </div>
-            </div>
-
-            <!-- Recent Shifts Table -->
-            {% if recent_shifts %}
-            <div class="glass-card rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-sm">
-                <h3 class="font-headline-md text-headline-md text-primary mb-4 md:mb-6 text-lg md:text-xl">Today's Shift Records</h3>
+                <h3 class="font-headline-md text-headline-md text-primary mb-4 md:mb-6 text-lg md:text-xl">Assigned Tasks</h3>
                 
                 <div class="overflow-x-auto">
                     <table class="w-full text-xs md:text-sm">
                         <thead>
                             <tr class="border-b border-outline-variant/20">
-                                <th class="pb-3 md:pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-left">Teacher Name</th>
-                                <th class="pb-3 md:pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-left">Clock In</th>
-                                <th class="pb-3 md:pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-left">Clock Out</th>
-                                <th class="pb-3 md:pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-left">Total Shift</th>
-                                <th class="pb-3 md:pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-left">Breaks</th>
-                                <th class="pb-3 md:pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-center">Status</th>
+                                <th class="pb-3 md:pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-left">Task</th>
+                                <th class="pb-3 md:pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-left">Assigned To</th>
+                                <th class="pb-3 md:pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-left">Priority</th>
+                                <th class="pb-3 md:pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-left">Status</th>
+                                <th class="pb-3 md:pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-left">Due Date</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {% for shift in recent_shifts %}
+                            {% for task in tasks %}
                             <tr class="border-b border-outline-variant/10 hover:bg-surface-container-low/50 transition-colors">
+                                <td class="py-3 md:py-4 font-bold text-primary">{{ task.title }}</td>
+                                <td class="py-3 md:py-4 text-on-surface-variant">{{ task.teacher.user.get_full_name }}</td>
                                 <td class="py-3 md:py-4">
-                                    <div class="flex items-center gap-2 md:gap-3">
-                                        <div class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary text-xs md:text-sm flex-shrink-0">
-                                            {{ shift.staff.user.first_name|first|upper }}
-                                        </div>
-                                        <span class="font-bold text-primary">{{ shift.staff.user.get_full_name }}</span>
-                                    </div>
+                                    <span class="badge {% if task.priority == 'high' %}badge-danger{% elif task.priority == 'medium' %}badge-warning{% else %}badge-info{% endif %} text-xs md:text-sm">
+                                        {{ task.get_priority_display }}
+                                    </span>
                                 </td>
-                                <td class="py-3 md:py-4 text-on-surface-variant">
-                                    {% if shift.time_in %}
-                                        <strong>{{ shift.time_in|time:"H:i" }}</strong>
-                                    {% else %}
-                                        <span class="text-on-surface-variant">—</span>
-                                    {% endif %}
+                                <td class="py-3 md:py-4">
+                                    <span class="badge {% if task.status == 'completed' %}badge-success{% else %}badge-warning{% endif %} text-xs md:text-sm">
+                                        {{ task.get_status_display }}
+                                    </span>
                                 </td>
-                                <td class="py-3 md:py-4 text-on-surface-variant">
-                                    {% if shift.time_out %}
-                                        <strong>{{ shift.time_out|time:"H:i" }}</strong>
-                                    {% else %}
-                                        <span class="badge badge-info">On duty</span>
-                                    {% endif %}
-                                </td>
-                                <td class="py-3 md:py-4 text-on-surface-variant">
-                                    {% if shift.time_in and shift.time_out %}
-                                        <span class="badge badge-secondary">{{ shift.get_shift_hours }}</span>
-                                    {% else %}
-                                        <span class="text-on-surface-variant">—</span>
-                                    {% endif %}
-                                </td>
-                                <td class="py-3 md:py-4 text-on-surface-variant">
-                                    <span class="badge badge-info">{{ shift.break_count }}</span>
-                                </td>
-                                <td class="py-3 md:py-4 text-center">
-                                    {% if shift.status == "present" and shift.time_out %}
-                                        <span class="badge badge-warning">Clocked out</span>
-                                    {% elif shift.status == "present" %}
-                                        <span class="badge badge-success">On duty</span>
-                                    {% else %}
-                                        <span class="badge badge-danger">Absent</span>
-                                    {% endif %}
-                                </td>
+                                <td class="py-3 md:py-4 text-on-surface-variant">{{ task.due_date|date:"M d, Y" }}</td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -558,9 +470,6 @@
 
     </section>
 </div>
-
-<!-- Staff Onboard Modal -->
-{% include "includes/staff_onboard_modal.html" %}
 
 <script>
     // Staff Menu Toggle Function
@@ -648,6 +557,43 @@
     });
 
     // Tab Switching Function
+    // ===== TOAST NOTIFICATION SYSTEM =====
+    
+    function showToast(message, type = 'success', duration = 3000) {
+        const toastContainer = document.getElementById('toastContainer') || createToastContainer();
+        const toast = document.createElement('div');
+        const bgColor = type === 'success' ? 'bg-success/10 border-success' : 
+                       type === 'error' ? 'bg-error/10 border-error' : 
+                       'bg-warning/10 border-warning';
+        const textColor = type === 'success' ? 'text-success' : 
+                         type === 'error' ? 'text-error' : 
+                         'text-warning';
+        const icon = type === 'success' ? 'check_circle' : 
+                    type === 'error' ? 'error' : 
+                    'warning';
+        
+        toast.className = `flex items-center gap-3 ${bgColor} border-l-4 px-4 py-3 rounded-lg mb-2 animate-in fade-in slide-in-from-right-4 ${textColor}`;
+        toast.innerHTML = `<span class="material-symbols-outlined">${icon}</span><span class="text-sm">${message}</span>`;
+        toastContainer.appendChild(toast);
+        
+        if (duration > 0) {
+            setTimeout(() => {
+                toast.classList.remove('animate-in');
+                toast.classList.add('animate-out', 'fade-out', 'slide-out-to-right-4');
+                setTimeout(() => toast.remove(), 300);
+            }, duration);
+        }
+        return toast;
+    }
+
+    function createToastContainer() {
+        const container = document.createElement('div');
+        container.id = 'toastContainer';
+        container.className = 'fixed bottom-4 right-4 z-[9998] max-w-sm';
+        document.body.appendChild(container);
+        return container;
+    }
+
     function switchTab(tabName) {
         // Hide all tab content
         document.getElementById('staffContent').classList.add('hidden');
@@ -671,6 +617,336 @@
             document.getElementById('shiftsTab').classList.add('tab-active', 'border-primary', 'text-primary');
         }
     }
+
+    // Add Support Staff Modal Functions
+    function openAddSupportStaffModal() {
+        document.getElementById('addSupportStaffForm').reset();
+        document.getElementById('addSupportStaffModal').classList.remove('hidden');
+        document.getElementById('addSupportStaffModal').classList.add('flex');
+    }
+
+    function closeAddSupportStaffModal() {
+        document.getElementById('addSupportStaffModal').classList.add('hidden');
+        document.getElementById('addSupportStaffModal').classList.remove('flex');
+        document.getElementById('addSupportStaffForm').reset();
+    }
+
+    function submitAddSupportStaff(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(document.getElementById('addSupportStaffForm'));
+        const submitBtn = document.querySelector('#addSupportStaffForm button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        
+        submitBtn.innerHTML = '<span class="material-symbols-outlined text-sm animate-spin">sync</span> Creating...';
+        submitBtn.disabled = true;
+
+        fetch('{% url "SchoolNowMgt:api_staff_onboard" %}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                closeAddSupportStaffModal();
+                showToast(`Support staff "${data.data.first_name} ${data.data.last_name}" created successfully!`, 'success');
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showToast(data.message || 'Failed to create support staff', 'error');
+            }
+        })
+        .catch(error => {
+            showToast('Network error: ' + error.message, 'error');
+        })
+        .finally(() => {
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        });
+    }
+
+    // Close modal when clicking outside
+    document.addEventListener('DOMContentLoaded', () => {
+        const modal = document.getElementById('addSupportStaffModal');
+        modal?.addEventListener('click', (e) => {
+            if (e.target === modal) closeAddSupportStaffModal();
+        });
+    });
+
+    // ===== SUPPORT STAFF EDITING FUNCTIONS =====
+
+    function openEditSupportStaffModal(staffId) {
+        fetch(`/school/api/support-staff/${staffId}/edit/`, {
+            method: 'GET',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const editForm = document.getElementById('editSupportStaffForm');
+                editForm.dataset.staffId = staffId;
+                document.getElementById('editStaffFirstName').value = data.data.first_name;
+                document.getElementById('editStaffLastName').value = data.data.last_name;
+                document.getElementById('editStaffEmail').value = data.data.email;
+                document.getElementById('editStaffPhone').value = data.data.phone;
+                document.getElementById('editStaffPosition').value = data.data.position;
+                document.getElementById('editStaffDateJoined').value = data.data.date_joined;
+                document.getElementById('editStaffActive').checked = data.data.is_active;
+                document.getElementById('editSupportStaffModal').classList.remove('hidden');
+                document.getElementById('editSupportStaffModal').classList.add('flex');
+            } else {
+                showToast('Failed to load support staff information', 'error');
+            }
+        })
+        .catch(error => {
+            showToast('Network error: ' + error.message, 'error');
+        });
+    }
+
+    function closeEditSupportStaffModal() {
+        document.getElementById('editSupportStaffModal').classList.add('hidden');
+        document.getElementById('editSupportStaffModal').classList.remove('flex');
+    }
+
+    function submitEditSupportStaff(e) {
+        e.preventDefault();
+        
+        const staffId = document.getElementById('editSupportStaffForm').dataset.staffId;
+        const formData = new FormData(document.getElementById('editSupportStaffForm'));
+        const submitBtn = document.querySelector('#editSupportStaffForm button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        
+        submitBtn.innerHTML = '<span class="material-symbols-outlined text-sm animate-spin">sync</span> Updating...';
+        submitBtn.disabled = true;
+
+        fetch(`/school/api/support-staff/${staffId}/edit/`, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                closeEditSupportStaffModal();
+                showToast('Support staff information updated successfully!', 'success');
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showToast(data.message || 'Failed to update support staff', 'error');
+            }
+        })
+        .catch(error => {
+            showToast('Network error: ' + error.message, 'error');
+        })
+        .finally(() => {
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        });
+    }
+
+    function confirmDeleteSupportStaff(staffId, staffName) {
+        if (confirm(`Are you sure you want to remove ${staffName}?`)) {
+            deleteSupportStaff(staffId, staffName);
+        }
+    }
+
+    function deleteSupportStaff(staffId, staffName) {
+        fetch(`/school/api/support-staff/${staffId}/delete/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast('Support staff removed successfully!', 'success');
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showToast(data.message || 'Failed to remove support staff', 'error');
+            }
+        })
+        .catch(error => {
+            showToast('Network error: ' + error.message, 'error');
+        });
+    }
+
+    // Close modals when clicking outside
+    document.addEventListener('DOMContentLoaded', () => {
+        const editModal = document.getElementById('editSupportStaffModal');
+        editModal?.addEventListener('click', (e) => {
+            if (e.target === editModal) closeEditSupportStaffModal();
+        });
+    });
 </script>
+
+<!-- Add Support Staff Modal -->
+<div id="addSupportStaffModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-[9999] p-4">
+    <div class="bg-surface rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto glass-card">
+        <!-- Modal Header -->
+        <div class="sticky top-0 bg-gradient-to-r from-primary/10 to-primary/5 border-b border-outline-variant/20 px-6 md:px-8 py-6 md:py-8 flex justify-between items-center">
+            <div>
+                <h2 class="font-headline-md text-headline-md text-primary text-xl md:text-2xl mb-1">Add New Support Staff</h2>
+                <p class="text-on-surface-variant text-xs md:text-sm">Create a new support staff account in the system</p>
+            </div>
+            <button onclick="closeAddSupportStaffModal()" class="text-on-surface-variant hover:text-on-surface p-2 hover:bg-surface-container rounded-lg transition-all">
+                <span class="material-symbols-outlined text-2xl">close</span>
+            </button>
+        </div>
+
+        <!-- Modal Form -->
+        <form id="addSupportStaffForm" onsubmit="submitAddSupportStaff(event)" class="p-6 md:p-8 space-y-5 md:space-y-6">
+            <!-- Name Row -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
+                <div>
+                    <label class="block text-sm font-bold text-primary mb-2">First Name *</label>
+                    <input type="text" name="first_name" required placeholder="Jane" 
+                           class="w-full px-4 py-3 rounded-lg border border-outline-variant/30 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all text-sm">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-primary mb-2">Last Name *</label>
+                    <input type="text" name="last_name" required placeholder="Smith" 
+                           class="w-full px-4 py-3 rounded-lg border border-outline-variant/30 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all text-sm">
+                </div>
+            </div>
+
+            <!-- Email Row -->
+            <div>
+                <label class="block text-sm font-bold text-primary mb-2">Email Address *</label>
+                <input type="email" name="email" required placeholder="staff@school.com" 
+                       class="w-full px-4 py-3 rounded-lg border border-outline-variant/30 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all text-sm">
+            </div>
+
+            <!-- Phone Row -->
+            <div>
+                <label class="block text-sm font-bold text-primary mb-2">Phone (Optional)</label>
+                <input type="tel" name="phone" placeholder="+256700000000" 
+                       class="w-full px-4 py-3 rounded-lg border border-outline-variant/30 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all text-sm">
+            </div>
+
+            <!-- Position Row -->
+            <div>
+                <label class="block text-sm font-bold text-primary mb-2">Position/Role *</label>
+                <input type="text" name="position" required placeholder="e.g., Janitor, Secretary, Security" 
+                       class="w-full px-4 py-3 rounded-lg border border-outline-variant/30 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all text-sm">
+            </div>
+
+            <!-- Date Joined Row -->
+            <div>
+                <label class="block text-sm font-bold text-primary mb-2">Date Joined *</label>
+                <input type="date" name="date_joined" required 
+                       class="w-full px-4 py-3 rounded-lg border border-outline-variant/30 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all text-sm">
+            </div>
+
+            <!-- Form Actions -->
+            <div class="flex gap-3 pt-4 border-t border-outline-variant/20">
+                <button type="button" onclick="closeAddSupportStaffModal()" 
+                        class="flex-1 px-4 py-3 bg-surface-container text-on-surface rounded-lg font-bold hover:brightness-90 transition-all text-sm">
+                    Cancel
+                </button>
+                <button type="submit" 
+                        class="flex-1 px-4 py-3 bg-primary text-on-primary rounded-lg font-bold hover:brightness-110 transition-all text-sm flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined text-sm">person_add</span>
+                    Create Support Staff
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Edit Support Staff Modal -->
+<div id="editSupportStaffModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-[9999] p-4">
+    <div class="bg-surface rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <!-- Modal Header -->
+        <div class="sticky top-0 bg-gradient-to-r from-secondary/10 to-secondary/5 px-6 py-4 border-b border-outline-variant/20 flex justify-between items-center rounded-t-3xl">
+            <div>
+                <h2 class="font-display-md text-secondary">Edit Support Staff</h2>
+                <p class="text-sm text-on-surface-variant">Update staff information and role</p>
+            </div>
+            <button onclick="closeEditSupportStaffModal()" class="text-on-surface-variant hover:text-on-surface p-2 hover:bg-surface-container rounded-lg transition-all">
+                <span class="material-symbols-outlined text-2xl">close</span>
+            </button>
+        </div>
+
+        <!-- Modal Form -->
+        <form id="editSupportStaffForm" onsubmit="submitEditSupportStaff(event)" class="p-6 space-y-4">
+            <!-- First Name Row -->
+            <div>
+                <label class="block text-sm font-bold text-secondary mb-2">First Name *</label>
+                <input type="text" id="editStaffFirstName" name="first_name" required placeholder="First name"
+                       class="w-full px-4 py-3 rounded-lg border border-outline-variant/30 focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary/30 transition-all text-sm">
+            </div>
+
+            <!-- Last Name Row -->
+            <div>
+                <label class="block text-sm font-bold text-secondary mb-2">Last Name *</label>
+                <input type="text" id="editStaffLastName" name="last_name" required placeholder="Last name"
+                       class="w-full px-4 py-3 rounded-lg border border-outline-variant/30 focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary/30 transition-all text-sm">
+            </div>
+
+            <!-- Email Row -->
+            <div>
+                <label class="block text-sm font-bold text-secondary mb-2">Email *</label>
+                <input type="email" id="editStaffEmail" name="email" required placeholder="email@school.com"
+                       class="w-full px-4 py-3 rounded-lg border border-outline-variant/30 focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary/30 transition-all text-sm">
+            </div>
+
+            <!-- Phone Row -->
+            <div>
+                <label class="block text-sm font-bold text-secondary mb-2">Phone Number</label>
+                <input type="tel" id="editStaffPhone" name="phone" placeholder="Phone number"
+                       class="w-full px-4 py-3 rounded-lg border border-outline-variant/30 focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary/30 transition-all text-sm">
+            </div>
+
+            <!-- Position Row -->
+            <div>
+                <label class="block text-sm font-bold text-secondary mb-2">Position/Role *</label>
+                <select id="editStaffPosition" name="position" required 
+                       class="w-full px-4 py-3 rounded-lg border border-outline-variant/30 focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary/30 transition-all text-sm">
+                    <option value="">Select position...</option>
+                    <option value="Cleaner">Cleaner</option>
+                    <option value="Security">Security</option>
+                    <option value="Groundskeeper">Groundskeeper</option>
+                    <option value="Administrator">Administrator</option>
+                    <option value="Receptionist">Receptionist</option>
+                    <option value="Cook">Cook</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+
+            <!-- Date Joined Row -->
+            <div>
+                <label class="block text-sm font-bold text-secondary mb-2">Date Joined *</label>
+                <input type="date" id="editStaffDateJoined" name="date_joined" required 
+                       class="w-full px-4 py-3 rounded-lg border border-outline-variant/30 focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary/30 transition-all text-sm">
+            </div>
+
+            <!-- Active Checkbox Row -->
+            <div class="flex items-center">
+                <input type="checkbox" id="editStaffActive" name="is_active" 
+                       class="w-4 h-4 rounded border-outline-variant/30 text-secondary focus:ring-secondary/30 cursor-pointer">
+                <label for="editStaffActive" class="ml-3 text-sm font-bold text-secondary cursor-pointer">Active</label>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="flex gap-3 pt-4 border-t border-outline-variant/20">
+                <button type="button" onclick="closeEditSupportStaffModal()" 
+                        class="flex-1 px-4 py-3 bg-surface-container text-on-surface rounded-lg font-bold hover:brightness-90 transition-all text-sm">
+                    Cancel
+                </button>
+                <button type="submit" 
+                        class="flex-1 px-4 py-3 bg-secondary text-on-secondary rounded-lg font-bold hover:brightness-110 transition-all text-sm flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined text-sm">check</span>
+                    Update Support Staff
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
 
 {% endblock %}

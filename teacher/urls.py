@@ -10,7 +10,8 @@ from user_profile.views import teacher_profile
 from dashboard.teacher_views import (
     teacher_dashboard, toggle_task_status, create_task,
     student_search, quick_grade_entry, send_circular,
-    teacher_students_list, teacher_lessons_list
+    teacher_students_list, teacher_lessons_list,
+    export_teacher_schedule_csv, export_teacher_attendance_csv
 )
 from dashboard.teacher_sub_views import (
     # Grades sub-dashboard
@@ -88,6 +89,10 @@ urlpatterns = [
     path('api/shift/break-start/', break_start, name='api_break_start'),
     path('api/shift/break-end/', break_end, name='api_break_end'),
     path('api/shift/status/', shift_status, name='api_shift_status'),
+
+    # ===== EXPORT ENDPOINTS =====
+    path('export/schedule/', export_teacher_schedule_csv, name='export_schedule'),
+    path('export/attendance/', export_teacher_attendance_csv, name='export_attendance'),
 
     path('password/reset/',
          teacher_password_reset,

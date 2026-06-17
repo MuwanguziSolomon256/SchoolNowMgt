@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.utils import timezone
 from django.db.models import Count, Avg, Q, Sum
 from django.http import JsonResponse, HttpResponse
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_http_methods
 from django.db import transaction
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 import uuid
@@ -17,13 +17,13 @@ from .models import (
     RetentionAlert, SMSLog, Enquiry, FeePayment, Grade, ClassGrade,
     CustomUser, Message, MessageRecipient, MessageTemplate, School,
     ActivityLog, Event, AdminProfile, StudentAssignment, Subject, Assignment,
-    StaffBill
+    StaffBill, TeacherTask, Timetable, Curriculum
 )
 from .forms import (
     StaffOnboardingForm, BulkStaffUploadForm,
     StudentOnboardingForm, BulkStudentUploadForm,
     AdminMessageForm, StaffPasswordResetForm, ParentMessageForm, StaffMessageForm,
-    EventForm, AdminProfileForm, ProfilePictureForm
+    EventForm, AdminProfileForm, ProfilePictureForm, SubjectForm, TeacherEditForm, SupportStaffEditForm, CurriculumForm
 )
 from .utils import (
     generate_temp_password, parse_csv_upload, resolve_message_recipients,
@@ -693,7 +693,7 @@ def support_staff_dashboard(request):
     """
     Support staff (facilities, maintenance, cleaning) dashboard.
     
-    Access Control: Support staff only
+    Access Control: Support staff and admins (admins can view to see what support staff see)
     
     Shows pending maintenance tasks, shift status, inventory,
     and daily schedule.
@@ -849,6 +849,79 @@ def support_staff_dashboard(request):
     }
     
     return render(request, 'SchoolNowMgt/support_staff_dashboard.html', context)
+
+
+@unified_login_required
+def export_support_staff_schedule_csv(request):
+    """Export support staff member's schedule as CSV"""
+    if request.user.role != 'non_teaching_staff':
+        return redirect('auth:unified_login')
+    
+    try:
+        staff = StaffProfile.objects.get(user=request.user)
+    except StaffProfile.DoesNotExist:
+        return redirect('auth:unified_login')
+    
+    today = timezone.localdate()
+    from_date = today - timedelta(days=90)
+    
+    # Get attendance records
+    attendance_records = StaffAttendance.objects.filter(
+        staff=staff,
+        date__gte=from_date
+    ).order_by('-date')
+    
+    # Prepare CSV data
+    headers = ['Date', 'Status', 'Clock In', 'Clock Out', 'Hours Worked', 'Breaks Taken']
+    rows = []
+    
+    for record in attendance_records:
+        duration = record.get_shift_duration_excluding_breaks() if hasattr(record, 'get_shift_duration_excluding_breaks') else 'N/A'
+        rows.append([
+            record.date.strftime('%d/%m/%Y'),
+            record.status.title() if record.status else '—',
+            str(record.time_in.strftime('%H:%M')) if record.time_in else '—',
+            str(record.time_out.strftime('%H:%M')) if record.time_out else '—',
+            str(duration),
+            str(record.break_count) if hasattr(record, 'break_count') else '0'
+        ])
+    
+    filename = f"support_staff_schedule_{timezone.now().strftime('%Y%m%d_%H%M%S')}.csv"
+    return export_csv(filename, headers, rows)
+
+
+@unified_login_required
+def export_support_staff_tasks_csv(request):
+    """Export support staff member's assigned tasks as CSV"""
+    if request.user.role != 'non_teaching_staff':
+        return redirect('auth:unified_login')
+    
+    try:
+        staff = StaffProfile.objects.get(user=request.user)
+    except StaffProfile.DoesNotExist:
+        return redirect('auth:unified_login')
+    
+    # Get tasks assigned to this staff member
+    tasks = TeacherTask.objects.filter(
+        assigned_to=staff
+    ).order_by('-created_at')
+    
+    # Prepare CSV data
+    headers = ['Task', 'Description', 'Priority', 'Status', 'Created Date', 'Due Date']
+    rows = []
+    
+    for task in tasks:
+        rows.append([
+            task.title or '—',
+            task.description or '—',
+            task.priority.title() if hasattr(task, 'priority') else '—',
+            task.status.title() if hasattr(task, 'status') else '—',
+            task.created_at.strftime('%d/%m/%Y') if task.created_at else '—',
+            task.due_date.strftime('%d/%m/%Y') if hasattr(task, 'due_date') and task.due_date else '—'
+        ])
+    
+    filename = f"support_staff_tasks_{timezone.now().strftime('%Y%m%d_%H%M%S')}.csv"
+    return export_csv(filename, headers, rows)
 
 
 @login_required
@@ -2192,6 +2265,7 @@ def admin_staff_dashboard(request):
     - Total staff, new this month, by department
     - Staff list with search/filter/pagination
     - Inline "Add Staff" form
+    - Teacher Shift Management with real-time status
     """
     if request.user.role != 'admin' and not request.user.is_superuser:
         return redirect('auth:unified_login')
@@ -2257,6 +2331,34 @@ def admin_staff_dashboard(request):
         staff__user__school=user_school
     ).count()
     
+    # ===== SHIFT MANAGEMENT DATA =====
+    from SchoolNowMgt.models import TeacherAttendance, BreakSession
+    
+    # Get all teacher shift records for today
+    today_shifts = TeacherAttendance.objects.filter(
+        date=today,
+        staff__user__school=user_school
+    ).select_related('staff__user')
+    
+    # Categorize teachers
+    on_duty = today_shifts.filter(status='present', time_out__isnull=True)
+    on_break = BreakSession.objects.filter(
+        teacher_attendance__date=today,
+        teacher_attendance__staff__user__school=user_school,
+        break_out_time__isnull=True
+    ).select_related('teacher_attendance__staff__user').distinct()
+    clocked_out = today_shifts.filter(time_out__isnull=False)
+    not_clocked_in = StaffProfile.objects.filter(
+        user__role='teacher',
+        user__is_active=True,
+        user__school=user_school
+    ).exclude(
+        id__in=today_shifts.values_list('staff_id', flat=True)
+    )
+    
+    # Get recent shift records
+    recent_shifts = today_shifts.order_by('-updated_at')[:10]
+    
     context = {
         'today': today,
         'user': request.user,
@@ -2270,6 +2372,20 @@ def admin_staff_dashboard(request):
         'staff_absent_today': staff_absent_today,
         'position_filter': position_filter,
         'search_query': search_query,
+        # Shift management context
+        'on_duty_count': on_duty.count(),
+        'on_break_count': on_break.count(),
+        'clocked_out_count': clocked_out.count(),
+        'not_clocked_in_count': not_clocked_in.count(),
+        'total_teachers': StaffProfile.objects.filter(
+            user__role='teacher',
+            user__is_active=True,
+            user__school=user_school
+        ).count(),
+        'on_duty_teachers': on_duty,
+        'on_break_sessions': on_break,
+        'clocked_out_teachers': clocked_out,
+        'recent_shifts': recent_shifts,
     }
     
     return render(request, 'SchoolNowMgt/admin_staff_dashboard.html', context)
@@ -2574,7 +2690,8 @@ def admin_reports_dashboard(request):
     
     for item in class_performance:
         class_perf_labels.append(item['student__class_grade__name'])
-        class_perf_scores.append(round(item['avg_score'], 1) if item['avg_score'] else 0)
+        score = item['avg_score']
+        class_perf_scores.append(float(round(score, 1)) if score else 0)
     
     # Chart data: Retention alert severity pie chart
     low_alerts = RetentionAlert.objects.filter(
@@ -3151,3 +3268,946 @@ def parent_payments_dashboard(request):
     }
     
     return render(request, 'SchoolNowMgt/parent_payments_subdashboard.html', context)
+
+
+# ─────────────────────────────────────────────────────────────
+# ADMIN TEACHERS DASHBOARD (Split from admin_staff_dashboard)
+# ─────────────────────────────────────────────────────────────
+@unified_login_required
+def admin_teachers_dashboard(request):
+    """
+    Admin dashboard for managing teachers.
+    
+    Shows:
+    - Total teachers, new this month, attendance stats
+    - Teachers list with search/filter/pagination
+    - Teachers schedule/timetable information
+    """
+    if request.user.role != 'admin' and not request.user.is_superuser:
+        return redirect('auth:unified_login')
+    
+    today = timezone.localdate()
+    user_school = request.user.school
+    
+    # Filter teachers only (role='teacher' in CustomUser)
+    teachers_users = CustomUser.objects.filter(
+        role='teacher',
+        school=user_school,
+        is_active=True
+    )
+    
+    # Staff stats
+    total_staff = StaffProfile.objects.filter(
+        user__in=teachers_users,
+        date_left__isnull=True
+    ).count()
+    
+    new_staff_this_month = StaffProfile.objects.filter(
+        user__in=teachers_users,
+        date_joined__year=today.year,
+        date_joined__month=today.month
+    ).count()
+    
+    # Get subjects from timetable entries for this school's teachers
+    subjects = Subject.objects.filter(
+        timetable_entries__teacher__user__in=teachers_users
+    ).distinct().order_by('name')
+    
+    # Get filter parameters
+    subject_filter = request.GET.get('subject', '')
+    search_query = request.GET.get('search', '')
+    
+    # Recent staff (teachers) with filtering
+    recent_staff = StaffProfile.objects.filter(
+        user__in=teachers_users
+    ).select_related('user')
+    
+    # Filter by subject (through timetable entries)
+    if subject_filter:
+        recent_staff = recent_staff.filter(
+            timetable_entries__subject_id=subject_filter
+        ).distinct()
+    
+    if search_query:
+        recent_staff = recent_staff.filter(
+            Q(user__first_name__icontains=search_query) |
+            Q(user__last_name__icontains=search_query) |
+            Q(employee_id__icontains=search_query)
+        )
+    
+    recent_staff = recent_staff.order_by('-date_joined')
+    
+    # Paginate
+    paginated_items, paginator, page_num = paginate_queryset(request, recent_staff, per_page=15)
+    
+    # Today's attendance summary
+    staff_present_today = StaffAttendance.objects.filter(
+        date=today,
+        status='present',
+        staff__user__in=teachers_users
+    ).count()
+    
+    # Get schedule/timetable data
+    schedule = Timetable.objects.filter(
+        teacher__user__in=teachers_users
+    ).select_related('subject', 'class_grade').order_by('day_of_week', 'start_time')[:50]
+    
+    total_classes = Timetable.objects.filter(teacher__user__in=teachers_users).count()
+    
+    today_day_name = today.strftime('%A').lower()
+    today_classes = Timetable.objects.filter(
+        teacher__user__in=teachers_users,
+        day_of_week=today_day_name
+    ).count()
+    
+    week_classes = Timetable.objects.filter(
+        teacher__user__in=teachers_users
+    ).count()
+    
+    context = {
+        'total_staff': total_staff,
+        'new_staff_this_month': new_staff_this_month,
+        'staff_present_today': staff_present_today,
+        'recent_staff': paginated_items,
+        'paginator': paginator,
+        'search_query': search_query,
+        'subject_filter': subject_filter,
+        'subjects': subjects,
+        'schedule': schedule,
+        'total_classes': total_classes,
+        'today_classes': today_classes,
+        'week_classes': week_classes,
+    }
+    
+    return render(request, 'SchoolNowMgt/admin_teachers_dashboard.html', context)
+
+
+# ─────────────────────────────────────────────────────────────
+# ADMIN SUPPORT STAFF DASHBOARD (Split from admin_staff_dashboard)
+# ─────────────────────────────────────────────────────────────
+@unified_login_required
+def admin_support_staff_dashboard(request):
+    """
+    Admin dashboard for managing support staff.
+    
+    Shows:
+    - Total support staff, new this month, attendance stats
+    - Support staff list with search/filter/pagination
+    - Assigned tasks and task status
+    """
+    if request.user.role != 'admin' and not request.user.is_superuser:
+        return redirect('auth:unified_login')
+    
+    today = timezone.localdate()
+    user_school = request.user.school
+    
+    # Filter support staff only (role='non_teaching_staff' in CustomUser)
+    support_users = CustomUser.objects.filter(
+        role='non_teaching_staff',
+        school=user_school,
+        is_active=True
+    )
+    
+    # Staff stats
+    total_staff = StaffProfile.objects.filter(
+        user__in=support_users,
+        date_left__isnull=True
+    ).count()
+    
+    new_staff_this_month = StaffProfile.objects.filter(
+        user__in=support_users,
+        date_joined__year=today.year,
+        date_joined__month=today.month
+    ).count()
+    
+    # Get positions for filter
+    positions = StaffProfile.objects.filter(
+        user__in=support_users,
+        date_left__isnull=True
+    ).values('position').annotate(
+        position_count=Count('id')
+    ).order_by('position')
+    
+    # Get filter parameters
+    position_filter = request.GET.get('position', '')
+    search_query = request.GET.get('search', '')
+    
+    # Recent staff (support staff) with filtering
+    recent_staff = StaffProfile.objects.filter(
+        user__in=support_users
+    ).select_related('user')
+    
+    if position_filter:
+        recent_staff = recent_staff.filter(position=position_filter)
+    
+    if search_query:
+        recent_staff = recent_staff.filter(
+            Q(user__first_name__icontains=search_query) |
+            Q(user__last_name__icontains=search_query) |
+            Q(employee_id__icontains=search_query)
+        )
+    
+    recent_staff = recent_staff.order_by('-date_joined')
+    
+    # Paginate
+    paginated_items, paginator, page_num = paginate_queryset(request, recent_staff, per_page=15)
+    
+    # Today's attendance summary
+    staff_present_today = StaffAttendance.objects.filter(
+        date=today,
+        status='present',
+        staff__user__in=support_users
+    ).count()
+    
+    # Get assigned tasks
+    tasks = TeacherTask.objects.filter(
+        teacher__user__in=support_users
+    ).select_related('teacher').order_by('-created_at')[:50]
+    
+    total_tasks = TeacherTask.objects.filter(teacher__user__in=support_users).count()
+    completed_tasks = TeacherTask.objects.filter(
+        teacher__user__in=support_users,
+        status='completed'
+    ).count()
+    pending_tasks = TeacherTask.objects.filter(
+        teacher__user__in=support_users,
+        status='pending'
+    ).count()
+    
+    context = {
+        'total_staff': total_staff,
+        'new_staff_this_month': new_staff_this_month,
+        'staff_present_today': staff_present_today,
+        'recent_staff': paginated_items,
+        'paginator': paginator,
+        'search_query': search_query,
+        'position_filter': position_filter,
+        'staff_positions': positions,
+        'tasks': tasks,
+        'total_tasks': total_tasks,
+        'completed_tasks': completed_tasks,
+        'pending_tasks': pending_tasks,
+    }
+    
+    return render(request, 'SchoolNowMgt/admin_support_staff_dashboard.html', context)
+
+
+# ============================================================================
+# PHASE 2: SUBJECT MANAGEMENT & STAFF EDITING AJAX ENDPOINTS
+# ============================================================================
+
+@require_POST
+@login_required
+@admin_required
+def add_subject_ajax(request):
+    """
+    AJAX endpoint to create a new subject.
+    
+    POST params:
+    - name: Subject name
+    - code: Subject code
+    - curriculum: 'national' or 'international'
+    
+    Returns JSON with:
+    - success (bool)
+    - message (str)
+    - data: { subject_id, name, code, curriculum } if successful
+    """
+    from .forms import SubjectForm
+    
+    form = SubjectForm(request.POST)
+    
+    if not form.is_valid():
+        return JsonResponse({
+            'success': False,
+            'message': 'Form validation failed',
+            'errors': form.errors
+        }, status=400)
+    
+    try:
+        # Create subject (Subject model is global, not school-specific)
+        subject = Subject.objects.create(
+            name=form.cleaned_data['name'],
+            code=form.cleaned_data['code'].upper(),
+            curriculum=form.cleaned_data['curriculum']
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Subject "{subject.name}" created successfully.',
+            'data': {
+                'subject_id': subject.id,
+                'name': subject.name,
+                'code': subject.code,
+                'curriculum': subject.get_curriculum_display(),
+            }
+        })
+    
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error creating subject: {str(e)}'
+        }, status=500)
+
+
+@require_http_methods(["GET", "POST"])
+@login_required
+@admin_required
+def edit_subject_ajax(request, subject_id):
+    """
+    AJAX endpoint to edit an existing subject.
+    
+    GET: Return form pre-populated with subject data
+    POST: Update subject
+    
+    Path param:
+    - subject_id: ID of subject to edit
+    
+    POST params:
+    - name: Subject name
+    - code: Subject code
+    - curriculum: 'national' or 'international'
+    
+    Returns JSON with:
+    - success (bool)
+    - message (str)
+    - data: { subject_id, name, code, curriculum } if successful
+    """
+    from .forms import SubjectForm
+    
+    try:
+        subject = Subject.objects.get(id=subject_id)
+    except Subject.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'message': 'Subject not found'
+        }, status=404)
+    
+    if request.method == 'GET':
+        # Return form data for modal population
+        return JsonResponse({
+            'success': True,
+            'data': {
+                'subject_id': subject.id,
+                'name': subject.name,
+                'code': subject.code,
+                'curriculum': subject.curriculum,
+            }
+        })
+    
+    # POST: Update subject
+    form = SubjectForm(request.POST, instance=subject)
+    
+    if not form.is_valid():
+        return JsonResponse({
+            'success': False,
+            'message': 'Form validation failed',
+            'errors': form.errors
+        }, status=400)
+    
+    try:
+        subject.name = form.cleaned_data['name']
+        subject.code = form.cleaned_data['code'].upper()
+        subject.curriculum = form.cleaned_data['curriculum']
+        subject.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Subject "{subject.name}" updated successfully.',
+            'data': {
+                'subject_id': subject.id,
+                'name': subject.name,
+                'code': subject.code,
+                'curriculum': subject.get_curriculum_display(),
+            }
+        })
+    
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error updating subject: {str(e)}'
+        }, status=500)
+
+
+@require_http_methods(["DELETE", "POST"])
+@login_required
+@admin_required
+def delete_subject_ajax(request, subject_id):
+    """
+    AJAX endpoint to delete a subject (soft delete).
+    
+    DELETE/POST: Delete subject if not used in any Timetable entries
+    
+    Path param:
+    - subject_id: ID of subject to delete
+    
+    Returns JSON with:
+    - success (bool)
+    - message (str)
+    - warning (str): If subject is in use, returns warning about timetable entries
+    """
+    try:
+        subject = Subject.objects.get(id=subject_id)
+    except Subject.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'message': 'Subject not found'
+        }, status=404)
+    
+    # Check if subject is used in any timetable entries
+    timetable_count = Timetable.objects.filter(subject=subject).count()
+    
+    if timetable_count > 0:
+        return JsonResponse({
+            'success': False,
+            'message': f'Cannot delete subject - it is assigned to {timetable_count} timetable entry/entries.',
+            'warning': f'This subject is currently used in {timetable_count} classes. Please reassign those classes first.'
+        }, status=400)
+    
+    try:
+        subject_name = subject.name
+        subject.delete()
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Subject "{subject_name}" deleted successfully.'
+        })
+    
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error deleting subject: {str(e)}'
+        }, status=500)
+
+
+@require_http_methods(["GET"])
+@login_required
+@admin_required
+def get_subjects_ajax(request):
+    """
+    AJAX endpoint to fetch all subjects.
+    
+    GET: Return list of all subjects
+    
+    Returns JSON with:
+    - success (bool)
+    - message (str)
+    - data: {
+        subjects: [
+            { id, name, code, curriculum },
+            ...
+        ]
+    }
+    """
+    try:
+        subjects = Subject.objects.all().values(
+            'id', 'name', 'code', 'curriculum'
+        ).order_by('name')
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Subjects fetched successfully',
+            'data': {
+                'subjects': list(subjects)
+            }
+        })
+    
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error fetching subjects: {str(e)}'
+        }, status=500)
+
+
+# ===== CURRICULUM MANAGEMENT AJAX ENDPOINTS =====
+
+@require_POST
+@login_required
+@admin_required
+def add_curriculum_ajax(request):
+    """
+    AJAX endpoint to create a new curriculum.
+    
+    POST params:
+    - name: Curriculum name
+    - code: Curriculum code
+    - description: Curriculum description (optional)
+    
+    Returns JSON with:
+    - success (bool)
+    - message (str)
+    - data: { curriculum_id, name, code } if successful
+    """
+    from .forms import CurriculumForm
+    
+    form = CurriculumForm(request.POST)
+    
+    if not form.is_valid():
+        return JsonResponse({
+            'success': False,
+            'message': 'Form validation failed',
+            'errors': form.errors
+        }, status=400)
+    
+    try:
+        curriculum = form.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Curriculum "{curriculum.name}" created successfully.',
+            'data': {
+                'curriculum_id': curriculum.id,
+                'name': curriculum.name,
+                'code': curriculum.code,
+                'description': curriculum.description or ''
+            }
+        })
+    
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error creating curriculum: {str(e)}'
+        }, status=500)
+
+
+@require_http_methods(["GET", "POST"])
+@login_required
+@admin_required
+def edit_curriculum_ajax(request, curriculum_id):
+    """
+    AJAX endpoint to edit a curriculum.
+    
+    GET: Return form pre-populated with curriculum data
+    POST: Update curriculum
+    
+    Path param:
+    - curriculum_id: ID of curriculum to edit
+    
+    POST params:
+    - name: Curriculum name
+    - code: Curriculum code
+    - description: Curriculum description
+    
+    Returns JSON with:
+    - success (bool)
+    - message (str)
+    - data: { curriculum_id, name, code, description } if successful
+    """
+    from .forms import CurriculumForm
+    
+    try:
+        curriculum = Curriculum.objects.get(id=curriculum_id)
+    except Curriculum.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'message': 'Curriculum not found'
+        }, status=404)
+    
+    if request.method == 'GET':
+        return JsonResponse({
+            'success': True,
+            'data': {
+                'curriculum_id': curriculum.id,
+                'name': curriculum.name,
+                'code': curriculum.code,
+                'description': curriculum.description or '',
+            }
+        })
+    
+    # POST: Update curriculum
+    form = CurriculumForm(request.POST, instance=curriculum)
+    
+    if not form.is_valid():
+        return JsonResponse({
+            'success': False,
+            'message': 'Form validation failed',
+            'errors': form.errors
+        }, status=400)
+    
+    try:
+        curriculum = form.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Curriculum "{curriculum.name}" updated successfully.',
+            'data': {
+                'curriculum_id': curriculum.id,
+                'name': curriculum.name,
+                'code': curriculum.code,
+                'description': curriculum.description or '',
+            }
+        })
+    
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error updating curriculum: {str(e)}'
+        }, status=500)
+
+
+@require_http_methods(["POST"])
+@login_required
+@admin_required
+def delete_curriculum_ajax(request, curriculum_id):
+    """
+    AJAX endpoint to delete a curriculum.
+    
+    POST: Delete curriculum if not used in any subjects
+    
+    Path param:
+    - curriculum_id: ID of curriculum to delete
+    
+    Returns JSON with:
+    - success (bool)
+    - message (str)
+    - warning (str): If curriculum has subjects assigned
+    """
+    try:
+        curriculum = Curriculum.objects.get(id=curriculum_id)
+    except Curriculum.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'message': 'Curriculum not found'
+        }, status=404)
+    
+    # Check if curriculum has any subjects assigned
+    subject_count = Subject.objects.filter(curriculum_fk=curriculum).count()
+    
+    if subject_count > 0:
+        return JsonResponse({
+            'success': False,
+            'message': f'Cannot delete curriculum - it has {subject_count} subject(s) assigned.',
+            'warning': f'This curriculum is used by {subject_count} subject(s). Please reassign them first.'
+        }, status=400)
+    
+    try:
+        curriculum_name = curriculum.name
+        curriculum.delete()
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Curriculum "{curriculum_name}" deleted successfully.'
+        })
+    
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error deleting curriculum: {str(e)}'
+        }, status=500)
+
+
+@require_http_methods(["GET"])
+@login_required
+@admin_required
+def get_curriculums_ajax(request):
+    """
+    AJAX endpoint to fetch all curriculums with their subject counts.
+    
+    GET: Return list of all curriculums
+    
+    Returns JSON with:
+    - success (bool)
+    - message (str)
+    - data: {
+        curriculums: [
+            { id, name, code, description, subject_count },
+            ...
+        ]
+    }
+    """
+    try:
+        from django.db.models import Count
+        
+        curriculums = Curriculum.objects.annotate(
+            subject_count=Count('subjects')
+        ).values(
+            'id', 'name', 'code', 'description', 'subject_count'
+        ).order_by('name')
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Curriculums fetched successfully',
+            'data': {
+                'curriculums': list(curriculums)
+            }
+        })
+    
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error fetching curriculums: {str(e)}'
+        }, status=500)
+
+
+@require_POST
+@login_required
+@admin_required
+def edit_teacher_ajax(request, teacher_id):
+    """
+    AJAX endpoint to edit a teacher's information.
+    
+    GET: Return form pre-populated with teacher data
+    POST: Update teacher
+    
+    Path param:
+    - teacher_id: ID of CustomUser (teacher) to edit
+    
+    POST params:
+    - first_name: First name
+    - last_name: Last name
+    - email: Email address
+    - phone: Phone number
+    - position: Position (from POSITION_CHOICES)
+    - date_joined: Date joined
+    - is_active: Active status (checkbox)
+    
+    Returns JSON with:
+    - success (bool)
+    - message (str)
+    - data: { user_id, full_name, email, position } if successful
+    """
+    from .forms import TeacherEditForm
+    
+    try:
+        user = CustomUser.objects.get(id=teacher_id, role='teacher', school=request.user.school)
+        staff_profile = StaffProfile.objects.get(user=user)
+    except (CustomUser.DoesNotExist, StaffProfile.DoesNotExist):
+        return JsonResponse({
+            'success': False,
+            'message': 'Teacher not found'
+        }, status=404)
+    
+    if request.method == 'GET':
+        # Return form data for modal population
+        return JsonResponse({
+            'success': True,
+            'data': {
+                'user_id': user.id,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'email': user.email,
+                'phone': getattr(staff_profile, 'phone', ''),
+                'position': staff_profile.position,
+                'date_joined': staff_profile.date_joined.strftime('%Y-%m-%d'),
+                'is_active': user.is_active,
+            }
+        })
+    
+    # POST: Update teacher
+    form = TeacherEditForm(request.POST)
+    
+    if not form.is_valid():
+        return JsonResponse({
+            'success': False,
+            'message': 'Form validation failed',
+            'errors': form.errors
+        }, status=400)
+    
+    try:
+        with transaction.atomic():
+            # Update CustomUser fields
+            user.first_name = form.cleaned_data['first_name']
+            user.last_name = form.cleaned_data['last_name']
+            user.email = form.cleaned_data['email'].lower()
+            user.is_active = form.cleaned_data['is_active']
+            user.save()
+            
+            # Update StaffProfile fields
+            staff_profile.position = form.cleaned_data['position']
+            staff_profile.date_joined = form.cleaned_data['date_joined']
+            staff_profile.save()
+            
+            return JsonResponse({
+                'success': True,
+                'message': f'Teacher "{user.get_full_name()}" updated successfully.',
+                'data': {
+                    'user_id': user.id,
+                    'full_name': user.get_full_name(),
+                    'email': user.email,
+                    'position': staff_profile.position,
+                }
+            })
+    
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error updating teacher: {str(e)}'
+        }, status=500)
+
+
+@require_http_methods(["DELETE", "POST"])
+@login_required
+@admin_required
+def delete_teacher_ajax(request, teacher_id):
+    """
+    AJAX endpoint to delete a teacher (soft delete by setting is_active=False).
+    
+    DELETE/POST: Soft delete teacher
+    
+    Path param:
+    - teacher_id: ID of CustomUser (teacher) to delete
+    
+    Returns JSON with:
+    - success (bool)
+    - message (str)
+    """
+    try:
+        user = CustomUser.objects.get(id=teacher_id, role='teacher', school=request.user.school)
+    except CustomUser.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'message': 'Teacher not found'
+        }, status=404)
+    
+    try:
+        user_name = user.get_full_name()
+        user.is_active = False
+        user.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Teacher "{user_name}" has been removed.'
+        })
+    
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error deleting teacher: {str(e)}'
+        }, status=500)
+
+
+@require_POST
+@login_required
+@admin_required
+def edit_support_staff_ajax(request, staff_id):
+    """
+    AJAX endpoint to edit support staff information.
+    
+    GET: Return form pre-populated with staff data
+    POST: Update staff
+    
+    Path param:
+    - staff_id: ID of CustomUser (support staff) to edit
+    
+    POST params:
+    - first_name: First name
+    - last_name: Last name
+    - email: Email address
+    - phone: Phone number
+    - position: Position (from SUPPORT_POSITION_CHOICES)
+    - date_joined: Date joined
+    - is_active: Active status (checkbox)
+    
+    Returns JSON with:
+    - success (bool)
+    - message (str)
+    - data: { user_id, full_name, email, position } if successful
+    """
+    from .forms import SupportStaffEditForm
+    
+    try:
+        user = CustomUser.objects.get(id=staff_id, role='non_teaching_staff', school=request.user.school)
+        staff_profile = StaffProfile.objects.get(user=user)
+    except (CustomUser.DoesNotExist, StaffProfile.DoesNotExist):
+        return JsonResponse({
+            'success': False,
+            'message': 'Support staff member not found'
+        }, status=404)
+    
+    if request.method == 'GET':
+        # Return form data for modal population
+        return JsonResponse({
+            'success': True,
+            'data': {
+                'user_id': user.id,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'email': user.email,
+                'phone': getattr(staff_profile, 'phone', ''),
+                'position': staff_profile.position,
+                'date_joined': staff_profile.date_joined.strftime('%Y-%m-%d'),
+                'is_active': user.is_active,
+            }
+        })
+    
+    # POST: Update support staff
+    form = SupportStaffEditForm(request.POST)
+    
+    if not form.is_valid():
+        return JsonResponse({
+            'success': False,
+            'message': 'Form validation failed',
+            'errors': form.errors
+        }, status=400)
+    
+    try:
+        with transaction.atomic():
+            # Update CustomUser fields
+            user.first_name = form.cleaned_data['first_name']
+            user.last_name = form.cleaned_data['last_name']
+            user.email = form.cleaned_data['email'].lower()
+            user.is_active = form.cleaned_data['is_active']
+            user.save()
+            
+            # Update StaffProfile fields
+            staff_profile.position = form.cleaned_data['position']
+            staff_profile.date_joined = form.cleaned_data['date_joined']
+            staff_profile.save()
+            
+            return JsonResponse({
+                'success': True,
+                'message': f'Support staff "{user.get_full_name()}" updated successfully.',
+                'data': {
+                    'user_id': user.id,
+                    'full_name': user.get_full_name(),
+                    'email': user.email,
+                    'position': staff_profile.position,
+                }
+            })
+    
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error updating support staff: {str(e)}'
+        }, status=500)
+
+
+@require_http_methods(["DELETE", "POST"])
+@login_required
+@admin_required
+def delete_support_staff_ajax(request, staff_id):
+    """
+    AJAX endpoint to delete support staff (soft delete by setting is_active=False).
+    
+    DELETE/POST: Soft delete support staff
+    
+    Path param:
+    - staff_id: ID of CustomUser (support staff) to delete
+    
+    Returns JSON with:
+    - success (bool)
+    - message (str)
+    """
+    try:
+        user = CustomUser.objects.get(id=staff_id, role='non_teaching_staff', school=request.user.school)
+    except CustomUser.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'message': 'Support staff member not found'
+        }, status=404)
+    
+    try:
+        user_name = user.get_full_name()
+        user.is_active = False
+        user.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Support staff "{user_name}" has been removed.'
+        })
+    
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error deleting support staff: {str(e)}'
+        }, status=500)

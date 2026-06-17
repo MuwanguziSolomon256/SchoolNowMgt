@@ -176,9 +176,22 @@
     </div>
 
     <!-- Page Title -->
-    <div class="px-4 md:px-container-padding pt-6 md:pt-section-margin pb-4 md:pb-6">
-        <h1 class="font-display-md text-xl md:text-3xl text-primary font-black mb-1 md:mb-2">Dashboard</h1>
-        <p class="text-body-md text-sm md:text-base text-on-surface-variant">Welcome back. Here's your dashboard overview.</p>
+    <div class="px-4 md:px-container-padding pt-6 md:pt-section-margin pb-4 md:pb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+            <h1 class="font-display-md text-xl md:text-3xl text-primary font-black mb-1 md:mb-2">Dashboard</h1>
+            <p class="text-body-md text-sm md:text-base text-on-surface-variant">Welcome back. Here's your dashboard overview.</p>
+        </div>
+        <!-- Export Buttons -->
+        <div class="flex gap-2 flex-wrap">
+            <a href="{% url 'teacher:export_schedule' %}" class="inline-flex items-center gap-2 px-4 py-2 bg-secondary-container text-on-secondary-container rounded-lg hover:bg-secondary-container/90 transition-all font-semibold text-sm">
+                <span class="material-symbols-outlined text-base">download</span>
+                <span>Export Schedule</span>
+            </a>
+            <a href="{% url 'teacher:export_attendance' %}" class="inline-flex items-center gap-2 px-4 py-2 bg-primary text-on-primary rounded-lg hover:bg-primary/90 transition-all font-semibold text-sm">
+                <span class="material-symbols-outlined text-base">download</span>
+                <span>Export Attendance</span>
+            </a>
+        </div>
     </div>
 
     <!-- Profile Overview Cards -->

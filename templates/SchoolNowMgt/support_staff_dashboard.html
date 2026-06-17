@@ -36,9 +36,22 @@
                 <h3 class="font-display-lg text-display-lg text-primary text-xl md:text-3xl lg:text-4xl">Good Morning, {{ user.first_name }}</h3>
                 <p class="font-body-lg text-body-lg text-on-surface-variant text-xs md:text-sm lg:text-base">Here is an overview of your dashboard at {{ school.name|default:"Your School" }}.</p>
             </div>
-            <div class="text-right">
-                <p class="text-sm text-on-surface-variant">Current Time</p>
-                <p class="font-headline-md text-headline-md text-primary" id="current-time">{{ now|date:"H:i" }}</p>
+            <div class="flex flex-col items-end gap-4">
+                <div class="text-right">
+                    <p class="text-sm text-on-surface-variant">Current Time</p>
+                    <p class="font-headline-md text-headline-md text-primary" id="current-time">{{ now|date:"H:i" }}</p>
+                </div>
+                <!-- Export Buttons -->
+                <div class="flex gap-2 flex-wrap justify-end">
+                    <a href="{% url 'SchoolNowMgt:support_export_schedule' %}" class="inline-flex items-center gap-2 px-4 py-2 bg-secondary-container text-on-secondary-container rounded-lg hover:bg-secondary-container/90 transition-all font-semibold text-sm">
+                        <span class="material-symbols-outlined text-base">download</span>
+                        <span>Export Schedule</span>
+                    </a>
+                    <a href="{% url 'SchoolNowMgt:support_export_tasks' %}" class="inline-flex items-center gap-2 px-4 py-2 bg-primary text-on-primary rounded-lg hover:bg-primary/90 transition-all font-semibold text-sm">
+                        <span class="material-symbols-outlined text-base">download</span>
+                        <span>Export Tasks</span>
+                    </a>
+                </div>
             </div>
         </section>
 

@@ -3,6 +3,11 @@
 
 {% block title %}Shift History - {{ school.name }}{% endblock %}
 
+{% block extra_head %}
+<!-- Bootstrap 5 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+{% endblock %}
+
 {% block content %}
 <div class="container-fluid bg-light min-vh-100 py-4">
     <div class="row mb-4">
@@ -291,7 +296,7 @@
             return;
         }
 
-        fetch(`/admin/shifts/${currentAttendanceId}/edit/`, {
+        fetch(`/school/admin/shifts/${currentAttendanceId}/edit/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -334,4 +339,7 @@
         return cookieValue;
     }
 </script>
+
+<!-- Bootstrap 5 JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 {% endblock %}

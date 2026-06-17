@@ -39,19 +39,19 @@ class Command(BaseCommand):
                 if created:
                     self.stdout.write(
                         self.style.SUCCESS(
-                            f'✓ CREATED  StaffProfile for: {teacher.get_full_name()} ({teacher.username})'
+                            f'[+] CREATED  StaffProfile for: {teacher.get_full_name()} ({teacher.username})'
                         )
                     )
                     created_count += 1
                 else:
                     self.stdout.write(
-                        f'✓ EXISTS   StaffProfile for: {teacher.get_full_name()} ({teacher.username})'
+                        f'[+] EXISTS   StaffProfile for: {teacher.get_full_name()} ({teacher.username})'
                     )
                     existing_count += 1
                     
             except Exception as e:
                 self.stdout.write(
-                    self.style.ERROR(f'✗ ERROR    {teacher.get_full_name()}: {str(e)}')
+                    self.style.ERROR(f'[!] ERROR    {teacher.get_full_name()}: {str(e)}')
                 )
         
         self.stdout.write('\n' + '=' * 70)
@@ -69,10 +69,10 @@ class Command(BaseCommand):
                 verify_count += 1
             except StaffProfile.DoesNotExist:
                 self.stdout.write(
-                    self.style.ERROR(f'✗ FAIL: {teacher.get_full_name()} - no StaffProfile found!')
+                    self.style.ERROR(f'[!] FAIL: {teacher.get_full_name()} - no StaffProfile found!')
                 )
         
         self.stdout.write(
-            self.style.SUCCESS(f'\n✓ {verify_count}/{teachers.count()} teachers ready for shift management')
+            self.style.SUCCESS(f'\n[+] {verify_count}/{teachers.count()} teachers ready for shift management')
         )
         self.stdout.write(self.style.SUCCESS('\nShift endpoints should now work correctly!'))

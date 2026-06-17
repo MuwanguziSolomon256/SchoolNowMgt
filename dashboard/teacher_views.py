@@ -2,12 +2,25 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from django.db.models import Count, Q, Avg
+from django.http import HttpResponse
+import csv
 from SchoolNowMgt.models import (
     StaffProfile, Timetable, Student, ClassGrade,
     StudentAttendance, RetentionAlert, Grade,
     TeacherTask, ActivityLog, TeacherAttendance, Subject
 )
 from datetime import timedelta
+
+
+def export_csv(filename, headers, rows):
+    """Helper function to create CSV response"""
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    writer = csv.writer(response)
+    writer.writerow(headers)
+    for row in rows:
+        writer.writerow(row)
+    return response
 
 
 @login_required(login_url='teacher:login')
@@ -41,7 +54,8 @@ def teacher_dashboard(request):
         defaults={'status': 'absent'}
     )
     
-    is_on_duty = teacher_attendance_today.status == 'present'
+    # Teacher is on duty if: clocked in (has time_in) AND not clocked out yet (time_out is None)
+    is_on_duty = teacher_attendance_today.status == 'present' and teacher_attendance_today.time_out is None
     shift_start_time = timezone.now()  # Current time, will be replaced with time_in if available
     if teacher_attendance_today.time_in:
         # Combine date with time_in to create a datetime
@@ -456,3 +470,82 @@ def teacher_lessons_list(request):
     }
     
     return render(request, 'teacher/lessons_list.html', context)
+
+
+@login_required(login_url='teacher:login')
+def export_teacher_schedule_csv(request):
+    """Export teacher's class schedule as CSV"""
+    if request.user.role != 'teacher':
+        return redirect('teacher:login')
+    
+    try:
+        staff = StaffProfile.objects.get(user=request.user)
+    except StaffProfile.DoesNotExist:
+        return redirect('teacher:login')
+    
+    today = timezone.localdate()
+    
+    # Get all classes taught by this teacher
+    my_classes = ClassGrade.objects.filter(
+        class_teacher=staff
+    ).select_related('school').order_by('level')
+    
+    # Get timetables for this teacher
+    timetables = Timetable.objects.filter(
+        teacher=staff
+    ).select_related('subject', 'class_grade').order_by('day', 'start_time')
+    
+    # Prepare CSV data
+    headers = ['Day', 'Class', 'Subject', 'Start Time', 'End Time', 'Room']
+    rows = []
+    
+    for timetable in timetables:
+        rows.append([
+            timetable.day.capitalize(),
+            timetable.class_grade.name if timetable.class_grade else '—',
+            timetable.subject.name if timetable.subject else '—',
+            str(timetable.start_time) if timetable.start_time else '—',
+            str(timetable.end_time) if timetable.end_time else '—',
+            timetable.room or '—'
+        ])
+    
+    filename = f"teacher_schedule_{timezone.now().strftime('%Y%m%d_%H%M%S')}.csv"
+    return export_csv(filename, headers, rows)
+
+
+@login_required(login_url='teacher:login')
+def export_teacher_attendance_csv(request):
+    """Export teacher's attendance records as CSV"""
+    if request.user.role != 'teacher':
+        return redirect('teacher:login')
+    
+    try:
+        staff = StaffProfile.objects.get(user=request.user)
+    except StaffProfile.DoesNotExist:
+        return redirect('teacher:login')
+    
+    # Get attendance records for last 90 days
+    from_date = timezone.localdate() - timedelta(days=90)
+    
+    attendance_records = TeacherAttendance.objects.filter(
+        staff=staff,
+        date__gte=from_date
+    ).order_by('-date')
+    
+    # Prepare CSV data
+    headers = ['Date', 'Status', 'Clock In', 'Clock Out', 'Hours Worked', 'Breaks Taken']
+    rows = []
+    
+    for record in attendance_records:
+        duration = record.get_shift_duration_excluding_breaks() if hasattr(record, 'get_shift_duration_excluding_breaks') else 'N/A'
+        rows.append([
+            record.date.strftime('%d/%m/%Y'),
+            record.status.title() if record.status else '—',
+            str(record.time_in.strftime('%H:%M')) if record.time_in else '—',
+            str(record.time_out.strftime('%H:%M')) if record.time_out else '—',
+            str(duration),
+            str(record.break_count) if hasattr(record, 'break_count') else '0'
+        ])
+    
+    filename = f"teacher_attendance_{timezone.now().strftime('%Y%m%d_%H%M%S')}.csv"
+    return export_csv(filename, headers, rows)

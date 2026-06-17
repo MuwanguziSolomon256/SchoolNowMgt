@@ -173,6 +173,22 @@ class ClassGrade(models.Model):
         unique_together = ('name', 'school', 'curriculum')
 
 
+class Curriculum(models.Model):
+    """Represents an educational curriculum."""
+    
+    name = models.CharField(max_length=100, unique=True)
+    code = models.CharField(max_length=20, unique=True)
+    description = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"{self.name} ({self.code})"
+    
+    class Meta:
+        ordering = ['name']
+
+
 class Subject(models.Model):
     """Represents a curriculum subject."""
     
@@ -188,6 +204,13 @@ class Subject(models.Model):
         choices=CURRICULUM_CHOICES,
         default='national',
         db_index=True
+    )
+    curriculum_fk = models.ForeignKey(
+        'Curriculum',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='subjects'
     )
     
     def __str__(self):

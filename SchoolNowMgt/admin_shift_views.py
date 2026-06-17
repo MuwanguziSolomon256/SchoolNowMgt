@@ -37,76 +37,11 @@ def shift_dashboard(request):
     """
     Main admin shift dashboard showing real-time status of all teachers.
     
-    Context:
-        - active_teachers: Teachers currently on duty
-        - on_break_teachers: Teachers currently on break
-        - clocked_out_teachers: Teachers who have clocked out today
-        - not_clocked_in: Teachers who haven't clocked in yet
-        - total_teachers: Total teachers in the school
-        - school: User's school
+    REDIRECTS to /school/admin/staff/ with Shifts tab selected.
+    The integrated Staff & Shift Management dashboard is now the primary interface.
     """
-    school = request.user.school
-    today = timezone.now().date()
-    
-    # Get all teachers in the school
-    all_teachers = StaffProfile.objects.filter(
-        user__role='teacher',
-        user__school=school
-    ).select_related('user').prefetch_related('teacher_attendance_records')
-    
-    # Get today's attendance records
-    today_attendance = TeacherAttendance.objects.filter(
-        staff__user__school=school,
-        date=today
-    ).select_related('staff__user').prefetch_related('break_sessions')
-    
-    # Categorize teachers
-    active_teachers = []
-    on_break_teachers = []
-    clocked_out_teachers = []
-    
-    for attendance in today_attendance:
-        if attendance.time_in and not attendance.time_out:
-            # Currently on duty
-            active_teachers.append({
-                'attendance': attendance,
-                'teacher': attendance.staff,
-                'shift_elapsed': calculate_elapsed_time(attendance.date, attendance.time_in),
-                'break_count': attendance.break_count,
-                'is_on_break': BreakSession.objects.filter(
-                    teacher_attendance=attendance,
-                    break_out_time__isnull=True
-                ).exists()
-            })
-        elif attendance.time_out:
-            # Clocked out
-            clocked_out_teachers.append({
-                'attendance': attendance,
-                'teacher': attendance.staff,
-                'shift_duration': attendance.get_shift_hours(),
-                'break_count': attendance.break_count,
-            })
-    
-    # Check for on break
-    on_break_teachers = [t for t in active_teachers if t['is_on_break']]
-    active_teachers = [t for t in active_teachers if not t['is_on_break']]
-    
-    # Teachers not clocked in
-    clocked_in_ids = set(today_attendance.values_list('staff_id', flat=True))
-    not_clocked_in = all_teachers.exclude(id__in=clocked_in_ids)
-    
-    context = {
-        'school': school,
-        'today': today,
-        'active_teachers': active_teachers,
-        'on_break_teachers': on_break_teachers,
-        'clocked_out_teachers': clocked_out_teachers,
-        'not_clocked_in': not_clocked_in,
-        'total_teachers': all_teachers.count(),
-        'current_time': timezone.now().time(),
-    }
-    
-    return render(request, 'admin/shift_dashboard.html', context)
+    # Redirect to the integrated staff dashboard (Shifts tab)
+    return redirect('SchoolNowMgt:admin_staff')
 
 
 @login_required
@@ -306,80 +241,11 @@ def shift_report(request):
     """
     Generate shift reports with analytics.
     
-    Available reports:
-    - Daily summary: Date → Teachers, hours worked, avg shift time
-    - Weekly summary: Week → Aggregated data
-    - Monthly summary: Month → Aggregated data
-    - Punctuality: Late arrivals, early departures
-    - Break analysis: Excessive breaks, patterns
-    
-    Query params:
-        - report_type: 'daily', 'weekly', 'monthly', 'punctuality', 'breaks'
-        - date_from, date_to: Date range
-        - teacher: Specific teacher (optional)
-        - export: 'csv', 'json' (optional)
+    REDIRECTS to /school/admin/shifts/history/ for historical viewing.
+    The integrated Staff & Shift Management dashboard is now the primary interface.
     """
-    school = request.user.school
-    report_type = request.GET.get('report_type', 'daily')
-    date_from_str = request.GET.get('date_from')
-    date_to_str = request.GET.get('date_to')
-    
-    # Parse dates
-    if date_from_str:
-        try:
-            date_from = datetime.strptime(date_from_str, '%Y-%m-%d').date()
-        except ValueError:
-            date_from = timezone.now().date() - timedelta(days=30)
-    else:
-        date_from = timezone.now().date() - timedelta(days=30)
-    
-    if date_to_str:
-        try:
-            date_to = datetime.strptime(date_to_str, '%Y-%m-%d').date()
-        except ValueError:
-            date_to = timezone.now().date()
-    else:
-        date_to = timezone.now().date()
-    
-    # Base queryset
-    shifts = TeacherAttendance.objects.filter(
-        staff__user__school=school,
-        date__gte=date_from,
-        date__lte=date_to
-    ).select_related('staff__user')
-    
-    # Filter by teacher if specified
-    teacher_id = request.GET.get('teacher')
-    if teacher_id:
-        shifts = shifts.filter(staff_id=teacher_id)
-    
-    # Generate report data based on type
-    if report_type == 'daily':
-        report_data = generate_daily_report(shifts)
-    elif report_type == 'weekly':
-        report_data = generate_weekly_report(shifts)
-    elif report_type == 'monthly':
-        report_data = generate_monthly_report(shifts)
-    elif report_type == 'punctuality':
-        report_data = generate_punctuality_report(shifts)
-    elif report_type == 'breaks':
-        report_data = generate_break_analysis_report(shifts)
-    else:
-        report_data = generate_daily_report(shifts)
-    
-    # Handle export
-    if request.GET.get('export') == 'csv':
-        return export_report_csv(report_data, report_type)
-    
-    context = {
-        'report_type': report_type,
-        'report_data': report_data,
-        'date_from': date_from,
-        'date_to': date_to,
-        'school': school,
-    }
-    
-    return render(request, 'admin/shift_report.html', context)
+    # Redirect to the integrated staff dashboard (Shifts tab)
+    return redirect('SchoolNowMgt:admin_staff')
 
 
 # ─────────────────────────────────────────────────────────────
