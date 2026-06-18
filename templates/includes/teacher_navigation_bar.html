@@ -11,35 +11,35 @@
     </div>
     
     <!-- Navigation Links - Hidden on mobile, visible on md and up -->
-    <div class="hidden md:flex items-center gap-1 lg:gap-2 flex-wrap justify-center flex-1">
+    <div class="hidden md:flex items-center gap-0 flex-wrap justify-center flex-1">
         {% with current_page=request.resolver_match.url_name %}
-        <a class="{% if current_page == 'teacher:dashboard' %}bg-secondary-container text-on-secondary-container{% else %}text-on-primary/70 hover:text-white{% endif %} rounded-lg font-semibold px-2 lg:px-3 py-2 flex items-center gap-1 lg:gap-2 transition-all text-body-md whitespace-nowrap flex-shrink-0" href="{% url 'teacher:dashboard' %}">
-            <span class="material-symbols-outlined text-base lg:text-lg">dashboard</span>
-            <span class="hidden lg:inline">Dashboard</span>
+        <a class="{% if current_page == 'dashboard' %}bg-secondary-container text-on-secondary-container{% else %}text-on-primary/70 hover:text-white{% endif %} rounded-lg font-semibold px-1.5 py-1.5 flex items-center gap-0.5 transition-all whitespace-nowrap flex-shrink-0" href="{% url 'teacher:dashboard' %}">
+            <span class="material-symbols-outlined text-sm">dashboard</span>
+            <span class="hidden md:inline text-xs">Dashboard</span>
         </a>
-        <a class="{% if current_page == 'teacher:students' %}bg-secondary-container text-on-secondary-container{% else %}text-on-primary/70 hover:text-white{% endif %} rounded-lg font-semibold px-2 lg:px-3 py-2 flex items-center gap-1 lg:gap-2 transition-all text-body-md whitespace-nowrap flex-shrink-0" href="{% url 'teacher:students' %}">
-            <span class="material-symbols-outlined text-base lg:text-lg">school</span>
-            <span class="hidden lg:inline">Students</span>
+        <a class="{% if current_page == 'students' %}bg-secondary-container text-on-secondary-container{% else %}text-on-primary/70 hover:text-white{% endif %} rounded-lg font-semibold px-1.5 py-1.5 flex items-center gap-0.5 transition-all whitespace-nowrap flex-shrink-0" href="{% url 'teacher:students' %}">
+            <span class="material-symbols-outlined text-sm">school</span>
+            <span class="hidden md:inline text-xs">Students</span>
         </a>
-        <a class="{% if current_page == 'teacher:lessons' %}bg-secondary-container text-on-secondary-container{% else %}text-on-primary/70 hover:text-white{% endif %} rounded-lg font-semibold px-2 lg:px-3 py-2 flex items-center gap-1 lg:gap-2 transition-all text-body-md whitespace-nowrap flex-shrink-0" href="{% url 'teacher:lessons' %}">
-            <span class="material-symbols-outlined text-base lg:text-lg">menu_book</span>
-            <span class="hidden lg:inline">Lessons</span>
+        <a class="{% if current_page == 'lessons' %}bg-secondary-container text-on-secondary-container{% else %}text-on-primary/70 hover:text-white{% endif %} rounded-lg font-semibold px-1.5 py-1.5 flex items-center gap-0.5 transition-all whitespace-nowrap flex-shrink-0" href="{% url 'teacher:lessons' %}">
+            <span class="material-symbols-outlined text-sm">menu_book</span>
+            <span class="hidden md:inline text-xs">Lessons</span>
         </a>
-        <a class="{% if current_page == 'teacher:grades_dashboard' %}bg-secondary-container text-on-secondary-container{% else %}text-on-primary/70 hover:text-white{% endif %} rounded-lg font-semibold px-2 lg:px-3 py-2 flex items-center gap-1 lg:gap-2 transition-all text-body-md whitespace-nowrap flex-shrink-0" href="{% url 'teacher:grades_dashboard' %}">
-            <span class="material-symbols-outlined text-base lg:text-lg">star</span>
-            <span class="hidden lg:inline">Grades</span>
+        <a class="{% if current_page == 'grades_dashboard' %}bg-secondary-container text-on-secondary-container{% else %}text-on-primary/70 hover:text-white{% endif %} rounded-lg font-semibold px-1.5 py-1.5 flex items-center gap-0.5 transition-all whitespace-nowrap flex-shrink-0" href="{% url 'teacher:grades_dashboard' %}">
+            <span class="material-symbols-outlined text-sm">star</span>
+            <span class="hidden md:inline text-xs">Grades</span>
         </a>
-        <a class="{% if current_page == 'teacher:message_inbox' %}bg-secondary-container text-on-secondary-container{% else %}text-on-primary/70 hover:text-white{% endif %} rounded-lg font-semibold px-2 lg:px-3 py-2 flex items-center gap-1 lg:gap-2 transition-all text-body-md whitespace-nowrap flex-shrink-0" href="{% url 'teacher:message_inbox' %}">
-            <span class="material-symbols-outlined text-base lg:text-lg">chat_bubble</span>
-            <span class="hidden xl:inline">Communication</span>
+        <a class="{% if current_page == 'message_inbox' %}bg-secondary-container text-on-secondary-container{% else %}text-on-primary/70 hover:text-white{% endif %} rounded-lg font-semibold px-1.5 py-1.5 flex items-center gap-0.5 transition-all whitespace-nowrap flex-shrink-0" href="{% url 'teacher:message_inbox' %}">
+            <span class="material-symbols-outlined text-sm">chat_bubble</span>
+            <span class="hidden md:inline text-xs">Messages</span>
         </a>
-        <a class="{% if current_page == 'teacher:attendance_marking' %}bg-secondary-container text-on-secondary-container{% else %}text-on-primary/70 hover:text-white{% endif %} rounded-lg font-semibold px-2 lg:px-3 py-2 flex items-center gap-1 lg:gap-2 transition-all text-body-md whitespace-nowrap flex-shrink-0" href="{% url 'teacher:attendance_marking' %}">
-            <span class="material-symbols-outlined text-base lg:text-lg">assignment_ind</span>
-            <span class="hidden lg:inline">Attendance</span>
+        <a class="{% if current_page == 'attendance_marking' %}bg-secondary-container text-on-secondary-container{% else %}text-on-primary/70 hover:text-white{% endif %} rounded-lg font-semibold px-1.5 py-1.5 flex items-center gap-0.5 transition-all whitespace-nowrap flex-shrink-0" href="{% url 'teacher:attendance_marking' %}">
+            <span class="material-symbols-outlined text-sm">assignment_ind</span>
+            <span class="hidden md:inline text-xs">Attendance</span>
         </a>
-        <a class="{% if current_page == 'teacher:gradebook_list' %}bg-secondary-container text-on-secondary-container{% else %}text-on-primary/70 hover:text-white{% endif %} rounded-lg font-semibold px-2 lg:px-3 py-2 flex items-center gap-1 lg:gap-2 transition-all text-body-md whitespace-nowrap flex-shrink-0" href="{% url 'teacher:gradebook_list' %}">
-            <span class="material-symbols-outlined text-base lg:text-lg">draw</span>
-            <span class="hidden xl:inline">Gradebook</span>
+        <a class="{% if current_page == 'gradebook_list' %}bg-secondary-container text-on-secondary-container{% else %}text-on-primary/70 hover:text-white{% endif %} rounded-lg font-semibold px-1.5 py-1.5 flex items-center gap-0.5 transition-all whitespace-nowrap flex-shrink-0" href="{% url 'teacher:gradebook_list' %}">
+            <span class="material-symbols-outlined text-sm">draw</span>
+            <span class="hidden md:inline text-xs">Gradebook</span>
         </a>
         {% endwith %}
     </div>
@@ -65,31 +65,31 @@
 <div id="mobile-nav-menu" class="hidden md:hidden bg-primary-container text-on-primary fixed top-16 left-0 right-0 z-40 shadow-lg border-b border-primary">
     <div class="flex flex-col p-4 gap-2">
         {% with current_page=request.resolver_match.url_name %}
-        <a class="{% if current_page == 'teacher:dashboard' %}bg-secondary-container text-on-secondary-container{% else %}text-on-primary/90 hover:bg-primary/20{% endif %} rounded-lg font-semibold px-4 py-3 flex items-center gap-3 transition-all text-body-md" href="{% url 'teacher:dashboard' %}">
+        <a class="{% if current_page == 'dashboard' %}bg-secondary-container text-on-secondary-container{% else %}text-on-primary/90 hover:bg-primary/20{% endif %} rounded-lg font-semibold px-4 py-3 flex items-center gap-3 transition-all text-body-md" href="{% url 'teacher:dashboard' %}">
             <span class="material-symbols-outlined">dashboard</span>
             <span>Dashboard</span>
         </a>
-        <a class="{% if current_page == 'teacher:students' %}bg-secondary-container text-on-secondary-container{% else %}text-on-primary/90 hover:bg-primary/20{% endif %} rounded-lg font-semibold px-4 py-3 flex items-center gap-3 transition-all text-body-md" href="{% url 'teacher:students' %}">
+        <a class="{% if current_page == 'students' %}bg-secondary-container text-on-secondary-container{% else %}text-on-primary/90 hover:bg-primary/20{% endif %} rounded-lg font-semibold px-4 py-3 flex items-center gap-3 transition-all text-body-md" href="{% url 'teacher:students' %}">
             <span class="material-symbols-outlined">school</span>
             <span>Students</span>
         </a>
-        <a class="{% if current_page == 'teacher:lessons' %}bg-secondary-container text-on-secondary-container{% else %}text-on-primary/90 hover:bg-primary/20{% endif %} rounded-lg font-semibold px-4 py-3 flex items-center gap-3 transition-all text-body-md" href="{% url 'teacher:lessons' %}">
+        <a class="{% if current_page == 'lessons' %}bg-secondary-container text-on-secondary-container{% else %}text-on-primary/90 hover:bg-primary/20{% endif %} rounded-lg font-semibold px-4 py-3 flex items-center gap-3 transition-all text-body-md" href="{% url 'teacher:lessons' %}">
             <span class="material-symbols-outlined">menu_book</span>
             <span>Lessons</span>
         </a>
-        <a class="{% if current_page == 'teacher:grades_dashboard' %}bg-secondary-container text-on-secondary-container{% else %}text-on-primary/90 hover:bg-primary/20{% endif %} rounded-lg font-semibold px-4 py-3 flex items-center gap-3 transition-all text-body-md" href="{% url 'teacher:grades_dashboard' %}">
+        <a class="{% if current_page == 'grades_dashboard' %}bg-secondary-container text-on-secondary-container{% else %}text-on-primary/90 hover:bg-primary/20{% endif %} rounded-lg font-semibold px-4 py-3 flex items-center gap-3 transition-all text-body-md" href="{% url 'teacher:grades_dashboard' %}">
             <span class="material-symbols-outlined">star</span>
             <span>Grades</span>
         </a>
-        <a class="{% if current_page == 'teacher:message_inbox' %}bg-secondary-container text-on-secondary-container{% else %}text-on-primary/90 hover:bg-primary/20{% endif %} rounded-lg font-semibold px-4 py-3 flex items-center gap-3 transition-all text-body-md" href="{% url 'teacher:message_inbox' %}">
+        <a class="{% if current_page == 'message_inbox' %}bg-secondary-container text-on-secondary-container{% else %}text-on-primary/90 hover:bg-primary/20{% endif %} rounded-lg font-semibold px-4 py-3 flex items-center gap-3 transition-all text-body-md" href="{% url 'teacher:message_inbox' %}">
             <span class="material-symbols-outlined">chat_bubble</span>
             <span>Communication</span>
         </a>
-        <a class="{% if current_page == 'teacher:attendance_marking' %}bg-secondary-container text-on-secondary-container{% else %}text-on-primary/90 hover:bg-primary/20{% endif %} rounded-lg font-semibold px-4 py-3 flex items-center gap-3 transition-all text-body-md" href="{% url 'teacher:attendance_marking' %}">
+        <a class="{% if current_page == 'attendance_marking' %}bg-secondary-container text-on-secondary-container{% else %}text-on-primary/90 hover:bg-primary/20{% endif %} rounded-lg font-semibold px-4 py-3 flex items-center gap-3 transition-all text-body-md" href="{% url 'teacher:attendance_marking' %}">
             <span class="material-symbols-outlined">assignment_ind</span>
             <span>Attendance</span>
         </a>
-        <a class="{% if current_page == 'teacher:gradebook_list' %}bg-secondary-container text-on-secondary-container{% else %}text-on-primary/90 hover:bg-primary/20{% endif %} rounded-lg font-semibold px-4 py-3 flex items-center gap-3 transition-all text-body-md" href="{% url 'teacher:gradebook_list' %}">
+        <a class="{% if current_page == 'gradebook_list' %}bg-secondary-container text-on-secondary-container{% else %}text-on-primary/90 hover:bg-primary/20{% endif %} rounded-lg font-semibold px-4 py-3 flex items-center gap-3 transition-all text-body-md" href="{% url 'teacher:gradebook_list' %}">
             <span class="material-symbols-outlined">draw</span>
             <span>Gradebook</span>
         </a>

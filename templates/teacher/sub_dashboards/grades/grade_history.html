@@ -6,6 +6,15 @@
 <div class="grade-history">
     <h1 class="page-title">Grade History & Trends</h1>
     
+    <!-- Mini Navigation -->
+    <div class="grades-mini-nav">
+        <a href="{% url 'teacher:grades_dashboard' %}" class="mini-nav-btn">✎ Grades Dashboard</a>
+        <a href="{% url 'teacher:grade_entry' %}" class="mini-nav-btn">✎ Enter Grades</a>
+        <a href="{% url 'teacher:grade_statistics' %}" class="mini-nav-btn">📊 Statistics</a>
+        <a href="{% url 'teacher:grade_export' %}" class="mini-nav-btn">⬇️ Export</a>
+        <a href="{% url 'teacher:grade_history' %}" class="mini-nav-btn active">📈 History</a>
+    </div>
+    
     <div class="student-selector mb-4">
         <form method="get" class="filter-form">
             <label for="student_search">Find Student:</label>

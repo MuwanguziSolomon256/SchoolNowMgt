@@ -232,104 +232,69 @@
     </style>
 </head>
 <body class="font-body-md text-on-surface min-h-screen">
-    <!-- SideNavBar Anchor -->
-    <aside class="sidebar-main h-screen w-64 fixed left-0 top-0 sidebar-gradient flex flex-col py-base gap-2 z-50 shadow-xl shadow-primary/20">
-        <div class="px-6 py-8">
-            <h1 class="font-headline-lg text-headline-lg font-black text-secondary-container tracking-tighter">EduVision</h1>
-            <p class="font-label-md text-label-md text-on-primary/60 uppercase tracking-widest mt-1">Teacher Portal</p>
-        </div>
-        <nav class="flex-1 flex flex-col gap-1">
-            <!-- Navigation Items Mapping -->
-            <a class="bg-secondary-container text-on-secondary-container rounded-lg font-bold flex items-center gap-3 px-4 py-3 mx-4 group cursor-pointer transition-all" href="{% url 'teacher:dashboard' %}">
-                <span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
-                <span class="font-label-md text-label-md">Dashboard</span>
-            </a>
-            <a class="text-on-primary/70 flex items-center gap-3 px-4 py-3 mx-4 hover:bg-white/10 rounded-lg transition-all group cursor-pointer hover:translate-x-1 duration-300" href="#">
-                <span class="material-symbols-outlined" data-icon="school">school</span>
-                <span class="font-label-md text-label-md">Students</span>
-            </a>
-            <a class="text-on-primary/70 flex items-center gap-3 px-4 py-3 mx-4 hover:bg-white/10 rounded-lg transition-all group cursor-pointer hover:translate-x-1 duration-300" href="#">
-                <span class="material-symbols-outlined" data-icon="menu_book">menu_book</span>
-                <span class="font-label-md text-label-md">Lessons</span>
-            </a>
+    <!-- Top Navigation Bar -->
+    <nav class="fixed top-0 left-0 right-0 bg-primary text-on-primary px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between z-50 shadow-lg gap-2 sm:gap-4">
+        <!-- Left Section: Logo + Mobile Menu Button -->
+        <div class="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+            <div class="w-8 sm:w-10 h-8 sm:h-10 rounded-lg sm:rounded-xl bg-secondary-container flex items-center justify-center text-primary flex-shrink-0">
+                <span class="material-symbols-outlined text-lg sm:text-xl" style="font-variation-settings: 'FILL' 1;">school</span>
+            </div>
+            <h1 class="text-sm sm:text-base md:text-lg font-black text-secondary-fixed hidden xs:inline">EduVision</h1>
             
-            <!-- Sub-Dashboard Links -->
-            <div class="px-4 py-2 mt-4 border-t border-white/10">
-                <p class="text-xs font-semibold text-on-primary/50 uppercase tracking-wider px-2 py-2">Sub-Dashboards</p>
-                <a class="text-on-primary/70 flex items-center gap-3 px-4 py-3 hover:bg-white/10 rounded-lg transition-all group cursor-pointer hover:translate-x-1 duration-300" href="{% url 'teacher:grades_dashboard' %}">
-                    <span class="material-symbols-outlined" data-icon="grade">grade</span>
-                    <span class="font-label-md text-label-md">Grades</span>
-                </a>
-                <a class="text-on-primary/70 flex items-center gap-3 px-4 py-3 hover:bg-white/10 rounded-lg transition-all group cursor-pointer hover:translate-x-1 duration-300" href="{% url 'teacher:attendance_marking' %}">
-                    <span class="material-symbols-outlined" data-icon="event_note">event_note</span>
-                    <span class="font-label-md text-label-md">Attendance</span>
-                </a>
-                <a class="text-on-primary/70 flex items-center gap-3 px-4 py-3 hover:bg-white/10 rounded-lg transition-all group cursor-pointer hover:translate-x-1 duration-300" href="{% url 'teacher:message_inbox' %}">
-                    <span class="material-symbols-outlined" data-icon="mail">mail</span>
-                    <span class="font-label-md text-label-md">Messages</span>
-                </a>
-                <a class="text-on-primary/70 flex items-center gap-3 px-4 py-3 hover:bg-white/10 rounded-lg transition-all group cursor-pointer hover:translate-x-1 duration-300" href="{% url 'teacher:gradebook_list' %}">
-                    <span class="material-symbols-outlined" data-icon="auto_awesome">auto_awesome</span>
-                    <span class="font-label-md text-label-md">Gradebook</span>
-                </a>
-            </div>
-        </nav>
-        <div class="px-4 py-6 mt-auto border-t border-white/10">
-            <div class="flex flex-col gap-2">
-                <a class="text-on-primary/60 flex items-center gap-3 px-4 py-2 hover:text-on-primary transition-colors" href="#">
-                    <span class="material-symbols-outlined text-sm" data-icon="contact_support">contact_support</span>
-                    <span class="text-xs font-semibold">Support</span>
-                </a>
-                <form method="post" action="{% url 'teacher:logout' %}" class="inline">
-                    {% csrf_token %}
-                    <button type="submit" class="text-on-primary/60 flex items-center gap-3 px-4 py-2 hover:text-error transition-colors w-full text-left">
-                        <span class="material-symbols-outlined text-sm" data-icon="logout">logout</span>
-                        <span class="text-xs font-semibold">Logout</span>
-                    </button>
-                </form>
-            </div>
+            <!-- Mobile Menu Button -->
+            <button id="teacherMobileMenuToggle" class="lg:hidden p-2 hover:bg-white/10 rounded-lg transition-all text-on-primary flex items-center ml-auto lg:ml-0">
+                <span class="material-symbols-outlined text-xl">menu</span>
+            </button>
         </div>
-    </aside>
-
-    <!-- Mobile Overlay -->
-    <div class="overlay fixed inset-0 bg-black/50 z-40" id="mobileOverlay"></div>
-
-    <!-- Main Canvas -->
-    <main class="md:ml-64 min-h-screen">
-        <!-- TopAppBar Anchor -->
-        <header class="flex justify-between items-center px-container-padding w-full sticky top-0 z-40 bg-surface/70 backdrop-blur-2xl h-16 border-b border-white/20 shadow-sm shadow-primary/5">
-            <div class="flex items-center gap-6">
-                <!-- Mobile Menu Toggle -->
-                <button class="md:hidden text-primary" id="mobileMenuBtn">
-                    <span class="material-symbols-outlined">menu</span>
+        
+        <!-- Navigation Links - Desktop -->
+        <div class="hidden lg:flex items-center gap-1 flex-grow justify-center">
+            {% with current_page=request.resolver_match.url_name %}
+            <a class="{% if current_page == 'dashboard' %}bg-secondary-container/20 text-secondary{% else %}text-on-primary/70 hover:text-white{% endif %} px-3 py-2 flex items-center gap-2 hover:bg-white/10 transition-all text-sm rounded-lg" href="{% url 'teacher:dashboard' %}">
+                <span class="material-symbols-outlined text-base">dashboard</span>
+                <span>Dashboard</span>
+            </a>
+            <a class="{% if current_page == 'students' %}bg-secondary-container/20 text-secondary{% else %}text-on-primary/70 hover:text-white{% endif %} px-3 py-2 flex items-center gap-2 hover:bg-white/10 transition-all text-sm rounded-lg" href="{% url 'teacher:students' %}">
+                <span class="material-symbols-outlined text-base">school</span>
+                <span>Students</span>
+            </a>
+            <a class="{% if current_page == 'lessons' %}bg-secondary-container/20 text-secondary{% else %}text-on-primary/70 hover:text-white{% endif %} px-3 py-2 flex items-center gap-2 hover:bg-white/10 transition-all text-sm rounded-lg" href="{% url 'teacher:lessons' %}">
+                <span class="material-symbols-outlined text-base">menu_book</span>
+                <span>Lessons</span>
+            </a>
+            <a class="{% if current_page == 'grades_dashboard' %}bg-secondary-container/20 text-secondary{% else %}text-on-primary/70 hover:text-white{% endif %} px-3 py-2 flex items-center gap-2 hover:bg-white/10 transition-all text-sm rounded-lg" href="{% url 'teacher:grades_dashboard' %}">
+                <span class="material-symbols-outlined text-base">grade</span>
+                <span>Grades</span>
+            </a>
+            <a class="{% if current_page == 'attendance_marking' %}bg-secondary-container/20 text-secondary{% else %}text-on-primary/70 hover:text-white{% endif %} px-3 py-2 flex items-center gap-2 hover:bg-white/10 transition-all text-sm rounded-lg" href="{% url 'teacher:attendance_marking' %}">
+                <span class="material-symbols-outlined text-base">event_note</span>
+                <span>Attendance</span>
+            </a>
+            <a class="{% if current_page == 'message_inbox' %}bg-secondary-container/20 text-secondary{% else %}text-on-primary/70 hover:text-white{% endif %} px-3 py-2 flex items-center gap-2 hover:bg-white/10 transition-all text-sm rounded-lg" href="{% url 'teacher:message_inbox' %}">
+                <span class="material-symbols-outlined text-base">mail</span>
+                <span>Messages</span>
+            </a>
+            <a class="{% if current_page == 'gradebook_list' %}bg-secondary-container/20 text-secondary{% else %}text-on-primary/70 hover:text-white{% endif %} px-3 py-2 flex items-center gap-2 hover:bg-white/10 transition-all text-sm rounded-lg" href="{% url 'teacher:gradebook_list' %}">
+                <span class="material-symbols-outlined text-base">auto_awesome</span>
+                <span>Gradebook</span>
+            </a>
+            {% endwith %}
+        </div>
+        
+        <!-- Right Side Actions -->
+        <div class="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+            <form method="post" action="{% url 'teacher:logout' %}" class="inline">
+                {% csrf_token %}
+                <button type="submit" class="text-on-primary/70 hover:text-white px-3 py-2 flex items-center gap-2 hover:bg-white/10 transition-all rounded-lg font-bold text-sm">
+                    <span class="material-symbols-outlined text-base sm:text-lg">logout</span>
+                    <span class="hidden sm:inline">Log out</span>
                 </button>
-                <div class="relative group hidden md:block">
-                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline" data-icon="search">search</span>
-                    <input class="bg-surface-container-low border-none rounded-full pl-10 pr-4 py-2 w-80 focus:ring-2 focus:ring-primary/20 transition-all font-body-md text-body-md" placeholder="Search students, lessons..." type="text" />
-                </div>
-            </div>
-            <div class="flex items-center gap-4">
-                <div class="flex items-center gap-1">
-                    <button class="p-2 rounded-full hover:bg-surface-container-highest/50 transition-all cursor-pointer active:scale-95">
-                        <span class="material-symbols-outlined text-on-surface-variant" data-icon="notifications">notifications</span>
-                    </button>
-                    <button class="p-2 rounded-full hover:bg-surface-container-highest/50 transition-all cursor-pointer active:scale-95">
-                        <span class="material-symbols-outlined text-on-surface-variant" data-icon="help">help</span>
-                    </button>
-                    <button class="p-2 rounded-full hover:bg-surface-container-highest/50 transition-all cursor-pointer active:scale-95">
-                        <span class="material-symbols-outlined text-on-surface-variant" data-icon="settings">settings</span>
-                    </button>
-                </div>
-                <div class="h-8 w-[1px] bg-outline-variant/30 mx-2"></div>
-                <div class="flex items-center gap-3 cursor-pointer group">
-                    <div class="text-right hidden md:block">
-                        <p class="font-label-md text-label-md text-primary leading-none">{{ request.user.first_name }} {{ request.user.last_name }}</p>
-                        <p class="text-[10px] text-outline font-bold uppercase tracking-tighter">Teacher</p>
-                    </div>
-                </div>
-            </div>
-        </header>
+            </form>
+        </div>
+    </nav>
 
+    <!-- Main Canvas with top padding for fixed navbar -->
+    <main class="pt-16 sm:pt-20 min-h-screen">
         <!-- Content Grid -->
         <div class="p-container-padding space-y-gutter">
             {% block content %}

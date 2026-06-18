@@ -4,6 +4,7 @@ from django.utils import timezone
 from django.db.models import Count, Q, Avg
 from django.http import HttpResponse
 import csv
+from datetime import datetime as dt
 from SchoolNowMgt.models import (
     StaffProfile, Timetable, Student, ClassGrade,
     StudentAttendance, RetentionAlert, Grade,
@@ -56,14 +57,18 @@ def teacher_dashboard(request):
     
     # Teacher is on duty if: clocked in (has time_in) AND not clocked out yet (time_out is None)
     is_on_duty = teacher_attendance_today.status == 'present' and teacher_attendance_today.time_out is None
-    shift_start_time = timezone.now()  # Current time, will be replaced with time_in if available
-    if teacher_attendance_today.time_in:
-        # Combine date with time_in to create a datetime
-        shift_start_time = timezone.make_aware(
-            timezone.datetime.combine(today, teacher_attendance_today.time_in)
-        )
     
+    # Calculate shift start time: use the actual clock-in time if available
     current_time = timezone.now()
+    if teacher_attendance_today.time_in:
+        # Convert the stored time to a timezone-aware datetime
+        # The time is stored in UTC, so we combine today's date with the time and make it aware
+        naive_dt = dt.combine(today, teacher_attendance_today.time_in)
+        # Make it timezone aware - the time was stored in UTC so it's already correct
+        shift_start_time = timezone.make_aware(naive_dt)
+    else:
+        # If not clocked in yet, use current time
+        shift_start_time = current_time
     
     # ===== TODAY'S SCHEDULE / CURRENT LESSON =====
     todays_classes = Timetable.objects.filter(

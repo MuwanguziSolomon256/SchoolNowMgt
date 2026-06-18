@@ -130,11 +130,105 @@
 </head>
 <body class="font-body-md text-on-surface min-h-screen">
 
-<!-- Teacher Navigation Bar (Reusable Include) -->
-{% include "includes/teacher_navigation_bar.html" %}
+<!-- Teacher Navigation Bar (Fixed Top) -->
+<nav class="fixed top-0 left-0 right-0 bg-primary text-on-primary px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between z-50 shadow-lg gap-2 sm:gap-4">
+    <!-- Left Section: Logo + Mobile Menu Button -->
+    <div class="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+        <div class="w-8 sm:w-10 h-8 sm:h-10 rounded-lg sm:rounded-xl bg-secondary-container flex items-center justify-center text-primary flex-shrink-0">
+            <span class="material-symbols-outlined text-lg sm:text-xl" style="font-variation-settings: 'FILL' 1;">school</span>
+        </div>
+        <h1 class="text-sm sm:text-base md:text-lg font-black text-secondary-fixed hidden xs:inline">EduVision</h1>
+        
+        <!-- Mobile Menu Button -->
+        <button id="teacherMobileMenuToggle" class="lg:hidden p-2 hover:bg-white/10 rounded-lg transition-all text-on-primary flex items-center ml-auto lg:ml-0">
+            <span class="material-symbols-outlined text-xl">menu</span>
+        </button>
+    </div>
+    
+    <!-- Navigation Links - Desktop -->
+    <div class="hidden lg:flex items-center gap-1 flex-grow justify-center">
+        {% with current_page=request.resolver_match.url_name %}
+        <a class="{% if current_page == 'dashboard' %}bg-secondary-container/20 text-secondary{% else %}text-on-primary/70 hover:text-white{% endif %} px-3 py-2 flex items-center gap-2 hover:bg-white/10 transition-all text-sm rounded-lg" href="{% url 'teacher:dashboard' %}">
+            <span class="material-symbols-outlined text-base">dashboard</span>
+            <span>Dashboard</span>
+        </a>
+        <a class="{% if current_page == 'students' %}bg-secondary-container/20 text-secondary{% else %}text-on-primary/70 hover:text-white{% endif %} px-3 py-2 flex items-center gap-2 hover:bg-white/10 transition-all text-sm rounded-lg" href="{% url 'teacher:students' %}">
+            <span class="material-symbols-outlined text-base">school</span>
+            <span>Students</span>
+        </a>
+        <a class="{% if current_page == 'lessons' %}bg-secondary-container/20 text-secondary{% else %}text-on-primary/70 hover:text-white{% endif %} px-3 py-2 flex items-center gap-2 hover:bg-white/10 transition-all text-sm rounded-lg" href="{% url 'teacher:lessons' %}">
+            <span class="material-symbols-outlined text-base">menu_book</span>
+            <span>Lessons</span>
+        </a>
+        <a class="{% if current_page == 'grades_dashboard' %}bg-secondary-container/20 text-secondary{% else %}text-on-primary/70 hover:text-white{% endif %} px-3 py-2 flex items-center gap-2 hover:bg-white/10 transition-all text-sm rounded-lg" href="{% url 'teacher:grades_dashboard' %}">
+            <span class="material-symbols-outlined text-base">grade</span>
+            <span>Grades</span>
+        </a>
+        <a class="{% if current_page == 'attendance_marking' %}bg-secondary-container/20 text-secondary{% else %}text-on-primary/70 hover:text-white{% endif %} px-3 py-2 flex items-center gap-2 hover:bg-white/10 transition-all text-sm rounded-lg" href="{% url 'teacher:attendance_marking' %}">
+            <span class="material-symbols-outlined text-base">event_note</span>
+            <span>Attendance</span>
+        </a>
+        <a class="{% if current_page == 'message_inbox' %}bg-secondary-container/20 text-secondary{% else %}text-on-primary/70 hover:text-white{% endif %} px-3 py-2 flex items-center gap-2 hover:bg-white/10 transition-all text-sm rounded-lg" href="{% url 'teacher:message_inbox' %}">
+            <span class="material-symbols-outlined text-base">mail</span>
+            <span>Messages</span>
+        </a>
+        <a class="{% if current_page == 'gradebook_list' %}bg-secondary-container/20 text-secondary{% else %}text-on-primary/70 hover:text-white{% endif %} px-3 py-2 flex items-center gap-2 hover:bg-white/10 transition-all text-sm rounded-lg" href="{% url 'teacher:gradebook_list' %}">
+            <span class="material-symbols-outlined text-base">auto_awesome</span>
+            <span>Gradebook</span>
+        </a>
+        {% endwith %}
+    </div>
+    
+    <!-- Right Side Actions -->
+    <div class="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+        <form method="post" action="{% url 'teacher:logout' %}" class="inline">
+            {% csrf_token %}
+            <button type="submit" class="text-on-primary/70 hover:text-white px-3 py-2 flex items-center gap-2 hover:bg-white/10 transition-all rounded-lg font-bold text-sm">
+                <span class="material-symbols-outlined text-base sm:text-lg">logout</span>
+                <span class="hidden sm:inline">Log out</span>
+            </button>
+        </form>
+    </div>
+</nav>
+
+<!-- Mobile Navigation Menu -->
+<div id="teacherMobileMenu" class="fixed top-16 sm:top-20 left-0 right-0 bg-primary text-on-primary z-40 max-h-0 overflow-hidden transition-all duration-300 ease-in-out shadow-lg lg:hidden">
+    <div class="p-4 space-y-2">
+        {% with current_page=request.resolver_match.url_name %}
+        <a class="{% if current_page == 'dashboard' %}bg-secondary-container/20 text-secondary{% else %}text-on-primary/80 hover:text-white{% endif %} px-4 py-3 flex items-center gap-3 hover:bg-white/10 transition-all text-sm rounded-lg block w-full text-left" href="{% url 'teacher:dashboard' %}">
+            <span class="material-symbols-outlined">dashboard</span>
+            <span>Dashboard</span>
+        </a>
+        <a class="{% if current_page == 'students' %}bg-secondary-container/20 text-secondary{% else %}text-on-primary/80 hover:text-white{% endif %} px-4 py-3 flex items-center gap-3 hover:bg-white/10 transition-all text-sm rounded-lg block w-full text-left" href="{% url 'teacher:students' %}">
+            <span class="material-symbols-outlined">school</span>
+            <span>Students</span>
+        </a>
+        <a class="{% if current_page == 'lessons' %}bg-secondary-container/20 text-secondary{% else %}text-on-primary/80 hover:text-white{% endif %} px-4 py-3 flex items-center gap-3 hover:bg-white/10 transition-all text-sm rounded-lg block w-full text-left" href="{% url 'teacher:lessons' %}">
+            <span class="material-symbols-outlined">menu_book</span>
+            <span>Lessons</span>
+        </a>
+        <a class="{% if current_page == 'grades_dashboard' %}bg-secondary-container/20 text-secondary{% else %}text-on-primary/80 hover:text-white{% endif %} px-4 py-3 flex items-center gap-3 hover:bg-white/10 transition-all text-sm rounded-lg block w-full text-left" href="{% url 'teacher:grades_dashboard' %}">
+            <span class="material-symbols-outlined">grade</span>
+            <span>Grades</span>
+        </a>
+        <a class="{% if current_page == 'attendance_marking' %}bg-secondary-container/20 text-secondary{% else %}text-on-primary/80 hover:text-white{% endif %} px-4 py-3 flex items-center gap-3 hover:bg-white/10 transition-all text-sm rounded-lg block w-full text-left" href="{% url 'teacher:attendance_marking' %}">
+            <span class="material-symbols-outlined">event_note</span>
+            <span>Attendance</span>
+        </a>
+        <a class="{% if current_page == 'message_inbox' %}bg-secondary-container/20 text-secondary{% else %}text-on-primary/80 hover:text-white{% endif %} px-4 py-3 flex items-center gap-3 hover:bg-white/10 transition-all text-sm rounded-lg block w-full text-left" href="{% url 'teacher:message_inbox' %}">
+            <span class="material-symbols-outlined">mail</span>
+            <span>Messages</span>
+        </a>
+        <a class="{% if current_page == 'gradebook_list' %}bg-secondary-container/20 text-secondary{% else %}text-on-primary/80 hover:text-white{% endif %} px-4 py-3 flex items-center gap-3 hover:bg-white/10 transition-all text-sm rounded-lg block w-full text-left" href="{% url 'teacher:gradebook_list' %}">
+            <span class="material-symbols-outlined">auto_awesome</span>
+            <span>Gradebook</span>
+        </a>
+        {% endwith %}
+    </div>
+</div>
 
 <!-- Main Canvas -->
-<main class="min-h-screen">
+<main class="pt-16 sm:pt-20 min-h-screen">
     <!-- Content Area -->
     <div>
     <!-- Greeting Section -->

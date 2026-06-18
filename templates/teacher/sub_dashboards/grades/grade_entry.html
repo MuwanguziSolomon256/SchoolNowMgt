@@ -6,6 +6,15 @@
 <div class="grade-entry">
     <h1 class="page-title">Enter Grades</h1>
     
+    <!-- Mini Navigation -->
+    <div class="grades-mini-nav">
+        <a href="{% url 'teacher:grades_dashboard' %}" class="mini-nav-btn">✎ Grades Dashboard</a>
+        <a href="{% url 'teacher:grade_entry' %}" class="mini-nav-btn active">✎ Enter Grades</a>
+        <a href="{% url 'teacher:grade_statistics' %}" class="mini-nav-btn">📊 Statistics</a>
+        <a href="{% url 'teacher:grade_export' %}" class="mini-nav-btn">⬇️ Export</a>
+        <a href="{% url 'teacher:grade_history' %}" class="mini-nav-btn">📈 History</a>
+    </div>
+    
     <!-- Entry Method Selection -->
     <div class="entry-options">
         <div class="option-card" onclick="showEntryMethod('bulk')">

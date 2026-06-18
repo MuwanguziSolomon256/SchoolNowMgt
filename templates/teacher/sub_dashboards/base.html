@@ -306,5 +306,55 @@
             padding: 32px 24px;
         }
     }
+    
+    /* Mini Navigation for Grades Sections */
+    .grades-mini-nav {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 24px;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding: 12px;
+        background-color: #f5f6f8;
+        border-radius: 12px;
+        border: 1px solid #e1e2e5;
+    }
+    
+    .mini-nav-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 10px 14px;
+        background-color: #ffffff;
+        color: #0a0d3f;
+        border: 1.5px solid #e1e2e5;
+        border-radius: 10px;
+        font-size: 13px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        font-family: "Inter", sans-serif;
+        cursor: pointer;
+        white-space: nowrap;
+    }
+    
+    .mini-nav-btn:hover {
+        background-color: #f0f1f3;
+        border-color: #080b3a;
+        color: #080b3a;
+        transform: translateY(-2px);
+    }
+    
+    .mini-nav-btn.active {
+        background-color: #080b3a;
+        color: #ffffff;
+        border-color: #080b3a;
+        font-weight: 600;
+    }
+    
+    .mini-nav-btn.active:hover {
+        background-color: #0a0d3f;
+        border-color: #0a0d3f;
+    }
 </style>
 {% endblock %}

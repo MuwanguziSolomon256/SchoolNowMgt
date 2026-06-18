@@ -11,8 +11,25 @@ from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from datetime import datetime, time, timedelta
 from django.db import transaction
+import json
 
 from SchoolNowMgt.models import TeacherAttendance, BreakSession, StaffProfile
+
+
+def get_current_time_in_timezone():
+    """
+    Get the current time in the configured Django timezone (Africa/Kampala).
+    
+    timezone.localtime() converts UTC to the configured TIME_ZONE setting,
+    which is the proper way to get local time when USE_TZ=True.
+    """
+    from django.utils.timezone import localtime
+    
+    # Get current UTC datetime and convert to local timezone
+    local_datetime = localtime(timezone.now())
+    
+    # Return just the time component
+    return local_datetime.time()
 
 
 def get_teacher_profile(user):
@@ -93,8 +110,8 @@ def clock_in(request):
     
     try:
         with transaction.atomic():
-            # Set clock-in time
-            current_time = timezone.now().time()
+            # Set clock-in time - using the correct local timezone
+            current_time = get_current_time_in_timezone()
             attendance.time_in = current_time
             attendance.status = 'present'
             attendance.synced = False  # Mark for offline sync
@@ -162,7 +179,7 @@ def clock_out(request):
                 break_out_time__isnull=True
             )
             
-            current_time = timezone.now().time()
+            current_time = get_current_time_in_timezone()
             for break_session in active_breaks:
                 break_session.break_out_time = current_time
                 break_session.save()
@@ -265,7 +282,7 @@ def break_start(request):
                 reason = ''
             
             # Create break session
-            current_time = timezone.now().time()
+            current_time = get_current_time_in_timezone()
             break_session = BreakSession.objects.create(
                 teacher_attendance=attendance,
                 break_in_time=current_time,
@@ -331,7 +348,7 @@ def break_end(request):
     try:
         with transaction.atomic():
             # Close the break session
-            current_time = timezone.now().time()
+            current_time = get_current_time_in_timezone()
             active_break.break_out_time = current_time
             active_break.save()
             

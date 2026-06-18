@@ -6,20 +6,13 @@
 <div class="grades-dashboard">
     <h1 class="page-title">Grades Dashboard</h1>
     
-    <!-- Action Buttons -->
-    <div class="action-buttons">
-        <a href="{% url 'teacher:grade_entry' %}" class="btn btn-primary">
-            <span>✎</span> Enter Grades
-        </a>
-        <a href="{% url 'teacher:grade_statistics' %}" class="btn btn-secondary">
-            <span>📊</span> Statistics
-        </a>
-        <a href="{% url 'teacher:grade_export' %}" class="btn btn-secondary">
-            <span>⬇️</span> Export
-        </a>
-        <a href="{% url 'teacher:grade_history' %}" class="btn btn-secondary">
-            <span>📈</span> History
-        </a>
+    <!-- Mini Navigation -->
+    <div class="grades-mini-nav">
+        <a href="{% url 'teacher:grades_dashboard' %}" class="mini-nav-btn active">✎ Grades Dashboard</a>
+        <a href="{% url 'teacher:grade_entry' %}" class="mini-nav-btn">✎ Enter Grades</a>
+        <a href="{% url 'teacher:grade_statistics' %}" class="mini-nav-btn">📊 Statistics</a>
+        <a href="{% url 'teacher:grade_export' %}" class="mini-nav-btn">⬇️ Export</a>
+        <a href="{% url 'teacher:grade_history' %}" class="mini-nav-btn">📈 History</a>
     </div>
     
     <!-- Class Selector -->
