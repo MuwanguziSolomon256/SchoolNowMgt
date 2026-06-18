@@ -102,6 +102,83 @@
         
         <div id="submitMessage" class="message" style="display: none;"></div>
     </div>
+    
+    <!-- Single Entry Form -->
+    <div id="singleEntryForm" class="entry-form" style="display: none;">
+        <h2>Enter Grade for Single Student</h2>
+        
+        <form class="grade-form" onsubmit="submitSingleGrade(event)">
+            {% csrf_token %}
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="single_student_id">Student:</label>
+                    <select name="student_id" id="single_student_id" class="form-select" required onchange="updateStudentInfo()">
+                        <option value="">-- Select a student --</option>
+                        {% for student in all_students %}
+                            <option value="{{ student.id }}">{{ student.first_name }} {{ student.last_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="single_subject_id">Subject:</label>
+                    <select name="subject_id" id="single_subject_id" class="form-select" required>
+                        <option value="">-- Select a subject --</option>
+                        {% for subject in subjects %}
+                            <option value="{{ subject.id }}">{{ subject.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="single_term">Term:</label>
+                    <select name="term" id="single_term" class="form-select" required>
+                        <option value="1">Term 1</option>
+                        <option value="2">Term 2</option>
+                        <option value="3">Term 3</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="single_year">Year:</label>
+                    <input type="number" name="year" id="single_year" class="form-input" value="{{ current_year }}" required>
+                </div>
+            </div>
+            
+            <!-- Student Info Display -->
+            <div id="studentInfo" class="student-info" style="display: none;">
+                <h3>Student Information</h3>
+                <div class="info-row">
+                    <span class="info-label">Student:</span>
+                    <span id="displayStudentName" class="info-value"></span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Class:</span>
+                    <span id="displayStudentClass" class="info-value"></span>
+                </div>
+            </div>
+            
+            <!-- Grade Entry Section -->
+            <div id="gradeEntrySection" style="display: none;">
+                <h3>Enter Score (0-100)</h3>
+                <div class="single-grade-entry">
+                    <input type="number" id="single_score" min="0" max="100" step="0.5" placeholder="Enter score" class="form-input score-input">
+                    <div id="gradePreview" class="grade-preview"></div>
+                </div>
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary" id="singleSubmitBtn" style="display: none;">
+                    <span class="btn-icon">✓</span> Save Grade
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="resetSingleEntry()">Reset</button>
+                <a href="{% url 'teacher:grades_dashboard' %}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+        
+        <div id="singleSubmitMessage" class="message" style="display: none;"></div>
+    </div>
 </div>
 
 <style>
@@ -337,6 +414,63 @@
         border-left: 4px solid #ef4444;
     }
     
+    /* Single Entry Styles */
+    .student-info {
+        background: #f0f7ff;
+        border: 1px solid #bfdbfe;
+        border-radius: 6px;
+        padding: 15px;
+        margin: 20px 0;
+    }
+    
+    .student-info h3 {
+        margin-top: 0;
+        color: #1e40af;
+    }
+    
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid #dbeafe;
+    }
+    
+    .info-row:last-child {
+        border-bottom: none;
+    }
+    
+    .info-label {
+        font-weight: 600;
+        color: #1e40af;
+        min-width: 120px;
+    }
+    
+    .info-value {
+        color: #1e3a8a;
+    }
+    
+    .single-grade-entry {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding: 20px;
+        background: #f9f9f9;
+        border-radius: 6px;
+        margin: 15px 0;
+    }
+    
+    .single-grade-entry .form-input {
+        flex: 1;
+        max-width: 200px;
+        font-size: 1.1rem;
+        height: 45px;
+    }
+    
+    .grade-preview {
+        display: flex;
+        align-items: center;
+    }
+    
     @media (max-width: 768px) {
         .form-row {
             grid-template-columns: 1fr;
@@ -366,8 +500,12 @@
     
     function showEntryMethod(method) {
         document.getElementById('bulkEntryForm').style.display = method === 'bulk' ? 'block' : 'none';
+        document.getElementById('singleEntryForm').style.display = method === 'single' ? 'block' : 'none';
+        
         if (method === 'bulk') {
             document.getElementById('class_id').focus();
+        } else if (method === 'single') {
+            document.getElementById('single_student_id').focus();
         }
     }
     
@@ -474,5 +612,140 @@
         msgDiv.className = 'message ' + type;
         msgDiv.style.display = 'block';
     }
+    
+    // ===== SINGLE ENTRY FUNCTIONS =====
+    
+    function updateStudentInfo() {
+        const studentId = document.getElementById('single_student_id').value;
+        if (!studentId) {
+            document.getElementById('studentInfo').style.display = 'none';
+            document.getElementById('gradeEntrySection').style.display = 'none';
+            document.getElementById('singleSubmitBtn').style.display = 'none';
+            return;
+        }
+        
+        // Fetch student info
+        fetch(`/teacher/api/student/${studentId}/`, {
+            method: 'GET',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            }
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('displayStudentName').textContent = 
+                    `${data.data.first_name} ${data.data.last_name}`;
+                document.getElementById('displayStudentClass').textContent = 
+                    data.data.class_name || 'N/A';
+                document.getElementById('studentInfo').style.display = 'block';
+                document.getElementById('gradeEntrySection').style.display = 'block';
+                document.getElementById('singleSubmitBtn').style.display = 'inline-flex';
+                document.getElementById('single_score').focus();
+            }
+        })
+        .catch(err => console.error('Error fetching student:', err));
+    }
+    
+    function submitSingleGrade(event) {
+        event.preventDefault();
+        
+        const studentId = document.getElementById('single_student_id').value;
+        const subjectId = document.getElementById('single_subject_id').value;
+        const term = document.getElementById('single_term').value;
+        const year = document.getElementById('single_year').value;
+        const score = document.getElementById('single_score').value.trim();
+        
+        if (!studentId || !subjectId || !score) {
+            showSingleMessage('Please fill in all required fields', 'error');
+            return;
+        }
+        
+        const scoreNum = parseFloat(score);
+        if (isNaN(scoreNum) || scoreNum < 0 || scoreNum > 100) {
+            showSingleMessage('Score must be between 0 and 100', 'error');
+            return;
+        }
+        
+        const submitBtn = document.getElementById('singleSubmitBtn');
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Saving...';
+        
+        fetch('{% url "teacher:grade_entry" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            },
+            body: JSON.stringify({
+                entry_type: 'single',
+                student_id: studentId,
+                subject_id: subjectId,
+                term: term,
+                year: year,
+                score: score,
+            })
+        })
+        .then(r => r.json())
+        .then(data => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<span class="btn-icon">✓</span> Save Grade';
+            
+            if (data.success) {
+                showSingleMessage('Grade saved successfully!', 'success');
+                setTimeout(() => {
+                    resetSingleEntry();
+                }, 2000);
+            } else {
+                showSingleMessage(data.error || 'Failed to save grade', 'error');
+            }
+        })
+        .catch(err => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<span class="btn-icon">✓</span> Save Grade';
+            showSingleMessage('Error: ' + err.message, 'error');
+        });
+    }
+    
+    function resetSingleEntry() {
+        document.getElementById('single_student_id').value = '';
+        document.getElementById('single_subject_id').value = '';
+        document.getElementById('single_term').value = '1';
+        document.getElementById('single_year').value = '{{ current_year }}';
+        document.getElementById('single_score').value = '';
+        document.getElementById('studentInfo').style.display = 'none';
+        document.getElementById('gradeEntrySection').style.display = 'none';
+        document.getElementById('singleSubmitBtn').style.display = 'none';
+        document.getElementById('gradePreview').innerHTML = '';
+        document.getElementById('singleSubmitMessage').style.display = 'none';
+        document.getElementById('single_student_id').focus();
+    }
+    
+    function showSingleMessage(text, type) {
+        const msgDiv = document.getElementById('singleSubmitMessage');
+        msgDiv.textContent = text;
+        msgDiv.className = 'message ' + type;
+        msgDiv.style.display = 'block';
+    }
+    
+    // Grade preview on input
+    document.addEventListener('DOMContentLoaded', function() {
+        const scoreInput = document.getElementById('single_score');
+        if (scoreInput) {
+            scoreInput.addEventListener('input', function() {
+                const score = this.value.trim();
+                if (score) {
+                    const grade = calculateGrade(score);
+                    if (grade) {
+                        const gradeClass = 'grade-' + grade.toLowerCase();
+                        document.getElementById('gradePreview').innerHTML = 
+                            `<div class="grade-badge ${gradeClass}">${grade}</div>`;
+                    }
+                } else {
+                    document.getElementById('gradePreview').innerHTML = '';
+                }
+            });
+        }
+    });
 </script>
 {% endblock %}

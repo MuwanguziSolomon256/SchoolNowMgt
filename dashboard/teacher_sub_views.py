@@ -21,6 +21,7 @@ import json
 import csv
 from io import BytesIO
 from datetime import timedelta, datetime
+from decimal import Decimal
 
 from SchoolNowMgt.models import (
     Grade, Subject, ClassGrade, Student, StudentAttendance,
@@ -162,9 +163,15 @@ def grade_entry_interface(request):
             {'label': 'History', 'url': reverse('teacher:grade_history'), 'icon': 'history', 'is_active': request.path == '/teacher/grades/history/'},
         ]
         
+        # Get all students for single entry dropdown
+        all_students = Student.objects.select_related('class_grade').filter(
+            status='active'
+        ).order_by('first_name', 'last_name')
+        
         context = {
             'classes': classes,
             'subjects': subjects,
+            'all_students': all_students,
             'terms': [('1', 'Term 1'), ('2', 'Term 2'), ('3', 'Term 3')],
             'current_term': '1',
             'current_year': timezone.now().year,
@@ -174,93 +181,172 @@ def grade_entry_interface(request):
         return render(request, 'teacher/sub_dashboards/grades/grade_entry.html', context)
     
     elif request.method == 'POST':
-        # Handle AJAX grade entry submission
+        # Handle AJAX grade entry submission (both bulk and single)
         try:
             data = json.loads(request.body)
         except json.JSONDecodeError:
             return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
         
-        class_id = data.get('class_id')
-        subject_id = data.get('subject_id')
-        term = data.get('term', '1')
-        year = data.get('year', str(timezone.now().year))
-        grades_data = data.get('grades', {})  # {student_id: score, ...}
+        # Determine entry type (bulk or single)
+        entry_type = data.get('entry_type', 'bulk')
         
-        # Validation
-        if not class_id or not subject_id:
-            return JsonResponse({
-                'success': False,
-                'error': 'Class and subject are required'
-            }, status=400)
-        
-        try:
-            class_obj = ClassGrade.objects.get(id=class_id, school=request.user.school)
-            subject_obj = Subject.objects.get(id=subject_id)
-        except (ClassGrade.DoesNotExist, Subject.DoesNotExist):
-            return JsonResponse({'success': False, 'error': 'Invalid class or subject'}, status=404)
-        
-        # Process grades
-        created_count = 0
-        updated_count = 0
-        failed_entries = []
-        
-        for student_id_str, score_str in grades_data.items():
-            try:
-                student_id = int(student_id_str)
-                score = float(score_str)
-                
-                # Validate score
-                if not 0 <= score <= 100:
-                    failed_entries.append(f"Student {student_id}: Score out of range (0-100)")
-                    continue
-                
-                student = Student.objects.get(
-                    id=student_id,
-                    class_grade=class_obj,
-                    status='active'
-                )
-                
-                # Create or update grade
-                grade_term = f'term_{term}' if term.isdigit() else term
-                grade, created = Grade.objects.update_or_create(
-                    student=student,
-                    subject=subject_obj,
-                    term=grade_term,
-                    academic_year=year,
-                    defaults={
-                        'score': score,
-                        'recorded_by': request.user,
-                    }
-                )
-                
-                if created:
-                    created_count += 1
-                else:
-                    updated_count += 1
+        if entry_type == 'single':
+            # ===== SINGLE ENTRY HANDLER =====
+            student_id = data.get('student_id')
+            subject_id = data.get('subject_id')
+            term = data.get('term', '1')
+            year = data.get('year', str(timezone.now().year))
+            score = data.get('score')
             
-            except (ValueError, Student.DoesNotExist) as e:
-                failed_entries.append(f"Student {student_id_str}: {str(e)}")
-                continue
+            # Validation
+            if not student_id or not subject_id or score is None:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Student, subject, and score are required'
+                }, status=400)
+            
+            try:
+                score = float(score)
+                if not 0 <= score <= 100:
+                    return JsonResponse({
+                        'success': False,
+                        'error': 'Score must be between 0 and 100'
+                    }, status=400)
+            except (ValueError, TypeError):
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Invalid score format'
+                }, status=400)
+            
+            try:
+                student = Student.objects.get(id=student_id)
+                subject_obj = Subject.objects.get(id=subject_id)
+            except (Student.DoesNotExist, Subject.DoesNotExist):
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Invalid student or subject'
+                }, status=404)
+            
+            # Create or update grade
+            grade_term = f'term_{term}' if term.isdigit() else term
+            grade, created = Grade.objects.update_or_create(
+                student=student,
+                subject=subject_obj,
+                curriculum='national',
+                term=grade_term,
+                semester='',
+                academic_year=str(year),
+                defaults={
+                    'score': Decimal(str(score)),
+                    'recorded_by': request.user,
+                }
+            )
+            
+            # Log activity
+            ActivityLog.objects.create(
+                teacher=staff,
+                activity_type='grade_entered',
+                description=f'Entered grade for {student.first_name} {student.last_name} in {subject_obj.name}: {score}',
+                severity='success',
+                icon_name='assignment'
+            )
+            
+            return JsonResponse({
+                'success': True,
+                'data': {
+                    'student_name': f'{student.first_name} {student.last_name}',
+                    'subject': subject_obj.name,
+                    'score': score,
+                    'grade': grade.id,
+                    'created': created,
+                }
+            })
         
-        # Log activity
-        ActivityLog.objects.create(
-            teacher=staff,
-            activity_type='grade_entered',
-            description=f'Entered {class_obj.name} {subject_obj.name} grades: {created_count} new, {updated_count} updated',
-            severity='success',
-            icon_name='assignment'
-        )
-        
-        return JsonResponse({
-            'success': True,
-            'data': {
-                'created_count': created_count,
-                'updated_count': updated_count,
-                'total_saved': created_count + updated_count,
-                'failed_count': len(failed_entries),
-                'failed_entries': failed_entries,
-            }
-        })
+        else:
+            # ===== BULK ENTRY HANDLER =====
+            class_id = data.get('class_id')
+            subject_id = data.get('subject_id')
+            term = data.get('term', '1')
+            year = data.get('year', str(timezone.now().year))
+            grades_data = data.get('grades', {})  # {student_id: score, ...}
+            
+            # Validation
+            if not class_id or not subject_id:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Class and subject are required'
+                }, status=400)
+            
+            try:
+                class_obj = ClassGrade.objects.get(id=class_id, school=request.user.school)
+                subject_obj = Subject.objects.get(id=subject_id)
+            except (ClassGrade.DoesNotExist, Subject.DoesNotExist):
+                return JsonResponse({'success': False, 'error': 'Invalid class or subject'}, status=404)
+            
+            # Process grades
+            created_count = 0
+            updated_count = 0
+            failed_entries = []
+            
+            for student_id_str, score_str in grades_data.items():
+                try:
+                    student_id = int(student_id_str)
+                    score = float(score_str)
+                    
+                    # Validate score
+                    if not 0 <= score <= 100:
+                        failed_entries.append(f"Student {student_id}: Score out of range (0-100)")
+                        continue
+                    
+                    student = Student.objects.get(
+                        id=student_id,
+                        class_grade=class_obj,
+                        status='active'
+                    )
+                    
+                    # Create or update grade
+                    grade_term = f'term_{term}' if term.isdigit() else term
+                    grade, created = Grade.objects.update_or_create(
+                        student=student,
+                        subject=subject_obj,
+                        curriculum='national',
+                        term=grade_term,
+                        semester='',
+                        academic_year=str(year),
+                        defaults={
+                            'score': Decimal(str(score)),
+                            'recorded_by': request.user,
+                        }
+                    )
+                    
+                    if created:
+                        created_count += 1
+                    else:
+                        updated_count += 1
+                
+                except (ValueError, Student.DoesNotExist) as e:
+                    failed_entries.append(f"Student {student_id_str}: {str(e)}")
+                    continue
+            
+            # Log activity
+            ActivityLog.objects.create(
+                teacher=staff,
+                activity_type='grade_entered',
+                description=f'Entered {class_obj.name} {subject_obj.name} grades: {created_count} new, {updated_count} updated',
+                severity='success',
+                icon_name='assignment'
+            )
+            
+            return JsonResponse({
+                'success': True,
+                'data': {
+                    'created_count': created_count,
+                    'updated_count': updated_count,
+                    'total_saved': created_count + updated_count,
+                    'failed_count': len(failed_entries),
+                    'failed_entries': failed_entries,
+                }
+            })
 
 
 @teacher_required

@@ -554,3 +554,31 @@ def export_teacher_attendance_csv(request):
     
     filename = f"teacher_attendance_{timezone.now().strftime('%Y%m%d_%H%M%S')}.csv"
     return export_csv(filename, headers, rows)
+
+
+@login_required(login_url='teacher:login')
+def get_student_info_ajax(request, student_id):
+    """
+    API endpoint to fetch student information for grade entry.
+    Returns student name and class.
+    """
+    if request.user.role != 'teacher':
+        return JsonResponse({'success': False, 'error': 'Unauthorized'}, status=403)
+    
+    try:
+        student = Student.objects.select_related('class_grade').get(id=student_id)
+        
+        return JsonResponse({
+            'success': True,
+            'data': {
+                'id': student.id,
+                'first_name': student.first_name,
+                'last_name': student.last_name,
+                'class_name': student.class_grade.name if student.class_grade else 'N/A',
+                'enrollment_number': student.admission_number if hasattr(student, 'admission_number') else '',
+            }
+        })
+    except Student.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Student not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=400)

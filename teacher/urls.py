@@ -11,7 +11,8 @@ from dashboard.teacher_views import (
     teacher_dashboard, toggle_task_status, create_task,
     student_search, quick_grade_entry, send_circular,
     teacher_students_list, teacher_lessons_list,
-    export_teacher_schedule_csv, export_teacher_attendance_csv
+    export_teacher_schedule_csv, export_teacher_attendance_csv,
+    get_student_info_ajax
 )
 from dashboard.teacher_sub_views import (
     # Grades sub-dashboard
@@ -80,6 +81,7 @@ urlpatterns = [
     path('api/tasks/<int:task_id>/toggle/', toggle_task_status, name='toggle_task'),
     path('api/tasks/create/', create_task, name='create_task'),
     path('api/students/search/', student_search, name='student_search'),
+    path('api/student/<int:student_id>/', get_student_info_ajax, name='get_student_info'),
     path('api/grades/quick-add/', quick_grade_entry, name='quick_grade_entry'),
     path('api/circulars/send/', send_circular, name='send_circular'),
 
