@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Timetable - Head Teacher</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+</head>
+<body class="bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <div class="mb-8">
+            <a href="{% url 'teacher:head_teacher:dashboard' %}" class="text-blue-600 hover:text-blue-900 flex items-center gap-2 mb-4">
+                <span class="material-symbols-rounded">arrow_back</span>
+                Back to Dashboard
+            </a>
+            <h1 class="text-3xl font-bold text-gray-900">School Timetable</h1>
+            <p class="text-gray-600 mt-2">Overall school timetable overview</p>
+        </div>
+
+        <!-- Timetable -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-xl font-bold text-gray-900 mb-4">All Timetable Entries</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-2 text-left font-semibold text-gray-900">Class</th>
+                            <th class="px-4 py-2 text-left font-semibold text-gray-900">Subject</th>
+                            <th class="px-4 py-2 text-left font-semibold text-gray-900">Teacher</th>
+                            <th class="px-4 py-2 text-left font-semibold text-gray-900">Day</th>
+                            <th class="px-4 py-2 text-left font-semibold text-gray-900">Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for timetable in timetables %}
+                        <tr class="border-b">
+                            <td class="px-4 py-2 text-gray-900">{{ timetable.class_grade.class_name }}</td>
+                            <td class="px-4 py-2 text-gray-600">{{ timetable.subject.name }}</td>
+                            <td class="px-4 py-2 text-gray-600">{{ timetable.teacher.user.get_full_name }}</td>
+                            <td class="px-4 py-2 text-gray-600">{{ timetable.day_of_week }}</td>
+                            <td class="px-4 py-2 text-gray-600">{{ timetable.start_time|date:"H:i" }} - {{ timetable.end_time|date:"H:i" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="px-4 py-2 text-center text-gray-500">No timetable entries found</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

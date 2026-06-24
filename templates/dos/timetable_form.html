@@ -1,0 +1,185 @@
+{% extends "teacher/base.html" %}
+{% load static %}
+
+{% block title %}{% if is_edit %}Edit{% else %}Create{% endif %} Timetable Entry - DOS{% endblock %}
+
+{% block content %}
+<div class="dos-timetable-form">
+    <div class="page-header">
+        <h1>{% if is_edit %}Edit{% else %}Create{% endif %} Timetable Entry</h1>
+    </div>
+
+    <form method="post" class="timetable-form">
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label for="class_id">Class <span class="required">*</span></label>
+            <select name="class_id" id="class_id" required>
+                <option value="">-- Select a class --</option>
+                {% for class in classes %}
+                <option value="{{ class.id }}" {% if is_edit and timetable.class_grade.id == class.id %}selected{% endif %}>
+                    {{ class.name }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="subject_id">Subject <span class="required">*</span></label>
+            <select name="subject_id" id="subject_id" required>
+                <option value="">-- Select a subject --</option>
+                {% for subject in subjects %}
+                <option value="{{ subject.id }}" {% if is_edit and timetable.subject.id == subject.id %}selected{% endif %}>
+                    {{ subject.name }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="teacher_id">Teacher <span class="required">*</span></label>
+            <select name="teacher_id" id="teacher_id" required>
+                <option value="">-- Select a teacher --</option>
+                {% for teacher in teachers %}
+                <option value="{{ teacher.id }}" {% if is_edit and timetable.teacher.id == teacher.id %}selected{% endif %}>
+                    {{ teacher.user.get_full_name }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="day_of_week">Day of Week <span class="required">*</span></label>
+            <select name="day_of_week" id="day_of_week" required>
+                <option value="">-- Select a day --</option>
+                {% for day_val, day_label in day_choices %}
+                <option value="{{ day_val }}" {% if is_edit and timetable.day_of_week == day_val %}selected{% endif %}>
+                    {{ day_label }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="start_time">Start Time <span class="required">*</span></label>
+                <input type="time" name="start_time" id="start_time" required
+                       {% if is_edit %}value="{{ timetable.start_time }}"{% endif %}>
+            </div>
+
+            <div class="form-group">
+                <label for="end_time">End Time <span class="required">*</span></label>
+                <input type="time" name="end_time" id="end_time" required
+                       {% if is_edit %}value="{{ timetable.end_time }}"{% endif %}>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                {% if is_edit %}Update Timetable Entry{% else %}Create Timetable Entry{% endif %}
+            </button>
+            <a href="{% url 'teacher:dos:timetable_list' %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<style>
+.dos-timetable-form {
+    padding: 20px;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.page-header {
+    margin-bottom: 30px;
+}
+
+.page-header h1 {
+    margin: 0;
+    font-size: 28px;
+}
+
+.timetable-form {
+    background: white;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    color: #333;
+}
+
+.required {
+    color: #dc3545;
+}
+
+.form-group select,
+.form-group input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    font-family: inherit;
+}
+
+.form-group select:focus,
+.form-group input:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0,123,255,0.25);
+}
+
+.form-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 30px;
+}
+
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background: #007bff;
+    color: white;
+    flex: 1;
+}
+
+.btn-primary:hover {
+    background: #0056b3;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #545b62;
+}
+</style>
+{% endblock %}

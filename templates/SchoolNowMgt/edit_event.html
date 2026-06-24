@@ -1,0 +1,127 @@
+{% extends "SchoolNowMgt/base_ethos.html" %}
+{% load static %}
+
+{% block title %}Edit Event - EduVision Pro{% endblock %}
+
+{% block content %}
+
+<nav class="fixed top-0 left-0 right-0 bg-primary text-on-primary px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between z-50 shadow-lg gap-2 sm:gap-4">
+    <div class="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+        <div class="w-8 sm:w-10 h-8 sm:h-10 rounded-lg sm:rounded-xl bg-secondary-container flex items-center justify-center text-primary flex-shrink-0">
+            <span class="material-symbols-outlined text-lg sm:text-xl" style="font-variation-settings: 'FILL' 1;">event</span>
+        </div>
+        <h1 class="text-sm sm:text-base md:text-lg font-black text-secondary-fixed hidden xs:inline">SchoolNow</h1>
+    </div>
+    <div class="flex items-center gap-2 ml-auto">
+        <a href="{% url 'SchoolNowMgt:events_dashboard' %}" class="text-on-primary/70 hover:text-white p-2 flex items-center gap-2 hover:bg-white/10 transition-all rounded-lg">
+            <span class="material-symbols-outlined text-base sm:text-lg">arrow_back</span>
+        </a>
+        <a class="text-on-primary/70 hover:text-white p-2 flex items-center gap-2 hover:bg-white/10 transition-all rounded-lg" href="{% url 'SchoolNowMgt:custom_logout' %}">
+            <span class="material-symbols-outlined text-base sm:text-lg">logout</span>
+        </a>
+    </div>
+</nav>
+
+<div class="w-full min-h-screen pt-24">
+    <section class="p-4 md:p-8 space-y-6 max-w-4xl mx-auto">
+        
+        <!-- Page Header -->
+        <div class="flex flex-col gap-4 md:gap-0 md:flex-row md:items-center justify-between">
+            <div>
+                <h2 class="font-display-lg text-display-lg text-primary text-2xl md:text-4xl">Edit Event</h2>
+                <p class="font-body-lg text-body-lg text-on-surface-variant text-xs md:text-sm">Update event details and save changes</p>
+            </div>
+        </div>
+
+        <!-- Display Errors if any -->
+        {% if form.non_field_errors %}
+        <div class="bg-error/10 border border-error text-error px-4 py-3 rounded-lg">
+            <h3 class="font-bold mb-2">Please fix the following errors:</h3>
+            {% for error in form.non_field_errors %}
+                <p>{{ error }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Edit Event Form -->
+        <div class="glass-card rounded-3xl shadow-sm p-6 md:p-8">
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                <div>
+                    <label class="block text-sm font-semibold text-on-surface mb-2">Event Title *</label>
+                    <input type="text" name="title" value="{{ edit_event.title }}" required placeholder="E.g., Mid-Term Break" 
+                        class="w-full px-4 py-3 border border-outline rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                    {% if form.title.errors %}
+                        <p class="text-error text-sm mt-1">{{ form.title.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-on-surface mb-2">Event Type *</label>
+                        <select name="event_type" required class="w-full px-4 py-3 border border-outline rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                            <option value="">Select Type</option>
+                            <option value="holiday" {% if edit_event.event_type == 'holiday' %}selected{% endif %}>Holiday</option>
+                            <option value="exam" {% if edit_event.event_type == 'exam' %}selected{% endif %}>Examination</option>
+                            <option value="activity" {% if edit_event.event_type == 'activity' %}selected{% endif %}>School Activity</option>
+                            <option value="meeting" {% if edit_event.event_type == 'meeting' %}selected{% endif %}>Staff Meeting</option>
+                            <option value="other" {% if edit_event.event_type == 'other' %}selected{% endif %}>Other Event</option>
+                        </select>
+                        {% if form.event_type.errors %}
+                            <p class="text-error text-sm mt-1">{{ form.event_type.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-on-surface mb-2">Location</label>
+                        <input type="text" name="location" value="{{ edit_event.location }}" placeholder="Event location" 
+                            class="w-full px-4 py-3 border border-outline rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                        {% if form.location.errors %}
+                            <p class="text-error text-sm mt-1">{{ form.location.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-on-surface mb-2">Start Date *</label>
+                        <input type="date" name="start_date" value="{{ edit_event.start_date|date:'Y-m-d' }}" required 
+                            class="w-full px-4 py-3 border border-outline rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                        {% if form.start_date.errors %}
+                            <p class="text-error text-sm mt-1">{{ form.start_date.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-on-surface mb-2">End Date *</label>
+                        <input type="date" name="end_date" value="{{ edit_event.end_date|date:'Y-m-d' }}" required 
+                            class="w-full px-4 py-3 border border-outline rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                        {% if form.end_date.errors %}
+                            <p class="text-error text-sm mt-1">{{ form.end_date.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-on-surface mb-2">Description</label>
+                    <textarea name="description" rows="4" placeholder="Event description (optional)" 
+                        class="w-full px-4 py-3 border border-outline rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">{{ edit_event.description }}</textarea>
+                    {% if form.description.errors %}
+                        <p class="text-error text-sm mt-1">{{ form.description.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="flex gap-4 pt-6">
+                    <button type="submit" class="flex-1 bg-primary text-on-primary px-6 py-3 rounded-xl font-bold hover:bg-primary/90 transition-all">
+                        Save Changes
+                    </button>
+                    <a href="{% url 'SchoolNowMgt:events_dashboard' %}" class="flex-1 text-center bg-outline/20 text-on-surface px-6 py-3 rounded-xl font-bold hover:bg-outline/30 transition-all">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+
+    </section>
+</div>
+
+{% endblock %}

@@ -10,7 +10,7 @@ import string
 from .models import (
     Enquiry, StudentAttendance, ClassGrade, Student, 
     CustomUser, StaffProfile, Message, MessageTemplate,
-    School, Event, AdminProfile, Subject, Curriculum
+    School, Event, AdminProfile, Subject, Curriculum, StudentParentRelationship
 )
 
 

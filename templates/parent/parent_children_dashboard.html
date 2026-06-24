@@ -1,0 +1,131 @@
+{% extends "parent/parent_base.html" %}
+
+{% block title %}Children - Parent Portal{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Page Header -->
+    <div class="bg-white rounded-lg p-6 shadow-sm border border-outline/10">
+        <h1 class="text-3xl font-bold text-on-surface">My Children</h1>
+        <p class="text-on-surface/70 mt-1">View details about each child's enrollment and progress</p>
+    </div>
+
+    <!-- Children Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {% for child in children %}
+        <div class="bg-white rounded-lg shadow-sm border border-outline/10 hover:shadow-md transition-shadow overflow-hidden">
+            <!-- Header with Student Name -->
+            <div class="bg-gradient-to-r from-primary to-secondary p-6 text-white">
+                <h2 class="text-2xl font-bold">{{ child.student.get_full_name }}</h2>
+                <p class="text-sm text-white/80 mt-1">{{ child.relationship.get_relationship_type_display }}</p>
+            </div>
+
+            <!-- Content -->
+            <div class="p-6 space-y-4">
+                <!-- School -->
+                <div class="flex items-center justify-between pb-4 border-b border-outline/10">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-primary">location_on</span>
+                        <div>
+                            <p class="text-xs font-medium text-on-surface/70">School</p>
+                            <p class="text-sm font-semibold text-on-surface">{{ child.school.name }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Class -->
+                <div class="flex items-center justify-between pb-4 border-b border-outline/10">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-primary">class</span>
+                        <div>
+                            <p class="text-xs font-medium text-on-surface/70">Current Class</p>
+                            <p class="text-sm font-semibold text-on-surface">{{ child.current_class.name }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Attendance -->
+                <div class="flex items-center justify-between pb-4 border-b border-outline/10">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-primary">event_available</span>
+                        <div>
+                            <p class="text-xs font-medium text-on-surface/70">Attendance</p>
+                            <p class="text-sm font-semibold text-on-surface">{{ child.attendance_percentage|floatformat:1 }}%</p>
+                        </div>
+                    </div>
+                    {% if child.attendance_percentage >= 85 %}
+                    <span class="inline-block px-3 py-1 rounded-lg text-xs font-medium bg-green-100 text-green-700">Good</span>
+                    {% elif child.attendance_percentage >= 70 %}
+                    <span class="inline-block px-3 py-1 rounded-lg text-xs font-medium bg-yellow-100 text-yellow-700">Fair</span>
+                    {% else %}
+                    <span class="inline-block px-3 py-1 rounded-lg text-xs font-medium bg-red-100 text-red-700">Poor</span>
+                    {% endif %}
+                </div>
+
+                <!-- Latest Grade -->
+                {% if child.latest_grade %}
+                <div class="flex items-center justify-between pb-4 border-b border-outline/10">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-primary">grade</span>
+                        <div>
+                            <p class="text-xs font-medium text-on-surface/70">Latest Grade</p>
+                            <p class="text-sm font-semibold text-on-surface">{{ child.latest_grade.subject.name }} - {{ child.latest_grade.score }}/100</p>
+                        </div>
+                    </div>
+                    <span class="inline-block px-3 py-1 rounded-lg text-xs font-medium {% if child.latest_grade.letter_grade == 'A' %}bg-green-100 text-green-700{% elif child.latest_grade.letter_grade == 'B' %}bg-blue-100 text-blue-700{% elif child.latest_grade.letter_grade == 'C' %}bg-yellow-100 text-yellow-700{% else %}bg-red-100 text-red-700{% endif %}">
+                        {{ child.latest_grade.letter_grade }}
+                    </span>
+                </div>
+                {% endif %}
+
+                <!-- Fee Balance -->
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-primary">payments</span>
+                        <div>
+                            <p class="text-xs font-medium text-on-surface/70">Fee Balance</p>
+                            <p class="text-sm font-semibold text-on-surface">Ksh {{ child.fee_balance|floatformat:2 }}</p>
+                        </div>
+                    </div>
+                    {% if child.fee_balance > 0 %}
+                    <span class="inline-block px-3 py-1 rounded-lg text-xs font-medium bg-red-100 text-red-700">Pending</span>
+                    {% else %}
+                    <span class="inline-block px-3 py-1 rounded-lg text-xs font-medium bg-green-100 text-green-700">Paid</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Action Button -->
+            <div class="px-6 py-4 bg-background border-t border-outline/10">
+                <a href="{% url 'parent_academics_dashboard' %}" class="inline-flex items-center gap-2 text-primary font-medium hover:underline">
+                    View Full Profile
+                    <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                </a>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-full bg-background rounded-lg p-12 text-center border border-outline/20">
+            <span class="material-symbols-outlined text-4xl text-on-surface/30 block mb-4">school</span>
+            <p class="text-on-surface/60">No children found</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <div class="flex items-center justify-center gap-2 mt-8">
+        {% if page_obj.has_previous %}
+        <a href="?page=1" class="px-4 py-2 rounded-lg border border-outline hover:bg-background">First</a>
+        <a href="?page={{ page_obj.previous_page_number }}" class="px-4 py-2 rounded-lg border border-outline hover:bg-background">Previous</a>
+        {% endif %}
+
+        <span class="px-4 py-2">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}" class="px-4 py-2 rounded-lg border border-outline hover:bg-background">Next</a>
+        <a href="?page={{ page_obj.paginator.num_pages }}" class="px-4 py-2 rounded-lg border border-outline hover:bg-background">Last</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

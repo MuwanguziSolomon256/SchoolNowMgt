@@ -28,6 +28,7 @@ from SchoolNowMgt.models import (
     Message, MessageRecipient, MessageTemplate, CustomUser,
     TeacherTask, ActivityLog, StaffProfile
 )
+from SchoolNowMgt.decorators import require_teacher_role, get_user_school
 from curriculum.uganda_constants import UGANDA_TERMS
 from SchoolNowMgt.utils import (
     resolve_message_recipients, create_message_recipients,
@@ -36,31 +37,29 @@ from SchoolNowMgt.utils import (
 
 
 # ========================
-# UTILITY DECORATORS & HELPERS
+# UTILITY HELPERS
 # ========================
 
-def teacher_required(view_func):
-    """Decorator to ensure only teachers can access the view."""
-    def wrapped_view(request, *args, **kwargs):
-        if request.user.role != 'teacher':
-            return redirect('teacher:login')
-        return view_func(request, *args, **kwargs)
-    return login_required(login_url='teacher:login')(wrapped_view)
+# Note: Teacher role requirement is now handled by @require_teacher_role decorator
+# imported from SchoolNowMgt.decorators. This provides automatic role validation
+# and school scoping for all teacher views.
 
 
 def get_teacher_staff_profile(request):
-    """Get the StaffProfile for the logged-in teacher or return None."""
+    """Get the StaffProfile for the logged-in teacher from their school."""
     try:
-        return StaffProfile.objects.get(user=request.user)
+        school = get_user_school(request)
+        return StaffProfile.objects.get(user=request.user, user__school=school)
     except StaffProfile.DoesNotExist:
         return None
 
 
-def get_teacher_classes(staff_profile):
-    """Get all active classes where the staff is class_teacher."""
+def get_teacher_classes(staff_profile, school):
+    """Get all active classes where the staff is class_teacher, scoped to school."""
     if not staff_profile:
         return ClassGrade.objects.none()
     return ClassGrade.objects.filter(
+        school=school,
         class_teacher=staff_profile
     ).select_related('school').prefetch_related('students')
 
@@ -69,7 +68,7 @@ def get_teacher_classes(staff_profile):
 # GRADES SUB-DASHBOARD
 # ========================
 
-@teacher_required
+@require_teacher_role('teacher')
 def grades_dashboard(request):
     """
     Main grades dashboard - view grades by class and subject.
@@ -78,13 +77,17 @@ def grades_dashboard(request):
     - classes: List of teacher's classes with student counts
     - selected_class: Currently selected class (from GET param)
     - grades_table: Grades data for selected class organized by subject
+    
+    Requires: Teacher role
+    Filters: All data scoped to user's school
     """
+    school = get_user_school(request)
     staff = get_teacher_staff_profile(request)
     if not staff:
         return redirect('teacher:profile')
     
-    # Get all teacher's classes
-    classes = get_teacher_classes(staff)
+    # Get all teacher's classes (school-scoped)
+    classes = get_teacher_classes(staff, school)
     
     # Get selected class (default to first one)
     class_id = request.GET.get('class_id')
@@ -104,8 +107,9 @@ def grades_dashboard(request):
         current_term = 1  # TODO: Get from settings or calculate
         current_year = today.year
         
-        # Fetch all grades for this class
+        # Fetch all grades for this class (school-scoped)
         grades_qs = Grade.objects.filter(
+            student__class_grade__school=school,
             student__class_grade=selected_class,
             term=current_term,
             academic_year=current_year
@@ -135,22 +139,27 @@ def grades_dashboard(request):
     return render(request, 'teacher/sub_dashboards/grades/grades_list.html', context)
 
 
-@teacher_required
+@require_teacher_role('teacher')
 def grade_entry_interface(request):
     """
     Bulk grade entry interface - spreadsheet-like entry for a class/subject.
     
     GET: Show form to select class and subject
     POST (AJAX): Save grades and return success/error
+    
+    Requires: Teacher role
+    Filters: All data scoped to user's school
     """
+    school = get_user_school(request)
     staff = get_teacher_staff_profile(request)
     if not staff:
         return redirect('teacher:profile')
     
-    classes = get_teacher_classes(staff)
+    classes = get_teacher_classes(staff, school)
     
-    # Get subjects taught by this teacher
+    # Get subjects taught by this teacher (school-scoped)
     subjects = Subject.objects.filter(
+        school=school,
         timetable_entries__teacher=staff
     ).distinct().order_by('name')
     
@@ -163,10 +172,11 @@ def grade_entry_interface(request):
             {'label': 'History', 'url': reverse('teacher:grade_history'), 'icon': 'history', 'is_active': request.path == '/teacher/grades/history/'},
         ]
         
-        # Get all students for single entry dropdown
-        all_students = Student.objects.select_related('class_grade').filter(
+        # Get all students for single entry dropdown (school-scoped)
+        all_students = Student.objects.filter(
+            school=school,
             status='active'
-        ).order_by('first_name', 'last_name')
+        ).select_related('class_grade').order_by('first_name', 'last_name')
         
         context = {
             'classes': classes,
@@ -219,15 +229,15 @@ def grade_entry_interface(request):
                 }, status=400)
             
             try:
-                student = Student.objects.get(id=student_id)
-                subject_obj = Subject.objects.get(id=subject_id)
+                student = Student.objects.get(id=student_id, school=school)
+                subject_obj = Subject.objects.get(id=subject_id, school=school)
             except (Student.DoesNotExist, Subject.DoesNotExist):
                 return JsonResponse({
                     'success': False,
                     'error': 'Invalid student or subject'
                 }, status=404)
             
-            # Create or update grade
+            # Create or update grade (school-scoped)
             grade_term = f'term_{term}' if term.isdigit() else term
             grade, created = Grade.objects.update_or_create(
                 student=student,
@@ -239,12 +249,14 @@ def grade_entry_interface(request):
                 defaults={
                     'score': Decimal(str(score)),
                     'recorded_by': request.user,
+                    'school': school,
                 }
             )
             
-            # Log activity
+            # Log activity (school-scoped)
             ActivityLog.objects.create(
-                teacher=staff,
+                staff=staff,
+                school=school,
                 activity_type='grade_entered',
                 description=f'Entered grade for {student.first_name} {student.last_name} in {subject_obj.name}: {score}',
                 severity='success',
@@ -278,8 +290,8 @@ def grade_entry_interface(request):
                 }, status=400)
             
             try:
-                class_obj = ClassGrade.objects.get(id=class_id, school=request.user.school)
-                subject_obj = Subject.objects.get(id=subject_id)
+                class_obj = ClassGrade.objects.get(id=class_id, school=school)
+                subject_obj = Subject.objects.get(id=subject_id, school=school)
             except (ClassGrade.DoesNotExist, Subject.DoesNotExist):
                 return JsonResponse({'success': False, 'error': 'Invalid class or subject'}, status=404)
             
@@ -300,11 +312,12 @@ def grade_entry_interface(request):
                     
                     student = Student.objects.get(
                         id=student_id,
+                        school=school,
                         class_grade=class_obj,
                         status='active'
                     )
                     
-                    # Create or update grade
+                    # Create or update grade (school-scoped)
                     grade_term = f'term_{term}' if term.isdigit() else term
                     grade, created = Grade.objects.update_or_create(
                         student=student,
@@ -316,6 +329,7 @@ def grade_entry_interface(request):
                         defaults={
                             'score': Decimal(str(score)),
                             'recorded_by': request.user,
+                            'school': school,
                         }
                     )
                     
@@ -328,9 +342,10 @@ def grade_entry_interface(request):
                     failed_entries.append(f"Student {student_id_str}: {str(e)}")
                     continue
             
-            # Log activity
+            # Log activity (school-scoped)
             ActivityLog.objects.create(
-                teacher=staff,
+                staff=staff,
+                school=school,
                 activity_type='grade_entered',
                 description=f'Entered {class_obj.name} {subject_obj.name} grades: {created_count} new, {updated_count} updated',
                 severity='success',
@@ -349,7 +364,7 @@ def grade_entry_interface(request):
             })
 
 
-@teacher_required
+@require_teacher_role('teacher')
 def grade_statistics(request):
     """
     Grade statistics and analytics - averages, distributions, trends.
@@ -358,12 +373,16 @@ def grade_statistics(request):
     - class_stats: Per-class statistics (average, distribution)
     - subject_stats: Per-subject statistics
     - student_distribution: Chart data for grade distribution
+    
+    Requires: Teacher role
+    Filters: All data scoped to user's school
     """
+    school = get_user_school(request)
     staff = get_teacher_staff_profile(request)
     if not staff:
         return redirect('teacher:profile')
     
-    classes = get_teacher_classes(staff)
+    classes = get_teacher_classes(staff, school)
     
     # Get selected class (for detailed view)
     class_id = request.GET.get('class_id')
@@ -386,6 +405,7 @@ def grade_statistics(request):
         
         # Get all grades for this class
         grades_qs = Grade.objects.filter(
+            student__class_grade__school=school,
             student__class_grade=selected_class,
             term=current_term,
             academic_year=current_year
@@ -454,7 +474,7 @@ def grade_statistics(request):
     return render(request, 'teacher/sub_dashboards/grades/grade_statistics.html', context)
 
 
-@teacher_required
+@require_teacher_role('teacher')
 def grade_export(request):
     """
     Export grades to CSV or PDF format.
@@ -463,12 +483,16 @@ def grade_export(request):
     - format: 'csv' or 'pdf'
     - class_id: Filter by class
     - term: Filter by term
+    
+    Requires: Teacher role
+    Filters: All data scoped to user's school
     """
+    school = get_user_school(request)
     staff = get_teacher_staff_profile(request)
     if not staff:
         return redirect('teacher:profile')
     
-    classes = get_teacher_classes(staff)
+    classes = get_teacher_classes(staff, school)
     
     if request.method == 'GET':
         # Show export options form
@@ -509,7 +533,7 @@ def export_grades_csv(staff, class_id, term, year, school):
     # Fetch grades
     grades = Grade.objects.filter(
         student__class_grade=class_obj,
-        student__school=school,
+        student__class_grade__school=school,
         term=term,
         academic_year=year
     ).select_related('student', 'subject').order_by('student__first_name', 'subject__name')
@@ -534,7 +558,7 @@ def export_grades_csv(staff, class_id, term, year, school):
     return response
 
 
-@teacher_required
+@require_teacher_role('teacher')
 def grade_history(request):
     """
     Student grade history - term-to-term progression.
@@ -580,7 +604,7 @@ def grade_history(request):
 # COMMUNICATION SUB-DASHBOARD
 # ========================
 
-@teacher_required
+@require_teacher_role('teacher')
 def message_inbox(request):
     """
     Teacher message inbox with filter tabs (All, Unread, Received, Sent).
@@ -644,7 +668,7 @@ def message_inbox(request):
     return render(request, 'teacher/sub_dashboards/communication/message_inbox.html', context)
 
 
-@teacher_required
+@require_teacher_role('teacher')
 def message_detail(request, message_id):
     """
     Display single message with full content and reply functionality.
@@ -688,7 +712,7 @@ def message_detail(request, message_id):
     return render(request, 'teacher/sub_dashboards/communication/message_detail.html', context)
 
 
-@teacher_required
+@require_teacher_role('teacher')
 @require_http_methods(['POST'])
 def send_message_ajax(request):
     """
@@ -823,7 +847,7 @@ def send_message_ajax(request):
     })
 
 
-@teacher_required
+@require_teacher_role('teacher')
 @require_http_methods(['POST'])
 def mark_message_read_ajax(request, message_id):
     """
@@ -846,19 +870,23 @@ def mark_message_read_ajax(request, message_id):
 # ATTENDANCES SUB-DASHBOARD
 # ========================
 
-@teacher_required
+@require_teacher_role('teacher')
 def attendance_marking(request):
     """
     Attendance marking interface - quick checkbox interface for daily roster.
     
     GET: Show current class roster with checkboxes
     POST: Save attendance records
+    
+    Requires: Teacher role
+    Filters: All data scoped to user's school
     """
+    school = get_user_school(request)
     staff = get_teacher_staff_profile(request)
     if not staff:
         return redirect('teacher:profile')
     
-    classes = get_teacher_classes(staff)
+    classes = get_teacher_classes(staff, school)
     
     if request.method == 'GET':
         # Show class selector and student roster
@@ -869,6 +897,7 @@ def attendance_marking(request):
         if class_id:
             selected_class = get_object_or_404(classes, id=class_id)
             students = Student.objects.filter(
+                school=school,
                 class_grade=selected_class,
                 status='active'
             ).order_by('first_name', 'last_name')
@@ -876,6 +905,7 @@ def attendance_marking(request):
             # Check if attendance already marked for today
             today = timezone.localdate()
             existing_attendance = StudentAttendance.objects.filter(
+                school=school,
                 student__in=students,
                 date=today
             ).values_list('student_id', flat=True)
@@ -906,7 +936,7 @@ def attendance_marking(request):
         return mark_attendance_ajax(request)
 
 
-@teacher_required
+@require_teacher_role('teacher')
 @require_http_methods(['POST'])
 def mark_attendance_ajax(request):
     """
@@ -915,7 +945,11 @@ def mark_attendance_ajax(request):
     POST params (JSON):
     - class_id: ID of the class
     - attendance_data: { student_id: 'present'|'absent'|'late', ... }
+    
+    Requires: Teacher role
+    Filters: All data scoped to user's school
     """
+    school = get_user_school(request)
     staff = get_teacher_staff_profile(request)
     if not staff:
         return JsonResponse({'success': False, 'error': 'Teacher profile not found'}, status=403)
@@ -938,7 +972,7 @@ def mark_attendance_ajax(request):
     is_online = data.get('is_online', True)  # Detect if browser is online
     
     try:
-        class_obj = ClassGrade.objects.get(id=class_id, school=request.user.school)
+        class_obj = ClassGrade.objects.get(id=class_id, school=school)
     except ClassGrade.DoesNotExist:
         return JsonResponse({'success': False, 'error': 'Class not found'}, status=404)
     
@@ -951,6 +985,7 @@ def mark_attendance_ajax(request):
             student_id = int(student_id_str)
             student = Student.objects.get(
                 id=student_id,
+                school=school,
                 class_grade=class_obj
             )
             
@@ -959,9 +994,10 @@ def mark_attendance_ajax(request):
             if status not in valid_statuses:
                 continue
             
-            # Create or update attendance
+            # Create or update attendance (school-scoped)
             attendance, created = StudentAttendance.objects.get_or_create(
                 student=student,
+                school=school,
                 date=today,
                 defaults={
                     'status': status,
@@ -980,9 +1016,10 @@ def mark_attendance_ajax(request):
         except (ValueError, Student.DoesNotExist):
             continue
     
-    # Log activity
+    # Log activity (school-scoped)
     ActivityLog.objects.create(
-        teacher=staff,
+        staff=staff,
+        school=school,
         activity_type='attendance_marked',
         description=f'Marked attendance for {class_obj.name}: {created_count + updated_count} records',
         severity='success',
@@ -1000,7 +1037,7 @@ def mark_attendance_ajax(request):
     })
 
 
-@teacher_required
+@require_teacher_role('teacher')
 def attendance_history(request):
     """
     Attendance history view - calendar/matrix with statistics.
@@ -1010,12 +1047,16 @@ def attendance_history(request):
     - student_id: Filter by individual student
     - start_date: Date range start (YYYY-MM-DD)
     - end_date: Date range end (YYYY-MM-DD)
+    
+    Requires: Teacher role
+    Filters: All data scoped to user's school
     """
+    school = get_user_school(request)
     staff = get_teacher_staff_profile(request)
     if not staff:
         return redirect('teacher:profile')
     
-    classes = get_teacher_classes(staff)
+    classes = get_teacher_classes(staff, school)
     
     # Get filters
     class_id = request.GET.get('class_id')
@@ -1041,8 +1082,9 @@ def attendance_history(request):
         else:
             end_date = timezone.localdate()
         
-        # Fetch attendance records
+        # Fetch attendance records (school-scoped)
         attendance_qs = StudentAttendance.objects.filter(
+            school=school,
             student__class_grade=selected_class,
             date__range=[start_date, end_date]
         ).select_related('student').order_by('date', 'student__first_name')
@@ -1050,7 +1092,7 @@ def attendance_history(request):
         # Filter by student if specified
         if student_id:
             selected_student = get_object_or_404(
-                Student.objects.filter(class_grade=selected_class),
+                Student.objects.filter(school=school, class_grade=selected_class),
                 id=student_id
             )
             attendance_qs = attendance_qs.filter(student=selected_student)
@@ -1078,7 +1120,7 @@ def attendance_history(request):
 # GRADEBOOK REFERENCE
 # ========================
 
-@teacher_required
+@require_teacher_role('teacher')
 def gradebook_reference(request):
     """
     Static gradebook reference - Uganda national grading standards.
@@ -1137,7 +1179,7 @@ def gradebook_reference(request):
     return render(request, 'teacher/sub_dashboards/gradebook/gradebook_reference.html', context)
 
 
-@teacher_required
+@require_teacher_role('teacher')
 @require_http_methods(['POST'])
 def grade_lookup_ajax(request):
     """

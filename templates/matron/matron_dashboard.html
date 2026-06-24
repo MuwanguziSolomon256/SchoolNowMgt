@@ -1,0 +1,495 @@
+{% extends "teacher/base.html" %}
+{% load static %}
+
+{% block title %}Matron Dashboard{% endblock %}
+
+{% block content %}
+<style>
+  .admin-nav {
+    background: linear-gradient(135deg, #080b3a 0%, #1a1e4f 100%);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+  .admin-nav-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 70px;
+  }
+  .admin-nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+  }
+  .admin-nav-icon {
+    width: 40px;
+    height: 40px;
+    background-color: #7c5800;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: white;
+  }
+  .admin-nav-text h2 {
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0;
+  }
+  .admin-nav-text p {
+    color: #d4a574;
+    font-size: 12px;
+    margin: 2px 0 0 0;
+  }
+  .admin-nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  .nav-user-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: white;
+    font-size: 14px;
+  }
+  .nav-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: transparent;
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+  }
+  .nav-btn:hover {
+    background-color: rgba(212, 165, 116, 0.15);
+    color: #d4a574;
+  }
+  .dashboard-content {
+    padding-top: 90px;
+  }
+</style>
+
+<div class="admin-nav">
+  <div class="admin-nav-container">
+    <div class="admin-nav-brand">
+      <div class="admin-nav-icon">👩‍⚕️</div>
+      <div class="admin-nav-text">
+        <h2>Matron</h2>
+        <p>{{ request.user.school.name|default:"School Management" }}</p>
+      </div>
+    </div>
+    
+    <div class="admin-nav-actions">
+      <div class="nav-user-info">
+        <span>👤</span>
+        <span>{{ request.user.get_full_name|default:request.user.username }}</span>
+      </div>
+      
+      <form method="post" action="{% url 'teacher:logout' %}" style="margin: 0;">
+        {% csrf_token %}
+        <button type="submit" class="nav-btn" title="Logout to Auth Login">
+          <span>🚪</span>
+          <span>Logout</span>
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="matron-dashboard dashboard-content">
+    <div class="page-header">
+        <h1>Matron Dashboard</h1>
+        <p class="subtitle">Hostel & Resident Management</p>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">🏢</div>
+            <div class="stat-content">
+                <h3>Total Hostels</h3>
+                <p class="stat-value">{{ statistics.total_hostels }}</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">👨‍👩‍👧‍👦</div>
+            <div class="stat-content">
+                <h3>Total Residents</h3>
+                <p class="stat-value">{{ statistics.total_residents }}</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">📊</div>
+            <div class="stat-content">
+                <h3>Occupancy Rate</h3>
+                <p class="stat-value">{{ statistics.occupancy_rate }}</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">📈</div>
+            <div class="stat-content">
+                <h3>Avg per Hostel</h3>
+                <p class="stat-value">{{ statistics.avg_residents_per_hostel }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+        <h2>Quick Actions</h2>
+        <div class="action-buttons">
+            <a href="{% url 'teacher:matron:hostels_list' %}" class="btn btn-primary">
+                🏠 Manage Hostels
+            </a>
+            <a href="{% url 'teacher:matron:residents_list' %}" class="btn btn-secondary">
+                👥 Manage Residents
+            </a>
+            <a href="{% url 'teacher:matron:duty_roster' %}" class="btn btn-secondary">
+                📋 Duty Roster
+            </a>
+        </div>
+    </div>
+
+    <!-- Hostels Overview -->
+    {% if hostels %}
+    <div class="hostels-section">
+        <h2>Hostels</h2>
+        <div class="hostels-grid">
+            {% for hostel in hostels %}
+            <div class="hostel-card">
+                <div class="hostel-header">
+                    <h3>{{ hostel.name }}</h3>
+                    <span class="type-badge">{{ hostel.get_department_type_display }}</span>
+                </div>
+                
+                <div class="hostel-info">
+                    {% if hostel.head_of_department %}
+                    <p><strong>Head:</strong> {{ hostel.head_of_department.user.get_full_name }}</p>
+                    {% else %}
+                    <p class="no-head">⚠️ No head assigned</p>
+                    {% endif %}
+                    
+                    {% if hostel.description %}
+                    <p class="description">{{ hostel.description }}</p>
+                    {% endif %}
+                </div>
+                
+                <div class="hostel-actions">
+                    <a href="{% url 'teacher:matron:hostel_detail' hostel.id %}" class="btn-view">View</a>
+                    <a href="{% url 'teacher:matron:hostel_edit' hostel.id %}" class="btn-edit">Edit</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <a href="{% url 'teacher:matron:hostels_list' %}" class="view-all">View All Hostels →</a>
+    </div>
+    {% endif %}
+
+    <!-- Recent Activities -->
+    {% if recent_activities %}
+    <div class="activities-section">
+        <h2>Recent Activities</h2>
+        <div class="activities-list">
+            {% for activity in recent_activities %}
+            <div class="activity-item">
+                <div class="activity-icon">{{ activity.icon_name }}</div>
+                <div class="activity-content">
+                    <p class="activity-description">{{ activity.description }}</p>
+                    <p class="activity-time">{{ activity.created_at|timesince }} ago</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.matron-dashboard {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.page-header {
+    margin-bottom: 30px;
+}
+
+.page-header h1 {
+    margin: 0;
+    font-size: 28px;
+}
+
+.page-header .subtitle {
+    color: #666;
+    margin: 5px 0 0 0;
+    font-size: 14px;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    display: flex;
+    align-items: center;
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.stat-icon {
+    font-size: 32px;
+    margin-right: 15px;
+}
+
+.stat-content h3 {
+    margin: 0;
+    font-size: 14px;
+    color: #666;
+}
+
+.stat-value {
+    margin: 5px 0 0 0;
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+}
+
+.quick-actions {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 30px;
+}
+
+.quick-actions h2 {
+    margin-top: 0;
+    font-size: 18px;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-primary {
+    background: #007bff;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #0056b3;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #545b62;
+}
+
+.hostels-section {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 30px;
+}
+
+.hostels-section h2 {
+    margin-top: 0;
+    font-size: 18px;
+}
+
+.hostels-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.hostel-card {
+    display: flex;
+    flex-direction: column;
+    padding: 15px;
+    border: 1px solid #eee;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.hostel-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+}
+
+.hostel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.hostel-header h3 {
+    margin: 0;
+    font-size: 16px;
+    color: #333;
+}
+
+.type-badge {
+    background: #e9ecef;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 11px;
+    color: #666;
+}
+
+.hostel-info p {
+    margin: 5px 0;
+    font-size: 12px;
+}
+
+.hostel-info .no-head {
+    color: #dc3545;
+}
+
+.hostel-info .description {
+    color: #999;
+    font-style: italic;
+}
+
+.hostel-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: auto;
+    padding-top: 10px;
+}
+
+.btn-view,
+.btn-edit {
+    flex: 1;
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    text-align: center;
+    cursor: pointer;
+}
+
+.btn-view {
+    background: #17a2b8;
+    color: white;
+}
+
+.btn-view:hover {
+    background: #138496;
+}
+
+.btn-edit {
+    background: #ffc107;
+    color: #333;
+}
+
+.btn-edit:hover {
+    background: #e0a800;
+}
+
+.view-all {
+    display: inline-block;
+    color: #007bff;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.view-all:hover {
+    text-decoration: underline;
+}
+
+.activities-section {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.activities-section h2 {
+    margin-top: 0;
+    font-size: 18px;
+}
+
+.activities-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.activity-item {
+    display: flex;
+    gap: 12px;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 4px;
+}
+
+.activity-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.activity-content {
+    flex: 1;
+}
+
+.activity-description {
+    margin: 0;
+    font-size: 14px;
+    color: #333;
+}
+
+.activity-time {
+    margin: 3px 0 0 0;
+    font-size: 12px;
+    color: #999;
+}
+</style>
+{% endblock %}

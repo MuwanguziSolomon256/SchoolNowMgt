@@ -1,7 +1,16 @@
-from django.urls import path
+from django.urls import path, include
 from . import views
 from . import dashboard_views
 from . import admin_shift_views
+from . import parent_linking_views
+from dashboard import notification_handlers
+from dashboard.dos_urls import urlpatterns as dos_urlpatterns
+from dashboard.deputy_hm_urls import urlpatterns as deputy_hm_urlpatterns
+from dashboard.matron_urls import urlpatterns as matron_urlpatterns
+from dashboard.subject_dept_urls import urlpatterns as subject_dept_urlpatterns
+from dashboard.support_staff_urls import urlpatterns as support_staff_urlpatterns
+from dashboard.class_teacher_urls import urlpatterns as class_teacher_urlpatterns
+from dashboard.head_teacher_urls import urlpatterns as head_teacher_urlpatterns
 
 app_name = 'SchoolNowMgt'
 
@@ -87,4 +96,43 @@ urlpatterns = [
     path('admin/shifts/history/', admin_shift_views.shift_history, name='admin_shift_history'),
     path('admin/shifts/<int:attendance_id>/edit/', admin_shift_views.edit_shift_times, name='api_edit_shift'),
     path('admin/shifts/reports/', admin_shift_views.shift_report, name='admin_shift_report'),
+    
+    # ===== PARENT-STUDENT LINKING (ADMIN) =====
+    path('admin/parents/link-existing/', parent_linking_views.link_existing_parent, name='link_existing_parent'),
+    path('admin/parents/link-existing/<int:student_id>/', parent_linking_views.link_existing_parent, name='link_existing_parent_for_student'),
+    path('admin/parents/create-and-link/', parent_linking_views.create_and_link_parent, name='create_and_link_parent'),
+    path('admin/parents/create-and-link/<int:student_id>/', parent_linking_views.create_and_link_parent, name='create_and_link_parent_for_student'),
+    path('admin/parents/manage/', parent_linking_views.manage_parent_relationships, name='manage_parent_relationships'),
+    path('admin/parents/relationship/<int:relationship_id>/edit/', parent_linking_views.edit_parent_relationship, name='edit_parent_relationship'),
+    path('admin/parents/bulk-link/', parent_linking_views.bulk_link_parents, name='bulk_link_parents'),
+    path('api/students/', parent_linking_views.get_students_ajax, name='api_get_students'),
+    
+    # ===== NOTIFICATIONS (Real-time notification system) =====
+    path('parent/notifications/', notification_handlers.parent_notifications_view, name='parent_notifications'),
+    path('api/notifications/', notification_handlers.get_notifications_ajax, name='api_get_notifications'),
+    path('api/notifications/unread-count/', notification_handlers.get_unread_count_ajax, name='api_unread_count'),
+    path('api/notifications/<int:notification_id>/mark-read/', notification_handlers.mark_notification_read_ajax, name='api_mark_notification_read'),
+    path('api/notifications/mark-all-read/', notification_handlers.mark_all_notifications_read_ajax, name='api_mark_all_read'),
+    path('api/notifications/<int:notification_id>/delete/', notification_handlers.delete_notification_ajax, name='api_delete_notification'),
+    
+    # ===== DIRECTOR OF STUDIES (DOS) DASHBOARD =====
+    path('teacher/admin/dos/', include('dashboard.dos_urls', namespace='dos')),
+    
+    # ===== DEPUTY HEADMASTER DASHBOARD =====
+    path('teacher/admin/deputy/', include('dashboard.deputy_hm_urls', namespace='deputy')),
+    
+    # ===== MATRON & HOSTEL DASHBOARD =====
+    path('teacher/matron/', include('dashboard.matron_urls', namespace='matron')),
+    
+    # ===== SUBJECT DEPARTMENT HEAD DASHBOARD =====
+    path('teacher/department/', include('dashboard.subject_dept_urls', namespace='department')),
+    
+    # ===== SUPPORT STAFF DASHBOARDS (Dept Head, Supervisor, Welfare) =====
+    path('teacher/support/', include('dashboard.support_staff_urls', namespace='support')),
+    
+    # ===== CLASS TEACHER DASHBOARD =====
+    path('teacher/class/', include('dashboard.class_teacher_urls', namespace='class')),
+    
+    # ===== HEAD TEACHER DASHBOARD =====
+    path('teacher/head/', include('dashboard.head_teacher_urls', namespace='head')),
 ]

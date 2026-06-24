@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>{% block title %}EduVision - Parent Portal{% endblock %}</title>
+    
+    <!-- Tailwind CSS with Plugins -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Hanken+Grotesk:wght@600;700;800;900&display=swap" rel="stylesheet" />
+    
+    <!-- Material Symbols -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    
+    <!-- Tailwind Configuration -->
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary": "#080b3a",
+                        "secondary": "#7c5800",
+                        "background": "#f8f9fc",
+                        "surface": "#f8f9fc",
+                        "outline": "#777680",
+                        "on-primary": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "on-surface": "#191c1e",
+                        "on-background": "#191c1e",
+                    },
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-background text-on-surface">
+    <!-- ────────────────────────────────────────────────────────── -->
+    <!-- NAVIGATION BAR                                             -->
+    <!-- ────────────────────────────────────────────────────────── -->
+    <nav class="fixed top-0 left-0 right-0 bg-primary text-on-primary shadow-md z-50 h-16 sm:h-20">
+        <div class="max-w-7xl mx-auto h-full px-4 sm:px-6 md:px-8 flex items-center justify-between">
+            <!-- Logo/Brand -->
+            <div class="flex items-center gap-3 flex-1 min-w-0">
+                <div class="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0">
+                    <span class="material-symbols-outlined text-on-secondary text-xl">family_restroom</span>
+                </div>
+                <div class="min-w-0">
+                    <h1 class="text-lg sm:text-xl font-bold truncate">Parent Portal</h1>
+                    <p class="text-xs sm:text-sm text-on-primary/70 truncate">EduVision</p>
+                </div>
+            </div>
+
+            <!-- Navigation Links -->
+            <div class="hidden lg:flex items-center gap-1 flex-1 justify-center">
+                {% with current_page=request.resolver_match.url_name %}
+                <a class="{% if current_page == 'parent_dashboard' %}bg-secondary-container/20 text-secondary{% else %}text-on-primary/70 hover:text-white{% endif %} px-3 py-2 flex items-center gap-2 hover:bg-white/10 transition-all text-sm rounded-lg" href="{% url 'parent_dashboard' %}">
+                    <span class="material-symbols-outlined text-base">home</span>
+                    <span>Dashboard</span>
+                </a>
+                <a class="{% if current_page == 'parent_children_dashboard' %}bg-secondary-container/20 text-secondary{% else %}text-on-primary/70 hover:text-white{% endif %} px-3 py-2 flex items-center gap-2 hover:bg-white/10 transition-all text-sm rounded-lg" href="{% url 'parent_children_dashboard' %}">
+                    <span class="material-symbols-outlined text-base">school</span>
+                    <span>Children</span>
+                </a>
+                <a class="{% if current_page == 'parent_academics_dashboard' %}bg-secondary-container/20 text-secondary{% else %}text-on-primary/70 hover:text-white{% endif %} px-3 py-2 flex items-center gap-2 hover:bg-white/10 transition-all text-sm rounded-lg" href="{% url 'parent_academics_dashboard' %}">
+                    <span class="material-symbols-outlined text-base">grade</span>
+                    <span>Academics</span>
+                </a>
+                <a class="{% if current_page == 'parent_payments_dashboard' %}bg-secondary-container/20 text-secondary{% else %}text-on-primary/70 hover:text-white{% endif %} px-3 py-2 flex items-center gap-2 hover:bg-white/10 transition-all text-sm rounded-lg" href="{% url 'parent_payments_dashboard' %}">
+                    <span class="material-symbols-outlined text-base">attach_money</span>
+                    <span>Payments</span>
+                </a>
+                <a class="{% if current_page == 'parent_message_inbox' %}bg-secondary-container/20 text-secondary{% else %}text-on-primary/70 hover:text-white{% endif %} px-3 py-2 flex items-center gap-2 hover:bg-white/10 transition-all text-sm rounded-lg" href="{% url 'parent_message_inbox' %}">
+                    <span class="material-symbols-outlined text-base">mail</span>
+                    <span>Messages</span>
+                </a>
+                {% endwith %}
+            </div>
+
+            <!-- Right Side Actions -->
+            <div class="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+                <!-- Mobile Menu Toggle -->
+                <button id="parentMobileMenuToggle" class="lg:hidden text-on-primary/70 hover:text-white px-3 py-2 flex items-center hover:bg-white/10 transition-all rounded-lg">
+                    <span class="material-symbols-outlined">menu</span>
+                </button>
+                
+                <!-- Logout -->
+                <form method="post" action="{% url 'auth:logout' %}" class="inline">
+                    {% csrf_token %}
+                    <button type="submit" class="text-on-primary/70 hover:text-white px-3 py-2 flex items-center gap-2 hover:bg-white/10 transition-all rounded-lg font-bold text-sm">
+                        <span class="material-symbols-outlined text-base sm:text-lg">logout</span>
+                        <span class="hidden sm:inline">Log out</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Navigation Menu -->
+    <div id="parentMobileMenu" class="fixed top-16 sm:top-20 left-0 right-0 bg-primary text-on-primary z-40 max-h-0 overflow-hidden transition-all duration-300 ease-in-out shadow-lg lg:hidden">
+        <div class="p-4 space-y-2">
+            {% with current_page=request.resolver_match.url_name %}
+            <a class="{% if current_page == 'parent_dashboard' %}bg-secondary-container/20 text-secondary{% else %}text-on-primary/80 hover:text-white{% endif %} px-4 py-3 flex items-center gap-3 hover:bg-white/10 transition-all text-sm rounded-lg block w-full text-left" href="{% url 'parent_dashboard' %}">
+                <span class="material-symbols-outlined">home</span>
+                <span>Dashboard</span>
+            </a>
+            <a class="{% if current_page == 'parent_children_dashboard' %}bg-secondary-container/20 text-secondary{% else %}text-on-primary/80 hover:text-white{% endif %} px-4 py-3 flex items-center gap-3 hover:bg-white/10 transition-all text-sm rounded-lg block w-full text-left" href="{% url 'parent_children_dashboard' %}">
+                <span class="material-symbols-outlined">school</span>
+                <span>Children</span>
+            </a>
+            <a class="{% if current_page == 'parent_academics_dashboard' %}bg-secondary-container/20 text-secondary{% else %}text-on-primary/80 hover:text-white{% endif %} px-4 py-3 flex items-center gap-3 hover:bg-white/10 transition-all text-sm rounded-lg block w-full text-left" href="{% url 'parent_academics_dashboard' %}">
+                <span class="material-symbols-outlined">grade</span>
+                <span>Academics</span>
+            </a>
+            <a class="{% if current_page == 'parent_payments_dashboard' %}bg-secondary-container/20 text-secondary{% else %}text-on-primary/80 hover:text-white{% endif %} px-4 py-3 flex items-center gap-3 hover:bg-white/10 transition-all text-sm rounded-lg block w-full text-left" href="{% url 'parent_payments_dashboard' %}">
+                <span class="material-symbols-outlined">attach_money</span>
+                <span>Payments</span>
+            </a>
+            <a class="{% if current_page == 'parent_message_inbox' %}bg-secondary-container/20 text-secondary{% else %}text-on-primary/80 hover:text-white{% endif %} px-4 py-3 flex items-center gap-3 hover:bg-white/10 transition-all text-sm rounded-lg block w-full text-left" href="{% url 'parent_message_inbox' %}">
+                <span class="material-symbols-outlined">mail</span>
+                <span>Messages</span>
+            </a>
+            {% endwith %}
+        </div>
+    </div>
+
+    <!-- ────────────────────────────────────────────────────────── -->
+    <!-- MAIN CONTENT AREA                                          -->
+    <!-- ────────────────────────────────────────────────────────── -->
+    <main class="w-full min-h-screen bg-background pt-16 sm:pt-20">
+        <div class="p-4 sm:p-6 md:p-8 space-y-4 md:space-y-6 lg:space-y-8">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <!-- ────────────────────────────────────────────────────────── -->
+    <!-- JAVASCRIPT                                                 -->
+    <!-- ────────────────────────────────────────────────────────── -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const menuToggle = document.getElementById('parentMobileMenuToggle');
+            const mobileMenu = document.getElementById('parentMobileMenu');
+            
+            if (menuToggle && mobileMenu) {
+                menuToggle.addEventListener('click', function() {
+                    const isOpen = mobileMenu.style.maxHeight && mobileMenu.style.maxHeight !== '0px';
+                    if (isOpen) {
+                        mobileMenu.style.maxHeight = '0px';
+                    } else {
+                        mobileMenu.style.maxHeight = mobileMenu.scrollHeight + 'px';
+                    }
+                });
+                
+                const menuLinks = mobileMenu.querySelectorAll('a');
+                menuLinks.forEach(link => {
+                    link.addEventListener('click', function() {
+                        mobileMenu.style.maxHeight = '0px';
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+</html>

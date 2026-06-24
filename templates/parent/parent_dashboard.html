@@ -1,0 +1,168 @@
+{% extends "parent/parent_base.html" %}
+{% load static %}
+
+{% block title %}Parent Dashboard - EduVision{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Page Header -->
+    <div class="bg-white rounded-lg p-6 shadow-sm border border-outline/10">
+        <h1 class="text-3xl font-bold text-on-surface">Welcome, {{ parent.get_full_name }}</h1>
+        <p class="text-on-surface/70 mt-1">Track your children's academic progress and communications</p>
+    </div>
+
+    <!-- Statistics Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Total Children -->
+        <div class="bg-white rounded-lg p-6 shadow-sm border border-outline/10 hover:shadow-md transition-shadow">
+            <div class="flex items-start justify-between">
+                <div>
+                    <p class="text-sm font-medium text-on-surface/70">Children Enrolled</p>
+                    <p class="text-3xl font-bold text-primary mt-2">{{ total_children }}</p>
+                </div>
+                <div class="bg-primary/10 p-3 rounded-lg">
+                    <span class="material-symbols-outlined text-primary">school</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Schools -->
+        <div class="bg-white rounded-lg p-6 shadow-sm border border-outline/10 hover:shadow-md transition-shadow">
+            <div class="flex items-start justify-between">
+                <div>
+                    <p class="text-sm font-medium text-on-surface/70">Schools</p>
+                    <p class="text-3xl font-bold text-secondary mt-2">{{ schools_count }}</p>
+                </div>
+                <div class="bg-secondary/10 p-3 rounded-lg">
+                    <span class="material-symbols-outlined text-secondary">location_on</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Unread Messages -->
+        <div class="bg-white rounded-lg p-6 shadow-sm border border-outline/10 hover:shadow-md transition-shadow">
+            <div class="flex items-start justify-between">
+                <div>
+                    <p class="text-sm font-medium text-on-surface/70">Unread Messages</p>
+                    <p class="text-3xl font-bold text-orange-600 mt-2">{{ unread_messages }}</p>
+                </div>
+                <div class="bg-orange-100 p-3 rounded-lg">
+                    <span class="material-symbols-outlined text-orange-600">mail</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Outstanding Fees -->
+        <div class="bg-white rounded-lg p-6 shadow-sm border border-outline/10 hover:shadow-md transition-shadow">
+            <div class="flex items-start justify-between">
+                <div>
+                    <p class="text-sm font-medium text-on-surface/70">Pending Payments</p>
+                    <p class="text-3xl font-bold text-red-600 mt-2">{{ outstanding_fees|length }}</p>
+                </div>
+                <div class="bg-red-100 p-3 rounded-lg">
+                    <span class="material-symbols-outlined text-red-600">payments</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Academic Performance -->
+    {% if recent_grades %}
+    <div class="bg-white rounded-lg shadow-sm border border-outline/10">
+        <div class="px-6 py-4 border-b border-outline/10">
+            <h2 class="text-lg font-semibold text-on-surface">Recent Grades</h2>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead class="bg-background border-b border-outline/10">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-on-surface/70 font-medium">Student</th>
+                        <th class="px-6 py-3 text-left text-on-surface/70 font-medium">Subject</th>
+                        <th class="px-6 py-3 text-left text-on-surface/70 font-medium">Term</th>
+                        <th class="px-6 py-3 text-right text-on-surface/70 font-medium">Score</th>
+                        <th class="px-6 py-3 text-center text-on-surface/70 font-medium">Grade</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-outline/10">
+                    {% for grade in recent_grades %}
+                    <tr class="hover:bg-background transition-colors">
+                        <td class="px-6 py-4 font-medium">{{ grade.student.get_full_name }}</td>
+                        <td class="px-6 py-4">{{ grade.subject.name }}</td>
+                        <td class="px-6 py-4">{{ grade.term }} {{ grade.academic_year }}</td>
+                        <td class="px-6 py-4 text-right font-semibold">{{ grade.score }}/100</td>
+                        <td class="px-6 py-4 text-center">
+                            <span class="inline-block px-3 py-1 rounded-lg text-sm font-medium {% if grade.letter_grade == 'A' %}bg-green-100 text-green-700{% elif grade.letter_grade == 'B' %}bg-blue-100 text-blue-700{% elif grade.letter_grade == 'C' %}bg-yellow-100 text-yellow-700{% else %}bg-red-100 text-red-700{% endif %}">
+                                {{ grade.letter_grade }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Attendance Summary -->
+    {% if attendance_data %}
+    <div class="bg-white rounded-lg shadow-sm border border-outline/10">
+        <div class="px-6 py-4 border-b border-outline/10">
+            <h2 class="text-lg font-semibold text-on-surface">Attendance Summary</h2>
+        </div>
+        <div class="p-6 space-y-4">
+            {% for child_id, data in attendance_data.items %}
+            <div class="flex items-center justify-between">
+                <p class="text-sm font-medium text-on-surface">
+                    {% for rel in relationships %}
+                        {% if rel.student.id == child_id %}
+                            {{ rel.student.get_full_name }}
+                        {% endif %}
+                    {% endfor %}
+                </p>
+                <div class="flex items-center gap-3">
+                    <div class="w-32 bg-background rounded-full h-2">
+                        <div class="bg-primary h-2 rounded-full" style="width: {{ data.percentage }}%"></div>
+                    </div>
+                    <span class="text-sm font-semibold text-on-surface">{{ data.percentage|floatformat:0 }}%</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Outstanding Fees -->
+    {% if outstanding_fees %}
+    <div class="bg-white rounded-lg shadow-sm border border-outline/10">
+        <div class="px-6 py-4 border-b border-outline/10">
+            <h2 class="text-lg font-semibold text-on-surface">Outstanding Payments</h2>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead class="bg-background border-b border-outline/10">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-on-surface/70 font-medium">Student</th>
+                        <th class="px-6 py-3 text-left text-on-surface/70 font-medium">Fee Description</th>
+                        <th class="px-6 py-3 text-right text-on-surface/70 font-medium">Balance</th>
+                        <th class="px-6 py-3 text-left text-on-surface/70 font-medium">Due Date</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-outline/10">
+                    {% for fee in outstanding_fees %}
+                    <tr class="hover:bg-background transition-colors">
+                        <td class="px-6 py-4 font-medium">{{ fee.student.get_full_name }}</td>
+                        <td class="px-6 py-4">{{ fee.fee_structure.description|truncatewords:5 }}</td>
+                        <td class="px-6 py-4 text-right font-semibold text-red-600">{{ fee.balance_after|floatformat:2 }}</td>
+                        <td class="px-6 py-4">{{ fee.payment_date|date:"M d, Y" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="px-6 py-4 bg-background border-t border-outline/10">
+            <a href="{% url 'parent_payments_dashboard' %}" class="text-primary font-medium hover:underline">View all payments →</a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

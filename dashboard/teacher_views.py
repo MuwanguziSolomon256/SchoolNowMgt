@@ -10,6 +10,8 @@ from SchoolNowMgt.models import (
     StudentAttendance, RetentionAlert, Grade,
     TeacherTask, ActivityLog, TeacherAttendance, Subject
 )
+from SchoolNowMgt.decorators import require_teacher_role, get_user_school
+from SchoolNowMgt.utils import get_teacher_scope_data
 from datetime import timedelta
 
 
@@ -24,7 +26,7 @@ def export_csv(filename, headers, rows):
     return response
 
 
-@login_required(login_url='teacher:login')
+@require_teacher_role('teacher')
 def teacher_dashboard(request):
     """
     Modern teacher dashboard view with database-backed tasks and activities.
@@ -35,20 +37,20 @@ def teacher_dashboard(request):
     - Recent activities (from ActivityLog model)
     - Quick action cards (Attendance, Gradebook, Circulars)
     - Performance chart (weekly averages)
-    """
-    # Verify logged-in user is a teacher
-    if request.user.role != 'teacher':
-        return redirect('teacher:login')
     
-    # Fetch StaffProfile or redirect to profile setup
-    staff = get_object_or_404(StaffProfile, user=request.user)
+    Requires: Teacher role
+    Filters: All data scoped to user's school
+    """
+    # Get school and staff profile (verified by decorator)
+    school = get_user_school(request)
+    staff = get_object_or_404(StaffProfile, user=request.user, user__school=school)
     
     # Get today's date
     today = timezone.localdate()
     day_of_week = today.strftime('%A').lower()
     
     # ===== TEACHER ATTENDANCE / SHIFT STATUS =====
-    # Get or create today's attendance record for the teacher
+    # Get or create today's attendance record for the teacher (school-scoped)
     teacher_attendance_today, created = TeacherAttendance.objects.get_or_create(
         staff=staff,
         date=today,
@@ -73,19 +75,22 @@ def teacher_dashboard(request):
     # ===== TODAY'S SCHEDULE / CURRENT LESSON =====
     todays_classes = Timetable.objects.filter(
         teacher=staff,
-        day_of_week=day_of_week
+        day_of_week=day_of_week,
+        class_grade__school=school
     ).select_related('subject', 'class_grade').order_by('start_time')
     
     current_lesson = todays_classes.first() if todays_classes.exists() else None
     
     # ===== MY CLASSES & STUDENTS =====
     my_classes = ClassGrade.objects.filter(
+        school=school,
         class_teacher=staff
     ).annotate(
         student_count=Count('students', filter=Q(students__status='active'))
     )
     
     my_students = Student.objects.filter(
+        school=school,
         class_grade__class_teacher=staff,
         status='active'
     )
@@ -93,23 +98,27 @@ def teacher_dashboard(request):
     # ===== PENDING TASKS (Real database) =====
     tasks = TeacherTask.objects.filter(
         teacher=staff,
+        school=school,
         status='pending'
     ).order_by('-priority', 'due_date')[:3]
     
     total_tasks_pending = TeacherTask.objects.filter(
         teacher=staff,
+        school=school,
         status='pending'
     ).count()
     
     # ===== RECENT ACTIVITIES (Real database) =====
     activities = ActivityLog.objects.filter(
-        teacher=staff
+        staff=staff,
+        school=school
     ).order_by('-created_at')[:3]
     
     # ===== PERFORMANCE STATISTICS =====
-    # Calculate weekly grade averages (past 7 days)
+    # Calculate weekly grade averages (past 7 days, school-scoped)
     week_ago = today - timedelta(days=7)
     weekly_grades = Grade.objects.filter(
+        student__school=school,
         student__class_grade__class_teacher=staff,
         created_at__date__gte=week_ago
     ).aggregate(avg=Avg('score'))
@@ -128,7 +137,10 @@ def teacher_dashboard(request):
     ]
     
     # ===== GET ALL TEACHER'S SUBJECTS (FOR GRADE MODAL) =====
-    subject_ids = Timetable.objects.filter(teacher=staff).values_list('subject_id', flat=True).distinct()
+    subject_ids = Timetable.objects.filter(
+        teacher=staff,
+        class_grade__school=school
+    ).values_list('subject_id', flat=True).distinct()
     subjects = Subject.objects.filter(id__in=subject_ids)
     
     # Build context
@@ -163,13 +175,17 @@ from django.http import JsonResponse
 from django.middleware.csrf import get_token
 
 
-@login_required(login_url='teacher:login')
+@require_teacher_role('teacher')
 @require_POST
 def toggle_task_status(request, task_id):
-    """Toggle task status between pending and completed"""
+    """
+    Toggle task status between pending and completed.
+    Requires: Teacher role
+    """
     try:
-        staff = StaffProfile.objects.get(user=request.user)
-        task = TeacherTask.objects.get(id=task_id, teacher=staff)
+        school = get_user_school(request)
+        staff = get_object_or_404(StaffProfile, user=request.user, user__school=school)
+        task = TeacherTask.objects.get(id=task_id, teacher=staff, school=school)
         
         # Toggle status
         task.status = 'completed' if task.status == 'pending' else 'pending'
@@ -188,12 +204,16 @@ def toggle_task_status(request, task_id):
         return JsonResponse({'success': False, 'error': str(e)}, status=400)
 
 
-@login_required(login_url='teacher:login')
+@require_teacher_role('teacher')
 @require_POST
 def create_task(request):
-    """Create a new task"""
+    """
+    Create a new task for teacher.
+    Requires: Teacher role
+    """
     try:
-        staff = StaffProfile.objects.get(user=request.user)
+        school = get_user_school(request)
+        staff = get_object_or_404(StaffProfile, user=request.user, user__school=school)
         
         title = request.POST.get('title')
         description = request.POST.get('description')
@@ -205,6 +225,7 @@ def create_task(request):
         
         task = TeacherTask.objects.create(
             teacher=staff,
+            school=school,
             title=title,
             description=description,
             due_date=due_date,
@@ -225,20 +246,25 @@ def create_task(request):
         return JsonResponse({'success': False, 'error': str(e)}, status=400)
 
 
-@login_required(login_url='teacher:login')
+@require_teacher_role('teacher')
 @require_http_methods(["GET"])
 def student_search(request):
-    """Search students in teacher's classes"""
+    """
+    Search students in teacher's classes.
+    Requires: Teacher role
+    """
     query = request.GET.get('q', '').strip()
     
     if len(query) < 2:
         return JsonResponse({'students': []})
     
     try:
-        staff = StaffProfile.objects.get(user=request.user)
+        school = get_user_school(request)
+        staff = get_object_or_404(StaffProfile, user=request.user, user__school=school)
         
-        # Search in teacher's students
+        # Search in teacher's students (school-scoped)
         students = Student.objects.filter(
+            school=school,
             class_grade__class_teacher=staff,
             status='active'
         ).filter(
@@ -254,12 +280,16 @@ def student_search(request):
         return JsonResponse({'error': str(e)}, status=400)
 
 
-@login_required(login_url='teacher:login')
+@require_teacher_role('teacher')
 @require_POST
 def quick_grade_entry(request):
-    """Enter a grade for a student"""
+    """
+    Enter a grade for a student.
+    Requires: Teacher role
+    """
     try:
-        staff = StaffProfile.objects.get(user=request.user)
+        school = get_user_school(request)
+        staff = get_object_or_404(StaffProfile, user=request.user, user__school=school)
         
         student_id = request.POST.get('student_id')
         subject_id = request.POST.get('subject_id')
@@ -275,9 +305,13 @@ def quick_grade_entry(request):
         except ValueError:
             return JsonResponse({'success': False, 'error': 'Invalid score format'}, status=400)
         
-        student = Student.objects.get(id=student_id, class_grade__class_teacher=staff)
+        student = Student.objects.get(
+            id=student_id,
+            school=school,
+            class_grade__class_teacher=staff
+        )
         
-        # Get or create grade
+        # Get or create grade (school-scoped)
         grade, created = Grade.objects.update_or_create(
             student=student,
             subject_id=subject_id,
@@ -303,12 +337,16 @@ def quick_grade_entry(request):
         return JsonResponse({'success': False, 'error': str(e)}, status=400)
 
 
-@login_required(login_url='teacher:login')
+@require_teacher_role('teacher')
 @require_POST
 def send_circular(request):
-    """Send a circular/message to parents"""
+    """
+    Send a circular/message to parents.
+    Requires: Teacher role
+    """
     try:
-        staff = StaffProfile.objects.get(user=request.user)
+        school = get_user_school(request)
+        staff = get_object_or_404(StaffProfile, user=request.user, user__school=school)
         
         class_id = request.POST.get('class_id')
         message = request.POST.get('message')
@@ -319,9 +357,13 @@ def send_circular(request):
         if len(message) > 160:
             return JsonResponse({'success': False, 'error': 'Message too long (max 160 chars)'}, status=400)
         
-        # Create activity log
+        # Verify class belongs to this school and teacher
+        class_grade = ClassGrade.objects.get(id=class_id, school=school, class_teacher=staff)
+        
+        # Create activity log (school-scoped)
         ActivityLog.objects.create(
-            teacher=staff,
+            staff=staff,
+            school=school,
             activity_type='circular_sent',
             description=message,
             icon_name='mail',
@@ -330,6 +372,7 @@ def send_circular(request):
         
         # Get parent count for response
         parent_count = Student.objects.filter(
+            school=school,
             class_grade_id=class_id
         ).values('parent_phone').distinct().count()
         
@@ -338,13 +381,15 @@ def send_circular(request):
             'message': 'Circular queued for delivery',
             'parent_count': parent_count
         })
+    except ClassGrade.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Class not found'}, status=404)
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=400)
 
 
 # ===== NEW TEACHER VIEWS (Phase 3) =====
 
-@login_required(login_url='teacher:login')
+@require_teacher_role('teacher')
 def teacher_students_list(request):
     """
     List all students from teacher's assigned classes.
@@ -353,19 +398,20 @@ def teacher_students_list(request):
     - Students with name, admission number, class, attendance today
     - Search/filter functionality
     - Pagination
-    """
-    # Verify logged-in user is a teacher
-    if request.user.role != 'teacher':
-        return redirect('teacher:login')
     
-    # Fetch StaffProfile
-    staff = get_object_or_404(StaffProfile, user=request.user)
+    Requires: Teacher role
+    Filters: All data scoped to user's school
+    """
+    # Get school and staff profile (verified by decorator)
+    school = get_user_school(request)
+    staff = get_object_or_404(StaffProfile, user=request.user, user__school=school)
     
     # Get today's date
     today = timezone.localdate()
     
-    # Get all students from teacher's classes
+    # Get all students from teacher's classes (school-scoped)
     students = Student.objects.filter(
+        school=school,
         class_grade__class_teacher=staff,
         status='active'
     ).select_related('class_grade').order_by('class_grade__level', 'first_name')
@@ -385,13 +431,15 @@ def teacher_students_list(request):
     if class_filter:
         students = students.filter(class_grade_id=class_filter)
     
-    # Get classes for filter dropdown
+    # Get classes for filter dropdown (school-scoped)
     my_classes = ClassGrade.objects.filter(
+        school=school,
         class_teacher=staff
     ).order_by('level')
     
-    # Attendance data for today
+    # Attendance data for today (school-scoped)
     attendance_today = StudentAttendance.objects.filter(
+        school=school,
         date=today,
         student__class_grade__class_teacher=staff
     ).values('student_id', 'status')
@@ -414,7 +462,7 @@ def teacher_students_list(request):
     return render(request, 'teacher/students_list.html', context)
 
 
-@login_required(login_url='teacher:login')
+@require_teacher_role('teacher')
 def teacher_lessons_list(request):
     """
     List all lessons (timetable) for the teacher.
@@ -423,20 +471,21 @@ def teacher_lessons_list(request):
     - Lessons by class, day, time
     - Subject, student count
     - Week view
-    """
-    # Verify logged-in user is a teacher
-    if request.user.role != 'teacher':
-        return redirect('teacher:login')
     
-    # Fetch StaffProfile
-    staff = get_object_or_404(StaffProfile, user=request.user)
+    Requires: Teacher role
+    Filters: All data scoped to user's school
+    """
+    # Get school and staff profile (verified by decorator)
+    school = get_user_school(request)
+    staff = get_object_or_404(StaffProfile, user=request.user, user__school=school)
     
     # Get today's date
     today = timezone.localdate()
     
-    # Get all lessons/timetable entries for this teacher
+    # Get all lessons/timetable entries for this teacher (school-scoped)
     all_lessons = Timetable.objects.filter(
-        teacher=staff
+        teacher=staff,
+        class_grade__school=school
     ).select_related('subject', 'class_grade').order_by('day_of_week', 'start_time')
     
     # Get unique days for display
@@ -457,6 +506,7 @@ def teacher_lessons_list(request):
             # Annotate student count for each lesson
             for lesson in day_lessons:
                 lesson.student_count = Student.objects.filter(
+                    school=school,
                     class_grade=lesson.class_grade,
                     status='active'
                 ).count()
@@ -477,28 +527,32 @@ def teacher_lessons_list(request):
     return render(request, 'teacher/lessons_list.html', context)
 
 
-@login_required(login_url='teacher:login')
+@require_teacher_role('teacher')
 def export_teacher_schedule_csv(request):
-    """Export teacher's class schedule as CSV"""
-    if request.user.role != 'teacher':
-        return redirect('teacher:login')
+    """
+    Export teacher's class schedule as CSV.
+    Requires: Teacher role
+    """
+    school = get_user_school(request)
     
     try:
-        staff = StaffProfile.objects.get(user=request.user)
+        staff = StaffProfile.objects.get(user=request.user, user__school=school)
     except StaffProfile.DoesNotExist:
         return redirect('teacher:login')
     
     today = timezone.localdate()
     
-    # Get all classes taught by this teacher
+    # Get all classes taught by this teacher (school-scoped)
     my_classes = ClassGrade.objects.filter(
+        school=school,
         class_teacher=staff
     ).select_related('school').order_by('level')
     
-    # Get timetables for this teacher
+    # Get timetables for this teacher (school-scoped)
     timetables = Timetable.objects.filter(
-        teacher=staff
-    ).select_related('subject', 'class_grade').order_by('day', 'start_time')
+        teacher=staff,
+        class_grade__school=school
+    ).select_related('subject', 'class_grade').order_by('day_of_week', 'start_time')
     
     # Prepare CSV data
     headers = ['Day', 'Class', 'Subject', 'Start Time', 'End Time', 'Room']
@@ -506,7 +560,7 @@ def export_teacher_schedule_csv(request):
     
     for timetable in timetables:
         rows.append([
-            timetable.day.capitalize(),
+            timetable.day_of_week.capitalize(),
             timetable.class_grade.name if timetable.class_grade else '—',
             timetable.subject.name if timetable.subject else '—',
             str(timetable.start_time) if timetable.start_time else '—',
@@ -518,18 +572,20 @@ def export_teacher_schedule_csv(request):
     return export_csv(filename, headers, rows)
 
 
-@login_required(login_url='teacher:login')
+@require_teacher_role('teacher')
 def export_teacher_attendance_csv(request):
-    """Export teacher's attendance records as CSV"""
-    if request.user.role != 'teacher':
-        return redirect('teacher:login')
+    """
+    Export teacher's attendance records as CSV.
+    Requires: Teacher role
+    """
+    school = get_user_school(request)
     
     try:
-        staff = StaffProfile.objects.get(user=request.user)
+        staff = StaffProfile.objects.get(user=request.user, user__school=school)
     except StaffProfile.DoesNotExist:
         return redirect('teacher:login')
     
-    # Get attendance records for last 90 days
+    # Get attendance records for last 90 days (school-scoped via staff)
     from_date = timezone.localdate() - timedelta(days=90)
     
     attendance_records = TeacherAttendance.objects.filter(
@@ -556,17 +612,23 @@ def export_teacher_attendance_csv(request):
     return export_csv(filename, headers, rows)
 
 
-@login_required(login_url='teacher:login')
+@require_teacher_role('teacher')
 def get_student_info_ajax(request, student_id):
     """
     API endpoint to fetch student information for grade entry.
     Returns student name and class.
+    Requires: Teacher role
     """
-    if request.user.role != 'teacher':
-        return JsonResponse({'success': False, 'error': 'Unauthorized'}, status=403)
+    school = get_user_school(request)
+    staff = get_object_or_404(StaffProfile, user=request.user, user__school=school)
     
     try:
-        student = Student.objects.select_related('class_grade').get(id=student_id)
+        # Verify student belongs to teacher's classes and same school
+        student = Student.objects.select_related('class_grade').get(
+            id=student_id,
+            school=school,
+            class_grade__class_teacher=staff
+        )
         
         return JsonResponse({
             'success': True,

@@ -1,0 +1,155 @@
+{% extends "parent/parent_base.html" %}
+
+{% block title %}Payments - Parent Portal{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Page Header -->
+    <div class="bg-white rounded-lg p-6 shadow-sm border border-outline/10">
+        <h1 class="text-3xl font-bold text-on-surface">Fee Payments</h1>
+        <p class="text-on-surface/70 mt-1">Manage school fees and payment history</p>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="bg-white rounded-lg p-6 shadow-sm border border-outline/10">
+            <div class="flex items-start justify-between">
+                <div>
+                    <p class="text-sm font-medium text-on-surface/70">Total Outstanding</p>
+                    <p class="text-3xl font-bold text-red-600 mt-2">Ksh {{ total_outstanding|floatformat:2 }}</p>
+                </div>
+                <div class="bg-red-100 p-3 rounded-lg">
+                    <span class="material-symbols-outlined text-red-600">warning</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg p-6 shadow-sm border border-outline/10">
+            <div class="flex items-start justify-between">
+                <div>
+                    <p class="text-sm font-medium text-on-surface/70">Children with Fees</p>
+                    <p class="text-3xl font-bold text-on-surface mt-2">{{ payment_data|length }}</p>
+                </div>
+                <div class="bg-primary/10 p-3 rounded-lg">
+                    <span class="material-symbols-outlined text-primary">school</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg p-6 shadow-sm border border-outline/10">
+            <div class="flex items-start justify-between">
+                <div>
+                    <p class="text-sm font-medium text-on-surface/70">Total Payments</p>
+                    <p class="text-3xl font-bold text-green-600 mt-2">
+                        {% for data in payment_data %}{{ data.payments|length }}{% if not forloop.last %}+{% endif %}{% endfor %}
+                    </p>
+                </div>
+                <div class="bg-green-100 p-3 rounded-lg">
+                    <span class="material-symbols-outlined text-green-600">check_circle</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Details by Child -->
+    <div class="space-y-6">
+        {% for data in payment_data %}
+        <div class="bg-white rounded-lg shadow-sm border border-outline/10 overflow-hidden">
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-primary to-secondary p-6 text-white">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-2xl font-bold">{{ data.student.get_full_name }}</h2>
+                        <p class="text-sm text-white/80 mt-1">
+                            {% if data.current_fee %}
+                            Current Fee: Ksh {{ data.current_fee.amount|floatformat:2 }}
+                            {% else %}
+                            No current fee structure
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-lg text-white/80">Balance Due:</p>
+                        <p class="text-3xl font-bold">Ksh {{ data.total_balance|floatformat:2 }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Summary Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 p-6 bg-background border-b border-outline/10">
+                <div>
+                    <p class="text-xs font-medium text-on-surface/70">Total Paid</p>
+                    <p class="text-2xl font-bold text-green-600">Ksh {{ data.total_paid|floatformat:2 }}</p>
+                </div>
+                <div>
+                    <p class="text-xs font-medium text-on-surface/70">Total Balance</p>
+                    <p class="text-2xl font-bold text-red-600">Ksh {{ data.total_balance|floatformat:2 }}</p>
+                </div>
+                <div>
+                    <p class="text-xs font-medium text-on-surface/70">Payments Made</p>
+                    <p class="text-2xl font-bold text-on-surface">{{ data.payments|length }}</p>
+                </div>
+            </div>
+
+            <!-- Payments Table -->
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-background border-b border-outline/10">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-on-surface/70 font-medium">Fee Description</th>
+                            <th class="px-6 py-3 text-left text-on-surface/70 font-medium">Payment Date</th>
+                            <th class="px-6 py-3 text-right text-on-surface/70 font-medium">Amount Paid</th>
+                            <th class="px-6 py-3 text-right text-on-surface/70 font-medium">Balance After</th>
+                            <th class="px-6 py-3 text-left text-on-surface/70 font-medium">Method</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-outline/10">
+                        {% for payment in data.payments %}
+                        <tr class="hover:bg-background transition-colors">
+                            <td class="px-6 py-4 font-medium">{{ payment.fee_structure.description|truncatewords:5 }}</td>
+                            <td class="px-6 py-4">{{ payment.payment_date|date:"M d, Y" }}</td>
+                            <td class="px-6 py-4 text-right font-semibold text-green-600">Ksh {{ payment.amount_paid|floatformat:2 }}</td>
+                            <td class="px-6 py-4 text-right font-semibold text-on-surface">Ksh {{ payment.balance_after|floatformat:2 }}</td>
+                            <td class="px-6 py-4">
+                                <span class="inline-block px-3 py-1 rounded-lg text-xs font-medium bg-blue-100 text-blue-700">
+                                    {{ payment.get_payment_method_display }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="px-6 py-8 text-center text-on-surface/60">
+                                No payment history
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% empty %}
+        <div class="bg-background rounded-lg p-12 text-center border border-outline/20">
+            <span class="material-symbols-outlined text-4xl text-on-surface/30 block mb-4">payments</span>
+            <p class="text-on-surface/60">No payment data available</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <div class="flex items-center justify-center gap-2 mt-8">
+        {% if page_obj.has_previous %}
+        <a href="?page=1" class="px-4 py-2 rounded-lg border border-outline hover:bg-background">First</a>
+        <a href="?page={{ page_obj.previous_page_number }}" class="px-4 py-2 rounded-lg border border-outline hover:bg-background">Previous</a>
+        {% endif %}
+
+        <span class="px-4 py-2">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}" class="px-4 py-2 rounded-lg border border-outline hover:bg-background">Next</a>
+        <a href="?page={{ page_obj.paginator.num_pages }}" class="px-4 py-2 rounded-lg border border-outline hover:bg-background">Last</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

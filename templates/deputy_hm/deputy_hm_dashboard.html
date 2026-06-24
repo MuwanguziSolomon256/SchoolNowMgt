@@ -1,0 +1,466 @@
+{% extends "teacher/base.html" %}
+{% load static %}
+
+{% block title %}Deputy Headmaster Dashboard - {{ school.name }}{% endblock %}
+
+{% block content %}
+<style>
+  .admin-nav {
+    background: linear-gradient(135deg, #080b3a 0%, #1a1e4f 100%);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+  .admin-nav-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 70px;
+  }
+  .admin-nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+  }
+  .admin-nav-icon {
+    width: 40px;
+    height: 40px;
+    background-color: #7c5800;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: white;
+  }
+  .admin-nav-text h2 {
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0;
+  }
+  .admin-nav-text p {
+    color: #d4a574;
+    font-size: 12px;
+    margin: 2px 0 0 0;
+  }
+  .admin-nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  .nav-user-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: white;
+    font-size: 14px;
+  }
+  .nav-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: transparent;
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+  }
+  .nav-btn:hover {
+    background-color: rgba(212, 165, 116, 0.15);
+    color: #d4a574;
+  }
+  .dashboard-content {
+    padding-top: 90px;
+  }
+</style>
+
+<div class="admin-nav">
+  <div class="admin-nav-container">
+    <div class="admin-nav-brand">
+      <div class="admin-nav-icon">👔</div>
+      <div class="admin-nav-text">
+        <h2>Deputy Headmaster</h2>
+        <p>{{ request.user.school.name|default:"School Management" }}</p>
+      </div>
+    </div>
+    
+    <div class="admin-nav-actions">
+      <div class="nav-user-info">
+        <span>👤</span>
+        <span>{{ request.user.get_full_name|default:request.user.username }}</span>
+      </div>
+      
+      <form method="post" action="{% url 'teacher:logout' %}" style="margin: 0;">
+        {% csrf_token %}
+        <button type="submit" class="nav-btn" title="Logout to Auth Login">
+          <span>🚪</span>
+          <span>Logout</span>
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="deputy-hm-dashboard dashboard-content">
+    <div class="page-header">
+        <h1>Deputy Headmaster Dashboard</h1>
+        <p class="subtitle">Support Staff & Operations Management</p>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">👥</div>
+            <div class="stat-content">
+                <h3>Support Staff</h3>
+                <p class="stat-value">{{ statistics.total_support_staff }}</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">🏢</div>
+            <div class="stat-content">
+                <h3>Departments</h3>
+                <p class="stat-value">{{ statistics.total_departments }}</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">👔</div>
+            <div class="stat-content">
+                <h3>Dept Heads</h3>
+                <p class="stat-value">{{ statistics.departments_with_heads }}</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">⚠️</div>
+            <div class="stat-content">
+                <h3>Needs Heads</h3>
+                <p class="stat-value">{{ statistics.departments_without_heads }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+        <h2>Quick Actions</h2>
+        <div class="action-buttons">
+            <a href="{% url 'teacher:deputy_hm:support_staff_list' %}" class="btn btn-primary">
+                <span class="icon">👥</span> Manage Support Staff
+            </a>
+            <a href="{% url 'teacher:deputy_hm:departments_list' %}" class="btn btn-primary">
+                <span class="icon">🏢</span> Manage Departments
+            </a>
+            <a href="{% url 'teacher:deputy_hm:shift_overview' %}" class="btn btn-secondary">
+                <span class="icon">⏰</span> Shift Overview
+            </a>
+            <a href="{% url 'teacher:deputy_hm:facilities_overview' %}" class="btn btn-secondary">
+                <span class="icon">🔧</span> Facilities
+            </a>
+            <a href="{% url 'teacher:deputy_hm:budget_overview' %}" class="btn btn-secondary">
+                <span class="icon">💰</span> Budget Tracking
+            </a>
+        </div>
+    </div>
+
+    <!-- Alerts & Pending Tasks -->
+    <div class="alerts-section">
+        {% if statistics.departments_without_heads > 0 %}
+        <div class="alert alert-warning">
+            <strong>⚠️ Attention:</strong> {{ statistics.departments_without_heads }} department(s) have no head assigned.
+            <a href="{% url 'teacher:deputy_hm:departments_list' %}">Assign now</a>
+        </div>
+        {% endif %}
+        
+        {% if staff_without_dept|length > 0 %}
+        <div class="alert alert-info">
+            <strong>ℹ️ Note:</strong> {{ staff_without_dept|length }} staff member(s) not assigned to a department.
+            <a href="{% url 'teacher:deputy_hm:support_staff_list' %}">Assign now</a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Staff Distribution by Department -->
+    {% if staff_by_department %}
+    <div class="distribution-section">
+        <h2>Staff Distribution by Department</h2>
+        <div class="department-distribution">
+            {% for dept_name, count in staff_by_department.items %}
+            <div class="dist-item">
+                <div class="dist-label">{{ dept_name }}</div>
+                <div class="dist-bar">
+                    <div class="dist-fill" style="width: {% widthratio count total_staff 100 %}%">
+                        {{ count }}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Recent Activity -->
+    {% if recent_activities %}
+    <div class="activity-section">
+        <h2>Recent Activity</h2>
+        <div class="activity-list">
+            {% for activity in recent_activities %}
+            <div class="activity-item">
+                <span class="activity-icon">{{ activity.icon_name }}</span>
+                <div class="activity-content">
+                    <p class="activity-description">{{ activity.description }}</p>
+                    <small class="activity-time">{{ activity.timestamp|timesince }} ago</small>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.deputy-hm-dashboard {
+    padding: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.page-header {
+    margin-bottom: 30px;
+}
+
+.page-header h1 {
+    font-size: 28px;
+    margin: 0;
+    color: #333;
+}
+
+.page-header .subtitle {
+    color: #666;
+    margin: 5px 0 0 0;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    display: flex;
+    align-items: center;
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.stat-icon {
+    font-size: 32px;
+    margin-right: 15px;
+}
+
+.stat-content h3 {
+    margin: 0;
+    font-size: 14px;
+    color: #666;
+}
+
+.stat-value {
+    margin: 5px 0 0 0;
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+}
+
+.quick-actions {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.quick-actions h2 {
+    margin-top: 0;
+    font-size: 18px;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.btn {
+    padding: 10px 15px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background: #007bff;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #0056b3;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #545b62;
+}
+
+.alerts-section {
+    margin-bottom: 30px;
+}
+
+.alert {
+    padding: 15px;
+    border-radius: 4px;
+    margin-bottom: 10px;
+}
+
+.alert-warning {
+    background: #fff3cd;
+    border: 1px solid #ffc107;
+    color: #856404;
+}
+
+.alert-info {
+    background: #d1ecf1;
+    border: 1px solid #17a2b8;
+    color: #0c5460;
+}
+
+.alert a {
+    font-weight: bold;
+    margin-left: 10px;
+}
+
+.distribution-section {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 30px;
+}
+
+.distribution-section h2 {
+    margin-top: 0;
+    font-size: 18px;
+}
+
+.department-distribution {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.dist-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.dist-label {
+    min-width: 150px;
+    font-weight: 600;
+    color: #333;
+}
+
+.dist-bar {
+    flex: 1;
+    height: 30px;
+    background: #f0f0f0;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.dist-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 12px;
+    transition: width 0.3s ease;
+}
+
+.activity-section {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 30px;
+}
+
+.activity-section h2 {
+    margin-top: 0;
+    font-size: 18px;
+}
+
+.activity-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.activity-item {
+    display: flex;
+    padding: 12px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.activity-item:last-child {
+    border-bottom: none;
+}
+
+.activity-icon {
+    font-size: 24px;
+    margin-right: 15px;
+    min-width: 24px;
+}
+
+.activity-content {
+    flex: 1;
+}
+
+.activity-description {
+    margin: 0;
+    color: #333;
+    font-size: 14px;
+}
+
+.activity-time {
+    color: #999;
+    font-size: 12px;
+}
+</style>
+{% endblock %}

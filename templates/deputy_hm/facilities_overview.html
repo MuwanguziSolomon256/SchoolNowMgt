@@ -1,0 +1,238 @@
+{% extends "teacher/base.html" %}
+{% load static %}
+
+{% block title %}Facilities Overview - Deputy HM{% endblock %}
+
+{% block content %}
+<div class="deputy-hm-facilities">
+    <div class="page-header">
+        <h1>Facilities & Maintenance Overview</h1>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">🏢</div>
+            <div class="stat-content">
+                <h3>Facility Departments</h3>
+                <p class="stat-value">{{ statistics.total_facility_depts }}</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">👥</div>
+            <div class="stat-content">
+                <h3>Facility Staff</h3>
+                <p class="stat-value">{{ statistics.facility_staff }}</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">💰</div>
+            <div class="stat-content">
+                <h3>Total Budget</h3>
+                <p class="stat-value">{{ statistics.total_budget }}</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">📊</div>
+            <div class="stat-content">
+                <h3>Avg Budget/Dept</h3>
+                <p class="stat-value">{{ statistics.avg_budget_per_dept|floatformat:2 }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Facility Departments -->
+    {% if facility_depts %}
+    <div class="facilities-section">
+        <h2>Facility Departments</h2>
+        <div class="departments-grid">
+            {% for dept in facility_depts %}
+            <div class="dept-card">
+                <div class="dept-icon">
+                    {% if dept.department_type == 'maintenance' %}🔧
+                    {% elif dept.department_type == 'cleaning' %}🧹
+                    {% elif dept.department_type == 'facilities' %}🏗️
+                    {% elif dept.department_type == 'catering' %}🍽️
+                    {% else %}📦{% endif %}
+                </div>
+                
+                <div class="dept-info">
+                    <h3>{{ dept.name }}</h3>
+                    <p class="dept-type">{{ dept.get_department_type_display }}</p>
+                    
+                    {% if dept.head_of_department %}
+                    <p class="dept-head">
+                        <strong>Head:</strong> {{ dept.head_of_department.user.get_full_name }}
+                    </p>
+                    {% else %}
+                    <p class="dept-head no-head">⚠️ No head assigned</p>
+                    {% endif %}
+                    
+                    {% if dept.monthly_budget %}
+                    <p class="dept-budget">
+                        <strong>Budget:</strong> {{ dept.monthly_budget }}
+                    </p>
+                    {% endif %}
+                    
+                    {% if dept.description %}
+                    <p class="dept-description">{{ dept.description }}</p>
+                    {% endif %}
+                </div>
+                
+                <div class="dept-actions">
+                    <a href="{% url 'teacher:deputy:department_edit' dept.id %}" class="btn btn-sm btn-edit">Edit</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.deputy-hm-facilities {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.page-header {
+    margin-bottom: 30px;
+}
+
+.page-header h1 {
+    margin: 0;
+    font-size: 28px;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    display: flex;
+    align-items: center;
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.stat-icon {
+    font-size: 32px;
+    margin-right: 15px;
+}
+
+.stat-content h3 {
+    margin: 0;
+    font-size: 14px;
+    color: #666;
+}
+
+.stat-value {
+    margin: 5px 0 0 0;
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+}
+
+.facilities-section {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.facilities-section h2 {
+    margin-top: 0;
+    font-size: 18px;
+}
+
+.departments-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.dept-card {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #eee;
+    border-radius: 6px;
+    padding: 15px;
+    transition: all 0.3s ease;
+}
+
+.dept-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+}
+
+.dept-icon {
+    font-size: 28px;
+    margin-bottom: 10px;
+}
+
+.dept-info h3 {
+    margin: 0 0 5px 0;
+    font-size: 16px;
+    color: #333;
+}
+
+.dept-type {
+    margin: 5px 0;
+    color: #666;
+    font-size: 13px;
+}
+
+.dept-head {
+    margin: 8px 0;
+    font-size: 13px;
+    color: #333;
+}
+
+.dept-head.no-head {
+    color: #dc3545;
+}
+
+.dept-budget {
+    margin: 8px 0;
+    font-size: 13px;
+    color: #28a745;
+    font-weight: 600;
+}
+
+.dept-description {
+    margin: 10px 0;
+    font-size: 12px;
+    color: #999;
+    font-style: italic;
+}
+
+.dept-actions {
+    margin-top: auto;
+    padding-top: 10px;
+}
+
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+    background: #17a2b8;
+    color: white;
+}
+
+.btn-sm:hover {
+    background: #138496;
+}
+</style>
+{% endblock %}

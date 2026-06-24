@@ -1,0 +1,278 @@
+{% extends "teacher/base.html" %}
+{% load static %}
+
+{% block title %}Budget Overview - Deputy HM{% endblock %}
+
+{% block content %}
+<div class="deputy-hm-budget">
+    <div class="page-header">
+        <h1>Budget Overview & Tracking</h1>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">💰</div>
+            <div class="stat-content">
+                <h3>Total Budget</h3>
+                <p class="stat-value">{{ statistics.total_budget }}</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">✅</div>
+            <div class="stat-content">
+                <h3>Depts with Budget</h3>
+                <p class="stat-value">{{ statistics.depts_with_budget }}</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">⚠️</div>
+            <div class="stat-content">
+                <h3>No Budget</h3>
+                <p class="stat-value">{{ statistics.depts_without_budget }}</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">📊</div>
+            <div class="stat-content">
+                <h3>Average Budget</h3>
+                <p class="stat-value">{{ statistics.avg_budget|floatformat:2 }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Budget Distribution Chart -->
+    {% if dept_budget_data %}
+    <div class="budget-chart-section">
+        <h2>Budget Distribution by Department</h2>
+        
+        <div class="budget-bars">
+            {% for data in dept_budget_data %}
+            <div class="budget-item">
+                <div class="budget-label">{{ data.department.name }}</div>
+                <div class="budget-bar-container">
+                    <div class="budget-bar">
+                        <div class="budget-fill" style="width: {{ data.percentage }}%">
+                            <span class="budget-percent">{{ data.percentage|floatformat:1 }}%</span>
+                        </div>
+                    </div>
+                    <div class="budget-amount">{{ data.budget }}</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Budget Table -->
+    <div class="budget-table-section">
+        <h2>Detailed Budget List</h2>
+        <div class="table-section">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Department</th>
+                        <th>Type</th>
+                        <th>Monthly Budget</th>
+                        <th>Annual Projection</th>
+                        <th>% of Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for data in dept_budget_data %}
+                    <tr>
+                        <td><strong>{{ data.department.name }}</strong></td>
+                        <td>{{ data.department.get_department_type_display }}</td>
+                        <td class="amount">{{ data.budget }}</td>
+                        <td class="amount">{{ data.budget|multiply:12 }}</td>
+                        <td>
+                            <div class="percentage-badge">{{ data.percentage|floatformat:1 }}%</div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.deputy-hm-budget {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.page-header {
+    margin-bottom: 30px;
+}
+
+.page-header h1 {
+    margin: 0;
+    font-size: 28px;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    display: flex;
+    align-items: center;
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.stat-icon {
+    font-size: 32px;
+    margin-right: 15px;
+}
+
+.stat-content h3 {
+    margin: 0;
+    font-size: 14px;
+    color: #666;
+}
+
+.stat-value {
+    margin: 5px 0 0 0;
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+}
+
+.budget-chart-section {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 30px;
+}
+
+.budget-chart-section h2 {
+    margin-top: 0;
+    font-size: 18px;
+}
+
+.budget-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.budget-item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.budget-label {
+    font-weight: 600;
+    color: #333;
+    font-size: 14px;
+}
+
+.budget-bar-container {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.budget-bar {
+    flex: 1;
+    height: 40px;
+    background: #f0f0f0;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.budget-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 12px;
+    transition: width 0.3s ease;
+}
+
+.budget-amount {
+    min-width: 100px;
+    text-align: right;
+    font-weight: 600;
+    color: #333;
+}
+
+.budget-table-section {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.budget-table-section h2 {
+    margin-top: 0;
+    font-size: 18px;
+}
+
+.table-section {
+    overflow-x: auto;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table thead {
+    background: #f8f9fa;
+}
+
+.table th {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 2px solid #dee2e6;
+    font-weight: 600;
+}
+
+.table td {
+    padding: 15px;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.table tbody tr:nth-child(odd) {
+    background: #f8f9fa;
+}
+
+.amount {
+    text-align: right;
+    font-weight: 600;
+}
+
+.percentage-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+}
+</style>
+
+{% comment %}
+Note: The multiply filter is not a Django built-in. 
+If you need to display annual projection, use {% widthratio or calculate in the view.
+{% endcomment %}
+
+{% endblock %}

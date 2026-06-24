@@ -28,53 +28,57 @@
             pointer-events: auto;
         }
     </style>
-    <!-- Left Section: Logo -->
+    <!-- Left Section: Logo + Mobile Menu Button -->
     <div class="flex items-center gap-1.5 xs:gap-2 sm:gap-3 flex-shrink-0 min-w-0">
         <div class="w-7 xs:w-8 sm:w-9 md:w-10 h-7 xs:h-8 sm:h-9 md:h-10 rounded-lg sm:rounded-xl bg-secondary-container flex items-center justify-center text-primary flex-shrink-0">
             <span class="material-symbols-outlined text-base xs:text-lg sm:text-lg md:text-xl" style="font-variation-settings: 'FILL' 1;">school</span>
         </div>
-        <h1 class="text-xs xs:text-sm sm:text-base md:text-lg font-black text-secondary-fixed hidden xs:inline truncate">SchoolNow</h1>
+        <h1 class="text-xs md:text-sm sm:text-base md:text-lg font-black text-secondary-fixed hidden xs:inline truncate">SchoolNow</h1>
+        <!-- Mobile Menu Button (left side) -->
+        <button id="mobileMenuToggle" class="lg:hidden p-1.5 xs:p-2 hover:bg-white/10 rounded-lg transition-all text-on-primary flex items-center min-h-10 min-w-10 relative z-51" style="pointer-events: auto;">
+            <span class="material-symbols-outlined text-lg xs:text-xl">menu</span>
+        </button>
     </div>
     
     <!-- Navigation Links - Desktop -->
-    <div class="hidden lg:flex items-center gap-0 xl:gap-0.5 flex-grow justify-center overflow-visible" style="overflow: visible !important;">
-        <a class="text-on-primary/70 hover:text-white px-2 xl:px-3 py-1.5 xl:py-2 flex items-center gap-1.5 xl:gap-2 hover:bg-white/10 transition-all text-xs xl:text-sm whitespace-nowrap rounded-lg min-h-10" href="{% url 'SchoolNowMgt:dashboard' %}">
+    <div class="hidden lg:flex items-center gap-0.5 xl:gap-1 flex-grow justify-center overflow-visible" style="overflow: visible !important;">
+        <a class="text-on-primary/70 hover:text-white px-2 xl:px-3 py-1.5 xl:py-2 flex items-center gap-1.5 xl:gap-2 hover:bg-white/10 transition-all text-xs md:text-sm whitespace-nowrap rounded-lg min-h-10" href="{% url 'SchoolNowMgt:dashboard' %}">
             <span class="material-symbols-outlined text-sm xl:text-base">dashboard</span>
-            <span class="inline">Dashboard</span>
+            <span>Dashboard</span>
         </a>
-        <a class="text-on-primary/70 hover:text-white px-2 xl:px-3 py-1.5 xl:py-2 flex items-center gap-1.5 xl:gap-2 hover:bg-white/10 transition-all text-xs xl:text-sm whitespace-nowrap rounded-lg min-h-10" href="{% url 'SchoolNowMgt:admin_students' %}">
+        <a class="text-on-primary/70 hover:text-white px-2 xl:px-3 py-1.5 xl:py-2 flex items-center gap-1.5 xl:gap-2 hover:bg-white/10 transition-all text-xs md:text-sm whitespace-nowrap rounded-lg min-h-10" href="{% url 'SchoolNowMgt:admin_students' %}">
             <span class="material-symbols-outlined text-sm xl:text-base">school</span>
             <span>Students</span>
         </a>
         <!-- Staff Dropdown -->
         <div class="relative group">
-            <button class="text-on-primary/70 hover:text-white px-2 xl:px-3 py-1.5 xl:py-2 flex items-center gap-1.5 xl:gap-2 hover:bg-white/10 transition-all text-xs xl:text-sm whitespace-nowrap rounded-lg min-h-10">
+            <button class="text-on-primary/70 hover:text-white px-2 xl:px-3 py-1.5 xl:py-2 flex items-center gap-1.5 xl:gap-2 hover:bg-white/10 transition-all text-xs md:text-sm whitespace-nowrap rounded-lg min-h-10">
                 <span class="material-symbols-outlined text-sm xl:text-base">groups</span>
                 <span>Staff</span>
-                <span class="material-symbols-outlined text-xs xl:text-sm ml-0.5">expand_more</span>
+                <span class="material-symbols-outlined text-xs md:text-sm ml-1">expand_more</span>
             </button>
-            <div class="absolute left-0 mt-0 w-40 lg:w-48 bg-primary-container text-on-primary-container rounded-lg shadow-lg transition-all duration-200" style="z-index: 9999; pointer-events: auto;">
-                <a class="block px-3 lg:px-4 py-2.5 lg:py-3 text-xs lg:text-sm hover:bg-secondary-container rounded-t-lg first:rounded-t-lg min-h-10 flex items-center" href="{% url 'SchoolNowMgt:admin_teachers' %}">
-                    <span class="material-symbols-outlined text-sm lg:text-base mr-2 align-middle">person</span>Teachers
+            <div class="absolute left-0 mt-0 w-48 bg-primary-container text-on-primary-container rounded-lg shadow-lg transition-all duration-200" style="z-index: 9999; pointer-events: auto;">
+                <a class="block px-3 xl:px-4 py-2 xl:py-3 text-xs md:text-sm hover:bg-secondary-container rounded-t-lg first:rounded-t-lg" href="{% url 'SchoolNowMgt:admin_teachers' %}">
+                    <span class="material-symbols-outlined text-sm xl:text-base mr-2 align-middle">person</span>Teachers
                 </a>
-                <a class="block px-3 lg:px-4 py-2.5 lg:py-3 text-xs lg:text-sm hover:bg-secondary-container rounded-b-lg last:rounded-b-lg min-h-10 flex items-center" href="{% url 'SchoolNowMgt:admin_support_staff_dashboard' %}">
-                    <span class="material-symbols-outlined text-sm lg:text-base mr-2 align-middle">support_agent</span>Support Staff
+                <a class="block px-3 xl:px-4 py-2 xl:py-3 text-xs md:text-sm hover:bg-secondary-container rounded-b-lg last:rounded-b-lg" href="{% url 'SchoolNowMgt:admin_support_staff_dashboard' %}">
+                    <span class="material-symbols-outlined text-sm xl:text-base mr-2 align-middle">support_agent</span>Support Staff
                 </a>
             </div>
         </div>
-        <a class="text-on-primary/70 hover:text-white px-2 xl:px-3 py-1.5 xl:py-2 flex items-center gap-1.5 xl:gap-2 hover:bg-white/10 transition-all text-xs xl:text-sm whitespace-nowrap rounded-lg min-h-10" href="{% url 'SchoolNowMgt:admin_communication' %}">
+        <a class="text-on-primary/70 hover:text-white px-2 xl:px-3 py-1.5 xl:py-2 flex items-center gap-1.5 xl:gap-2 hover:bg-white/10 transition-all text-xs md:text-sm whitespace-nowrap rounded-lg min-h-10" href="{% url 'SchoolNowMgt:admin_communication' %}">
             <span class="material-symbols-outlined text-sm xl:text-base">chat_bubble</span>
             <span>Communication</span>
         </a>
-        <a class="text-on-primary/70 hover:text-white px-2 xl:px-3 py-1.5 xl:py-2 flex items-center gap-1.5 xl:gap-2 hover:bg-white/10 transition-all text-xs xl:text-sm whitespace-nowrap rounded-lg min-h-10" href="{% url 'SchoolNowMgt:admin_finance' %}">
+        <a class="text-on-primary/70 hover:text-white px-2 xl:px-3 py-1.5 xl:py-2 flex items-center gap-1.5 xl:gap-2 hover:bg-white/10 transition-all text-xs md:text-sm whitespace-nowrap rounded-lg min-h-10" href="{% url 'SchoolNowMgt:admin_finance' %}">
             <span class="material-symbols-outlined text-sm xl:text-base">payments</span>
             <span>Finance</span>
         </a>
-        <a class="text-on-primary/70 hover:text-white px-2 xl:px-3 py-1.5 xl:py-2 flex items-center gap-1.5 xl:gap-2 hover:bg-white/10 transition-all text-xs xl:text-sm whitespace-nowrap rounded-lg min-h-10" href="{% url 'SchoolNowMgt:events_dashboard' %}">
+        <a class="text-on-primary/70 hover:text-white px-2 xl:px-3 py-1.5 xl:py-2 flex items-center gap-1.5 xl:gap-2 hover:bg-white/10 transition-all text-xs md:text-sm whitespace-nowrap rounded-lg min-h-10" href="{% url 'SchoolNowMgt:events_dashboard' %}">
             <span class="material-symbols-outlined text-sm xl:text-base">event</span>
             <span>Events</span>
         </a>
-        <a class="text-on-primary/70 hover:text-white px-2 xl:px-3 py-1.5 xl:py-2 flex items-center gap-1.5 xl:gap-2 hover:bg-white/10 transition-all text-xs xl:text-sm whitespace-nowrap rounded-lg min-h-10" href="{% url 'SchoolNowMgt:admin_reports' %}">
+        <a class="text-on-primary/70 hover:text-white px-2 xl:px-3 py-1.5 xl:py-2 flex items-center gap-1.5 xl:gap-2 hover:bg-white/10 transition-all text-xs md:text-sm whitespace-nowrap rounded-lg min-h-10" href="{% url 'SchoolNowMgt:admin_reports' %}">
             <span class="material-symbols-outlined text-sm xl:text-base">analytics</span>
             <span>Reports</span>
         </a>
@@ -83,12 +87,7 @@
     
     <!-- Right Side Actions -->
     <div class="flex items-center gap-0.5 xs:gap-1 sm:gap-2 flex-shrink-0">
-        <!-- Mobile Menu Button -->
-        <button id="mobileMenuToggle" class="lg:hidden p-1.5 xs:p-2 hover:bg-white/10 rounded-lg transition-all text-on-primary flex items-center min-h-10 min-w-10 relative z-51" style="pointer-events: auto;">
-            <span class="material-symbols-outlined text-lg xs:text-xl">menu</span>
-        </button>
-        
-        <a class="text-on-primary/70 hover:text-white px-1.5 xs:px-2 sm:px-3 py-1.5 xs:py-2 flex items-center gap-1 xs:gap-1.5 sm:gap-2 hover:bg-white/10 transition-all rounded-lg font-bold text-xs xs:text-sm min-h-10 min-w-10" href="{% url 'SchoolNowMgt:custom_logout' %}">
+        <a class="text-on-primary/70 hover:text-white px-1.5 xs:px-2 sm:px-3 py-1.5 xs:py-2 flex items-center gap-1 xs:gap-1.5 sm:gap-2 hover:bg-white/10 transition-all rounded-lg font-bold text-xs md:text-sm min-h-10 min-w-10" href="{% url 'SchoolNowMgt:custom_logout' %}">
             <span class="material-symbols-outlined text-base xs:text-lg sm:text-lg">logout</span>
             <span class="hidden sm:inline">Log out</span>
         </a>
@@ -98,46 +97,46 @@
 <!-- Mobile Navigation Menu -->
 <div id="mobileMenu" class="fixed top-12 xs:top-14 sm:top-16 md:top-20 left-0 right-0 bg-primary text-on-primary z-40 max-h-0 overflow-hidden transition-all duration-300 ease-in-out shadow-lg lg:hidden">
     <div class="p-2 xs:p-3 sm:p-4 space-y-1 xs:space-y-1.5 sm:space-y-2 max-h-[calc(100vh-3rem)] xs:max-h-[calc(100vh-3.5rem)] sm:max-h-[70vh] overflow-hidden">
-        <a class="text-on-primary/80 hover:text-white px-2.5 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 flex items-center gap-2.5 xs:gap-3 hover:bg-white/10 transition-all text-xs xs:text-sm rounded-lg block w-full text-left min-h-10" href="{% url 'SchoolNowMgt:dashboard' %}">
+        <a class="text-on-primary/80 hover:text-white px-2.5 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 flex items-center gap-2.5 xs:gap-3 hover:bg-white/10 transition-all text-xs md:text-sm rounded-lg block w-full text-left min-h-10" href="{% url 'SchoolNowMgt:dashboard' %}">
             <span class="material-symbols-outlined text-base xs:text-lg">dashboard</span>
             <span>Dashboard</span>
         </a>
-        <a class="text-on-primary/80 hover:text-white px-2.5 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 flex items-center gap-2.5 xs:gap-3 hover:bg-white/10 transition-all text-xs xs:text-sm rounded-lg block w-full text-left min-h-10" href="{% url 'SchoolNowMgt:admin_students' %}">
+        <a class="text-on-primary/80 hover:text-white px-2.5 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 flex items-center gap-2.5 xs:gap-3 hover:bg-white/10 transition-all text-xs md:text-sm rounded-lg block w-full text-left min-h-10" href="{% url 'SchoolNowMgt:admin_students' %}">
             <span class="material-symbols-outlined text-base xs:text-lg">school</span>
             <span>Students</span>
         </a>
-        <button class="staffToggleMobile text-on-primary/80 hover:text-white px-2.5 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 flex items-center gap-2.5 xs:gap-3 hover:bg-white/10 transition-all text-xs xs:text-sm rounded-lg w-full text-left min-h-10" onclick="toggleStaffMenu(this)">
+        <button class="staffToggleMobile text-on-primary/80 hover:text-white px-2.5 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 flex items-center gap-2.5 xs:gap-3 hover:bg-white/10 transition-all text-xs md:text-sm rounded-lg w-full text-left min-h-10" onclick="toggleStaffMenu(this)">
             <span class="material-symbols-outlined text-base xs:text-lg">groups</span>
             <span>Staff</span>
             <span class="material-symbols-outlined text-base xs:text-lg ml-auto expand-icon">expand_more</span>
         </button>
         <div class="staffSubmenu hidden pl-4 xs:pl-6 sm:pl-8 space-y-1 xs:space-y-1.5 sm:space-y-2">
-            <a class="text-on-primary/80 hover:text-white px-2.5 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 flex items-center gap-2.5 xs:gap-3 hover:bg-white/10 transition-all text-xs xs:text-sm rounded-lg block w-full text-left min-h-10" href="{% url 'SchoolNowMgt:admin_shift_dashboard' %}">
+            <a class="text-on-primary/80 hover:text-white px-2.5 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 flex items-center gap-2.5 xs:gap-3 hover:bg-white/10 transition-all text-xs md:text-sm rounded-lg block w-full text-left min-h-10" href="{% url 'SchoolNowMgt:admin_shift_dashboard' %}">
                 <span class="material-symbols-outlined text-base xs:text-lg">schedule</span>
                 <span>Shifts</span>
             </a>
-            <a class="text-on-primary/80 hover:text-white px-2.5 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 flex items-center gap-2.5 xs:gap-3 hover:bg-white/10 transition-all text-xs xs:text-sm rounded-lg block w-full text-left min-h-10" href="{% url 'SchoolNowMgt:admin_support_staff_dashboard' %}">
+            <a class="text-on-primary/80 hover:text-white px-2.5 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 flex items-center gap-2.5 xs:gap-3 hover:bg-white/10 transition-all text-xs md:text-sm rounded-lg block w-full text-left min-h-10" href="{% url 'SchoolNowMgt:admin_support_staff_dashboard' %}">
                 <span class="material-symbols-outlined text-base xs:text-lg">support_agent</span>
                 <span>Support Staff</span>
             </a>
-            <a class="text-on-primary/80 hover:text-white px-2.5 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 flex items-center gap-2.5 xs:gap-3 hover:bg-white/10 transition-all text-xs xs:text-sm rounded-lg block w-full text-left min-h-10" href="{% url 'SchoolNowMgt:admin_teachers' %}">
+            <a class="text-on-primary/80 hover:text-white px-2.5 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 flex items-center gap-2.5 xs:gap-3 hover:bg-white/10 transition-all text-xs md:text-sm rounded-lg block w-full text-left min-h-10" href="{% url 'SchoolNowMgt:admin_teachers' %}">
                 <span class="material-symbols-outlined text-base xs:text-lg">person</span>
                 <span>Teachers</span>
             </a>
         </div>
-        <a class="text-on-primary/80 hover:text-white px-2.5 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 flex items-center gap-2.5 xs:gap-3 hover:bg-white/10 transition-all text-xs xs:text-sm rounded-lg block w-full text-left min-h-10" href="{% url 'SchoolNowMgt:admin_communication' %}">
+        <a class="text-on-primary/80 hover:text-white px-2.5 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 flex items-center gap-2.5 xs:gap-3 hover:bg-white/10 transition-all text-xs md:text-sm rounded-lg block w-full text-left min-h-10" href="{% url 'SchoolNowMgt:admin_communication' %}">
             <span class="material-symbols-outlined text-base xs:text-lg">chat_bubble</span>
             <span>Communication</span>
         </a>
-        <a class="text-on-primary/80 hover:text-white px-2.5 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 flex items-center gap-2.5 xs:gap-3 hover:bg-white/10 transition-all text-xs xs:text-sm rounded-lg block w-full text-left min-h-10" href="{% url 'SchoolNowMgt:admin_finance' %}">
+        <a class="text-on-primary/80 hover:text-white px-2.5 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 flex items-center gap-2.5 xs:gap-3 hover:bg-white/10 transition-all text-xs md:text-sm rounded-lg block w-full text-left min-h-10" href="{% url 'SchoolNowMgt:admin_finance' %}">
             <span class="material-symbols-outlined text-base xs:text-lg">payments</span>
             <span>Finance</span>
         </a>
-        <a class="text-on-primary/80 hover:text-white px-2.5 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 flex items-center gap-2.5 xs:gap-3 hover:bg-white/10 transition-all text-xs xs:text-sm rounded-lg block w-full text-left min-h-10" href="{% url 'SchoolNowMgt:events_dashboard' %}">
+        <a class="text-on-primary/80 hover:text-white px-2.5 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 flex items-center gap-2.5 xs:gap-3 hover:bg-white/10 transition-all text-xs md:text-sm rounded-lg block w-full text-left min-h-10" href="{% url 'SchoolNowMgt:events_dashboard' %}">
             <span class="material-symbols-outlined text-base xs:text-lg">event</span>
             <span>Events</span>
         </a>
-        <a class="text-on-primary/80 hover:text-white px-2.5 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 flex items-center gap-2.5 xs:gap-3 hover:bg-white/10 transition-all text-xs xs:text-sm rounded-lg block w-full text-left min-h-10" href="{% url 'SchoolNowMgt:admin_reports' %}">
+        <a class="text-on-primary/80 hover:text-white px-2.5 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 flex items-center gap-2.5 xs:gap-3 hover:bg-white/10 transition-all text-xs md:text-sm rounded-lg block w-full text-left min-h-10" href="{% url 'SchoolNowMgt:admin_reports' %}">
             <span class="material-symbols-outlined text-base xs:text-lg">analytics</span>
             <span>Reports</span>
         </a>
@@ -145,34 +144,7 @@
 </div>
 
 <!-- Main Content Area -->
-<div class="w-full min-h-screen pt-24">
-    
-    <!-- Header Section -->
-    <header class="flex justify-between items-center px-container-padding w-full sticky top-24 z-40 bg-surface/70 backdrop-blur-2xl border-b border-white/20 shadow-sm h-auto md:h-16 py-3 md:py-0">
-        <!-- Left: Search Bar (hidden on mobile) -->
-        <div class="hidden md:flex relative items-center bg-surface-container-low rounded-full px-4 py-2 w-80">
-            <span class="material-symbols-outlined text-outline">search</span>
-            <input class="bg-transparent border-none focus:ring-0 text-body-md w-full ml-2 text-sm" placeholder="Search messages..." type="text"/>
-        </div>
-        
-        <!-- Center: Title -->
-        <h2 class="text-primary font-bold text-lg md:text-xl md:flex-grow md:text-center">Communication Center</h2>
-        
-        <!-- Right: Icons -->
-        <div class="flex items-center gap-3 md:gap-4 flex-shrink-0">
-            <button class="p-2 rounded-full hover:bg-surface-container-highest/50 cursor-pointer transition-all active:scale-95 md:hidden">
-                <span class="material-symbols-outlined text-on-surface-variant">search</span>
-            </button>
-            <a href="{% url 'SchoolNowMgt:admin_communication' %}" class="p-2 rounded-full hover:bg-surface-container-highest/50 cursor-pointer transition-all active:scale-95 relative">
-                <span class="material-symbols-outlined text-on-surface-variant">notifications</span>
-                <span class="absolute top-1 right-1 w-2 h-2 bg-error rounded-full"></span>
-            </a>
-            <a href="{% url 'SchoolNowMgt:admin_profile' %}" class="hidden md:block p-2 rounded-full hover:bg-surface-container-highest/50 cursor-pointer transition-all active:scale-95">
-                <span class="material-symbols-outlined text-on-surface-variant">settings</span>
-            </a>
-        </div>
-    </header>
-
+<div class="w-full min-h-screen pt-16">
     <!-- Page Content -->
     <section class="p-4 md:p-container-padding space-y-6 md:space-y-section-margin flex-grow">
         

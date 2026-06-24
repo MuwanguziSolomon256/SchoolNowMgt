@@ -1,0 +1,258 @@
+{% extends "teacher/base.html" %}
+{% load static %}
+
+{% block title %}{% if is_create %}Create Hostel{% else %}Edit Hostel{% endif %} - Deputy HM{% endblock %}
+
+{% block content %}
+<div class="deputy-hm-hostel-form">
+    <div class="page-header">
+        <h1>{% if is_create %}Create New Hostel{% else %}Edit Hostel: {{ hostel.name }}{% endif %}</h1>
+    </div>
+
+    <form method="post" class="hostel-form">
+        {% csrf_token %}
+
+        <div class="form-section">
+            <h2>Hostel Information</h2>
+            
+            <div class="form-group">
+                <label for="name">Hostel Name <span class="required">*</span></label>
+                <input type="text" name="name" id="name" required value="{% if hostel %}{{ hostel.name }}{% endif %}" placeholder="e.g., Boys Hostel A, Girls Hostel B">
+            </div>
+
+            {% if is_create %}
+            <div class="form-group">
+                <label for="hostel_type">Hostel Type <span class="required">*</span></label>
+                <select name="hostel_type" id="hostel_type" required>
+                    <option value="">-- Select Type --</option>
+                    {% for choice_value, choice_label in hostel_type_choices %}
+                    <option value="{{ choice_value }}">{{ choice_label }}</option>
+                    {% endfor %}
+                </select>
+                <small class="help-text">Choose whether this is a boys, girls, or mixed hostel</small>
+            </div>
+            {% else %}
+            <div class="form-group">
+                <label for="hostel_type">Hostel Type</label>
+                <input type="text" value="{{ hostel.get_hostel_type_display }}" disabled readonly>
+                <small class="help-text">Hostel type cannot be changed after creation</small>
+            </div>
+            {% endif %}
+
+            <div class="form-group">
+                <label for="capacity">Capacity (Maximum Residents) <span class="required">*</span></label>
+                <input type="number" name="capacity" id="capacity" required min="1" value="{% if hostel %}{{ hostel.capacity }}{% endif %}" placeholder="e.g., 50">
+                <small class="help-text">Maximum number of students this hostel can accommodate</small>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h2>Hostel Matron</h2>
+            
+            <div class="form-group">
+                <label for="matron">Assign Matron</label>
+                <select name="matron" id="matron">
+                    <option value="">-- No Matron --</option>
+                    {% for matron in matrons %}
+                    <option value="{{ matron.id }}" {% if hostel and hostel.matron.id == matron.id %}selected{% endif %}>
+                        {{ matron.user.get_full_name }}
+                    </option>
+                    {% endfor %}
+                </select>
+                <small class="help-text">Assign a welfare coordinator to manage this hostel</small>
+            </div>
+        </div>
+
+        {% if not is_create %}
+        <div class="form-section">
+            <h2>Status</h2>
+            
+            <div class="form-group">
+                <label for="is_active">
+                    <input type="checkbox" name="is_active" id="is_active" {% if hostel.is_active %}checked{% endif %}>
+                    Active
+                </label>
+                <small class="help-text">Uncheck to deactivate this hostel</small>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">{% if is_create %}Create Hostel{% else %}Save Changes{% endif %}</button>
+            <a href="{% url 'teacher:deputy:hostels_list' %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+            
+            <div class="form-group">
+                <label for="matron">Assign Matron (Optional)</label>
+                <select name="matron" id="matron">
+                    <option value="">-- No Matron --</option>
+                    {% for matron in matrons %}
+                    <option value="{{ matron.id }}" {% if hostel and hostel.matron.id == matron.id %}selected{% endif %}>
+                        {{ matron.user.get_full_name }}
+                    </option>
+                    {% endfor %}
+                </select>
+                <small class="help-text">Assign a welfare coordinator to manage this hostel</small>
+            </div>
+        </div>
+
+        {% if not is_create %}
+        <div class="form-section">
+            <h2>Status</h2>
+            
+            <div class="form-group">
+                <label for="is_active">
+                    <input type="checkbox" name="is_active" id="is_active" {% if hostel.is_active %}checked{% endif %}>
+                    Active
+                </label>
+                <small class="help-text">Uncheck to deactivate this hostel</small>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">{% if is_create %}Create Hostel{% else %}Save Changes{% endif %}</button>
+            <a href="{% url 'teacher:deputy:hostels_list' %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<style>
+.deputy-hm-hostel-form {
+    padding: 20px;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.page-header {
+    margin-bottom: 30px;
+}
+
+.page-header h1 {
+    margin: 0;
+    font-size: 28px;
+}
+
+.hostel-form {
+    background: white;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.form-section {
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.form-section:last-of-type {
+    border-bottom: none;
+}
+
+.form-section h2 {
+    margin: 0 0 20px 0;
+    font-size: 16px;
+    color: #333;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    color: #333;
+}
+
+.required {
+    color: #dc3545;
+}
+
+.form-group select,
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    font-family: inherit;
+    box-sizing: border-box;
+}
+
+.form-group select:focus,
+.form-group input:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0,123,255,0.25);
+}
+
+.form-group input[type="checkbox"] {
+    margin-right: 8px;
+}
+
+.help-text {
+    display: block;
+    font-size: 12px;
+    color: #666;
+    margin-top: 5px;
+}
+
+.form-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 30px;
+}
+
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-primary {
+    background: #007bff;
+    color: white;
+    flex: 1;
+}
+
+.btn-primary:hover {
+    background: #0056b3;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+    flex: 1;
+}
+
+.btn-secondary:hover {
+    background: #5a6268;
+}
+
+@media (max-width: 600px) {
+    .deputy-hm-hostel-form {
+        padding: 10px;
+    }
+    
+    .hostel-form {
+        padding: 20px;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+}
+</style>
+{% endblock %}

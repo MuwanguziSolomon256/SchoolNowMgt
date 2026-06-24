@@ -1,0 +1,101 @@
+{% extends "parent/parent_base.html" %}
+
+{% block title %}Academics - Parent Portal{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Page Header -->
+    <div class="bg-white rounded-lg p-6 shadow-sm border border-outline/10">
+        <h1 class="text-3xl font-bold text-on-surface">Academic Performance</h1>
+        <p class="text-on-surface/70 mt-1">Monitor grades and academic progress for all children</p>
+    </div>
+
+    <!-- Children Academic Cards -->
+    <div class="space-y-6">
+        {% for data in academic_data %}
+        <div class="bg-white rounded-lg shadow-sm border border-outline/10 overflow-hidden">
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-primary to-secondary p-6 text-white flex items-center justify-between">
+                <div>
+                    <h2 class="text-2xl font-bold">{{ data.student.get_full_name }}</h2>
+                    <p class="text-sm text-white/80 mt-1">Class: {{ data.current_class.name }}</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-3xl font-bold">{{ data.average_score|floatformat:1 }}</p>
+                    <p class="text-sm text-white/80">Average Score</p>
+                </div>
+            </div>
+
+            <!-- Summary Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 p-6 bg-background border-b border-outline/10">
+                <div>
+                    <p class="text-xs font-medium text-on-surface/70">Total Subjects</p>
+                    <p class="text-2xl font-bold text-on-surface">{{ data.total_subjects }}</p>
+                </div>
+                <div>
+                    <p class="text-xs font-medium text-on-surface/70">Grades Recorded</p>
+                    <p class="text-2xl font-bold text-on-surface">{{ data.grades|length }}</p>
+                </div>
+                <div>
+                    <p class="text-xs font-medium text-on-surface/70">Highest Subject</p>
+                    {% with highest=data.grades|first %}
+                    <p class="text-2xl font-bold text-on-surface">{{ highest.score }}</p>
+                    {% endwith %}
+                </div>
+            </div>
+
+            <!-- Grades Table -->
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-background border-b border-outline/10">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-on-surface/70 font-medium">Subject</th>
+                            <th class="px-6 py-3 text-left text-on-surface/70 font-medium">Term</th>
+                            <th class="px-6 py-3 text-right text-on-surface/70 font-medium">Score</th>
+                            <th class="px-6 py-3 text-center text-on-surface/70 font-medium">Grade</th>
+                            <th class="px-6 py-3 text-center text-on-surface/70 font-medium">Performance</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-outline/10">
+                        {% for grade in data.grades %}
+                        <tr class="hover:bg-background transition-colors">
+                            <td class="px-6 py-4 font-medium">{{ grade.subject.name }}</td>
+                            <td class="px-6 py-4">{{ grade.term }} {{ grade.academic_year }}</td>
+                            <td class="px-6 py-4 text-right font-semibold">{{ grade.score }}/100</td>
+                            <td class="px-6 py-4 text-center">
+                                <span class="inline-block px-3 py-1 rounded-lg text-xs font-medium {% if grade.letter_grade == 'A' %}bg-green-100 text-green-700{% elif grade.letter_grade == 'B' %}bg-blue-100 text-blue-700{% elif grade.letter_grade == 'C' %}bg-yellow-100 text-yellow-700{% else %}bg-red-100 text-red-700{% endif %}">
+                                    {{ grade.letter_grade }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-center">
+                                {% if grade.score >= 80 %}
+                                <span class="text-green-600 font-medium">Excellent</span>
+                                {% elif grade.score >= 70 %}
+                                <span class="text-blue-600 font-medium">Good</span>
+                                {% elif grade.score >= 60 %}
+                                <span class="text-yellow-600 font-medium">Fair</span>
+                                {% else %}
+                                <span class="text-red-600 font-medium">Needs Help</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="px-6 py-8 text-center text-on-surface/60">
+                                No grades recorded yet
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% empty %}
+        <div class="bg-background rounded-lg p-12 text-center border border-outline/20">
+            <span class="material-symbols-outlined text-4xl text-on-surface/30 block mb-4">grade</span>
+            <p class="text-on-surface/60">No academic data available</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

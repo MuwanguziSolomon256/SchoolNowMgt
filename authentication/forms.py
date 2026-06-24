@@ -48,6 +48,12 @@ class UnifiedLoginForm(forms.Form):
         widget=forms.HiddenInput()
     )
     
+    admin_role = forms.CharField(
+        required=False,
+        widget=forms.HiddenInput(),
+        help_text='Specific admin role (dos, deputy_hm, etc.)'
+    )
+    
     def __init__(self, *args, role=None, **kwargs):
         # Set initial role value if provided
         if role and 'initial' not in kwargs:
@@ -92,6 +98,21 @@ class UnifiedLoginForm(forms.Form):
             raise forms.ValidationError(
                 f'This account is registered as a {user.get_role_display()}, not a {dict(self.fields["role"].choices)[role]}.'
             )
+        
+        # Verify admin role if specified
+        admin_role = cleaned_data.get('admin_role')
+        if admin_role:
+            from SchoolNowMgt.models import StaffProfile
+            try:
+                staff_profile = StaffProfile.objects.get(user=user)
+                if staff_profile.teacher_admin_role != admin_role:
+                    raise forms.ValidationError(
+                        f'This account is not assigned the {admin_role} role.'
+                    )
+            except StaffProfile.DoesNotExist:
+                raise forms.ValidationError(
+                    'This account does not have a staff profile. Please contact support.'
+                )
         
         # Authenticate
         authenticated_user = authenticate(username=user.username, password=password)
@@ -177,3 +198,37 @@ class UnifiedRegistrationForm(forms.Form):
                 )
         
         return cleaned_data
+
+
+class ParentRegistrationForm(UnifiedRegistrationForm):
+    """
+    Registration form specifically for parents.
+    Parents have school=NULL and access multiple schools via StudentParentRelationship.
+    """
+    phone = forms.CharField(
+        max_length=20,
+        required=False,
+        widget=forms.TextInput(attrs={
+            'placeholder': 'Phone number (optional)',
+            'class': 'form-input'
+        })
+    )
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Set role to parent
+        self.fields['role'].initial = 'parent'
+        self.fields['role'].widget = forms.HiddenInput()
+    
+    def save(self, commit=True):
+        """Create a parent user with school=NULL"""
+        user = CustomUser.objects.create_user(
+            email=self.cleaned_data['email'],
+            first_name=self.cleaned_data['first_name'],
+            last_name=self.cleaned_data['last_name'],
+            password=self.cleaned_data['password1'],
+            role='parent',
+            school=None,  # Parents don't have a school; they access via StudentParentRelationship
+            phone=self.cleaned_data.get('phone', ''),
+        )
+        return user

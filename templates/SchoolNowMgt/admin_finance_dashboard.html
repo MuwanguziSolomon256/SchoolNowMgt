@@ -28,53 +28,57 @@
             pointer-events: auto;
         }
     </style>
-    <!-- Left Section: Logo -->
+    <!-- Left Section: Logo + Mobile Menu Button -->
     <div class="flex items-center gap-1.5 xs:gap-2 sm:gap-3 flex-shrink-0 min-w-0">
         <div class="w-7 xs:w-8 sm:w-9 md:w-10 h-7 xs:h-8 sm:h-9 md:h-10 rounded-lg sm:rounded-xl bg-secondary-container flex items-center justify-center text-primary flex-shrink-0">
             <span class="material-symbols-outlined text-base xs:text-lg sm:text-lg md:text-xl" style="font-variation-settings: 'FILL' 1;">school</span>
         </div>
         <h1 class="text-xs xs:text-sm sm:text-base md:text-lg font-black text-secondary-fixed hidden xs:inline truncate">SchoolNow</h1>
+        <!-- Mobile Menu Button (left side) -->
+        <button id="mobileMenuToggle" class="lg:hidden p-1.5 xs:p-2 hover:bg-white/10 rounded-lg transition-all text-on-primary flex items-center min-h-10 min-w-10 relative z-51" style="pointer-events: auto;">
+            <span class="material-symbols-outlined text-lg xs:text-xl">menu</span>
+        </button>
     </div>
     
     <!-- Navigation Links - Desktop -->
     <div class="hidden lg:flex items-center gap-0.5 xl:gap-1 flex-grow justify-center overflow-visible" style="overflow: visible !important;">
-        <a class="text-on-primary/70 hover:text-white px-2 xl:px-3 py-1.5 xl:py-2 flex items-center gap-1.5 xl:gap-2 hover:bg-white/10 transition-all text-xs xl:text-sm whitespace-nowrap rounded-lg min-h-10" href="{% url 'SchoolNowMgt:dashboard' %}">
+        <a class="text-on-primary/70 hover:text-white px-2 xl:px-3 py-1.5 xl:py-2 flex items-center gap-1.5 xl:gap-2 hover:bg-white/10 transition-all text-xs md:text-sm whitespace-nowrap rounded-lg min-h-10" href="{% url 'SchoolNowMgt:dashboard' %}">
             <span class="material-symbols-outlined text-sm xl:text-base">dashboard</span>
             <span class="inline">Dashboard</span>
         </a>
-        <a class="text-on-primary/70 hover:text-white px-2 xl:px-3 py-1.5 xl:py-2 flex items-center gap-1.5 xl:gap-2 hover:bg-white/10 transition-all text-xs xl:text-sm whitespace-nowrap rounded-lg min-h-10" href="{% url 'SchoolNowMgt:admin_students' %}">
+        <a class="text-on-primary/70 hover:text-white px-2 xl:px-3 py-1.5 xl:py-2 flex items-center gap-1.5 xl:gap-2 hover:bg-white/10 transition-all text-xs md:text-sm whitespace-nowrap rounded-lg min-h-10" href="{% url 'SchoolNowMgt:admin_students' %}">
             <span class="material-symbols-outlined text-sm xl:text-base">school</span>
             <span>Students</span>
         </a>
         <!-- Staff Dropdown -->
         <div class="relative group">
-            <button class="text-on-primary/70 hover:text-white px-2 xl:px-3 py-1.5 xl:py-2 flex items-center gap-1.5 xl:gap-2 hover:bg-white/10 transition-all text-xs xl:text-sm whitespace-nowrap rounded-lg min-h-10">
+            <button class="text-on-primary/70 hover:text-white px-2 xl:px-3 py-1.5 xl:py-2 flex items-center gap-1.5 xl:gap-2 hover:bg-white/10 transition-all text-xs md:text-sm whitespace-nowrap rounded-lg min-h-10">
                 <span class="material-symbols-outlined text-sm xl:text-base">groups</span>
                 <span>Staff</span>
-                <span class="material-symbols-outlined text-xs xl:text-sm ml-0.5">expand_more</span>
+                <span class="material-symbols-outlined text-xs md:text-sm ml-1">expand_more</span>
             </button>
-            <div class="absolute left-0 mt-0 w-40 lg:w-48 bg-primary-container text-on-primary-container rounded-lg shadow-lg transition-all duration-200" style="z-index: 9999; pointer-events: auto;">
-                <a class="block px-3 lg:px-4 py-2.5 lg:py-3 text-xs lg:text-sm hover:bg-secondary-container rounded-t-lg first:rounded-t-lg min-h-10 flex items-center" href="{% url 'SchoolNowMgt:admin_teachers' %}">
-                    <span class="material-symbols-outlined text-sm lg:text-base mr-2 align-middle">person</span>Teachers
+            <div class="absolute left-0 mt-0 w-48 bg-primary-container text-on-primary-container rounded-lg shadow-lg transition-all duration-200" style="z-index: 9999; pointer-events: auto;">
+                <a class="block px-3 xl:px-4 py-2 xl:py-3 text-xs md:text-sm hover:bg-secondary-container rounded-t-lg first:rounded-t-lg" href="{% url 'SchoolNowMgt:admin_teachers' %}">
+                    <span class="material-symbols-outlined text-sm xl:text-base mr-2 align-middle">person</span>Teachers
                 </a>
-                <a class="block px-3 lg:px-4 py-2.5 lg:py-3 text-xs lg:text-sm hover:bg-secondary-container rounded-b-lg last:rounded-b-lg min-h-10 flex items-center" href="{% url 'SchoolNowMgt:admin_support_staff_dashboard' %}">
-                    <span class="material-symbols-outlined text-sm lg:text-base mr-2 align-middle">support_agent</span>Support Staff
+                <a class="block px-3 xl:px-4 py-2 xl:py-3 text-xs md:text-sm hover:bg-secondary-container rounded-b-lg last:rounded-b-lg" href="{% url 'SchoolNowMgt:admin_support_staff_dashboard' %}">
+                    <span class="material-symbols-outlined text-sm xl:text-base mr-2 align-middle">support_agent</span>Support Staff
                 </a>
             </div>
         </div>
-        <a class="text-on-primary/70 hover:text-white px-2 xl:px-3 py-1.5 xl:py-2 flex items-center gap-1.5 xl:gap-2 hover:bg-white/10 transition-all text-xs xl:text-sm whitespace-nowrap rounded-lg min-h-10" href="{% url 'SchoolNowMgt:admin_communication' %}">
+        <a class="text-on-primary/70 hover:text-white px-2 xl:px-3 py-1.5 xl:py-2 flex items-center gap-1.5 xl:gap-2 hover:bg-white/10 transition-all text-xs md:text-sm whitespace-nowrap rounded-lg min-h-10" href="{% url 'SchoolNowMgt:admin_communication' %}">
             <span class="material-symbols-outlined text-sm xl:text-base">chat_bubble</span>
             <span>Communication</span>
         </a>
-        <a class="text-on-primary/70 hover:text-white px-2 xl:px-3 py-1.5 xl:py-2 flex items-center gap-1.5 xl:gap-2 hover:bg-white/10 transition-all text-xs xl:text-sm whitespace-nowrap rounded-lg min-h-10" href="{% url 'SchoolNowMgt:admin_finance' %}">
+        <a class="text-on-primary/70 hover:text-white px-2 xl:px-3 py-1.5 xl:py-2 flex items-center gap-1.5 xl:gap-2 hover:bg-white/10 transition-all text-xs md:text-sm whitespace-nowrap rounded-lg min-h-10" href="{% url 'SchoolNowMgt:admin_finance' %}">
             <span class="material-symbols-outlined text-sm xl:text-base">payments</span>
             <span>Finance</span>
         </a>
-        <a class="text-on-primary/70 hover:text-white px-2 xl:px-3 py-1.5 xl:py-2 flex items-center gap-1.5 xl:gap-2 hover:bg-white/10 transition-all text-xs xl:text-sm whitespace-nowrap rounded-lg min-h-10" href="{% url 'SchoolNowMgt:events_dashboard' %}">
+        <a class="text-on-primary/70 hover:text-white px-2 xl:px-3 py-1.5 xl:py-2 flex items-center gap-1.5 xl:gap-2 hover:bg-white/10 transition-all text-xs md:text-sm whitespace-nowrap rounded-lg min-h-10" href="{% url 'SchoolNowMgt:events_dashboard' %}">
             <span class="material-symbols-outlined text-sm xl:text-base">event</span>
             <span>Events</span>
         </a>
-        <a class="text-on-primary/70 hover:text-white px-2 xl:px-3 py-1.5 xl:py-2 flex items-center gap-1.5 xl:gap-2 hover:bg-white/10 transition-all text-xs xl:text-sm whitespace-nowrap rounded-lg min-h-10" href="{% url 'SchoolNowMgt:admin_reports' %}">
+        <a class="text-on-primary/70 hover:text-white px-2 xl:px-3 py-1.5 xl:py-2 flex items-center gap-1.5 xl:gap-2 hover:bg-white/10 transition-all text-xs md:text-sm whitespace-nowrap rounded-lg min-h-10" href="{% url 'SchoolNowMgt:admin_reports' %}">
             <span class="material-symbols-outlined text-sm xl:text-base">analytics</span>
             <span>Reports</span>
         </a>
@@ -83,11 +87,6 @@
     
     <!-- Right Side Actions -->
     <div class="flex items-center gap-0.5 xs:gap-1 sm:gap-2 flex-shrink-0">
-        <!-- Mobile Menu Button -->
-        <button id="mobileMenuToggle" class="lg:hidden p-1.5 xs:p-2 hover:bg-white/10 rounded-lg transition-all text-on-primary flex items-center min-h-10 min-w-10 relative z-51" style="pointer-events: auto;">
-            <span class="material-symbols-outlined text-lg xs:text-xl">menu</span>
-        </button>
-        
         <a class="text-on-primary/70 hover:text-white px-1.5 xs:px-2 sm:px-3 py-1.5 xs:py-2 flex items-center gap-1 xs:gap-1.5 sm:gap-2 hover:bg-white/10 transition-all rounded-lg font-bold text-xs xs:text-sm min-h-10 min-w-10" href="{% url 'SchoolNowMgt:custom_logout' %}">
             <span class="material-symbols-outlined text-base xs:text-lg sm:text-lg">logout</span>
             <span class="hidden sm:inline">Log out</span>
@@ -98,46 +97,46 @@
 <!-- Mobile Navigation Menu -->
 <div id="mobileMenu" class="fixed top-12 xs:top-14 sm:top-16 md:top-20 left-0 right-0 bg-primary text-on-primary z-40 max-h-0 overflow-hidden transition-all duration-300 ease-in-out shadow-lg lg:hidden">
     <div class="p-2 xs:p-3 sm:p-4 space-y-1 xs:space-y-1.5 sm:space-y-2 max-h-[calc(100vh-3rem)] xs:max-h-[calc(100vh-3.5rem)] sm:max-h-[70vh] overflow-hidden">
-        <a class="text-on-primary/80 hover:text-white px-2.5 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 flex items-center gap-2.5 xs:gap-3 hover:bg-white/10 transition-all text-xs xs:text-sm rounded-lg block w-full text-left min-h-10" href="{% url 'SchoolNowMgt:dashboard' %}">
+        <a class="text-on-primary/80 hover:text-white px-2.5 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 flex items-center gap-2.5 xs:gap-3 hover:bg-white/10 transition-all text-xs md:text-sm rounded-lg block w-full text-left min-h-10" href="{% url 'SchoolNowMgt:dashboard' %}">
             <span class="material-symbols-outlined text-base xs:text-lg">dashboard</span>
             <span>Dashboard</span>
         </a>
-        <a class="text-on-primary/80 hover:text-white px-2.5 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 flex items-center gap-2.5 xs:gap-3 hover:bg-white/10 transition-all text-xs xs:text-sm rounded-lg block w-full text-left min-h-10" href="{% url 'SchoolNowMgt:admin_students' %}">
+        <a class="text-on-primary/80 hover:text-white px-2.5 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 flex items-center gap-2.5 xs:gap-3 hover:bg-white/10 transition-all text-xs md:text-sm rounded-lg block w-full text-left min-h-10" href="{% url 'SchoolNowMgt:admin_students' %}">
             <span class="material-symbols-outlined text-base xs:text-lg">school</span>
             <span>Students</span>
         </a>
-        <button class="staffToggleMobile text-on-primary/80 hover:text-white px-2.5 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 flex items-center gap-2.5 xs:gap-3 hover:bg-white/10 transition-all text-xs xs:text-sm rounded-lg w-full text-left min-h-10" onclick="toggleStaffMenu(this)">
+        <button class="staffToggleMobile text-on-primary/80 hover:text-white px-2.5 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 flex items-center gap-2.5 xs:gap-3 hover:bg-white/10 transition-all text-xs md:text-sm rounded-lg w-full text-left min-h-10" onclick="toggleStaffMenu(this)">
             <span class="material-symbols-outlined text-base xs:text-lg">groups</span>
             <span>Staff</span>
             <span class="material-symbols-outlined text-base xs:text-lg ml-auto expand-icon">expand_more</span>
         </button>
         <div class="staffSubmenu hidden pl-4 xs:pl-6 sm:pl-8 space-y-1 xs:space-y-1.5 sm:space-y-2">
-            <a class="text-on-primary/80 hover:text-white px-2.5 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 flex items-center gap-2.5 xs:gap-3 hover:bg-white/10 transition-all text-xs xs:text-sm rounded-lg block w-full text-left min-h-10" href="{% url 'SchoolNowMgt:admin_shift_dashboard' %}">
+            <a class="text-on-primary/80 hover:text-white px-2.5 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 flex items-center gap-2.5 xs:gap-3 hover:bg-white/10 transition-all text-xs md:text-sm rounded-lg block w-full text-left min-h-10" href="{% url 'SchoolNowMgt:admin_shift_dashboard' %}">
                 <span class="material-symbols-outlined text-base xs:text-lg">schedule</span>
                 <span>Shifts</span>
             </a>
-            <a class="text-on-primary/80 hover:text-white px-2.5 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 flex items-center gap-2.5 xs:gap-3 hover:bg-white/10 transition-all text-xs xs:text-sm rounded-lg block w-full text-left min-h-10" href="{% url 'SchoolNowMgt:support_staff_dashboard' %}">
+            <a class="text-on-primary/80 hover:text-white px-2.5 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 flex items-center gap-2.5 xs:gap-3 hover:bg-white/10 transition-all text-xs md:text-sm rounded-lg block w-full text-left min-h-10" href="{% url 'SchoolNowMgt:support_staff_dashboard' %}">
                 <span class="material-symbols-outlined text-base xs:text-lg">support_agent</span>
                 <span>Support Staff</span>
             </a>
-            <a class="text-on-primary/80 hover:text-white px-2.5 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 flex items-center gap-2.5 xs:gap-3 hover:bg-white/10 transition-all text-xs xs:text-sm rounded-lg block w-full text-left min-h-10" href="{% url 'teacher:dashboard' %}">
+            <a class="text-on-primary/80 hover:text-white px-2.5 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 flex items-center gap-2.5 xs:gap-3 hover:bg-white/10 transition-all text-xs md:text-sm rounded-lg block w-full text-left min-h-10" href="{% url 'teacher:dashboard' %}">
                 <span class="material-symbols-outlined text-base xs:text-lg">person</span>
                 <span>Teacher</span>
             </a>
         </div>
-        <a class="text-on-primary/80 hover:text-white px-2.5 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 flex items-center gap-2.5 xs:gap-3 hover:bg-white/10 transition-all text-xs xs:text-sm rounded-lg block w-full text-left min-h-10" href="{% url 'SchoolNowMgt:admin_communication' %}">
+        <a class="text-on-primary/80 hover:text-white px-2.5 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 flex items-center gap-2.5 xs:gap-3 hover:bg-white/10 transition-all text-xs md:text-sm rounded-lg block w-full text-left min-h-10" href="{% url 'SchoolNowMgt:admin_communication' %}">
             <span class="material-symbols-outlined text-base xs:text-lg">chat_bubble</span>
             <span>Communication</span>
         </a>
-        <a class="text-on-primary/80 hover:text-white px-2.5 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 flex items-center gap-2.5 xs:gap-3 hover:bg-white/10 transition-all text-xs xs:text-sm rounded-lg block w-full text-left min-h-10" href="{% url 'SchoolNowMgt:admin_finance' %}">
+        <a class="text-on-primary/80 hover:text-white px-2.5 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 flex items-center gap-2.5 xs:gap-3 hover:bg-white/10 transition-all text-xs md:text-sm rounded-lg block w-full text-left min-h-10" href="{% url 'SchoolNowMgt:admin_finance' %}">
             <span class="material-symbols-outlined text-base xs:text-lg">payments</span>
             <span>Finance</span>
         </a>
-        <a class="text-on-primary/80 hover:text-white px-2.5 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 flex items-center gap-2.5 xs:gap-3 hover:bg-white/10 transition-all text-xs xs:text-sm rounded-lg block w-full text-left min-h-10" href="{% url 'SchoolNowMgt:events_dashboard' %}">
+        <a class="text-on-primary/80 hover:text-white px-2.5 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 flex items-center gap-2.5 xs:gap-3 hover:bg-white/10 transition-all text-xs md:text-sm rounded-lg block w-full text-left min-h-10" href="{% url 'SchoolNowMgt:events_dashboard' %}">
             <span class="material-symbols-outlined text-base xs:text-lg">event</span>
             <span>Events</span>
         </a>
-        <a class="text-on-primary/80 hover:text-white px-2.5 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 flex items-center gap-2.5 xs:gap-3 hover:bg-white/10 transition-all text-xs xs:text-sm rounded-lg block w-full text-left min-h-10" href="{% url 'SchoolNowMgt:admin_reports' %}">
+        <a class="text-on-primary/80 hover:text-white px-2.5 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 flex items-center gap-2.5 xs:gap-3 hover:bg-white/10 transition-all text-xs md:text-sm rounded-lg block w-full text-left min-h-10" href="{% url 'SchoolNowMgt:admin_reports' %}">
             <span class="material-symbols-outlined text-base xs:text-lg">analytics</span>
             <span>Reports</span>
         </a>
@@ -145,52 +144,25 @@
 </div>
 
 <!-- Main Content Area -->
-<div class="w-full min-h-screen pt-24">
-    
-    <!-- Header Section -->
-    <header class="flex justify-between items-center px-container-padding w-full sticky top-24 z-40 bg-surface/70 backdrop-blur-2xl border-b border-white/20 shadow-sm h-auto md:h-16 py-3 md:py-0">
-        <!-- Left: Search Bar (hidden on mobile) -->
-        <div class="hidden md:flex relative items-center bg-surface-container-low rounded-full px-4 py-2 w-80">
-            <span class="material-symbols-outlined text-outline">search</span>
-            <input class="bg-transparent border-none focus:ring-0 text-body-md w-full ml-2 text-sm" placeholder="Search transactions..." type="text"/>
-        </div>
-        
-        <!-- Center: Title -->
-        <h2 class="text-primary font-bold text-lg md:text-xl md:flex-grow md:text-center">Finance & Revenue</h2>
-        
-        <!-- Right: Icons -->
-        <div class="flex items-center gap-3 md:gap-4 flex-shrink-0">
-            <button class="p-2 rounded-full hover:bg-surface-container-highest/50 cursor-pointer transition-all active:scale-95 md:hidden">
-                <span class="material-symbols-outlined text-on-surface-variant">search</span>
-            </button>
-            <a href="{% url 'SchoolNowMgt:admin_communication' %}" class="p-2 rounded-full hover:bg-surface-container-highest/50 cursor-pointer transition-all active:scale-95 relative">
-                <span class="material-symbols-outlined text-on-surface-variant">notifications</span>
-                <span class="absolute top-1 right-1 w-2 h-2 bg-error rounded-full"></span>
-            </a>
-            <a href="{% url 'SchoolNowMgt:admin_profile' %}" class="hidden md:block p-2 rounded-full hover:bg-surface-container-highest/50 cursor-pointer transition-all active:scale-95">
-                <span class="material-symbols-outlined text-on-surface-variant">settings</span>
-            </a>
-        </div>
-    </header>
-
+<div class="w-full min-h-screen pt-16">
     <!-- Page Content -->
-    <section class="p-4 md:p-container-padding space-y-6 md:space-y-section-margin flex-grow">
+    <section class="p-5 md:p-8 lg:p-10 space-y-8 md:space-y-10 lg:space-y-12 flex-grow max-w-7xl mx-auto w-full">
         
         <!-- Header Section -->
-        <div class="flex flex-col gap-4 md:gap-0 md:flex-row md:items-end justify-between">
+        <div class="flex flex-col gap-6 md:gap-8 md:flex-row md:items-end md:justify-between">
             <div>
-                <h1 class="font-display-lg text-display-lg text-primary text-2xl md:text-4xl">Finance</h1>
-                <p class="font-body-lg text-body-lg text-on-surface-variant text-xs md:text-sm">
+                <h1 class="font-display-lg text-display-lg text-primary text-3xl md:text-4xl lg:text-5xl font-bold">Finance</h1>
+                <p class="font-body-lg text-body-lg text-on-surface-variant text-sm md:text-base mt-2">
                     Monitor fee collection, track payments, and manage school financials.
                 </p>
             </div>
-            <div class="flex gap-2 flex-col md:flex-row">
+            <div class="flex gap-3 flex-col md:flex-row">
                 <a href="{% url 'SchoolNowMgt:export_finance' %}" 
-                   class="bg-tertiary text-on-tertiary rounded-lg font-bold px-3 md:px-4 py-2 flex items-center gap-2 hover:brightness-110 transition-all text-sm">
+                   class="bg-tertiary text-on-tertiary rounded-lg font-bold px-4 md:px-5 py-2.5 md:py-3 flex items-center gap-2 hover:brightness-110 transition-all text-sm md:text-base">
                     <span class="material-symbols-outlined">download</span>
                     <span>Export Report</span>
                 </a>
-                <button class="bg-primary text-on-primary rounded-lg font-bold px-3 md:px-4 py-2 flex items-center gap-2 hover:brightness-110 transition-all text-sm">
+                <button class="bg-primary text-on-primary rounded-lg font-bold px-4 md:px-5 py-2.5 md:py-3 flex items-center gap-2 hover:brightness-110 transition-all text-sm md:text-base">
                     <span class="material-symbols-outlined">receipt_long</span>
                     <span>Generate Invoices</span>
                 </button>
@@ -198,100 +170,100 @@
         </div>
 
         <!-- Stats Cards -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-gutter">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
             <!-- Collected This Month -->
-            <div class="glass-card p-4 md:p-6 rounded-2xl md:rounded-3xl shadow-sm">
-                <div class="flex justify-between items-start mb-4">
-                    <div class="p-2 md:p-3 bg-green-100/50 rounded-2xl">
-                        <span class="material-symbols-outlined text-green-600 text-lg md:text-xl">payments</span>
+            <div class="glass-card p-5 md:p-7 rounded-2xl md:rounded-3xl shadow-sm hover:shadow-md transition-shadow">
+                <div class="flex justify-between items-start mb-5">
+                    <div class="p-3 md:p-4 bg-green-100/50 rounded-2xl">
+                        <span class="material-symbols-outlined text-green-600 text-xl md:text-2xl">payments</span>
                     </div>
                 </div>
-                <h3 class="text-on-surface-variant font-label-md uppercase tracking-wider text-xs">Collected This Month</h3>
-                <p class="font-display-lg text-display-lg text-green-600 mt-1 text-xl md:text-3xl">UGX {{ fees_collected_this_month|floatformat:0 }}</p>
+                <h3 class="text-on-surface-variant font-label-md uppercase tracking-wider text-xs md:text-sm">Collected This Month</h3>
+                <p class="font-display-lg text-display-lg text-green-600 mt-3 text-2xl md:text-3xl font-bold">UGX {{ fees_collected_this_month|floatformat:0 }}</p>
             </div>
 
             <!-- Outstanding -->
-            <div class="glass-card p-4 md:p-6 rounded-2xl md:rounded-3xl shadow-sm">
-                <div class="flex justify-between items-start mb-4">
-                    <div class="p-2 md:p-3 bg-red-100/50 rounded-2xl">
-                        <span class="material-symbols-outlined text-red-600 text-lg md:text-xl">pending_actions</span>
+            <div class="glass-card p-5 md:p-7 rounded-2xl md:rounded-3xl shadow-sm hover:shadow-md transition-shadow">
+                <div class="flex justify-between items-start mb-5">
+                    <div class="p-3 md:p-4 bg-red-100/50 rounded-2xl">
+                        <span class="material-symbols-outlined text-red-600 text-xl md:text-2xl">pending_actions</span>
                     </div>
                 </div>
-                <h3 class="text-on-surface-variant font-label-md uppercase tracking-wider text-xs">Outstanding</h3>
-                <p class="font-display-lg text-display-lg text-red-600 mt-1 text-xl md:text-3xl">UGX {{ outstanding_fees|floatformat:0 }}</p>
-            </td>
+                <h3 class="text-on-surface-variant font-label-md uppercase tracking-wider text-xs md:text-sm">Outstanding</h3>
+                <p class="font-display-lg text-display-lg text-red-600 mt-3 text-2xl md:text-3xl font-bold">UGX {{ outstanding_fees|floatformat:0 }}</p>
+            </div>
 
             <!-- Collection Target -->
-            <div class="glass-card p-4 md:p-6 rounded-2xl md:rounded-3xl shadow-sm">
-                <div class="flex justify-between items-start mb-4">
-                    <div class="p-2 md:p-3 bg-secondary/5 rounded-2xl">
-                        <span class="material-symbols-outlined text-secondary text-lg md:text-xl">target</span>
+            <div class="glass-card p-5 md:p-7 rounded-2xl md:rounded-3xl shadow-sm hover:shadow-md transition-shadow">
+                <div class="flex justify-between items-start mb-5">
+                    <div class="p-3 md:p-4 bg-secondary/5 rounded-2xl">
+                        <span class="material-symbols-outlined text-secondary text-xl md:text-2xl">target</span>
                     </div>
                 </div>
-                <h3 class="text-on-surface-variant font-label-md uppercase tracking-wider text-xs">Target Achievement</h3>
-                <p class="font-display-lg text-display-lg text-secondary mt-1 text-xl md:text-3xl">{{ fee_collection_percentage }}%</p>
+                <h3 class="text-on-surface-variant font-label-md uppercase tracking-wider text-xs md:text-sm">Target Achievement</h3>
+                <p class="font-display-lg text-display-lg text-secondary mt-3 text-2xl md:text-3xl font-bold">{{ fee_collection_percentage }}%</p>
             </div>
 
             <!-- Progress Ring -->
-            <div class="glass-card p-4 md:p-6 rounded-2xl md:rounded-3xl shadow-sm flex items-center justify-center">
-                <div class="relative w-24 h-24">
+            <div class="glass-card p-5 md:p-7 rounded-2xl md:rounded-3xl shadow-sm hover:shadow-md transition-shadow flex flex-col items-center justify-center">
+                <div class="relative w-28 h-28">
                     <svg class="w-full h-full" viewBox="0 0 36 36">
                         <path class="text-primary/5 stroke-current" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-width="3"></path>
                         <path class="text-secondary-container stroke-current" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-dasharray="{{ fee_collection_percentage }}, 100" stroke-linecap="round" stroke-width="3"></path>
                     </svg>
                     <div class="absolute inset-0 flex flex-col items-center justify-center">
-                        <span class="text-headline-md font-bold text-primary text-sm md:text-base">{{ fee_collection_percentage }}%</span>
-                        <span class="text-[10px] uppercase text-on-surface-variant">Progress</span>
+                        <span class="text-headline-md font-bold text-primary text-base md:text-lg">{{ fee_collection_percentage }}%</span>
+                        <span class="text-[11px] uppercase text-on-surface-variant font-medium">Progress</span>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Charts Section -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-gutter">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
             <!-- Monthly Revenue Trend -->
-            <div class="glass-card rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-sm">
-                <h3 class="font-headline-md text-headline-md text-primary mb-4 text-lg md:text-xl">Monthly Revenue Trend</h3>
-                <div class="relative w-full" style="height: 300px;">
+            <div class="glass-card rounded-2xl md:rounded-3xl p-6 md:p-8 shadow-sm hover:shadow-md transition-shadow">
+                <h3 class="font-headline-md text-headline-md text-primary mb-6 text-lg md:text-xl font-bold">Monthly Revenue Trend</h3>
+                <div class="relative w-full" style="height: 320px;">
                     <canvas id="revenueChart"></canvas>
                 </div>
             </div>
 
             <!-- Fee Collection by Class Chart -->
-            <div class="glass-card rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-sm">
-                <h3 class="font-headline-md text-headline-md text-primary mb-4 text-lg md:text-xl">Fee Collection by Class</h3>
-                <div class="relative w-full" style="height: 300px;">
+            <div class="glass-card rounded-2xl md:rounded-3xl p-6 md:p-8 shadow-sm hover:shadow-md transition-shadow">
+                <h3 class="font-headline-md text-headline-md text-primary mb-6 text-lg md:text-xl font-bold">Fee Collection by Class</h3>
+                <div class="relative w-full" style="height: 320px;">
                     <canvas id="classChart"></canvas>
                 </div>
             </div>
         </div>
 
         <!-- Fee Breakdown by Class -->
-        <div class="glass-card rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-sm">
-            <h3 class="font-headline-md text-headline-md text-primary mb-4 md:mb-6 text-lg md:text-xl">Fee Collection by Class (This Month)</h3>
+        <div class="glass-card rounded-2xl md:rounded-3xl p-6 md:p-8 shadow-sm hover:shadow-md transition-shadow">
+            <h3 class="font-headline-md text-headline-md text-primary mb-8 text-lg md:text-xl font-bold">Fee Collection by Class (This Month)</h3>
             
             <div class="overflow-x-auto">
-                <table class="w-full text-xs md:text-sm">
+                <table class="w-full text-sm md:text-base">
                     <thead>
-                        <tr class="border-b border-outline-variant/20">
-                            <th class="pb-3 md:pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-left">Class</th>
-                            <th class="pb-3 md:pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-right">Amount Collected</th>
-                            <th class="pb-3 md:pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-center">Transactions</th>
+                        <tr class="border-b border-outline-variant/30">
+                            <th class="pb-4 md:pb-5 font-label-md text-on-surface-variant uppercase tracking-wider text-left font-bold">Class</th>
+                            <th class="pb-4 md:pb-5 font-label-md text-on-surface-variant uppercase tracking-wider text-right font-bold">Amount Collected</th>
+                            <th class="pb-4 md:pb-5 font-label-md text-on-surface-variant uppercase tracking-wider text-center font-bold">Transactions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for item in fee_by_class %}
-                        <tr class="border-b border-outline-variant/10 hover:bg-surface-container-low/50 transition-colors">
-                            <td class="py-3 md:py-4 text-primary font-bold">{{ item.student__class_grade__name }}</td>
-                            <td class="py-3 md:py-4 text-right text-green-600 font-bold">UGX {{ item.total_amount|floatformat:0 }}</td>
-                            <td class="py-3 md:py-4 text-center">
-                                <span class="badge badge-info">{{ item.transaction_count }}</span>
+                        <tr class="border-b border-outline-variant/15 hover:bg-surface-container-low/70 transition-colors">
+                            <td class="py-4 md:py-5 text-primary font-bold">{{ item.student__class_grade__name }}</td>
+                            <td class="py-4 md:py-5 text-right text-green-600 font-bold">UGX {{ item.total_amount|floatformat:0 }}</td>
+                            <td class="py-4 md:py-5 text-center">
+                                <span class="inline-block badge badge-info px-3 py-1 rounded-full text-xs md:text-sm">{{ item.transaction_count }}</span>
                             </td>
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="3" class="py-6 text-center text-on-surface-variant">
-                                <p class="font-label-md">No payments recorded this month</p>
+                            <td colspan="3" class="py-8 md:py-10 text-center text-on-surface-variant">
+                                <p class="font-label-md text-sm md:text-base">No payments recorded this month</p>
                             </td>
                         </tr>
                         {% endfor %}
@@ -301,47 +273,47 @@
         </div>
 
         <!-- Recent Transactions -->
-        <div class="glass-card rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-sm">
-            <div class="flex justify-between items-center mb-4 md:mb-6">
-                <h3 class="font-headline-md text-headline-md text-primary text-lg md:text-xl">Recent Transactions</h3>
-                <span class="text-on-surface-variant text-xs md:text-sm">
+        <div class="glass-card rounded-2xl md:rounded-3xl p-6 md:p-8 shadow-sm hover:shadow-md transition-shadow">
+            <div class="flex justify-between items-center mb-8">
+                <h3 class="font-headline-md text-headline-md text-primary text-lg md:text-xl font-bold">Recent Transactions</h3>
+                <span class="text-on-surface-variant text-xs md:text-sm bg-surface-container-low px-3 py-1 rounded-full">
                     Page {{ recent_transactions.number }} of {{ paginator.num_pages }}
                 </span>
             </div>
 
             <div class="overflow-x-auto">
-                <table class="w-full text-xs md:text-sm">
+                <table class="w-full text-sm md:text-base">
                     <thead>
-                        <tr class="border-b border-outline-variant/20">
-                            <th class="pb-3 md:pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-left">Student</th>
-                            <th class="pb-3 md:pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-left">Class</th>
-                            <th class="pb-3 md:pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-right">Amount</th>
-                            <th class="pb-3 md:pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-left">Date</th>
-                            <th class="pb-3 md:pb-4 font-label-md text-on-surface-variant uppercase tracking-wider text-center">Status</th>
+                        <tr class="border-b border-outline-variant/30">
+                            <th class="pb-4 md:pb-5 font-label-md text-on-surface-variant uppercase tracking-wider text-left font-bold">Student</th>
+                            <th class="pb-4 md:pb-5 font-label-md text-on-surface-variant uppercase tracking-wider text-left font-bold">Class</th>
+                            <th class="pb-4 md:pb-5 font-label-md text-on-surface-variant uppercase tracking-wider text-right font-bold">Amount</th>
+                            <th class="pb-4 md:pb-5 font-label-md text-on-surface-variant uppercase tracking-wider text-left font-bold">Date</th>
+                            <th class="pb-4 md:pb-5 font-label-md text-on-surface-variant uppercase tracking-wider text-center font-bold">Status</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for transaction in recent_transactions %}
-                        <tr class="border-b border-outline-variant/10 hover:bg-surface-container-low/50 transition-colors">
-                            <td class="py-3 md:py-4">
-                                <div class="flex items-center gap-2 md:gap-3">
-                                    <div class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary text-xs md:text-sm flex-shrink-0">
+                        <tr class="border-b border-outline-variant/15 hover:bg-surface-container-low/70 transition-colors">
+                            <td class="py-4 md:py-5">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary text-sm flex-shrink-0">
                                         {{ transaction.student.user.first_name|first|upper }}
                                     </div>
                                     <span class="font-bold text-primary">{{ transaction.student.user.get_full_name }}</span>
                                 </div>
                             </td>
-                            <td class="py-3 md:py-4 text-on-surface-variant">{{ transaction.student.class_grade.name }}</td>
-                            <td class="py-3 md:py-4 text-right text-green-600 font-bold">UGX {{ transaction.amount_paid|floatformat:0 }}</td>
-                            <td class="py-3 md:py-4 text-on-surface-variant">{{ transaction.payment_date|date:"M d, Y" }}</td>
-                            <td class="py-3 md:py-4 text-center">
-                                <span class="badge badge-success text-xs md:text-sm">Completed</span>
+                            <td class="py-4 md:py-5 text-on-surface-variant font-medium">{{ transaction.student.class_grade.name }}</td>
+                            <td class="py-4 md:py-5 text-right text-green-600 font-bold">UGX {{ transaction.amount_paid|floatformat:0 }}</td>
+                            <td class="py-4 md:py-5 text-on-surface-variant">{{ transaction.payment_date|date:"M d, Y" }}</td>
+                            <td class="py-4 md:py-5 text-center">
+                                <span class="inline-block badge badge-success text-xs md:text-sm px-3 py-1 rounded-full">Completed</span>
                             </td>
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="5" class="py-8 text-center text-on-surface-variant">
-                                <p class="font-label-md">No transactions found</p>
+                            <td colspan="5" class="py-10 md:py-12 text-center text-on-surface-variant">
+                                <p class="font-label-md text-sm md:text-base">No transactions found</p>
                             </td>
                         </tr>
                         {% endfor %}
@@ -351,29 +323,29 @@
 
             <!-- Pagination Controls (Phase 1.5) -->
             {% if paginator.num_pages > 1 %}
-            <div class="mt-4 md:mt-6 flex justify-center items-center gap-2">
+            <div class="mt-8 flex justify-center items-center gap-3 flex-wrap">
                 {% if recent_transactions.has_previous %}
                     <a href="?page=1{% if class_filter %}&class={{ class_filter }}{% endif %}" 
-                       class="px-3 py-2 rounded-lg border border-outline-variant/30 text-primary hover:bg-primary/10 transition-all text-xs md:text-sm">
+                       class="px-4 py-2.5 rounded-lg border border-outline-variant/30 text-primary hover:bg-primary/10 transition-all text-xs md:text-sm font-medium">
                         &laquo; First
                     </a>
                     <a href="?page={{ recent_transactions.previous_page_number }}{% if class_filter %}&class={{ class_filter }}{% endif %}" 
-                       class="px-3 py-2 rounded-lg border border-outline-variant/30 text-primary hover:bg-primary/10 transition-all text-xs md:text-sm">
+                       class="px-4 py-2.5 rounded-lg border border-outline-variant/30 text-primary hover:bg-primary/10 transition-all text-xs md:text-sm font-medium">
                         &lsaquo; Previous
                     </a>
                 {% endif %}
                 
-                <span class="px-3 py-2 text-on-surface-variant text-xs md:text-sm">
+                <span class="px-4 py-2.5 text-on-surface-variant text-xs md:text-sm font-medium bg-surface-container-low rounded-lg">
                     Page {{ recent_transactions.number }} of {{ paginator.num_pages }}
                 </span>
                 
                 {% if recent_transactions.has_next %}
                     <a href="?page={{ recent_transactions.next_page_number }}{% if class_filter %}&class={{ class_filter }}{% endif %}" 
-                       class="px-3 py-2 rounded-lg border border-outline-variant/30 text-primary hover:bg-primary/10 transition-all text-xs md:text-sm">
+                       class="px-4 py-2.5 rounded-lg border border-outline-variant/30 text-primary hover:bg-primary/10 transition-all text-xs md:text-sm font-medium">
                         Next &rsaquo;
                     </a>
                     <a href="?page={{ paginator.num_pages }}{% if class_filter %}&class={{ class_filter }}{% endif %}" 
-                       class="px-3 py-2 rounded-lg border border-outline-variant/30 text-primary hover:bg-primary/10 transition-all text-xs md:text-sm">
+                       class="px-4 py-2.5 rounded-lg border border-outline-variant/30 text-primary hover:bg-primary/10 transition-all text-xs md:text-sm font-medium">
                         Last &raquo;
                     </a>
                 {% endif %}

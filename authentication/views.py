@@ -5,7 +5,7 @@ from django.db import transaction, ProgrammingError
 from django.utils import timezone
 
 from SchoolNowMgt.models import CustomUser, School, StaffProfile
-from .forms import UnifiedLoginForm, UnifiedRegistrationForm
+from .forms import UnifiedLoginForm, UnifiedRegistrationForm, ParentRegistrationForm
 from SchoolNowMgt.registration.utils import generate_employee_id
 
 
@@ -34,13 +34,53 @@ def unified_login(request):
     POST: Validate role + email/password and authenticate
     """
     if request.user.is_authenticated:
-        # Redirect authenticated users to their dashboard or admin
+        # Redirect authenticated users to their dashboard based on role + admin_role
         if request.user.is_superuser:
             return redirect('/admin/')
         elif request.user.role == 'teacher':
-            return redirect('teacher:dashboard')
+            # Check if teacher has an admin role
+            try:
+                staff_profile = request.user.staffprofile
+                admin_role = staff_profile.teacher_admin_role
+                
+                # Redirect to admin dashboard based on admin role
+                if admin_role == 'dos':
+                    return redirect('/teacher/admin/dos/')
+                elif admin_role == 'deputy_hm':
+                    return redirect('/teacher/admin/deputy/')
+                elif admin_role == 'head_teacher':
+                    return redirect('/teacher/admin/head-teacher/')
+                elif admin_role == 'department_head':
+                    return redirect('/teacher/department/')
+                else:
+                    # Regular teacher
+                    return redirect('/teacher/')
+            except:
+                # No staff profile, redirect to teacher dashboard
+                return redirect('/teacher/')
+        elif request.user.role == 'non_teaching_staff':
+            # Check if support staff has an admin role
+            try:
+                staff_profile = request.user.staffprofile
+                support_role = staff_profile.support_staff_role
+                
+                # Redirect to admin dashboard based on support staff role
+                if support_role == 'welfare_coordinator':
+                    return redirect('/teacher/matron/')
+                elif support_role == 'supervisor':
+                    return redirect('/teacher/support/shift-supervisor/')
+                elif support_role == 'department_head':
+                    return redirect('/teacher/support/dept-head/')
+                else:
+                    # Regular support staff
+                    return redirect('/support/')
+            except:
+                # No staff profile, redirect to support dashboard
+                return redirect('/support/')
         elif request.user.role == 'admin':
-            return redirect('SchoolNowMgt:dashboard')
+            return redirect('/admin/')
+        elif request.user.role == 'parent':
+            return redirect('/parent/')
         else:
             return redirect('/')
     
@@ -60,11 +100,52 @@ def unified_login(request):
             user = form.authenticated_user
             login(request, user)
             
-            # Role-based redirect
+            # Role-based redirect with admin role support
             if user.is_superuser:
                 return redirect('/admin/')
             elif user.role == 'teacher':
-                return redirect('teacher:dashboard')
+                # Check if teacher has an admin role
+                try:
+                    staff_profile = user.staffprofile
+                    admin_role = staff_profile.teacher_admin_role
+                    
+                    # Redirect to admin dashboard based on admin role
+                    if admin_role == 'dos':
+                        return redirect('/teacher/admin/dos/')
+                    elif admin_role == 'deputy_hm':
+                        return redirect('/teacher/admin/deputy/')
+                    elif admin_role == 'head_teacher':
+                        return redirect('/teacher/department/')
+                    elif admin_role == 'department_head':
+                        return redirect('/teacher/support/dept-head/')
+                    else:
+                        # Regular teacher (admin_role == 'teacher')
+                        return redirect('/teacher/')
+                except Exception as e:
+                    # No staff profile, redirect to teacher dashboard
+                    import sys
+                    print(f"DEBUG: Exception in teacher redirect: {e}", file=sys.stderr)
+                    return redirect('/teacher/')
+            elif user.role == 'non_teaching_staff':
+                # Check if support staff has an admin role
+                try:
+                    staff_profile = user.staffprofile
+                    support_role = staff_profile.support_staff_role
+                    
+                    # Redirect to admin dashboard based on support staff role
+                    if support_role == 'welfare_coordinator':
+                        return redirect('/teacher/matron/')
+                    elif support_role == 'supervisor':
+                        return redirect('/teacher/support/shift-supervisor/')
+                    elif support_role == 'department_head':
+                        return redirect('/teacher/support/dept-head/')
+                    else:
+                        # Regular support staff
+                        return redirect('/support/')
+                except Exception as e:
+                    import sys
+                    print(f"DEBUG: Exception in non_teaching_staff redirect: {e}", file=sys.stderr)
+                    return redirect('/support/')
             elif user.role == 'admin':
                 return redirect('SchoolNowMgt:dashboard')
             elif user.role == 'parent':
@@ -215,5 +296,59 @@ def register_role(request, role):
     
     # Redirect to unified register (unified page handles role selection)
     return redirect('auth:unified_register')
+
+
+def parent_register(request):
+    """
+    Dedicated parent registration view.
+    Parents register without a school - they access multiple schools via StudentParentRelationship.
+    
+    GET: Show parent registration form
+    POST: Validate and create parent account
+    """
+    if request.user.is_authenticated:
+        if request.user.role == 'parent':
+            return redirect('parent_dashboard')
+        else:
+            return redirect('/')
+    
+    if request.method == 'POST':
+        form = ParentRegistrationForm(request.POST)
+        
+        if form.is_valid():
+            try:
+                with transaction.atomic():
+                    # Use the form's save method to create user with school=NULL
+                    user = form.save(commit=False)
+                    user.username = form.cleaned_data['email'].lower()
+                    user.set_password(form.cleaned_data['password1'])
+                    user.save()
+                
+                # Log in the user
+                user.backend = 'django.contrib.auth.backends.ModelBackend'
+                login(request, user)
+                messages.success(
+                    request, 
+                    f"Welcome {form.cleaned_data['first_name']}! "
+                    "Your parent account has been created. "
+                    "Please wait for school administrators to link you with your children."
+                )
+                
+                return redirect('parent_dashboard')
+            
+            except Exception as e:
+                messages.error(request, f'Registration failed: {str(e)}')
+                context = {'form': form}
+                return render(request, 'auth/parent_register.html', context)
+        else:
+            context = {'form': form}
+            return render(request, 'auth/parent_register.html', context)
+    
+    else:
+        form = ParentRegistrationForm()
+        context = {'form': form}
+        return render(request, 'auth/parent_register.html', context)
+
+
 # Routers now redirect to unified views - all role-specific views removed
 # to ensure a single unified auth experience across all user roles

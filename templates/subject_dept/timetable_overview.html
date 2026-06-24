@@ -1,0 +1,153 @@
+{% extends "teacher/base.html" %}
+{% load static %}
+
+{% block title %}Timetable Overview - Department{% endblock %}
+
+{% block content %}
+<div class="timetable-overview">
+    <div class="page-header">
+        <h1>Department Timetable</h1>
+    </div>
+
+    <!-- Timetable by Day -->
+    <div class="timetable-container">
+        {% for day, slots in timetable_by_day.items %}
+        {% if slots %}
+        <div class="day-section">
+            <h2>{{ day }}</h2>
+            <div class="table-section">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Subject</th>
+                            <th>Class</th>
+                            <th>Teacher</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for slot in slots %}
+                        <tr>
+                            <td>{{ slot.start_time|time:"H:i" }} - {{ slot.end_time|time:"H:i" }}</td>
+                            <td>{{ slot.subject.subject_name }}</td>
+                            <td>{{ slot.class_grade.class_grade_level.level_name }} {{ slot.class_grade.class_stream.stream_name }}</td>
+                            <td>{{ slot.staff.user.get_full_name }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+
+    {% if not all_timetable %}
+    <div class="no-results">
+        <p>No timetable entries found for this department.</p>
+    </div>
+    {% endif %}
+
+    <div class="actions">
+        <a href="{% url 'subject_dept:dashboard' %}" class="btn btn-secondary">Back to Dashboard</a>
+    </div>
+</div>
+
+<style>
+.timetable-overview {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.page-header {
+    margin-bottom: 30px;
+}
+
+.page-header h1 {
+    margin: 0;
+    font-size: 28px;
+}
+
+.timetable-container {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.day-section {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.day-section h2 {
+    margin-top: 0;
+    font-size: 18px;
+    border-bottom: 2px solid #007bff;
+    padding-bottom: 10px;
+}
+
+.table-section {
+    overflow-x: auto;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table thead {
+    background: #f8f9fa;
+}
+
+.table th {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 2px solid #dee2e6;
+    font-weight: 600;
+}
+
+.table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.table tbody tr:nth-child(odd) {
+    background: #f8f9fa;
+}
+
+.no-results {
+    background: white;
+    padding: 40px;
+    border-radius: 8px;
+    text-align: center;
+    color: #666;
+    margin-bottom: 20px;
+}
+
+.actions {
+    display: flex;
+    gap: 10px;
+}
+
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #545b62;
+}
+</style>
+{% endblock %}

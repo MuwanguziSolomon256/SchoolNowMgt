@@ -1,0 +1,205 @@
+{% extends "teacher/base.html" %}
+{% load static %}
+
+{% block title %}Shift Overview - Deputy HM{% endblock %}
+
+{% block content %}
+<div class="deputy-hm-shifts">
+    <div class="page-header">
+        <h1>Shift & Attendance Overview</h1>
+        <p class="date">{{ today|date:"l, F j, Y" }}</p>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">👥</div>
+            <div class="stat-content">
+                <h3>Total Staff</h3>
+                <p class="stat-value">{{ statistics.total_staff }}</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">✅</div>
+            <div class="stat-content">
+                <h3>On Duty Today</h3>
+                <p class="stat-value">{{ statistics.on_duty_today }}</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">❌</div>
+            <div class="stat-content">
+                <h3>Absent Today</h3>
+                <p class="stat-value">{{ statistics.absent_today }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Today's Attendance -->
+    {% if today_attendance %}
+    <div class="attendance-section">
+        <h2>Today's Attendance</h2>
+        <div class="table-section">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Staff Name</th>
+                        <th>Department</th>
+                        <th>Clock In</th>
+                        <th>Clock Out</th>
+                        <th>Duration</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for att in today_attendance %}
+                    <tr>
+                        <td>{{ att.staff.user.get_full_name }}</td>
+                        <td>{% if att.staff.support_department %}{{ att.staff.support_department.name }}{% else %}-{% endif %}</td>
+                        <td>{{ att.clock_in_time|time:"H:i" }}</td>
+                        <td>{% if att.clock_out_time %}{{ att.clock_out_time|time:"H:i" }}{% else %}<em>On duty</em>{% endif %}</td>
+                        <td>
+                            {% if att.clock_out_time %}
+                                {{ att.clock_out_time|time:"H:i" }} - {{ att.clock_in_time|time:"H:i" }}
+                            {% else %}
+                                <em>Still working</em>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Weekly Summary -->
+    {% if week_attendance %}
+    <div class="weekly-section">
+        <h2>This Week's Attendance Summary</h2>
+        <div class="table-section">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Staff On Duty</th>
+                        <th>Absent</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% regroup week_attendance by date as attendance_by_date %}
+                    {% for date, records in attendance_by_date %}
+                    <tr>
+                        <td>{{ date|date:"M d, Y" }}</td>
+                        <td>{{ records|length }}</td>
+                        <td>{{ statistics.total_staff|add:"-"|add:records|length }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.deputy-hm-shifts {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.page-header {
+    margin-bottom: 30px;
+}
+
+.page-header h1 {
+    margin: 0;
+    font-size: 28px;
+}
+
+.page-header .date {
+    color: #666;
+    margin: 5px 0 0 0;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    display: flex;
+    align-items: center;
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.stat-icon {
+    font-size: 32px;
+    margin-right: 15px;
+}
+
+.stat-content h3 {
+    margin: 0;
+    font-size: 14px;
+    color: #666;
+}
+
+.stat-value {
+    margin: 5px 0 0 0;
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+}
+
+.attendance-section,
+.weekly-section {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 30px;
+}
+
+.attendance-section h2,
+.weekly-section h2 {
+    margin-top: 0;
+    font-size: 18px;
+}
+
+.table-section {
+    overflow-x: auto;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table thead {
+    background: #f8f9fa;
+}
+
+.table th {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 2px solid #dee2e6;
+    font-weight: 600;
+}
+
+.table td {
+    padding: 15px;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.table tbody tr:nth-child(odd) {
+    background: #f8f9fa;
+}
+</style>
+{% endblock %}

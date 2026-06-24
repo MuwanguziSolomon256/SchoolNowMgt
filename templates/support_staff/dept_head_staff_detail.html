@@ -1,0 +1,278 @@
+{% extends "teacher/base.html" %}
+{% load static %}
+
+{% block title %}Staff Detail - {{ staff_member.user.get_full_name }}{% endblock %}
+
+{% block content %}
+<div class="dept-head-staff-detail">
+    <div class="page-header">
+        <h1>{{ staff_member.user.get_full_name }}</h1>
+        <p class="subtitle">{{ department.name }} - {{ staff_member.get_support_staff_role_display }}</p>
+    </div>
+
+    <!-- Staff Information Card -->
+    <div class="info-section">
+        <h2>Staff Information</h2>
+        <div class="info-grid">
+            <div class="info-item">
+                <label>Full Name</label>
+                <p>{{ staff_member.user.get_full_name }}</p>
+            </div>
+            
+            <div class="info-item">
+                <label>Email</label>
+                <p>{{ staff_member.user.email }}</p>
+            </div>
+            
+            <div class="info-item">
+                <label>Username</label>
+                <p>{{ staff_member.user.username }}</p>
+            </div>
+            
+            <div class="info-item">
+                <label>Role</label>
+                <p>{{ staff_member.get_support_staff_role_display }}</p>
+            </div>
+            
+            <div class="info-item">
+                <label>Department</label>
+                <p>{{ staff_member.support_department.name }}</p>
+            </div>
+            
+            <div class="info-item">
+                <label>Status</label>
+                <p>
+                    {% if staff_member.user.is_active %}
+                    <span class="badge badge-active">Active</span>
+                    {% else %}
+                    <span class="badge badge-inactive">Inactive</span>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Attendance Statistics -->
+    {% if statistics %}
+    <div class="stats-section">
+        <h2>Attendance Statistics</h2>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Records</div>
+                <div class="stat-value">{{ statistics.total_attendance_records }}</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-label">Present</div>
+                <div class="stat-value">{{ statistics.days_present }}</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-label">Attendance Rate</div>
+                <div class="stat-value">{{ statistics.attendance_rate }}</div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Attendance Records -->
+    {% if attendance_records %}
+    <div class="records-section">
+        <h2>Recent Attendance Records</h2>
+        <div class="table-section">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Clock In</th>
+                        <th>Clock Out</th>
+                        <th>Duration</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in attendance_records %}
+                    <tr>
+                        <td>{{ record.date|date:"M d, Y" }}</td>
+                        <td>{% if record.clock_in_time %}{{ record.clock_in_time|time:"H:i" }}{% else %}-{% endif %}</td>
+                        <td>{% if record.clock_out_time %}{{ record.clock_out_time|time:"H:i" }}{% else %}-{% endif %}</td>
+                        <td>
+                            {% if record.clock_in_time and record.clock_out_time %}
+                                {{ record.duration|default:"-" }}
+                            {% elif record.clock_in_time %}
+                                <em>Still working</em>
+                            {% else %}
+                                <em>Absent</em>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="actions">
+        <a href="{% url 'support_staff:dept_head_staff_list' %}" class="btn btn-secondary">Back to Staff List</a>
+    </div>
+</div>
+
+<style>
+.dept-head-staff-detail {
+    padding: 20px;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.page-header {
+    margin-bottom: 30px;
+}
+
+.page-header h1 {
+    margin: 0;
+    font-size: 28px;
+}
+
+.page-header .subtitle {
+    color: #666;
+    margin: 5px 0 0 0;
+    font-size: 14px;
+}
+
+.info-section,
+.stats-section,
+.records-section {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+.info-section h2,
+.stats-section h2,
+.records-section h2 {
+    margin-top: 0;
+    font-size: 18px;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.info-item label {
+    display: block;
+    font-weight: 600;
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 5px;
+}
+
+.info-item p {
+    margin: 0;
+    font-size: 14px;
+    color: #333;
+}
+
+.badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.badge-active {
+    background: #d4edda;
+    color: #155724;
+}
+
+.badge-inactive {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+}
+
+.stat-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    text-align: center;
+}
+
+.stat-label {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 8px;
+}
+
+.stat-value {
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+}
+
+.table-section {
+    overflow-x: auto;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table thead {
+    background: #f8f9fa;
+}
+
+.table th {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 2px solid #dee2e6;
+    font-weight: 600;
+}
+
+.table td {
+    padding: 15px;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.table tbody tr:nth-child(odd) {
+    background: #f8f9fa;
+}
+
+.actions {
+    display: flex;
+    gap: 10px;
+}
+
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #545b62;
+}
+</style>
+{% endblock %}

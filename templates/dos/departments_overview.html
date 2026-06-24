@@ -1,0 +1,193 @@
+{% extends "teacher/base.html" %}
+{% load static %}
+
+{% block title %}Departments Overview - DOS{% endblock %}
+
+{% block content %}
+<div class="dos-departments">
+    <div class="page-header">
+        <h1>Teacher Departments Overview</h1>
+    </div>
+
+    {% if department_stats %}
+    <div class="departments-grid">
+        {% for dept_stat in department_stats %}
+        <div class="department-card">
+            <div class="dept-header">
+                <h3>{{ dept_stat.department.name }}</h3>
+                {% if dept_stat.department.head_of_department %}
+                    <span class="head-badge">Head: {{ dept_stat.department.head_of_department.user.get_full_name }}</span>
+                {% else %}
+                    <span class="head-badge head-missing">⚠️ No Head</span>
+                {% endif %}
+            </div>
+            
+            <div class="dept-content">
+                <p><strong>Department Type:</strong> {{ dept_stat.department.get_department_type_display }}</p>
+                <p><strong>Description:</strong> {{ dept_stat.department.description|default:"No description" }}</p>
+            </div>
+            
+            <div class="dept-stats">
+                <div class="stat">
+                    <div class="stat-label">Teachers</div>
+                    <div class="stat-value">{{ dept_stat.teacher_count }}</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">Avg Grade</div>
+                    <div class="stat-value">{{ dept_stat.avg_grade }}%</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">Budget</div>
+                    <div class="stat-value">{{ dept_stat.budget|default:"N/A" }}</div>
+                </div>
+            </div>
+            
+            <div class="dept-actions">
+                <a href="#" class="btn btn-sm btn-info">View Department</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <p>No departments configured yet.</p>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.dos-departments {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.page-header {
+    margin-bottom: 30px;
+}
+
+.page-header h1 {
+    margin: 0;
+    font-size: 28px;
+}
+
+.departments-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 20px;
+}
+
+.department-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.department-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.dept-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 15px;
+}
+
+.dept-header h3 {
+    margin: 0;
+    font-size: 18px;
+}
+
+.head-badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.2);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    margin-top: 8px;
+}
+
+.head-missing {
+    background: rgba(255,193,7,0.3) !important;
+    color: #ffc107 !important;
+}
+
+.dept-content {
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+}
+
+.dept-content p {
+    margin: 8px 0;
+    font-size: 14px;
+    color: #666;
+}
+
+.dept-content strong {
+    color: #333;
+}
+
+.dept-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    padding: 15px;
+    background: #f8f9fa;
+}
+
+.stat {
+    text-align: center;
+}
+
+.stat-label {
+    font-size: 12px;
+    color: #999;
+    margin-bottom: 5px;
+}
+
+.stat-value {
+    font-size: 20px;
+    font-weight: bold;
+    color: #333;
+}
+
+.dept-actions {
+    padding: 15px;
+    display: flex;
+    gap: 10px;
+}
+
+.btn {
+    flex: 1;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+}
+
+.btn-info {
+    background: #17a2b8;
+    color: white;
+}
+
+.btn-info:hover {
+    background: #138496;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #666;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+</style>
+{% endblock %}

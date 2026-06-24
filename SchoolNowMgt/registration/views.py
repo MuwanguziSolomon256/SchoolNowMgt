@@ -86,6 +86,7 @@ def register_teacher(request):
                         date_joined=form.cleaned_data['date_joined'],
                         salary=0,  # Salary is set to 0 at registration. Admin must update this via the admin panel.
                         is_full_time=True,
+                        teacher_admin_role=form.cleaned_data.get('teacher_admin_role', 'teacher'),
                     )
                     staff_profile.save()
                     

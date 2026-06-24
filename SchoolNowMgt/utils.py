@@ -9,7 +9,8 @@ import string
 import secrets
 from datetime import datetime
 from django.db import transaction
-from .models import CustomUser, Message, MessageRecipient, MessageTemplate, ClassGrade, StaffProfile, Student
+from django.db.models import Count, Avg
+from .models import CustomUser, Message, MessageRecipient, MessageTemplate, ClassGrade, StaffProfile, Student, Grade
 
 
 def generate_temp_password(length=12):
@@ -473,4 +474,199 @@ def get_parent_messages(parent_user, filter_type='all'):
         # Combine and sort by created_at descending
         all_messages = received_messages + sent_messages
         return sorted(all_messages, key=lambda x: x.created_at, reverse=True)
+
+
+# ============================================================================
+# PHASE 2: DATA SCOPING FUNCTIONS FOR ROLE-BASED ACCESS CONTROL
+# ============================================================================
+
+def get_teacher_scope_data(request, filter_type='basic'):
+    """
+    Get data scoping context for a teacher based on their role.
+    
+    Returns a dict with:
+    - school: User's school
+    - staff_profile: Teacher's StaffProfile
+    - is_class_teacher: Boolean if assigned to any class
+    - is_department_head: Boolean if head of a department
+    - is_dos: Boolean if Director of Studies
+    - classes: QuerySet of classes the teacher is assigned to
+    - students: QuerySet of students in teacher's classes
+    
+    Args:
+        request: Django request object
+        filter_type: 'basic' (default) or 'full' for more data
+    
+    Returns:
+        dict: Scope data for filtering
+    """
+    from .models import ClassTeacherAssignment, TeacherDepartment
+    from django.utils import timezone
+    
+    user = request.user
+    school = user.school
+    staff_profile = user.staffprofile
+    
+    # Current academic year (you may need to adjust this)
+    current_year = timezone.now().year
+    academic_year = f"{current_year}-{current_year + 1}"
+    
+    # Get classes where teacher is assigned
+    class_assignments = ClassTeacherAssignment.objects.filter(
+        teacher=staff_profile,
+        school=school,
+        academic_year=academic_year,
+        is_active=True
+    ).values_list('class_grade_id', flat=True)
+    
+    classes = ClassGrade.objects.filter(
+        school=school,
+        id__in=class_assignments
+    )
+    
+    # Get students in those classes
+    students = Student.objects.filter(
+        school=school,
+        class_grade__in=classes,
+        status='active'
+    )
+    
+    scope_data = {
+        'school': school,
+        'staff_profile': staff_profile,
+        'academic_year': academic_year,
+        'is_class_teacher': classes.exists(),
+        'is_department_head': staff_profile.teacher_admin_role == 'department_head',
+        'is_dos': staff_profile.teacher_admin_role == 'dos',
+        'is_head_teacher': staff_profile.teacher_admin_role == 'head_teacher',
+        'is_regular_teacher': staff_profile.teacher_admin_role == 'teacher',
+        'classes': classes,
+        'students': students,
+    }
+    
+    return scope_data
+
+
+def get_dos_scope_data(request):
+    """
+    Get data scoping context for Director of Studies (DOS).
+    
+    Returns school-wide data:
+    - school: User's school
+    - staff_profile: DOS StaffProfile
+    - all_teachers: All teachers in school
+    - departments: All teacher departments in school
+    - classes: All classes in school
+    - all_students: All active students in school
+    
+    Args:
+        request: Django request object
+    
+    Returns:
+        dict: DOS-level scope data
+    """
+    from .models import TeacherDepartment
+    
+    user = request.user
+    school = user.school
+    staff_profile = user.staffprofile
+    
+    scope_data = {
+        'school': school,
+        'staff_profile': staff_profile,
+        'is_dos': staff_profile.teacher_admin_role == 'dos',
+        'all_teachers': StaffProfile.objects.filter(
+            user__school=school,
+            user__role='teacher'
+        ).select_related('user', 'teacher_department'),
+        'departments': TeacherDepartment.objects.filter(
+            school=school,
+            is_active=True
+        ).prefetch_related('teacher_members'),
+        'classes': ClassGrade.objects.filter(
+            school=school
+        ).annotate(student_count=Count('students')),
+        'all_students': Student.objects.filter(
+            class_grade__school=school,
+            status='active'
+        ).count(),
+    }
+    
+    return scope_data
+
+
+def get_department_head_scope_data(request):
+    """
+    Get data scoping context for Subject Department Head.
+    
+    Returns department-specific data:
+    - school: User's school
+    - staff_profile: Department head StaffProfile
+    - department: Teacher's department
+    - department_teachers: Teachers in department
+    - students_taught: Students taught by department
+    - department_performance: Performance metrics for department
+    
+    Args:
+        request: Django request object
+    
+    Returns:
+        dict: Department head scope data
+    """
+    from .models import TeacherDepartment
+    from django.db.models import Avg
+    
+    user = request.user
+    school = user.school
+    staff_profile = user.staffprofile
+    
+    # Get the department this teacher heads
+    department = TeacherDepartment.objects.filter(
+        school=school,
+        head_of_department=staff_profile
+    ).first()
+    
+    if not department:
+        # If not a head, return empty
+        return {
+            'school': school,
+            'staff_profile': staff_profile,
+            'is_department_head': False,
+            'department': None,
+            'department_teachers': StaffProfile.objects.none(),
+            'students_taught': Student.objects.none(),
+        }
+    
+    # Get teachers in this department
+    department_teachers = StaffProfile.objects.filter(
+        teacher_department=department
+    ).select_related('user')
+    
+    # Get students taught by teachers in this department (via their subjects)
+    from django.db.models import Q
+    students_taught = Student.objects.filter(
+        school=school,
+        status='active'
+    ).distinct()  # Could be refined based on subject enrollment
+    
+    # Performance: average grades in this department
+    department_performance = Grade.objects.filter(
+        student__class_grade__school=school,
+        recorded_by__in=department_teachers
+    ).aggregate(
+        avg_score=Avg('score'),
+        total_grades=Count('id')
+    )
+    
+    scope_data = {
+        'school': school,
+        'staff_profile': staff_profile,
+        'is_department_head': True,
+        'department': department,
+        'department_teachers': department_teachers,
+        'students_taught': students_taught,
+        'performance': department_performance,
+    }
+    
+    return scope_data
 

@@ -1,0 +1,318 @@
+{% extends "teacher/base.html" %}
+{% load static %}
+
+{% block title %}Teacher Detail - {{ teacher.user.get_full_name }}{% endblock %}
+
+{% block content %}
+<div class="teacher-detail">
+    <div class="page-header">
+        <h1>{{ teacher.user.get_full_name }}</h1>
+        <p class="subtitle">Teacher Profile</p>
+    </div>
+
+    <!-- Teacher Information -->
+    <div class="info-section">
+        <h2>Personal Information</h2>
+        <div class="info-card">
+            <div class="info-item">
+                <label>Full Name</label>
+                <p>{{ teacher.user.get_full_name }}</p>
+            </div>
+            
+            <div class="info-item">
+                <label>Employee ID</label>
+                <p>{{ teacher.employee_id }}</p>
+            </div>
+            
+            <div class="info-item">
+                <label>Position</label>
+                <p>{{ teacher.get_teacher_admin_role_display }}</p>
+            </div>
+            
+            <div class="info-item">
+                <label>Email</label>
+                <p>{{ teacher.user.email }}</p>
+            </div>
+            
+            <div class="info-item">
+                <label>Phone</label>
+                <p>{{ teacher.user.phone|default:"—" }}</p>
+            </div>
+            
+            <div class="info-item">
+                <label>Status</label>
+                <p>
+                    {% if teacher.user.is_active %}
+                    <span class="badge badge-active">Active</span>
+                    {% else %}
+                    <span class="badge badge-inactive">Inactive</span>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Subjects -->
+    {% if subjects %}
+    <div class="subjects-section">
+        <h2>Teaching Subjects ({{ subjects|length }})</h2>
+        <div class="subjects-list">
+            {% for subject in subjects %}
+            <div class="subject-item">
+                <h4>{{ subject.subject_name }}</h4>
+                <p class="code">{{ subject.subject_code }}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Classes -->
+    {% if classes %}
+    <div class="classes-section">
+        <h2>Classes ({{ classes|length }})</h2>
+        <div class="classes-list">
+            {% for cls in classes %}
+            <div class="class-item">
+                <p><strong>{{ cls.class_grade_level.level_name }}</strong> - {{ cls.class_stream.stream_name }}</p>
+                <p class="subject">{{ cls.subject.subject_name }}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Timetable -->
+    {% if timetable %}
+    <div class="timetable-section">
+        <h2>Teaching Schedule ({{ timetable|length }} slots)</h2>
+        <div class="table-section">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Day</th>
+                        <th>Time</th>
+                        <th>Subject</th>
+                        <th>Class</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for slot in timetable %}
+                    <tr>
+                        <td>{{ slot.day }}</td>
+                        <td>{{ slot.start_time|time:"H:i" }} - {{ slot.end_time|time:"H:i" }}</td>
+                        <td>{{ slot.subject.subject_name }}</td>
+                        <td>{{ slot.class_grade.class_grade_level.level_name }} {{ slot.class_grade.class_stream.stream_name }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Performance -->
+    <div class="performance-section">
+        <h2>Teaching Performance</h2>
+        <div class="performance-stats">
+            <div class="stat-item">
+                <p class="label">Grades Entered</p>
+                <p class="value">{{ grades_entered }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="actions">
+        <a href="{% url 'subject_dept:teachers_list' %}" class="btn btn-secondary">Back to Teachers</a>
+    </div>
+</div>
+
+<style>
+.teacher-detail {
+    padding: 20px;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.page-header {
+    margin-bottom: 30px;
+}
+
+.page-header h1 {
+    margin: 0;
+    font-size: 28px;
+}
+
+.page-header .subtitle {
+    color: #666;
+    margin: 5px 0 0 0;
+    font-size: 14px;
+}
+
+.info-section,
+.subjects-section,
+.classes-section,
+.timetable-section,
+.performance-section {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+.info-section h2,
+.subjects-section h2,
+.classes-section h2,
+.timetable-section h2,
+.performance-section h2 {
+    margin-top: 0;
+    font-size: 18px;
+}
+
+.info-card {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.info-item label {
+    font-weight: 600;
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 5px;
+}
+
+.info-item p {
+    margin: 0;
+    font-size: 14px;
+    color: #333;
+}
+
+.badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.badge-active {
+    background: #d4edda;
+    color: #155724;
+}
+
+.badge-inactive {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.subjects-list,
+.classes-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+}
+
+.subject-item,
+.class-item {
+    border: 1px solid #eee;
+    padding: 12px;
+    border-radius: 4px;
+    background: #f8f9fa;
+}
+
+.subject-item h4,
+.class-item p {
+    margin: 0;
+    font-size: 13px;
+}
+
+.subject-item .code,
+.class-item .subject {
+    margin: 5px 0 0 0;
+    font-size: 11px;
+    color: #666;
+}
+
+.table-section {
+    overflow-x: auto;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table thead {
+    background: #f8f9fa;
+}
+
+.table th {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 2px solid #dee2e6;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #dee2e6;
+    font-size: 13px;
+}
+
+.table tbody tr:nth-child(odd) {
+    background: #f8f9fa;
+}
+
+.performance-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+}
+
+.stat-item {
+    text-align: center;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 4px;
+}
+
+.stat-item .label {
+    margin: 0;
+    font-size: 12px;
+    color: #666;
+}
+
+.stat-item .value {
+    margin: 8px 0 0 0;
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+}
+
+.actions {
+    display: flex;
+    gap: 10px;
+}
+
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #545b62;
+}
+</style>
+{% endblock %}

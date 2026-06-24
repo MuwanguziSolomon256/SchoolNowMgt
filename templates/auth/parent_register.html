@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Parent Registration - EduVision</title>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com" rel="preconnect">
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+    <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700;900&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    
+    <!-- Material Symbols Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .form-input {
+            background: white;
+            border: 1px solid #c7c5d0;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: #080b3a;
+            box-shadow: 0 0 0 3px rgba(8, 11, 58, 0.1);
+        }
+        .btn-primary {
+            background: #080b3a;
+            color: white;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+        .btn-primary:hover {
+            background: #121643;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(8, 11, 58, 0.2);
+        }
+        .error-message {
+            color: #ba1a1a;
+            font-size: 14px;
+            margin-top: 8px;
+            display: block;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-50 min-h-screen flex items-center justify-center p-4">
+    <!-- Registration Card -->
+    <div class="w-full max-w-md bg-white rounded-lg shadow-lg p-8">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <div class="flex items-center justify-center gap-2 mb-4">
+                <div class="w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center shadow-lg">
+                    <span class="material-symbols-outlined text-white text-2xl">family_restroom</span>
+                </div>
+                <h1 class="text-2xl font-bold text-blue-900">Parent Portal</h1>
+            </div>
+            <p class="text-gray-600">Create your parent account</p>
+        </div>
+
+        <!-- Form -->
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+
+            <!-- Display non-field errors -->
+            {% if form.non_field_errors %}
+            <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                {% for error in form.non_field_errors %}
+                <p class="text-red-700 text-sm">{{ error }}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- First Name -->
+            <div>
+                <label for="{{ form.first_name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                    First Name
+                </label>
+                <input 
+                    type="text" 
+                    name="first_name" 
+                    id="{{ form.first_name.id_for_label }}" 
+                    placeholder="Your first name"
+                    class="form-input w-full"
+                    value="{{ form.first_name.value|default:'' }}"
+                    required>
+                {% if form.first_name.errors %}
+                <span class="error-message">{{ form.first_name.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <!-- Last Name -->
+            <div>
+                <label for="{{ form.last_name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                    Last Name
+                </label>
+                <input 
+                    type="text" 
+                    name="last_name" 
+                    id="{{ form.last_name.id_for_label }}" 
+                    placeholder="Your last name"
+                    class="form-input w-full"
+                    value="{{ form.last_name.value|default:'' }}"
+                    required>
+                {% if form.last_name.errors %}
+                <span class="error-message">{{ form.last_name.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <!-- Email -->
+            <div>
+                <label for="{{ form.email.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                    Email Address
+                </label>
+                <input 
+                    type="email" 
+                    name="email" 
+                    id="{{ form.email.id_for_label }}" 
+                    placeholder="your.email@example.com"
+                    class="form-input w-full"
+                    value="{{ form.email.value|default:'' }}"
+                    required>
+                {% if form.email.errors %}
+                <span class="error-message">{{ form.email.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <!-- Phone (Optional) -->
+            <div>
+                <label for="{{ form.phone.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                    Phone Number (Optional)
+                </label>
+                <input 
+                    type="tel" 
+                    name="phone" 
+                    id="{{ form.phone.id_for_label }}" 
+                    placeholder="+254712345678"
+                    class="form-input w-full"
+                    value="{{ form.phone.value|default:'' }}">
+                {% if form.phone.errors %}
+                <span class="error-message">{{ form.phone.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <!-- Password -->
+            <div>
+                <label for="{{ form.password1.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                    Password
+                </label>
+                <input 
+                    type="password" 
+                    name="password1" 
+                    id="{{ form.password1.id_for_label }}" 
+                    placeholder="Create a strong password"
+                    class="form-input w-full"
+                    required>
+                <p class="text-xs text-gray-500 mt-2">At least 8 characters</p>
+                {% if form.password1.errors %}
+                <span class="error-message">{{ form.password1.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <!-- Confirm Password -->
+            <div>
+                <label for="{{ form.password2.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                    Confirm Password
+                </label>
+                <input 
+                    type="password" 
+                    name="password2" 
+                    id="{{ form.password2.id_for_label }}" 
+                    placeholder="Confirm your password"
+                    class="form-input w-full"
+                    required>
+                {% if form.password2.errors %}
+                <span class="error-message">{{ form.password2.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="btn-primary">
+                Create Parent Account
+            </button>
+        </form>
+
+        <!-- Footer -->
+        <div class="mt-8 pt-6 border-t border-gray-200">
+            <p class="text-center text-sm text-gray-600">
+                Already have an account? 
+                <a href="{% url 'auth:unified_login' %}" class="text-blue-600 font-medium hover:underline">
+                    Log in here
+                </a>
+            </p>
+        </div>
+
+        <!-- Info Box -->
+        <div class="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <p class="text-xs text-blue-800">
+                <strong>Note:</strong> After registration, school administrators will link you with your children. This allows you to access information across multiple schools.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

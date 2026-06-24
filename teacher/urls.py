@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, include
 from teacher_auth.views import teacher_login, teacher_logout, teacher_register
 from teacher_auth.password_views import (
     teacher_password_reset,
@@ -33,6 +33,11 @@ from curriculum.gradebook_views import (
 )
 from teacher.shift_views import (
     clock_in, clock_out, break_start, break_end, shift_status
+)
+from dashboard import (
+    dos_urls, deputy_hm_urls, head_teacher_urls, 
+    support_staff_urls, matron_urls, subject_dept_urls,
+    class_teacher_urls
 )
 
 app_name = 'teacher'
@@ -95,6 +100,27 @@ urlpatterns = [
     # ===== EXPORT ENDPOINTS =====
     path('export/schedule/', export_teacher_schedule_csv, name='export_schedule'),
     path('export/attendance/', export_teacher_attendance_csv, name='export_attendance'),
+    
+    # ===== DOS (DIRECTOR OF STUDIES) ADMIN ROUTES =====
+    path('admin/dos/', include((dos_urls.urlpatterns, 'dos'), namespace='dos')),
+    
+    # ===== DEPUTY HEADMASTER ADMIN ROUTES =====
+    path('admin/deputy/', include((deputy_hm_urls.urlpatterns, 'deputy'), namespace='deputy')),
+    
+    # ===== HEAD TEACHER ADMIN ROUTES =====
+    path('admin/head-teacher/', include((head_teacher_urls.urlpatterns, 'head_teacher'), namespace='head_teacher')),
+    
+    # ===== SUPPORT STAFF DASHBOARDS =====
+    path('support/', include((support_staff_urls.urlpatterns, 'support_staff'), namespace='support_staff')),
+    
+    # ===== MATRON & HOSTEL DASHBOARDS =====
+    path('matron/', include((matron_urls.urlpatterns, 'matron'), namespace='matron')),
+    
+    # ===== SUBJECT DEPARTMENT HEAD DASHBOARDS =====
+    path('department/', include((subject_dept_urls.urlpatterns, 'subject_dept'), namespace='subject_dept')),
+    
+    # ===== CLASS TEACHER DASHBOARDS =====
+    path('class/', include((class_teacher_urls.urlpatterns, 'class_teacher'), namespace='class_teacher')),
 
     path('password/reset/',
          teacher_password_reset,

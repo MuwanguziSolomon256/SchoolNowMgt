@@ -1,0 +1,313 @@
+{% extends "teacher/base.html" %}
+{% load static %}
+
+{% block title %}Shift Attendance - {{ target_date|date:"M d, Y" }}{% endblock %}
+
+{% block content %}
+<div class="shift-attendance-list">
+    <div class="page-header">
+        <h1>Shift Attendance</h1>
+        <p class="date">{{ target_date|date:"l, F j, Y" }}</p>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-section">
+        <form method="get" class="filters-form">
+            <div class="filter-group">
+                <label>Date</label>
+                <input type="date" name="date" value="{{ target_date|date:'Y-m-d' }}">
+            </div>
+            
+            <div class="filter-group">
+                <label>Department</label>
+                <select name="department_id">
+                    <option value="">All Departments</option>
+                    {% for dept in departments %}
+                    <option value="{{ dept.id }}" {% if request.GET.department_id == dept.id|stringformat:'s' %}selected{% endif %}>
+                        {{ dept.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label>Status</label>
+                <select name="status">
+                    <option value="">All Staff</option>
+                    <option value="on_duty" {% if request.GET.status == 'on_duty' %}selected{% endif %}>On Duty</option>
+                    <option value="clocked_out" {% if request.GET.status == 'clocked_out' %}selected{% endif %}>Clocked Out</option>
+                    <option value="absent" {% if request.GET.status == 'absent' %}selected{% endif %}>Absent</option>
+                </select>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">Filter</button>
+        </form>
+    </div>
+
+    <!-- Attendance Records -->
+    {% if page_obj %}
+    <div class="table-section">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Department</th>
+                    <th>Clock In</th>
+                    <th>Clock Out</th>
+                    <th>Duration</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for att in page_obj %}
+                <tr>
+                    <td><strong>{{ att.staff.user.get_full_name }}</strong></td>
+                    <td>{% if att.staff.support_department %}{{ att.staff.support_department.name }}{% else %}-{% endif %}</td>
+                    <td>{{ att.clock_in_time|time:"H:i" }}</td>
+                    <td>{% if att.clock_out_time %}{{ att.clock_out_time|time:"H:i" }}{% else %}-{% endif %}</td>
+                    <td>{% if att.clock_out_time %}~{% endif %}</td>
+                    <td>
+                        {% if att.clock_out_time %}
+                        <span class="badge badge-clocked-out">Clocked Out</span>
+                        {% else %}
+                        <span class="badge badge-on-duty">On Duty</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <div class="pagination">
+        {% if page_obj.has_previous %}
+        <a href="?page=1{% if request.GET.date %}&date={{ request.GET.date }}{% endif %}{% if request.GET.department_id %}&department_id={{ request.GET.department_id }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" class="page-link">« First</a>
+        <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.date %}&date={{ request.GET.date }}{% endif %}{% if request.GET.department_id %}&department_id={{ request.GET.department_id }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" class="page-link">‹ Previous</a>
+        {% endif %}
+        
+        <span class="page-info">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}{% if request.GET.date %}&date={{ request.GET.date }}{% endif %}{% if request.GET.department_id %}&department_id={{ request.GET.department_id }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" class="page-link">Next ›</a>
+        <a href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.date %}&date={{ request.GET.date }}{% endif %}{% if request.GET.department_id %}&department_id={{ request.GET.department_id }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" class="page-link">Last »</a>
+        {% endif %}
+    </div>
+    {% endif %}
+    {% elif absent_staff %}
+    <!-- Absent Staff -->
+    <div class="absent-section">
+        <h2>Absent Staff</h2>
+        <div class="staff-list">
+            {% for staff in absent_staff %}
+            <div class="absent-card">
+                <p>{{ staff.user.get_full_name }}</p>
+                <p class="dept">{% if staff.support_department %}{{ staff.support_department.name }}{% else %}Not assigned{% endif %}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% else %}
+    <div class="no-results">
+        <p>No attendance records found for this date and filters.</p>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.shift-attendance-list {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.page-header {
+    margin-bottom: 30px;
+}
+
+.page-header h1 {
+    margin: 0;
+    font-size: 28px;
+}
+
+.page-header .date {
+    color: #666;
+    margin: 5px 0 0 0;
+    font-size: 14px;
+}
+
+.filters-section {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+.filters-form {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.filter-group label {
+    font-weight: 600;
+    font-size: 12px;
+    margin-bottom: 5px;
+}
+
+.filter-group input,
+.filter-group select {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.btn-primary {
+    background: #007bff;
+    color: white;
+    padding: 8px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.btn-primary:hover {
+    background: #0056b3;
+}
+
+.table-section {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+    overflow-x: auto;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table thead {
+    background: #f8f9fa;
+}
+
+.table th {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 2px solid #dee2e6;
+    font-weight: 600;
+}
+
+.table td {
+    padding: 15px;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.table tbody tr:nth-child(odd) {
+    background: #f8f9fa;
+}
+
+.badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.badge-on-duty {
+    background: #d4edda;
+    color: #155724;
+}
+
+.badge-clocked-out {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-top: 20px;
+}
+
+.page-link {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    text-decoration: none;
+    color: #007bff;
+    cursor: pointer;
+}
+
+.page-link:hover {
+    background: #f8f9fa;
+}
+
+.page-info {
+    padding: 0 12px;
+    font-size: 14px;
+    color: #666;
+}
+
+.absent-section {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.absent-section h2 {
+    margin-top: 0;
+}
+
+.staff-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.absent-card {
+    padding: 15px;
+    border: 1px solid #f8d7da;
+    border-radius: 4px;
+    background: #fff5f7;
+}
+
+.absent-card p {
+    margin: 0;
+    font-size: 14px;
+    color: #721c24;
+    font-weight: 600;
+}
+
+.absent-card .dept {
+    margin-top: 5px;
+    font-size: 12px;
+    color: #999;
+    font-weight: normal;
+}
+
+.no-results {
+    background: white;
+    padding: 40px;
+    border-radius: 8px;
+    text-align: center;
+    color: #666;
+}
+</style>
+{% endblock %}

@@ -16,41 +16,48 @@ from datetime import datetime
 from SchoolNowMgt.models import (
     StaffProfile, ClassGrade, Grade, Student, Subject, Timetable
 )
+from SchoolNowMgt.decorators import require_teacher_role, get_user_school
 from .uganda_constants import UGANDA_TERMS, LETTER_GRADE_THRESHOLDS
 from .international_constants import IGCSE_SCORE_TO_GRADE, IB_SCORE_TO_GRADE
 
 
-def get_teacher_classes(teacher):
+def get_teacher_classes(teacher, school):
     """
     Fetch all ClassGrade objects where this teacher is the class_teacher.
+    Scoped to the teacher's school.
     Returns queryset of ClassGrade ordered by curriculum then name.
     """
     return ClassGrade.objects.filter(
+        school=school,
         class_teacher=teacher
     ).order_by('curriculum', 'name')
 
 
-def get_class_students(class_grade):
+def get_class_students(class_grade, school):
     """
     Fetch all active students in a given ClassGrade, matching the class's curriculum.
+    Scoped to the class's school.
     Returns queryset of Student ordered by last_name.
     """
     return Student.objects.filter(
+        school=school,
         class_grade=class_grade,
         curriculum=class_grade.curriculum,
         status='active'
     ).order_by('last_name', 'first_name')
 
 
-def get_class_subjects(class_grade):
+def get_class_subjects(class_grade, school):
     """
     Fetch all subjects taught in a given ClassGrade (via Timetable).
+    Scoped to the class's school.
     Filters by curriculum and returns distinct subjects.
     """
     return Subject.objects.filter(
         timetable_entries__class_grade=class_grade,
         timetable_entries__curriculum=class_grade.curriculum,
-        curriculum=class_grade.curriculum
+        curriculum=class_grade.curriculum,
+        school=school
     ).distinct().order_by('name')
 
 
@@ -72,7 +79,7 @@ def get_period_label(curriculum, term=None, semester=None, academic_year=None):
     return academic_year or ''
 
 
-@login_required
+@require_teacher_role('teacher')
 def gradebook_list(request):
     """
     List view: Display all students in a class with their grades in a grid format.
@@ -92,15 +99,19 @@ def gradebook_list(request):
         - selected_period: Currently selected term/semester
         - academic_year: Currently selected academic year
         - curriculum_type: Human-readable curriculum name
-    """
-    # Get teacher's StaffProfile
-    staff = get_object_or_404(StaffProfile, user=request.user)
     
-    # Get selected class (must be taught by this teacher)
+    Requires: Teacher role
+    Filters: All data scoped to user's school
+    """
+    # Get school and staff profile (verified by decorator)
+    school = get_user_school(request)
+    staff = get_object_or_404(StaffProfile, user=request.user, user__school=school)
+    
+    # Get selected class (must be taught by this teacher and in same school)
     class_id = request.GET.get('class_id')
     if not class_id:
-        # Show class selector
-        teacher_classes = get_teacher_classes(staff)
+        # Show class selector (school-scoped)
+        teacher_classes = get_teacher_classes(staff, school)
         return render(request, 'teacher/gradebook_select_class.html', {
             'classes': teacher_classes,
         })
@@ -108,21 +119,23 @@ def gradebook_list(request):
     class_grade = get_object_or_404(
         ClassGrade,
         id=class_id,
+        school=school,
         class_teacher=staff
     )
     
-    # Get students and subjects
-    students = get_class_students(class_grade)
-    subjects = get_class_subjects(class_grade)
+    # Get students and subjects (school-scoped)
+    students = get_class_students(class_grade, school)
+    subjects = get_class_subjects(class_grade, school)
     
     # Get filter parameters
     academic_year = request.GET.get('academic_year', str(datetime.now().year))
     term = request.GET.get('term', '')
     semester = request.GET.get('semester', '')
     
-    # Build grade query filter based on curriculum
+    # Build grade query filter based on curriculum (school-scoped)
     grade_filter = Q(
         student__in=students,
+        student__class_grade__school=school,
         subject__in=subjects,
         curriculum=class_grade.curriculum,
         academic_year=academic_year
@@ -203,7 +216,7 @@ def gradebook_list(request):
     return render(request, 'teacher/gradebook.html', context)
 
 
-@login_required
+@require_teacher_role('teacher')
 def gradebook_detail(request, student_id):
     """
     Detail view: Display a single student's full gradebook (all terms/years).
@@ -217,21 +230,27 @@ def gradebook_detail(request, student_id):
         - average_by_subject: Dict {subject_name: average_score}
         - overall_average: Overall average across all subjects/terms
         - curriculum_type: Human-readable curriculum name
-    """
-    # Get teacher's StaffProfile
-    staff = get_object_or_404(StaffProfile, user=request.user)
     
-    # Get student (must be in one of teacher's classes)
+    Requires: Teacher role
+    Filters: All data scoped to user's school
+    """
+    # Get school and staff profile (verified by decorator)
+    school = get_user_school(request)
+    staff = get_object_or_404(StaffProfile, user=request.user, user__school=school)
+    
+    # Get student (must be in one of teacher's classes and same school)
     student = get_object_or_404(
         Student,
         id=student_id,
+        school=school,
         class_grade__class_teacher=staff
     )
     
-    # Fetch all grades for this student
+    # Fetch all grades for this student (school-scoped)
     all_grades = Grade.objects.filter(
         student=student,
-        curriculum=student.curriculum
+        curriculum=student.curriculum,
+        school=school
     ).select_related('subject').order_by('-academic_year', 'term', 'semester', 'subject__name')
     
     # Group by (academic_year, term/semester) for display
@@ -277,7 +296,7 @@ def gradebook_detail(request, student_id):
     return render(request, 'teacher/gradebook_detail.html', context)
 
 
-@login_required
+@require_teacher_role('teacher')
 def grade_report(request):
     """
     Reporting view: Display class analytics and performance metrics.
@@ -296,14 +315,18 @@ def grade_report(request):
         - bottom_students: Bottom 3 students by average
         - grade_distribution: Dict {grade_band: count}
         - curriculum_type: Human-readable curriculum name
-    """
-    # Get teacher's StaffProfile
-    staff = get_object_or_404(StaffProfile, user=request.user)
     
-    # Get selected class
+    Requires: Teacher role
+    Filters: All data scoped to user's school
+    """
+    # Get school and staff profile (verified by decorator)
+    school = get_user_school(request)
+    staff = get_object_or_404(StaffProfile, user=request.user, user__school=school)
+    
+    # Get selected class (school-scoped)
     class_id = request.GET.get('class_id')
     if not class_id:
-        teacher_classes = get_teacher_classes(staff)
+        teacher_classes = get_teacher_classes(staff, school)
         return render(request, 'teacher/report_select_class.html', {
             'classes': teacher_classes,
         })
@@ -311,6 +334,7 @@ def grade_report(request):
     class_grade = get_object_or_404(
         ClassGrade,
         id=class_id,
+        school=school,
         class_teacher=staff
     )
     
@@ -319,13 +343,14 @@ def grade_report(request):
     term = request.GET.get('term', '')
     semester = request.GET.get('semester', '')
     
-    # Get students and subjects
-    students = get_class_students(class_grade)
-    subjects = get_class_subjects(class_grade)
+    # Get students and subjects (school-scoped)
+    students = get_class_students(class_grade, school)
+    subjects = get_class_subjects(class_grade, school)
     
-    # Build grade query
+    # Build grade query (school-scoped)
     grade_filter = Q(
         student__in=students,
+        student__school=school,
         subject__in=subjects,
         curriculum=class_grade.curriculum,
         academic_year=academic_year
@@ -396,7 +421,7 @@ def grade_report(request):
     return render(request, 'teacher/grade_report.html', context)
 
 
-@login_required
+@require_teacher_role('teacher')
 def student_transcript(request, student_id):
     """
     Transcript view: Generate printable student transcript with all grades.
@@ -410,20 +435,26 @@ def student_transcript(request, student_id):
         - grades_by_period: Grouped grades for display
         - overall_average: Overall average across all subjects
         - curriculum_type: Human-readable curriculum name
-    """
-    # Get teacher's StaffProfile (verify authorization)
-    staff = get_object_or_404(StaffProfile, user=request.user)
     
-    # Get student
+    Requires: Teacher role
+    Filters: All data scoped to user's school
+    """
+    # Get school and staff profile (verified by decorator)
+    school = get_user_school(request)
+    staff = get_object_or_404(StaffProfile, user=request.user, user__school=school)
+    
+    # Get student (school-scoped)
     student = get_object_or_404(
         Student,
         id=student_id,
+        school=school,
         class_grade__class_teacher=staff
     )
     
-    # Fetch all grades
+    # Fetch all grades (school-scoped)
     all_grades = Grade.objects.filter(
         student=student,
+        school=school,
         curriculum=student.curriculum
     ).select_related('subject').order_by('-academic_year', 'term', 'semester')
     
@@ -442,11 +473,11 @@ def student_transcript(request, student_id):
     overall_average = sum(all_scores) / len(all_scores) if all_scores else 0
     
     curriculum_type = 'Uganda National Curriculum' if student.curriculum == 'national' else 'International Curriculum'
-    school = student.class_grade.school
+    school_obj = student.class_grade.school
     
     context = {
         'student': student,
-        'school': school,
+        'school': school_obj,
         'grades_by_period': grades_by_period,
         'overall_average': round(overall_average, 2),
         'curriculum_type': curriculum_type,
@@ -456,7 +487,7 @@ def student_transcript(request, student_id):
     return render(request, 'teacher/student_transcript.html', context)
 
 
-@login_required
+@require_teacher_role('teacher')
 def export_grades(request):
     """
     Export gradebook to CSV format.
@@ -470,15 +501,20 @@ def export_grades(request):
     
     Returns:
         CSV file download with headers: Student Name, Admission #, Subject1, Subject2, ..., Average
-    """
-    # Get teacher's StaffProfile
-    staff = get_object_or_404(StaffProfile, user=request.user)
     
-    # Get class
+    Requires: Teacher role
+    Filters: All data scoped to user's school
+    """
+    # Get school and staff profile (verified by decorator)
+    school = get_user_school(request)
+    staff = get_object_or_404(StaffProfile, user=request.user, user__school=school)
+    
+    # Get class (school-scoped)
     class_id = request.GET.get('class_id')
     class_grade = get_object_or_404(
         ClassGrade,
         id=class_id,
+        school=school,
         class_teacher=staff
     )
     
@@ -487,13 +523,14 @@ def export_grades(request):
     term = request.GET.get('term', '')
     semester = request.GET.get('semester', '')
     
-    # Get students and subjects
-    students = get_class_students(class_grade)
-    subjects = get_class_subjects(class_grade)
+    # Get students and subjects (school-scoped)
+    students = get_class_students(class_grade, school)
+    subjects = get_class_subjects(class_grade, school)
     
-    # Build grade query
+    # Build grade query (school-scoped)
     grade_filter = Q(
         student__in=students,
+        student__school=school,
         subject__in=subjects,
         curriculum=class_grade.curriculum,
         academic_year=academic_year

@@ -1,0 +1,325 @@
+{% extends "teacher/base.html" %}
+{% load static %}
+
+{% block title %}{{ hostel.name }} - Matron{% endblock %}
+
+{% block content %}
+<div class="hostel-detail">
+    <div class="page-header">
+        <h1>{{ hostel.name }}</h1>
+        <p class="subtitle">{{ hostel.get_department_type_display }}</p>
+    </div>
+
+    <!-- Statistics -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">👥</div>
+            <div class="stat-content">
+                <h3>Residents</h3>
+                <p class="stat-value">{{ statistics.total_residents }}</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">👤</div>
+            <div class="stat-content">
+                <h3>Staff</h3>
+                <p class="stat-value">{{ statistics.active_staff }}</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">📊</div>
+            <div class="stat-content">
+                <h3>Occupancy</h3>
+                <p class="stat-value">{{ statistics.occupancy_rate }}</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">👨‍💼</div>
+            <div class="stat-content">
+                <h3>Head</h3>
+                <p class="stat-value">{{ statistics.head }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hostel Information -->
+    <div class="info-section">
+        <h2>Hostel Information</h2>
+        <div class="info-card">
+            <div class="info-item">
+                <label>Name</label>
+                <p>{{ hostel.name }}</p>
+            </div>
+            
+            {% if hostel.description %}
+            <div class="info-item">
+                <label>Description</label>
+                <p>{{ hostel.description }}</p>
+            </div>
+            {% endif %}
+            
+            <div class="info-item">
+                <label>Status</label>
+                <p>
+                    {% if hostel.is_active %}
+                    <span class="badge badge-active">Active</span>
+                    {% else %}
+                    <span class="badge badge-inactive">Inactive</span>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+        <a href="{% url 'teacher:matron:hostel_edit' hostel.id %}" class="btn btn-primary">Edit Hostel</a>
+    </div>
+
+    <!-- Residents -->
+    {% if residents %}
+    <div class="residents-section">
+        <h2>Residents</h2>
+        <div class="residents-grid">
+            {% for resident in residents %}
+            <div class="resident-card">
+                <p class="resident-name">{{ resident.get_full_name }}</p>
+                <p class="resident-email">{{ resident.email }}</p>
+                <a href="{% url 'teacher:matron:resident_detail' resident.id %}" class="btn-view">View →</a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Hostel Staff -->
+    {% if hostel_staff %}
+    <div class="staff-section">
+        <h2>Hostel Staff</h2>
+        <div class="staff-list">
+            {% for staff in hostel_staff %}
+            <div class="staff-card">
+                <div class="staff-info">
+                    <h4>{{ staff.user.get_full_name }}</h4>
+                    <p class="role">{{ staff.get_support_staff_role_display }}</p>
+                    <p class="status {% if staff.user.is_active %}active{% else %}inactive{% endif %}">
+                        {% if staff.user.is_active %}🟢 Active{% else %}🔴 Inactive{% endif %}
+                    </p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="actions">
+        <a href="{% url 'teacher:matron:hostels_list' %}" class="btn btn-secondary">Back to Hostels</a>
+    </div>
+</div>
+
+<style>
+.hostel-detail {
+    padding: 20px;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.page-header {
+    margin-bottom: 30px;
+}
+
+.page-header h1 {
+    margin: 0;
+    font-size: 28px;
+}
+
+.page-header .subtitle {
+    color: #666;
+    margin: 5px 0 0 0;
+    font-size: 14px;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    display: flex;
+    align-items: center;
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.stat-icon {
+    font-size: 32px;
+    margin-right: 15px;
+}
+
+.stat-content h3 {
+    margin: 0;
+    font-size: 14px;
+    color: #666;
+}
+
+.stat-value {
+    margin: 5px 0 0 0;
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+}
+
+.info-section,
+.residents-section,
+.staff-section {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+.info-section h2,
+.residents-section h2,
+.staff-section h2 {
+    margin-top: 0;
+    font-size: 18px;
+}
+
+.info-card {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 15px;
+}
+
+.info-item label {
+    font-weight: 600;
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 5px;
+}
+
+.info-item p {
+    margin: 0;
+    font-size: 14px;
+    color: #333;
+}
+
+.badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.badge-active {
+    background: #d4edda;
+    color: #155724;
+}
+
+.badge-inactive {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.btn {
+    display: inline-block;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background: #007bff;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #0056b3;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #545b62;
+}
+
+.residents-grid,
+.staff-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 15px;
+}
+
+.resident-card,
+.staff-card {
+    padding: 15px;
+    border: 1px solid #eee;
+    border-radius: 6px;
+}
+
+.resident-name {
+    margin: 0 0 5px 0;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.resident-email {
+    margin: 0 0 8px 0;
+    font-size: 12px;
+    color: #666;
+}
+
+.btn-view {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.btn-view:hover {
+    text-decoration: underline;
+}
+
+.staff-info h4 {
+    margin: 0 0 5px 0;
+    font-size: 14px;
+}
+
+.role {
+    margin: 3px 0;
+    font-size: 12px;
+    color: #666;
+}
+
+.status {
+    margin: 3px 0;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.status.active {
+    color: #28a745;
+}
+
+.status.inactive {
+    color: #dc3545;
+}
+
+.actions {
+    display: flex;
+    gap: 10px;
+}
+</style>
+{% endblock %}

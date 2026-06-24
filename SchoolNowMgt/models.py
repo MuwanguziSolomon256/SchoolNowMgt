@@ -10,6 +10,7 @@ verified before generating any migrations.
 
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
+from django.utils import timezone
 
 
 class CustomUserManager(BaseUserManager):
@@ -68,7 +69,8 @@ class CustomUser(AbstractUser):
     Custom user model extending AbstractUser.
     
     Supports multiple roles: admin, teacher, non-teaching staff, and parent.
-    Each user must be associated with a school.
+    - Admin, teacher, support staff: must have a school assigned
+    - Parent: school is NULL (accesses multiple schools via StudentParentRelationship)
     """
     
     ROLE_CHOICES = [
@@ -83,7 +85,10 @@ class CustomUser(AbstractUser):
         School,
         on_delete=models.CASCADE,
         related_name='users',
-        db_index=True
+        db_index=True,
+        null=True,
+        blank=True,
+        help_text="School assignment. NULL for parents (who access multiple schools)."
     )
     phone = models.CharField(max_length=20, blank=True)
     profile_picture = models.ImageField(upload_to='profiles/', blank=True)
@@ -136,6 +141,66 @@ class StaffProfile(models.Model):
         help_text="Subjects this teacher is qualified to teach"
     )
     
+    # ===== NEW FIELDS FOR TEACHERS =====
+    teacher_department = models.ForeignKey(
+        'TeacherDepartment',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='teacher_members',
+        help_text="Subject department this teacher belongs to"
+    )
+    
+    TEACHER_ADMIN_ROLE_CHOICES = [
+        ('teacher', 'Class/Subject Teacher'),
+        ('dos', 'Director of Studies'),
+        ('department_head', 'Subject Department Head'),
+        ('head_teacher', 'Head Teacher'),
+        ('deputy_hm', 'Deputy Headmaster'),
+    ]
+    
+    teacher_admin_role = models.CharField(
+        max_length=50,
+        choices=TEACHER_ADMIN_ROLE_CHOICES,
+        default='teacher',
+        help_text="Administrative role if teacher has one"
+    )
+    
+    # ===== NEW FIELDS FOR SUPPORT STAFF =====
+    support_department = models.ForeignKey(
+        'Department',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='support_staff_members',
+        help_text="Department for non-teaching staff"
+    )
+    
+    SUPPORT_STAFF_ROLE_CHOICES = [
+        ('staff', 'Regular Staff Member'),
+        ('supervisor', 'Shift Supervisor'),
+        ('department_head', 'Department Head'),
+        ('welfare_coordinator', 'Welfare Coordinator'),
+    ]
+    
+    support_staff_role = models.CharField(
+        max_length=50,
+        choices=SUPPORT_STAFF_ROLE_CHOICES,
+        default='staff',
+        help_text="Administrative role within support staff"
+    )
+    
+    # For shift supervisors: who they report to
+    assigned_shift_supervisor = models.ForeignKey(
+        'self',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='supervised_staff',
+        limit_choices_to={'support_staff_role': 'supervisor'},
+        help_text="Supervisor this staff member reports to"
+    )
+    
     def __str__(self):
         return f"{self.user.get_full_name()} — {self.position}"
     
@@ -179,6 +244,269 @@ class ClassGrade(models.Model):
     
     class Meta:
         unique_together = ('name', 'school', 'curriculum')
+
+
+class TeacherDepartment(models.Model):
+    """Subject/Academic departments managed by DOS"""
+    
+    DEPARTMENT_TYPES = [
+        ('mathematics', 'Mathematics'),
+        ('science', 'Science'),
+        ('languages', 'Languages'),
+        ('social_studies', 'Social Studies'),
+        ('technology', 'Technology & ICT'),
+        ('pe_sports', 'Physical Education & Sports'),
+        ('arts_music', 'Arts & Music'),
+        ('humanities', 'Humanities'),
+        ('vocational', 'Vocational Studies'),
+        ('other', 'Other'),
+    ]
+    
+    school = models.ForeignKey(School, on_delete=models.CASCADE, related_name='teacher_departments')
+    name = models.CharField(max_length=100)
+    department_type = models.CharField(max_length=20, choices=DEPARTMENT_TYPES)
+    description = models.TextField(blank=True)
+    
+    # Department Head (Teacher only)
+    head_of_department = models.ForeignKey(
+        'StaffProfile',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='heads_teacher_department',
+        limit_choices_to={'user__role': 'teacher'}
+    )
+    
+    # Budget for resources
+    annual_budget = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True
+    )
+    
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        unique_together = ('school', 'department_type')
+        verbose_name_plural = 'Teacher Departments'
+    
+    def __str__(self):
+        return f"{self.name} ({self.school.name})"
+
+
+class Department(models.Model):
+    """Non-teaching support staff departments per school"""
+    
+    DEPARTMENT_TYPES = [
+        ('security', 'Security (Askaris)'),
+        ('matron', 'Matrons/Hostels'),
+        ('catering', 'Kitchen/Catering'),
+        ('cleaning', 'Cleaning/Housekeeping'),
+        ('maintenance', 'Maintenance & Grounds'),
+        ('health', 'Health & Wellness'),
+        ('welfare', 'Welfare & Counseling'),
+        ('transport', 'Transport & Drivers'),
+        ('library', 'Library'),
+        ('laboratory', 'Laboratory'),
+        ('it', 'IT & Computer'),
+        ('reception', 'Reception & Admin'),
+        ('facilities', 'Facilities Management'),
+        ('sports', 'Sports & Recreation'),
+        ('other', 'Other'),
+    ]
+    
+    school = models.ForeignKey(School, on_delete=models.CASCADE, related_name='support_departments')
+    name = models.CharField(max_length=100)
+    department_type = models.CharField(max_length=20, choices=DEPARTMENT_TYPES)
+    description = models.TextField(blank=True)
+    is_active = models.BooleanField(default=True)
+    
+    # Department Head (Senior non-teaching staff member)
+    head_of_department = models.ForeignKey(
+        'StaffProfile',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='heads_support_department',
+        limit_choices_to={'user__role': 'non_teaching_staff'}
+    )
+    
+    # Budget for department operations
+    monthly_budget = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Monthly budget allocation in local currency"
+    )
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        unique_together = ('school', 'department_type')
+        verbose_name_plural = 'Support Departments'
+    
+    def __str__(self):
+        return f"{self.name} ({self.school.name})"
+
+
+class Hostel(models.Model):
+    """Hostel/Dormitory for boarding schools with assigned matron"""
+    
+    HOSTEL_TYPES = [
+        ('boys', 'Boys Hostel'),
+        ('girls', 'Girls Hostel'),
+        ('mixed', 'Mixed Hostel'),
+    ]
+    
+    school = models.ForeignKey(School, on_delete=models.CASCADE, related_name='hostels')
+    name = models.CharField(max_length=100)  # e.g., "Boys Hostel A", "Girls Hostel B"
+    hostel_type = models.CharField(max_length=20, choices=HOSTEL_TYPES)
+    capacity = models.IntegerField()
+    
+    # Assigned Matron (One matron per hostel)
+    matron = models.OneToOneField(
+        'StaffProfile',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='manages_hostel',
+        limit_choices_to={
+            'user__role': 'non_teaching_staff',
+            'support_staff_role': 'welfare_coordinator'
+        }
+    )
+    
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        unique_together = ('school', 'name')
+    
+    def __str__(self):
+        return f"{self.name} (Capacity: {self.capacity})"
+
+
+class ResidentAssignment(models.Model):
+    """Tracks student assignments to hostels"""
+    
+    STATUS_CHOICES = [
+        ('active', 'Active'),
+        ('inactive', 'Inactive'),
+        ('transferred', 'Transferred'),
+        ('graduated', 'Graduated'),
+    ]
+    
+    hostel = models.ForeignKey(
+        Hostel,
+        on_delete=models.CASCADE,
+        related_name='residents'
+    )
+    student = models.ForeignKey(
+        CustomUser,
+        on_delete=models.CASCADE,
+        related_name='hostel_assignments',
+        limit_choices_to={'role': 'student'}
+    )
+    room_number = models.CharField(max_length=20, blank=True)
+    assignment_date = models.DateField(auto_now_add=True)
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='active'
+    )
+    is_active = models.BooleanField(default=True)
+    
+    class Meta:
+        unique_together = ('hostel', 'student')
+    
+    def __str__(self):
+        student_name = f"{self.student.first_name} {self.student.last_name}"
+        return f"{student_name} - {self.hostel.name}"
+
+
+class StudentParentRelationship(models.Model):
+    """Links parents to students they oversee (per school)"""
+    
+    RELATIONSHIP_TYPES = [
+        ('mother', 'Mother'),
+        ('father', 'Father'),
+        ('guardian', 'Guardian'),
+        ('uncle', 'Uncle'),
+        ('aunt', 'Aunt'),
+        ('grandparent', 'Grandparent'),
+        ('other', 'Other'),
+    ]
+    
+    parent = models.ForeignKey(
+        CustomUser,
+        on_delete=models.CASCADE,
+        limit_choices_to={'role': 'parent'},
+        related_name='parent_relationships'
+    )
+    student = models.ForeignKey(
+        'Student',
+        on_delete=models.CASCADE,
+        related_name='parent_relationships'
+    )
+    relationship_type = models.CharField(
+        max_length=20,
+        choices=RELATIONSHIP_TYPES,
+        default='parent'
+    )
+    is_primary_guardian = models.BooleanField(default=False)
+    
+    # Link to specific school for easy filtering
+    school = models.ForeignKey(
+        School,
+        on_delete=models.CASCADE,
+        help_text="School where this student is enrolled"
+    )
+    
+    # Status
+    is_active = models.BooleanField(default=True)
+    date_linked = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        unique_together = ('parent', 'student', 'school')
+        verbose_name_plural = 'Student Parent Relationships'
+    
+    def __str__(self):
+        return f"{self.parent.get_full_name()} - {self.student.full_name} ({self.get_relationship_type_display()})"
+
+
+class ClassTeacherAssignment(models.Model):
+    """Links a teacher to a class as the class teacher"""
+    
+    school = models.ForeignKey(School, on_delete=models.CASCADE)
+    class_grade = models.ForeignKey(
+        ClassGrade,
+        on_delete=models.CASCADE,
+        related_name='class_teacher_assignments'
+    )
+    teacher = models.ForeignKey(
+        'StaffProfile',
+        on_delete=models.PROTECT,
+        related_name='class_teacher_assignments',
+        limit_choices_to={'user__role': 'teacher'}
+    )
+    
+    # Academic year (e.g., "2024-2025")
+    academic_year = models.CharField(max_length=9)
+    start_date = models.DateField()
+    end_date = models.DateField(null=True, blank=True)
+    
+    is_active = models.BooleanField(default=True)
+    assigned_date = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        unique_together = ('school', 'class_grade', 'academic_year')
+    
+    def __str__(self):
+        return f"{self.teacher.user.get_full_name()} - {self.class_grade.name} ({self.academic_year})"
 
 
 class Curriculum(models.Model):
@@ -1514,6 +1842,221 @@ class AdminProfile(models.Model):
     
     def __str__(self):
         return f"Admin Profile: {self.user.get_full_name()}"
+
+
+# ============================================================================
+# NOTIFICATIONS
+# ============================================================================
+
+class Notification(models.Model):
+    """
+    In-app notifications system for all users.
+    
+    Tracks notifications for:
+    - Parents: grades posted, payments due, attendance alerts
+    - Teachers: assignment due, event reminders
+    - Staff: schedule changes, announcements
+    - Admins: system alerts, reports ready
+    
+    Can link to:
+    - Grade (when grade posted)
+    - FeePayment (when payment due)
+    - Student (when attendance alert)
+    - Event (event reminder)
+    
+    Supports filtering by type, unread status, date range.
+    """
+    
+    NOTIFICATION_TYPES = [
+        ('grade_posted', 'Grade Posted'),
+        ('payment_due', 'Payment Due'),
+        ('payment_overdue', 'Payment Overdue'),
+        ('attendance_alert', 'Attendance Alert'),
+        ('assignment_due', 'Assignment Due'),
+        ('event_reminder', 'Event Reminder'),
+        ('schedule_change', 'Schedule Change'),
+        ('message', 'New Message'),
+        ('announcement', 'Announcement'),
+        ('admin_alert', 'Admin Alert'),
+        ('system_alert', 'System Alert'),
+        ('other', 'Other'),
+    ]
+    
+    recipient = models.ForeignKey(
+        CustomUser,
+        on_delete=models.CASCADE,
+        related_name='notifications',
+        help_text="User who receives this notification"
+    )
+    
+    notification_type = models.CharField(
+        max_length=30,
+        choices=NOTIFICATION_TYPES,
+        default='other',
+        help_text="Type of notification"
+    )
+    
+    title = models.CharField(
+        max_length=200,
+        help_text="Short notification title"
+    )
+    
+    message = models.TextField(
+        help_text="Detailed notification message"
+    )
+    
+    # Optional related objects for linking
+    related_student = models.ForeignKey(
+        'Student',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='student_notifications',
+        help_text="Student related to notification (e.g., for grade/attendance)"
+    )
+    
+    related_grade = models.ForeignKey(
+        'Grade',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='grade_notifications',
+        help_text="Grade posted notification"
+    )
+    
+    related_payment = models.ForeignKey(
+        'FeePayment',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='payment_notifications',
+        help_text="Payment related notification"
+    )
+    
+    related_event = models.ForeignKey(
+        'Event',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='event_notifications',
+        help_text="Event related notification"
+    )
+    
+    related_message = models.ForeignKey(
+        'Message',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='message_notifications',
+        help_text="Message notification"
+    )
+    
+    # Status tracking
+    is_read = models.BooleanField(
+        default=False,
+        help_text="Whether user has read this notification"
+    )
+    
+    read_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="When user read the notification"
+    )
+    
+    # Action URL (optional - links to relevant page)
+    action_url = models.CharField(
+        max_length=500,
+        blank=True,
+        help_text="URL to relevant page (e.g., grades view, payment detail)"
+    )
+    
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        help_text="When notification was created"
+    )
+    
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['recipient', '-created_at']),
+            models.Index(fields=['recipient', 'is_read']),
+            models.Index(fields=['recipient', 'notification_type']),
+        ]
+    
+    def __str__(self):
+        return f"{self.title} → {self.recipient.email}"
+    
+    def mark_as_read(self):
+        """Mark notification as read"""
+        if not self.is_read:
+            self.is_read = True
+            self.read_at = timezone.now()
+            self.save(update_fields=['is_read', 'read_at'])
+    
+    @classmethod
+    def get_unread_count(cls, user):
+        """Get count of unread notifications for user"""
+        return cls.objects.filter(recipient=user, is_read=False).count()
+    
+    @classmethod
+    def create_grade_notification(cls, student_parent, grade):
+        """Create notification when grade is posted"""
+        return cls.objects.create(
+            recipient=student_parent,
+            notification_type='grade_posted',
+            title=f"Grade posted for {grade.subject.name}",
+            message=f"{grade.student.get_full_name()}: {grade.score}/100 ({grade.get_letter_grade_display()})",
+            related_student=grade.student,
+            related_grade=grade,
+            action_url=f"/parent/academics/#student-{grade.student.id}"
+        )
+    
+    @classmethod
+    def create_payment_notification(cls, parent, fee_payment, alert_type='due'):
+        """Create notification for payment due or overdue"""
+        if alert_type == 'due':
+            notif_type = 'payment_due'
+            title = f"Payment due for {fee_payment.student.get_full_name()}"
+            msg = f"Amount: {fee_payment.amount}. Due date: {fee_payment.due_date}"
+        else:  # overdue
+            notif_type = 'payment_overdue'
+            title = f"Payment overdue for {fee_payment.student.get_full_name()}"
+            msg = f"Amount: {fee_payment.amount}. Overdue by {(timezone.now().date() - fee_payment.due_date).days} days"
+        
+        return cls.objects.create(
+            recipient=parent,
+            notification_type=notif_type,
+            title=title,
+            message=msg,
+            related_student=fee_payment.student,
+            related_payment=fee_payment,
+            action_url=f"/parent/payments/"
+        )
+    
+    @classmethod
+    def create_attendance_alert(cls, parent, student, absent_days):
+        """Create notification for low attendance"""
+        return cls.objects.create(
+            recipient=parent,
+            notification_type='attendance_alert',
+            title=f"Attendance alert for {student.get_full_name()}",
+            message=f"Your child has been absent {absent_days} days this week. Please address this.",
+            related_student=student,
+            action_url=f"/parent/academics/#attendance-{student.id}"
+        )
+    
+    @classmethod
+    def create_message_notification(cls, user, sender, message_obj):
+        """Create notification for new message"""
+        sender_name = sender.get_full_name() if sender.get_full_name() else sender.email
+        return cls.objects.create(
+            recipient=user,
+            notification_type='message',
+            title=f"New message from {sender_name}",
+            message=message_obj.body[:100] + "..." if len(message_obj.body) > 100 else message_obj.body,
+            related_message=message_obj,
+            action_url=f"/messages/{message_obj.id}/"
+        )
     
     def get_profile_image_url(self):
         """Return profile picture URL or default."""

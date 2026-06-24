@@ -1,0 +1,263 @@
+{% extends "teacher/base.html" %}
+{% load static %}
+
+{% block title %}My Profile - Support Staff{% endblock %}
+
+{% block content %}
+<div class="support-staff-profile">
+    <div class="page-header">
+        <h1>My Profile</h1>
+    </div>
+
+    <!-- Profile Information -->
+    <div class="profile-section">
+        <h2>Personal Information</h2>
+        <div class="profile-card">
+            <div class="profile-item">
+                <label>Full Name</label>
+                <p>{{ staff_profile.user.get_full_name }}</p>
+            </div>
+            
+            <div class="profile-item">
+                <label>Username</label>
+                <p>{{ staff_profile.user.username }}</p>
+            </div>
+            
+            <div class="profile-item">
+                <label>Email</label>
+                <p>{{ staff_profile.user.email }}</p>
+            </div>
+            
+            <div class="profile-item">
+                <label>Role</label>
+                <p>{{ staff_profile.get_support_staff_role_display }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Department Information -->
+    {% if staff_profile.support_department %}
+    <div class="department-section">
+        <h2>Department Assignment</h2>
+        <div class="dept-card">
+            <div class="dept-item">
+                <label>Department</label>
+                <p>{{ staff_profile.support_department.name }}</p>
+            </div>
+            
+            <div class="dept-item">
+                <label>Department Type</label>
+                <p>{{ staff_profile.support_department.get_department_type_display }}</p>
+            </div>
+            
+            <div class="dept-item">
+                <label>Department Head</label>
+                <p>
+                    {% if staff_profile.support_department.head_of_department %}
+                    {{ staff_profile.support_department.head_of_department.user.get_full_name }}
+                    {% else %}
+                    Not assigned
+                    {% endif %}
+                </p>
+            </div>
+            
+            <div class="dept-item">
+                <label>Status</label>
+                <p>
+                    {% if staff_profile.support_department.is_active %}
+                    <span class="badge badge-active">Active</span>
+                    {% else %}
+                    <span class="badge badge-inactive">Inactive</span>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Account Status -->
+    <div class="account-section">
+        <h2>Account Status</h2>
+        <div class="account-card">
+            <div class="account-item">
+                <label>Account Status</label>
+                <p>
+                    {% if staff_profile.user.is_active %}
+                    <span class="badge badge-active">Active</span>
+                    {% else %}
+                    <span class="badge badge-inactive">Inactive</span>
+                    {% endif %}
+                </p>
+            </div>
+            
+            <div class="account-item">
+                <label>Member Since</label>
+                <p>{{ staff_profile.user.date_joined|date:"M d, Y" }}</p>
+            </div>
+            
+            <div class="account-item">
+                <label>Last Login</label>
+                <p>{{ staff_profile.user.last_login|default:"Never" }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Links -->
+    <div class="quick-links">
+        <h2>Quick Links</h2>
+        <div class="links-grid">
+            <a href="{% url 'password_reset' %}" class="link-card">
+                <div class="link-icon">🔐</div>
+                <div class="link-content">
+                    <h3>Change Password</h3>
+                    <p>Update your account password</p>
+                </div>
+            </a>
+            
+            <a href="#" class="link-card">
+                <div class="link-icon">📞</div>
+                <div class="link-content">
+                    <h3>Update Contact Info</h3>
+                    <p>Update phone and address</p>
+                </div>
+            </a>
+            
+            <a href="#" class="link-card">
+                <div class="link-icon">📋</div>
+                <div class="link-content">
+                    <h3>View My Activities</h3>
+                    <p>See your recent activities</p>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+.support-staff-profile {
+    padding: 20px;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.page-header {
+    margin-bottom: 30px;
+}
+
+.page-header h1 {
+    margin: 0;
+    font-size: 28px;
+}
+
+.profile-section,
+.department-section,
+.account-section,
+.quick-links {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+.profile-section h2,
+.department-section h2,
+.account-section h2,
+.quick-links h2 {
+    margin-top: 0;
+    font-size: 18px;
+}
+
+.profile-card,
+.dept-card,
+.account-card {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.profile-item,
+.dept-item,
+.account-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.profile-item label,
+.dept-item label,
+.account-item label {
+    font-weight: 600;
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 8px;
+}
+
+.profile-item p,
+.dept-item p,
+.account-item p {
+    margin: 0;
+    font-size: 14px;
+    color: #333;
+}
+
+.badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    width: fit-content;
+}
+
+.badge-active {
+    background: #d4edda;
+    color: #155724;
+}
+
+.badge-inactive {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.links-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+}
+
+.link-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+    padding: 15px;
+    border: 1px solid #eee;
+    border-radius: 6px;
+    text-decoration: none;
+    color: #333;
+    transition: all 0.3s ease;
+}
+
+.link-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+    border-color: #007bff;
+}
+
+.link-icon {
+    font-size: 28px;
+    flex-shrink: 0;
+}
+
+.link-content h3 {
+    margin: 0 0 5px 0;
+    font-size: 14px;
+    color: #333;
+}
+
+.link-content p {
+    margin: 0;
+    font-size: 12px;
+    color: #666;
+}
+</style>
+{% endblock %}

@@ -155,6 +155,94 @@
             text-decoration: underline;
         }
         
+        /* Roles section */
+        .roles-section {
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #eee;
+        }
+        
+        .roles-section h3 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        
+        .roles-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+            font-size: 0.85rem;
+        }
+        
+        .role-card {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            padding: 0.75rem;
+            cursor: help;
+            transition: all 0.2s ease;
+        }
+        
+        .role-card:hover {
+            background: #f0f4ff;
+            border-color: #667eea;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
+        }
+        
+        .role-card .role-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.25rem;
+        }
+        
+        .role-card .role-access {
+            color: #666;
+            font-size: 0.8rem;
+        }
+        
+        .role-card.admin {
+            background: #fff3cd;
+            border-color: #ffc107;
+        }
+        
+        .role-card.admin:hover {
+            background: #fff8dd;
+            border-color: #ff9800;
+        }
+        
+        .role-card.teacher {
+            background: #cfe2ff;
+            border-color: #0d6efd;
+        }
+        
+        .role-card.teacher:hover {
+            background: #e0eaff;
+            border-color: #0d5acd;
+        }
+        
+        .role-card.support {
+            background: #d1e7dd;
+            border-color: #198754;
+        }
+        
+        .role-card.support:hover {
+            background: #ddf5ed;
+            border-color: #146c43;
+        }
+        
+        .role-card.parent {
+            background: #f8d7da;
+            border-color: #dc3545;
+        }
+        
+        .role-card.parent:hover {
+            background: #fce4e6;
+            border-color: #bd2130;
+        }
+        
         /* Responsive */
         @media (max-width: 480px) {
             .login-container {
@@ -164,6 +252,10 @@
             
             .login-header h1 {
                 font-size: 1.5rem;
+            }
+            
+            .roles-grid {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -216,6 +308,76 @@
         
         <div class="login-footer">
             <p>Don't have an account? Contact your administrator.</p>
+        </div>
+        
+        <!-- User Roles Reference -->
+        <div class="roles-section">
+            <h3>📋 Available User Roles</h3>
+            <div class="roles-grid">
+                <!-- Admin Roles -->
+                <div class="role-card admin" title="Full system access, manage all staff and students">
+                    <div class="role-name">👨‍💼 Admin</div>
+                    <div class="role-access">Full system access</div>
+                </div>
+                
+                <!-- Teaching Staff Roles -->
+                <div class="role-card teacher" title="Director of Studies - Manage timetables and academics">
+                    <div class="role-name">📚 DOS</div>
+                    <div class="role-access">Manage academics</div>
+                </div>
+                
+                <div class="role-card teacher" title="Manages subject department, performance & resources">
+                    <div class="role-name">👨‍🏫 Dept Head</div>
+                    <div class="role-access">Department lead</div>
+                </div>
+                
+                <div class="role-card teacher" title="Oversees all teaching staff and curriculum">
+                    <div class="role-name">🎓 Head Teacher</div>
+                    <div class="role-access">Academic lead</div>
+                </div>
+                
+                <div class="role-card teacher" title="Manage class attendance, grades & pastoral care">
+                    <div class="role-name">✏️ Class Teacher</div>
+                    <div class="role-access">Class management</div>
+                </div>
+                
+                <div class="role-card teacher" title="Enter grades and manage teaching duties">
+                    <div class="role-name">📖 Teacher</div>
+                    <div class="role-access">Teaching duties</div>
+                </div>
+                
+                <!-- Support Staff Roles -->
+                <div class="role-card support" title="Manage Deputy Headmaster duties and support staff">
+                    <div class="role-name">🏛️ Deputy HM</div>
+                    <div class="role-access">Support staff lead</div>
+                </div>
+                
+                <div class="role-card support" title="Manage hostel students, check-in/out, welfare">
+                    <div class="role-name">🏠 Matron</div>
+                    <div class="role-access">Hostel management</div>
+                </div>
+                
+                <div class="role-card support" title="Supervise shift workers and attendance">
+                    <div class="role-name">👷 Supervisor</div>
+                    <div class="role-access">Shift management</div>
+                </div>
+                
+                <div class="role-card support" title="Manage support department team and budget">
+                    <div class="role-name">🔧 Dept Head (Support)</div>
+                    <div class="role-access">Support team lead</div>
+                </div>
+                
+                <div class="role-card support" title="Support staff duties (security, catering, etc)">
+                    <div class="role-name">👥 Staff</div>
+                    <div class="role-access">Support duties</div>
+                </div>
+                
+                <!-- Parent Role -->
+                <div class="role-card parent" title="View child grades, payments, attendance & notifications">
+                    <div class="role-name">👨‍👩‍👧 Parent</div>
+                    <div class="role-access">Child monitoring</div>
+                </div>
+            </div>
         </div>
     </div>
 </body>

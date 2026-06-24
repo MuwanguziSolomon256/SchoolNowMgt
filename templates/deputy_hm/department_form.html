@@ -1,0 +1,207 @@
+{% extends "teacher/base.html" %}
+{% load static %}
+
+{% block title %}{% if is_create %}Create Department{% else %}Edit Department{% endif %} - Deputy HM{% endblock %}
+
+{% block content %}
+<div class="deputy-hm-dept-form">
+    <div class="page-header">
+        <h1>{% if is_create %}Create New Department{% else %}Edit Department: {{ department.name }}{% endif %}</h1>
+    </div>
+
+    <form method="post" class="dept-form">
+        {% csrf_token %}
+
+        <div class="form-section">
+            <h2>Department Information</h2>
+            
+            <div class="form-group">
+                <label for="name">Department Name <span class="required">*</span></label>
+                <input type="text" name="name" id="name" required value="{% if department %}{{ department.name }}{% endif %}" placeholder="e.g., Maintenance, Cleaning">
+            </div>
+
+            {% if is_create %}
+            <div class="form-group">
+                <label for="department_type">Department Type <span class="required">*</span></label>
+                <select name="department_type" id="department_type" required>
+                    <option value="">-- Select Type --</option>
+                    {% for choice_value, choice_label in dept_type_choices %}
+                    <option value="{{ choice_value }}">{{ choice_label }}</option>
+                    {% endfor %}
+                </select>
+                <small class="help-text">Choose the category for this department</small>
+            </div>
+            {% endif %}
+
+            <div class="form-group">
+                <label for="description">Description</label>
+                <textarea name="description" id="description" rows="4" placeholder="Describe the department's role and responsibilities">{% if department %}{{ department.description }}{% endif %}</textarea>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h2>Department Head</h2>
+            
+            <div class="form-group">
+                <label for="head_of_department">Assign Head</label>
+                <select name="head_of_department" id="head_of_department">
+                    <option value="">-- No Head --</option>
+                    {% for head in department_heads %}
+                    <option value="{{ head.id }}" {% if department and department.head_of_department.id == head.id %}selected{% endif %}>
+                        {{ head.user.get_full_name }}
+                    </option>
+                    {% endfor %}
+                </select>
+                <small class="help-text">Assign a non-teaching staff member to lead this department</small>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h2>Budget</h2>
+            
+            <div class="form-group">
+                <label for="monthly_budget">Monthly Budget (Optional)</label>
+                <input type="number" name="monthly_budget" id="monthly_budget" step="0.01" min="0"
+                       value="{% if department and department.monthly_budget %}{{ department.monthly_budget }}{% endif %}" 
+                       placeholder="0.00">
+                <small class="help-text">Monthly budget allocation for this department</small>
+            </div>
+        </div>
+
+        {% if not is_create %}
+        <div class="form-section">
+            <h2>Status</h2>
+            
+            <div class="form-group">
+                <label for="is_active">
+                    <input type="checkbox" name="is_active" id="is_active" {% if department.is_active %}checked{% endif %}>
+                    Active
+                </label>
+                <small class="help-text">Uncheck to deactivate this department</small>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">{% if is_create %}Create Department{% else %}Save Changes{% endif %}</button>
+            <a href="{% url 'teacher:deputy:departments_list' %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<style>
+.deputy-hm-dept-form {
+    padding: 20px;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.page-header {
+    margin-bottom: 30px;
+}
+
+.page-header h1 {
+    margin: 0;
+    font-size: 28px;
+}
+
+.dept-form {
+    background: white;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.form-section {
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.form-section:last-of-type {
+    border-bottom: none;
+}
+
+.form-section h2 {
+    margin: 0 0 20px 0;
+    font-size: 16px;
+    color: #333;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    color: #333;
+}
+
+.required {
+    color: #dc3545;
+}
+
+.form-group select,
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    font-family: inherit;
+}
+
+.form-group select:focus,
+.form-group input:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0,123,255,0.25);
+}
+
+.form-group input[type="checkbox"] {
+    margin-right: 8px;
+}
+
+.form-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 30px;
+}
+
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background: #007bff;
+    color: white;
+    flex: 1;
+}
+
+.btn-primary:hover {
+    background: #0056b3;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #545b62;
+}
+</style>
+{% endblock %}

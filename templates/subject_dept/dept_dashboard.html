@@ -1,0 +1,400 @@
+{% extends "teacher/base.html" %}
+{% load static %}
+
+{% block title %}Department Dashboard{% endblock %}
+
+{% block content %}
+<style>
+  .admin-nav {
+    background: linear-gradient(135deg, #080b3a 0%, #1a1e4f 100%);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+  .admin-nav-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 70px;
+  }
+  .admin-nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+  }
+  .admin-nav-icon {
+    width: 40px;
+    height: 40px;
+    background-color: #7c5800;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: white;
+  }
+  .admin-nav-text h2 {
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0;
+  }
+  .admin-nav-text p {
+    color: #d4a574;
+    font-size: 12px;
+    margin: 2px 0 0 0;
+  }
+  .admin-nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  .nav-user-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: white;
+    font-size: 14px;
+  }
+  .nav-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: transparent;
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+  }
+  .nav-btn:hover {
+    background-color: rgba(212, 165, 116, 0.15);
+    color: #d4a574;
+  }
+  .dashboard-content {
+    padding-top: 90px;
+  }
+</style>
+
+<div class="admin-nav">
+  <div class="admin-nav-container">
+    <div class="admin-nav-brand">
+      <div class="admin-nav-icon">📚</div>
+      <div class="admin-nav-text">
+        <h2>Department Head</h2>
+        <p>{{ request.user.school.name|default:"School Management" }}</p>
+      </div>
+    </div>
+    
+    <div class="admin-nav-actions">
+      <div class="nav-user-info">
+        <span>👤</span>
+        <span>{{ request.user.get_full_name|default:request.user.username }}</span>
+      </div>
+      
+      <form method="post" action="{% url 'teacher:logout' %}" style="margin: 0;">
+        {% csrf_token %}
+        <button type="submit" class="nav-btn" title="Logout to Auth Login">
+          <span>🚪</span>
+          <span>Logout</span>
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="department-dashboard dashboard-content">
+    <div class="page-header">
+        <h1>Subject Department Overview</h1>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">📚</div>
+            <div class="stat-content">
+                <p class="stat-label">Subjects</p>
+                <p class="stat-value">{{ total_subjects }}</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">👨‍🏫</div>
+            <div class="stat-content">
+                <p class="stat-label">Teachers</p>
+                <p class="stat-value">{{ total_teachers }}</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">🎓</div>
+            <div class="stat-content">
+                <p class="stat-label">Classes</p>
+                <p class="stat-value">{{ total_classes }}</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">📊</div>
+            <div class="stat-content">
+                <p class="stat-label">Avg Performance</p>
+                <p class="stat-value">{{ avg_performance|floatformat:1 }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="actions-section">
+        <h2>Quick Actions</h2>
+        <div class="actions-grid">
+            <a href="/teacher/department/teachers/" class="action-card">
+                <span class="action-icon">👥</span>
+                <span class="action-text">Manage Teachers</span>
+            </a>
+
+            <a href="/teacher/department/subjects/" class="action-card">
+                <span class="action-icon">📖</span>
+                <span class="action-text">View Subjects</span>
+            </a>
+
+            <a href="/teacher/department/classes/" class="action-card">
+                <span class="action-icon">🏫</span>
+                <span class="action-text">Manage Classes</span>
+            </a>
+
+            <a href="/teacher/department/timetable/" class="action-card">
+                <span class="action-icon">🕐</span>
+                <span class="action-text">View Timetable</span>
+            </a>
+
+            <a href="/teacher/department/performance/" class="action-card">
+                <span class="action-icon">📈</span>
+                <span class="action-text">Performance Report</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Subjects Overview -->
+    {% if subjects %}
+    <div class="subjects-section">
+        <h2>Department Subjects</h2>
+        <div class="subjects-grid">
+            {% for subject in subjects %}
+            <div class="subject-card">
+                <h3>{{ subject.subject_name }}</h3>
+                <p class="code">{{ subject.subject_code }}</p>
+                <a href="/teacher/department/subjects/{{ subject.id }}/" class="btn-view">View Details</a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Recent Activities -->
+    {% if recent_activities %}
+    <div class="activities-section">
+        <h2>Recent Activities</h2>
+        <div class="activities-list">
+            {% for activity in recent_activities %}
+            <div class="activity-item">
+                <div class="activity-icon">{{ activity.icon_name }}</div>
+                <div class="activity-content">
+                    <p class="activity-description">{{ activity.description }}</p>
+                    <p class="activity-time">{{ activity.created_at|timesince }} ago</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.department-dashboard {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.page-header {
+    margin-bottom: 30px;
+}
+
+.page-header h1 {
+    margin: 0;
+    font-size: 28px;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.stat-icon {
+    font-size: 32px;
+}
+
+.stat-content {
+    flex: 1;
+}
+
+.stat-label {
+    margin: 0;
+    font-size: 12px;
+    color: #666;
+}
+
+.stat-value {
+    margin: 5px 0 0 0;
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+}
+
+.actions-section,
+.subjects-section,
+.activities-section {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+.actions-section h2,
+.subjects-section h2,
+.activities-section h2 {
+    margin-top: 0;
+    font-size: 18px;
+}
+
+.actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+}
+
+.action-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    text-decoration: none;
+    color: #333;
+    text-align: center;
+    transition: background 0.2s;
+}
+
+.action-card:hover {
+    background: #e9ecef;
+}
+
+.action-icon {
+    font-size: 28px;
+}
+
+.action-text {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.subjects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.subject-card {
+    border: 1px solid #eee;
+    border-radius: 6px;
+    padding: 15px;
+    text-align: center;
+}
+
+.subject-card h3 {
+    margin: 0;
+    font-size: 14px;
+}
+
+.subject-card .code {
+    margin: 5px 0;
+    font-size: 12px;
+    color: #666;
+    font-weight: 600;
+}
+
+.btn-view {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 6px 12px;
+    background: #007bff;
+    color: white;
+    text-decoration: none;
+    border-radius: 3px;
+    font-size: 12px;
+}
+
+.btn-view:hover {
+    background: #0056b3;
+}
+
+.activities-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.activity-item {
+    display: flex;
+    gap: 12px;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 4px;
+}
+
+.activity-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.activity-content {
+    flex: 1;
+}
+
+.activity-description {
+    margin: 0;
+    font-size: 13px;
+    color: #333;
+}
+
+.activity-time {
+    margin: 3px 0 0 0;
+    font-size: 11px;
+    color: #999;
+}
+</style>
+{% endblock %}

@@ -276,36 +276,38 @@
         </div>
     </main>
 
-    <!-- ───────────────────────────────────────────────────────────── -->
-    <!-- JAVASCRIPT                                                     -->
-    <!-- ───────────────────────────────────────────────────────────── -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const menuToggle = document.getElementById('teacherMobileMenuToggle');
-            const mobileMenu = document.getElementById('teacherMobileMenu');
-            
-            if (menuToggle && mobileMenu) {
-                // Toggle menu when hamburger is clicked
-                menuToggle.addEventListener('click', function() {
-                    const isOpen = mobileMenu.style.maxHeight && mobileMenu.style.maxHeight !== '0px';
-                    if (isOpen) {
-                        mobileMenu.style.maxHeight = '0px';
-                    } else {
-                        mobileMenu.style.maxHeight = mobileMenu.scrollHeight + 'px';
-                    }
-                });
-                
-                // Close menu when a link is clicked
-                const menuLinks = mobileMenu.querySelectorAll('a');
-                menuLinks.forEach(link => {
-                    link.addEventListener('click', function() {
-                        mobileMenu.style.maxHeight = '0px';
-                    });
-                });
-            }
-        });
-    </script>
-    
     {% block extra_js %}{% endblock %}
+
+    <!-- Mobile Menu Toggle Script -->
+    <script>
+        const menuToggle = document.getElementById('teacherMobileMenuToggle');
+        const mobileMenu = document.getElementById('teacherMobileMenu');
+        
+        function toggleMenu() {
+            if (!mobileMenu) return;
+            const isOpen = mobileMenu.style.maxHeight && mobileMenu.style.maxHeight !== '0px';
+            if (isOpen) {
+                mobileMenu.style.maxHeight = '0px';
+                mobileMenu.style.pointerEvents = 'none';
+            } else {
+                mobileMenu.style.maxHeight = mobileMenu.scrollHeight + 'px';
+                mobileMenu.style.pointerEvents = 'auto';
+            }
+        }
+        
+        if (menuToggle) {
+            menuToggle.addEventListener('click', toggleMenu);
+        }
+        
+        if (mobileMenu) {
+            const menuLinks = mobileMenu.querySelectorAll('a');
+            menuLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    mobileMenu.style.maxHeight = '0px';
+                    mobileMenu.style.pointerEvents = 'none';
+                });
+            });
+        }
+    </script>
 </body>
 </html>

@@ -1,0 +1,306 @@
+{% extends "teacher/base.html" %}
+{% load static %}
+
+{% block title %}Student Detail - {{ student.user.get_full_name }}{% endblock %}
+
+{% block content %}
+<div class="student-detail">
+    <div class="page-header">
+        <h1>{{ student.user.get_full_name }}</h1>
+        <p class="subtitle">{{ my_class.class_grade_level.level_name }} - {{ my_class.class_stream.stream_name }}</p>
+    </div>
+
+    <!-- Student Information -->
+    <div class="info-section">
+        <h2>Student Information</h2>
+        <div class="info-card">
+            <div class="info-item">
+                <label>Full Name</label>
+                <p>{{ student.user.get_full_name }}</p>
+            </div>
+            
+            <div class="info-item">
+                <label>Email</label>
+                <p>{{ student.user.email }}</p>
+            </div>
+            
+            <div class="info-item">
+                <label>Phone</label>
+                <p>{{ student.user.phone|default:"—" }}</p>
+            </div>
+            
+            <div class="info-item">
+                <label>Status</label>
+                <p>
+                    {% if student.user.is_active %}
+                    <span class="badge badge-active">Active</span>
+                    {% else %}
+                    <span class="badge badge-inactive">Inactive</span>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Performance Statistics -->
+    <div class="stats-section">
+        <h2>Performance Statistics</h2>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <p class="stat-label">Grades Recorded</p>
+                <p class="stat-value">{{ total_grades }}</p>
+            </div>
+            
+            <div class="stat-card">
+                <p class="stat-label">Average Score</p>
+                <p class="stat-value">{{ avg_score|floatformat:1 }}</p>
+            </div>
+            
+            <div class="stat-card">
+                <p class="stat-label">Attendance Rate</p>
+                <p class="stat-value">{{ attendance_rate|floatformat:1 }}%</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Grades -->
+    {% if grades %}
+    <div class="grades-section">
+        <h2>Grades ({{ grades|length }})</h2>
+        <div class="table-section">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Subject</th>
+                        <th>Score</th>
+                        <th>Entered By</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for grade in grades %}
+                    <tr>
+                        <td>{{ grade.subject.subject_name }}</td>
+                        <td>{{ grade.grade_point }}</td>
+                        <td>{{ grade.recorded_by.user.get_full_name }}</td>
+                        <td>{{ grade.created_at|date:"M d, Y" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Attendance -->
+    {% if attendance %}
+    <div class="attendance-section">
+        <h2>Recent Attendance</h2>
+        <div class="table-section">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in attendance %}
+                    <tr>
+                        <td>{{ record.date|date:"M d, Y" }}</td>
+                        <td>
+                            {% if record.status == 'present' %}
+                            <span class="badge badge-present">Present</span>
+                            {% elif record.status == 'absent' %}
+                            <span class="badge badge-absent">Absent</span>
+                            {% else %}
+                            <span class="badge badge-other">{{ record.get_status_display }}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="actions">
+        <a href="{% url 'class_teacher:students_list' %}" class="btn btn-secondary">Back to Students</a>
+    </div>
+</div>
+
+<style>
+.student-detail {
+    padding: 20px;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.page-header {
+    margin-bottom: 30px;
+}
+
+.page-header h1 {
+    margin: 0;
+    font-size: 28px;
+}
+
+.page-header .subtitle {
+    color: #666;
+    margin: 5px 0 0 0;
+    font-size: 14px;
+}
+
+.info-section,
+.stats-section,
+.grades-section,
+.attendance-section {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+.info-section h2,
+.stats-section h2,
+.grades-section h2,
+.attendance-section h2 {
+    margin-top: 0;
+    font-size: 18px;
+}
+
+.info-card {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.info-item label {
+    font-weight: 600;
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 5px;
+}
+
+.info-item p {
+    margin: 0;
+    font-size: 14px;
+    color: #333;
+}
+
+.badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.badge-active {
+    background: #d4edda;
+    color: #155724;
+}
+
+.badge-inactive {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.badge-present {
+    background: #d4edda;
+    color: #155724;
+}
+
+.badge-absent {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.badge-other {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+}
+
+.stat-card {
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 4px;
+    text-align: center;
+}
+
+.stat-label {
+    margin: 0;
+    font-size: 12px;
+    color: #666;
+}
+
+.stat-value {
+    margin: 8px 0 0 0;
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+}
+
+.table-section {
+    overflow-x: auto;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table thead {
+    background: #f8f9fa;
+}
+
+.table th {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 2px solid #dee2e6;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.table td {
+    padding: 10px 15px;
+    border-bottom: 1px solid #dee2e6;
+    font-size: 13px;
+}
+
+.table tbody tr:nth-child(odd) {
+    background: #f8f9fa;
+}
+
+.actions {
+    display: flex;
+    gap: 10px;
+}
+
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #545b62;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,361 @@
+{% extends "teacher/base.html" %}
+{% load static %}
+
+{% block title %}Class Dashboard{% endblock %}
+
+{% block content %}
+<div class="class-dashboard">
+    <div class="page-header">
+        <h1>Class Dashboard</h1>
+    </div>
+
+    {% if no_class %}
+    <div class="no-class-alert">
+        <p>⚠️ You have not been assigned as a class teacher yet.</p>
+    </div>
+    {% else %}
+
+    <!-- Class Info -->
+    <div class="class-info">
+        <h2>{{ my_class.class_grade_level.level_name }} - {{ my_class.class_stream.stream_name }}</h2>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">👥</div>
+            <div class="stat-content">
+                <p class="stat-label">Total Students</p>
+                <p class="stat-value">{{ total_students }}</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">✓</div>
+            <div class="stat-content">
+                <p class="stat-label">Present Today</p>
+                <p class="stat-value">{{ present_today }}</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">✗</div>
+            <div class="stat-content">
+                <p class="stat-label">Absent Today</p>
+                <p class="stat-value">{{ absent_today }}</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">📊</div>
+            <div class="stat-content">
+                <p class="stat-label">Avg Performance</p>
+                <p class="stat-value">{{ avg_performance|floatformat:1 }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="actions-section">
+        <h2>Quick Actions</h2>
+        <div class="actions-grid">
+            <a href="{% url 'class_teacher:students_list' %}" class="action-card">
+                <span class="action-icon">👨‍🎓</span>
+                <span class="action-text">View Students</span>
+            </a>
+
+            <a href="{% url 'class_teacher:grades' %}" class="action-card">
+                <span class="action-icon">📝</span>
+                <span class="action-text">Manage Grades</span>
+            </a>
+
+            <a href="{% url 'class_teacher:attendance' %}" class="action-card">
+                <span class="action-icon">📋</span>
+                <span class="action-text">Attendance</span>
+            </a>
+
+            <a href="{% url 'class_teacher:performance' %}" class="action-card">
+                <span class="action-icon">📈</span>
+                <span class="action-text">Performance</span>
+            </a>
+
+            <a href="{% url 'class_teacher:parents' %}" class="action-card">
+                <span class="action-icon">💬</span>
+                <span class="action-text">Parent Messages</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Recent Grades -->
+    {% if recent_grades %}
+    <div class="grades-section">
+        <h2>Recent Grades</h2>
+        <div class="table-section">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Student</th>
+                        <th>Subject</th>
+                        <th>Score</th>
+                        <th>Entered By</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for grade in recent_grades %}
+                    <tr>
+                        <td>{{ grade.student.full_name }}</td>
+                        <td>{{ grade.subject.subject_name }}</td>
+                        <td>{{ grade.grade_point }}</td>
+                        <td>{{ grade.recorded_by.user.get_full_name }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Class Timetable -->
+    {% if timetable %}
+    <div class="timetable-section">
+        <h2>Class Schedule</h2>
+        <div class="table-section">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Day</th>
+                        <th>Time</th>
+                        <th>Subject</th>
+                        <th>Teacher</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for slot in timetable %}
+                    <tr>
+                        <td>{{ slot.day }}</td>
+                        <td>{{ slot.start_time|time:"H:i" }} - {{ slot.end_time|time:"H:i" }}</td>
+                        <td>{{ slot.subject.subject_name }}</td>
+                        <td>{{ slot.staff.user.get_full_name }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Recent Activities -->
+    {% if recent_activities %}
+    <div class="activities-section">
+        <h2>Recent Activities</h2>
+        <div class="activities-list">
+            {% for activity in recent_activities %}
+            <div class="activity-item">
+                <div class="activity-icon">{{ activity.icon_name }}</div>
+                <div class="activity-content">
+                    <p class="activity-description">{{ activity.description }}</p>
+                    <p class="activity-time">{{ activity.created_at|timesince }} ago</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% endif %}
+</div>
+
+<style>
+.class-dashboard {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.page-header {
+    margin-bottom: 30px;
+}
+
+.page-header h1 {
+    margin: 0;
+    font-size: 28px;
+}
+
+.no-class-alert {
+    background: #fff3cd;
+    border: 1px solid #ffc107;
+    padding: 20px;
+    border-radius: 8px;
+    color: #856404;
+}
+
+.class-info {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+.class-info h2 {
+    margin: 0;
+    font-size: 20px;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.stat-icon {
+    font-size: 32px;
+}
+
+.stat-content {
+    flex: 1;
+}
+
+.stat-label {
+    margin: 0;
+    font-size: 12px;
+    color: #666;
+}
+
+.stat-value {
+    margin: 5px 0 0 0;
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+}
+
+.actions-section,
+.grades-section,
+.timetable-section,
+.activities-section {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+.actions-section h2,
+.grades-section h2,
+.timetable-section h2,
+.activities-section h2 {
+    margin-top: 0;
+    font-size: 18px;
+}
+
+.actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 12px;
+}
+
+.action-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    text-decoration: none;
+    color: #333;
+    text-align: center;
+    transition: background 0.2s;
+}
+
+.action-card:hover {
+    background: #e9ecef;
+}
+
+.action-icon {
+    font-size: 24px;
+}
+
+.action-text {
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.table-section {
+    overflow-x: auto;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table thead {
+    background: #f8f9fa;
+}
+
+.table th {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 2px solid #dee2e6;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.table td {
+    padding: 10px 15px;
+    border-bottom: 1px solid #dee2e6;
+    font-size: 13px;
+}
+
+.table tbody tr:nth-child(odd) {
+    background: #f8f9fa;
+}
+
+.activities-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.activity-item {
+    display: flex;
+    gap: 12px;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 4px;
+}
+
+.activity-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.activity-content {
+    flex: 1;
+}
+
+.activity-description {
+    margin: 0;
+    font-size: 13px;
+    color: #333;
+}
+
+.activity-time {
+    margin: 3px 0 0 0;
+    font-size: 11px;
+    color: #999;
+}
+</style>
+{% endblock %}

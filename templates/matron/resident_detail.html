@@ -1,0 +1,282 @@
+{% extends "teacher/base.html" %}
+{% load static %}
+
+{% block title %}Resident Detail - {{ student.get_full_name }}{% endblock %}
+
+{% block content %}
+<div class="resident-detail">
+    <div class="page-header">
+        <h1>{{ student.get_full_name }}</h1>
+        <p class="subtitle">Resident Profile</p>
+    </div>
+
+    <!-- Resident Information -->
+    <div class="info-section">
+        <h2>Personal Information</h2>
+        <div class="info-card">
+            <div class="info-item">
+                <label>Full Name</label>
+                <p>{{ student.get_full_name }}</p>
+            </div>
+            
+            <div class="info-item">
+                <label>Email</label>
+                <p>{{ student.email }}</p>
+            </div>
+            
+            <div class="info-item">
+                <label>Username</label>
+                <p>{{ student.username }}</p>
+            </div>
+            
+            <div class="info-item">
+                <label>Status</label>
+                <p>
+                    {% if student.is_active %}
+                    <span class="badge badge-active">Active</span>
+                    {% else %}
+                    <span class="badge badge-inactive">Inactive</span>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Attendance Statistics -->
+    {% if statistics %}
+    <div class="stats-section">
+        <h2>Attendance Statistics</h2>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Total Records</div>
+                <div class="stat-value">{{ statistics.total_attendance_records }}</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-label">Present</div>
+                <div class="stat-value">{{ statistics.present_days }}</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-label">Absent</div>
+                <div class="stat-value">{{ statistics.absent_days }}</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-label">Rate</div>
+                <div class="stat-value">{{ statistics.attendance_rate }}</div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Attendance Records -->
+    {% if attendance_records %}
+    <div class="records-section">
+        <h2>Recent Attendance</h2>
+        <div class="table-section">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in attendance_records %}
+                    <tr>
+                        <td>{{ record.date|date:"M d, Y" }}</td>
+                        <td>
+                            {% if record.status == 'present' %}
+                            <span class="badge badge-present">Present</span>
+                            {% elif record.status == 'absent' %}
+                            <span class="badge badge-absent">Absent</span>
+                            {% else %}
+                            <span class="badge badge-other">{{ record.get_status_display }}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="actions">
+        <a href="{% url 'teacher:matron:residents_list' %}" class="btn btn-secondary">Back to Residents</a>
+    </div>
+</div>
+
+<style>
+.resident-detail {
+    padding: 20px;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.page-header {
+    margin-bottom: 30px;
+}
+
+.page-header h1 {
+    margin: 0;
+    font-size: 28px;
+}
+
+.page-header .subtitle {
+    color: #666;
+    margin: 5px 0 0 0;
+    font-size: 14px;
+}
+
+.info-section,
+.stats-section,
+.records-section {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+.info-section h2,
+.stats-section h2,
+.records-section h2 {
+    margin-top: 0;
+    font-size: 18px;
+}
+
+.info-card {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.info-item label {
+    font-weight: 600;
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 5px;
+}
+
+.info-item p {
+    margin: 0;
+    font-size: 14px;
+    color: #333;
+}
+
+.badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.badge-active {
+    background: #d4edda;
+    color: #155724;
+}
+
+.badge-inactive {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.badge-present {
+    background: #d4edda;
+    color: #155724;
+}
+
+.badge-absent {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.badge-other {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+}
+
+.stat-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    text-align: center;
+}
+
+.stat-label {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 8px;
+}
+
+.stat-value {
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+}
+
+.table-section {
+    overflow-x: auto;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table thead {
+    background: #f8f9fa;
+}
+
+.table th {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 2px solid #dee2e6;
+    font-weight: 600;
+}
+
+.table td {
+    padding: 15px;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.table tbody tr:nth-child(odd) {
+    background: #f8f9fa;
+}
+
+.actions {
+    display: flex;
+    gap: 10px;
+}
+
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #545b62;
+}
+</style>
+{% endblock %}

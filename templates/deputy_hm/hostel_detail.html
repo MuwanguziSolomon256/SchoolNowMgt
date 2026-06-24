@@ -1,0 +1,502 @@
+{% extends "teacher/base.html" %}
+{% load static %}
+
+{% block title %}{{ hostel.name }} - Deputy HM{% endblock %}
+
+{% block content %}
+<div class="deputy-hm-hostel-detail">
+    <div class="page-header">
+        <div class="header-content">
+            <h1>{{ hostel.name }}</h1>
+            <p class="badge badge-primary">{{ hostel.get_hostel_type_display }}</p>
+        </div>
+        <div class="header-actions">
+            <a href="{% url 'teacher:deputy:hostel_edit' hostel.id %}" class="btn btn-secondary">Edit</a>
+            <a href="{% url 'teacher:deputy:hostels_list' %}" class="btn btn-default">Back to Hostels</a>
+        </div>
+    </div>
+
+    <div class="detail-container">
+        <!-- Left Column: Hostel Info -->
+        <div class="detail-left">
+            <!-- Hostel Information Card -->
+            <div class="info-card">
+                <h2>Hostel Information</h2>
+                
+                <div class="info-item">
+                    <span class="label">Type</span>
+                    <span class="value">{{ hostel.get_hostel_type_display }}</span>
+                </div>
+
+                <div class="info-item">
+                    <span class="label">Status</span>
+                    <span class="value badge {% if hostel.is_active %}badge-success{% else %}badge-danger{% endif %}">
+                        {% if hostel.is_active %}Active{% else %}Inactive{% endif %}
+                    </span>
+                </div>
+
+                <div class="info-item">
+                    <span class="label">Total Capacity</span>
+                    <span class="value capacity">{{ hostel.capacity }} Beds</span>
+                </div>
+
+                {% if hostel.matron %}
+                <div class="info-item">
+                    <span class="label">Matron</span>
+                    <div class="value">
+                        <p class="name">{{ hostel.matron.user.get_full_name }}</p>
+                        <p class="email">{{ hostel.matron.user.email }}</p>
+                    </div>
+                </div>
+                {% else %}
+                <div class="info-item">
+                    <span class="label">Matron</span>
+                    <span class="value text-muted">Not Assigned</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Right Column: Occupancy Stats -->
+        <div class="detail-right">
+            <!-- Occupancy Card -->
+            <div class="occupancy-card">
+                <h2>Occupancy Status</h2>
+                
+                <div class="occupancy-visual">
+                    <div class="occupancy-circle">
+                        <span class="occupancy-percentage">{{ occupancy_percentage|floatformat:0 }}%</span>
+                    </div>
+                </div>
+
+                <div class="occupancy-stats">
+                    <div class="stat-row">
+                        <span class="stat-label">Current Residents</span>
+                        <span class="stat-value">{{ occupancy }}/{{ hostel.capacity }}</span>
+                    </div>
+                    
+                    <div class="stat-row">
+                        <span class="stat-label">Available Beds</span>
+                        <span class="stat-value available">{{ available_beds }}</span>
+                    </div>
+                </div>
+
+                <div class="occupancy-bar-full">
+                    <div class="occupancy-bar">
+                        <div class="occupancy-fill" style="width: {{ occupancy_percentage }}%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions Card -->
+            <div class="actions-card">
+                <h2>Quick Actions</h2>
+                <div class="action-links">
+                    <a href="{% url 'teacher:deputy:hostel_edit' hostel.id %}" class="action-link">
+                        <span class="icon">✏️</span>
+                        <span>Edit Hostel</span>
+                    </a>
+                    {% if occupancy == 0 %}
+                    <form method="post" action="{% url 'teacher:deputy:hostel_delete' hostel.id %}" style="display: inline;" onclick="return confirm('Are you sure you want to delete this hostel?');">
+                        {% csrf_token %}
+                        <button type="submit" class="action-link danger">
+                            <span class="icon">🗑️</span>
+                            <span>Delete Hostel</span>
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Residents Section -->
+    <div class="section-container">
+        <h2>Current Residents</h2>
+        
+        {% if residents %}
+        <div class="residents-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Class/Form</th>
+                        <th>Status</th>
+                        <th>Room</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for resident in residents %}
+                    <tr>
+                        <td>{{ resident.student.user.get_full_name }}</td>
+                        <td>{{ resident.student.user.email }}</td>
+                        <td>
+                            {% if resident.student.current_class %}
+                            {{ resident.student.current_class }}
+                            {% else %}
+                            N/A
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge badge-success">Active</span>
+                        </td>
+                        <td>
+                            {% if resident.room_number %}
+                            Room {{ resident.room_number }}
+                            {% else %}
+                            Not Assigned
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <p>No residents currently assigned to this hostel.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.deputy-hm-hostel-detail {
+    padding: 20px;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 30px;
+    padding: 20px;
+    background: linear-gradient(135deg, #080b3a 0%, #1a1e4f 100%);
+    color: white;
+    border-radius: 8px;
+}
+
+.header-content h1 {
+    margin: 0 0 10px 0;
+    font-size: 28px;
+}
+
+.header-content .badge {
+    display: inline-block;
+    margin-top: 5px;
+}
+
+.badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.badge-primary {
+    background: rgba(255,255,255,0.2);
+    color: white;
+}
+
+.badge-success {
+    background: #28a745;
+    color: white;
+}
+
+.badge-danger {
+    background: #dc3545;
+    color: white;
+}
+
+.header-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #5a6268;
+}
+
+.btn-default {
+    background: rgba(255,255,255,0.3);
+    color: white;
+}
+
+.btn-default:hover {
+    background: rgba(255,255,255,0.5);
+}
+
+.detail-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.info-card, .occupancy-card, .actions-card {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.info-card h2, .occupancy-card h2, .actions-card h2 {
+    margin: 0 0 20px 0;
+    font-size: 18px;
+    color: #333;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 10px;
+}
+
+.info-item {
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.info-item:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.info-item .label {
+    display: block;
+    font-weight: 600;
+    color: #666;
+    font-size: 12px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+}
+
+.info-item .value {
+    display: block;
+    color: #333;
+    font-size: 14px;
+}
+
+.info-item .name {
+    margin: 0 0 5px 0;
+    color: #333;
+    font-weight: 600;
+}
+
+.info-item .email {
+    margin: 0;
+    color: #666;
+    font-size: 13px;
+}
+
+.text-muted {
+    color: #999;
+}
+
+.capacity {
+    font-size: 18px;
+    font-weight: 600;
+    color: #28a745;
+}
+
+.occupancy-visual {
+    text-align: center;
+    margin: 20px 0;
+}
+
+.occupancy-circle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #080b3a 0%, #1a1e4f 100%);
+    color: white;
+}
+
+.occupancy-percentage {
+    font-size: 36px;
+    font-weight: 700;
+}
+
+.occupancy-stats {
+    margin: 20px 0;
+}
+
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 4px;
+    margin-bottom: 10px;
+}
+
+.stat-label {
+    color: #666;
+    font-weight: 600;
+    font-size: 12px;
+}
+
+.stat-value {
+    color: #333;
+    font-weight: 700;
+    font-size: 16px;
+}
+
+.stat-value.available {
+    color: #28a745;
+}
+
+.occupancy-bar-full {
+    margin-top: 20px;
+}
+
+.occupancy-bar {
+    background: #eee;
+    border-radius: 4px;
+    height: 12px;
+    overflow: hidden;
+}
+
+.occupancy-fill {
+    background: linear-gradient(90deg, #080b3a 0%, #1a1e4f 100%);
+    height: 100%;
+}
+
+.action-links {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.action-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 15px;
+    background: #f0f0f0;
+    color: #333;
+    text-decoration: none;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.2s;
+}
+
+.action-link:hover {
+    background: #e0e0e0;
+}
+
+.action-link.danger {
+    color: #dc3545;
+}
+
+.action-link.danger:hover {
+    background: #ffe0e0;
+}
+
+.action-link .icon {
+    font-size: 16px;
+}
+
+.section-container {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 30px;
+}
+
+.section-container h2 {
+    margin: 0 0 20px 0;
+    font-size: 18px;
+    color: #333;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 10px;
+}
+
+.residents-table {
+    overflow-x: auto;
+}
+
+.residents-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.residents-table th {
+    background: #f8f9fa;
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+    color: #333;
+    border-bottom: 2px solid #ddd;
+    font-size: 13px;
+    text-transform: uppercase;
+}
+
+.residents-table td {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+    color: #333;
+    font-size: 14px;
+}
+
+.residents-table tr:hover {
+    background: #f8f9fa;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #999;
+}
+
+.empty-state p {
+    margin: 0;
+    font-size: 14px;
+}
+
+@media (max-width: 768px) {
+    .detail-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .page-header {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .header-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .btn {
+        width: 100%;
+        text-align: center;
+    }
+}
+</style>
+{% endblock %}

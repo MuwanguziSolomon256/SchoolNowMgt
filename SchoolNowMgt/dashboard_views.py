@@ -17,7 +17,7 @@ from .models import (
     RetentionAlert, SMSLog, Enquiry, FeePayment, Grade, ClassGrade,
     CustomUser, Message, MessageRecipient, MessageTemplate, School,
     ActivityLog, Event, AdminProfile, StudentAssignment, Subject, Assignment,
-    StaffBill, TeacherTask, Timetable, Curriculum
+    StaffBill, TeacherTask, Timetable, Curriculum, StudentParentRelationship
 )
 from .forms import (
     StaffOnboardingForm, BulkStaffUploadForm,
@@ -583,14 +583,14 @@ def dashboard(request):
 def parent_dashboard(request):
     """
     Parent portal dashboard view.
+    Uses StudentParentRelationship for multi-school parent support.
     
     Access Control: Parents only
     
     Shows child's academic progress, attendance, financial status,
     and school calendar events.
     
-    Multi-school isolation: Children filtered by parent's school to ensure
-    parent only sees their own children within their school context.
+    Multi-school Support: Parents see all children across multiple schools.
     
     Renders: SchoolNowMgt/parent_dashboard.html
     """
@@ -609,18 +609,16 @@ def parent_dashboard(request):
     today = timezone.localdate()
     current_time = timezone.now()
     
-    # Get user's school for data isolation
-    user_school = request.user.school
+    # Get children associated with this parent via StudentParentRelationship (multi-school support)
+    parent_relationships = StudentParentRelationship.objects.filter(
+        parent=request.user,
+        is_active=True
+    ).select_related('student', 'student__class_grade')
     
-    # Get children associated with this parent (school-filtered)
-    children = Student.objects.filter(
-        parent_user=request.user,
-        status='active',
-        class_grade__school=user_school
-    ).prefetch_related('grade_set', 'class_grade')
+    children = [rel.student for rel in parent_relationships]
     
     # Get selected child (first child or from session)
-    selected_child = children.first()
+    selected_child = children[0] if children else None
     
     # Prepare sample data for template (should be calculated from real data)
     gpa = 3.82
@@ -2901,7 +2899,7 @@ def create_event(request):
         event.school = request.user.school
         event.created_by = request.user
         event.save()
-        return redirect('SchoolNowMgt:admin_profile')
+        return redirect('SchoolNowMgt:events_dashboard')
     
     # Re-render admin profile with form errors
     try:
@@ -2928,7 +2926,7 @@ def edit_event(request, event_id):
     
     Access Control: Admin users only, must own the event's school
     
-    Renders: SchoolNowMgt/admin_profile.html
+    Renders: SchoolNowMgt/edit_event.html
     """
     if request.user.role != 'admin':
         return redirect('auth:unified_login')
@@ -2936,28 +2934,22 @@ def edit_event(request, event_id):
     try:
         event = Event.objects.get(id=event_id, school=request.user.school)
     except Event.DoesNotExist:
-        return redirect('SchoolNowMgt:admin_profile')
+        return redirect('SchoolNowMgt:events_dashboard')
     
     if request.method == 'POST':
         form = EventForm(request.POST, instance=event)
         if form.is_valid():
             form.save()
-            return redirect('SchoolNowMgt:admin_profile')
+            return redirect('SchoolNowMgt:events_dashboard')
     else:
         form = EventForm(instance=event)
     
-    try:
-        admin_profile = AdminProfile.objects.get(user=request.user)
-    except AdminProfile.DoesNotExist:
-        admin_profile = AdminProfile.objects.create(user=request.user)
-    
     context = {
-        'admin_profile': admin_profile,
         'event_form': form,
         'edit_event': event,
     }
     
-    return render(request, 'SchoolNowMgt/admin_profile.html', context)
+    return render(request, 'SchoolNowMgt/edit_event.html', context)
 
 
 @unified_login_required
@@ -2981,7 +2973,7 @@ def delete_event(request, event_id):
     except Event.DoesNotExist:
         pass
     
-    return redirect('SchoolNowMgt:admin_profile')
+    return redirect('SchoolNowMgt:events_dashboard')
 
 
 def ensure_admin_profile(user):
@@ -3010,6 +3002,7 @@ def parent_children_dashboard(request):
     - Quick action buttons: View Academics | View Payments
     
     Multi-school Support: Parents with children in multiple schools see all grouped by school
+    Uses StudentParentRelationship for multi-school parent support.
     
     Renders: SchoolNowMgt/parent_children_subdashboard.html
     """
@@ -3021,41 +3014,44 @@ def parent_children_dashboard(request):
         else:
             return redirect('auth:unified_login')
     
-    # Get all active children for this parent
-    children = Student.objects.filter(
-        parent_user=request.user,
-        status='active'
-    ).select_related('class_grade', 'class_grade__school').prefetch_related('grades', 'attendance_records')
+    # Get all active children for this parent via StudentParentRelationship (multi-school support)
+    parent_relationships = StudentParentRelationship.objects.filter(
+        parent=request.user,
+        is_active=True
+    ).select_related('student', 'school', 'student__class_grade')
     
-    # Group children by school
+    # Extract students from relationships
+    children = [rel.student for rel in parent_relationships]
+    
+    # Group children by school and calculate metrics
     from collections import defaultdict
     children_by_school = defaultdict(list)
-    for child in children:
-        school = child.class_grade.school
-        children_by_school[school].append(child)
     
-    # Calculate GPA and attendance for each child
-    for school, school_children in children_by_school.items():
-        for child in school_children:
-            # Calculate GPA (average of recent grades)
-            grades = child.grades.all()
-            if grades:
-                child.gpa = sum([g.score for g in grades]) / len(grades)
-                child.gpa = round(child.gpa, 2)
-            else:
-                child.gpa = 0.00
-            
-            # Calculate attendance percentage
-            attendance_records = child.attendance_records.all()
-            if attendance_records:
-                present_count = attendance_records.filter(status='present').count()
-                child.attendance_percentage = round((present_count / attendance_records.count()) * 100, 1)
-            else:
-                child.attendance_percentage = 0.0
+    for rel in parent_relationships:
+        school = rel.school
+        child = rel.student
+        
+        # Calculate GPA (average of recent grades)
+        grades = Grade.objects.filter(student=child)
+        if grades:
+            child.gpa = sum([g.score for g in grades]) / len(grades)
+            child.gpa = round(child.gpa, 2)
+        else:
+            child.gpa = 0.00
+        
+        # Calculate attendance percentage
+        attendance_records = StudentAttendance.objects.filter(student=child)
+        if attendance_records:
+            present_count = attendance_records.filter(status='present').count()
+            child.attendance_percentage = round((present_count / attendance_records.count()) * 100, 1)
+        else:
+            child.attendance_percentage = 0.0
+        
+        children_by_school[school].append(child)
     
     context = {
         'children_by_school': dict(children_by_school),
-        'total_active_children': children.count(),
+        'total_active_children': len(children),
         'today': timezone.localdate(),
         'user': request.user,
     }
@@ -3067,6 +3063,7 @@ def parent_children_dashboard(request):
 def parent_academics_dashboard(request):
     """
     Parent subdashboard: View child's grades and assignments.
+    Uses StudentParentRelationship for multi-school parent support.
     
     Access Control: Parents only
     
@@ -3092,21 +3089,24 @@ def parent_academics_dashboard(request):
         else:
             return redirect('auth:unified_login')
     
-    # Get all active children for dropdown
-    all_children = Student.objects.filter(
-        parent_user=request.user,
-        status='active'
-    ).select_related('class_grade', 'class_grade__school').order_by('first_name')
+    # Get all active children for dropdown via StudentParentRelationship
+    parent_relationships = StudentParentRelationship.objects.filter(
+        parent=request.user,
+        is_active=True
+    ).select_related('student', 'student__class_grade', 'student__class_grade__school').order_by('student__first_name')
+    
+    all_children = [rel.student for rel in parent_relationships]
     
     # Get selected child (from GET param or default to first)
     child_id = request.GET.get('child_id')
+    selected_child = None
     if child_id:
         try:
-            selected_child = all_children.get(id=child_id)
-        except Student.DoesNotExist:
-            selected_child = all_children.first()
+            selected_child = next((child for child in all_children if child.id == int(child_id)), None)
+        except (ValueError, TypeError):
+            selected_child = all_children[0] if all_children else None
     else:
-        selected_child = all_children.first()
+        selected_child = all_children[0] if all_children else None
     
     if not selected_child:
         # No children enrolled
@@ -3125,9 +3125,10 @@ def parent_academics_dashboard(request):
     term = request.GET.get('term', '')
     
     # Get grades for selected child
-    grades = selected_child.grades.select_related('subject').filter(
+    grades = Grade.objects.filter(
+        student=selected_child,
         academic_year=year
-    ).order_by('term', 'subject__name')
+    ).select_related('subject').order_by('term', 'subject__name')
     
     if term:
         grades = grades.filter(term=term)
@@ -3138,7 +3139,7 @@ def parent_academics_dashboard(request):
     ).select_related('assignment', 'assignment__subject').order_by('-assignment__due_date')
     
     # Calculate academic metrics
-    all_grades = selected_child.grades.filter(academic_year=year)
+    all_grades = Grade.objects.filter(student=selected_child, academic_year=year)
     if all_grades:
         gpa = sum([g.score for g in all_grades]) / len(all_grades)
         gpa = round(gpa, 2)
@@ -3160,7 +3161,7 @@ def parent_academics_dashboard(request):
         attendance_percentage = 0.0
     
     # Get available academic years
-    academic_years = selected_child.grades.values_list('academic_year', flat=True).distinct().order_by('-academic_year')
+    academic_years = Grade.objects.filter(student=selected_child).values_list('academic_year', flat=True).distinct().order_by('-academic_year')
     
     # Get available terms
     TERM_CHOICES = [
@@ -3191,6 +3192,7 @@ def parent_academics_dashboard(request):
 def parent_payments_dashboard(request):
     """
     Parent subdashboard: View payment status, history, and invoices.
+    Uses StudentParentRelationship for multi-school parent support.
     
     Access Control: Parents only
     
@@ -3212,14 +3214,16 @@ def parent_payments_dashboard(request):
         else:
             return redirect('auth:unified_login')
     
-    # Get all children
-    all_children = Student.objects.filter(
-        parent_user=request.user,
-        status='active'
-    ).select_related('class_grade', 'class_grade__school').order_by('first_name')
+    # Get all children via StudentParentRelationship
+    parent_relationships = StudentParentRelationship.objects.filter(
+        parent=request.user,
+        is_active=True
+    ).select_related('student', 'student__class_grade', 'student__class_grade__school').order_by('student__first_name')
+    
+    all_children = [rel.student for rel in parent_relationships]
     
     # Get payments for all children
-    children_ids = all_children.values_list('id', flat=True)
+    children_ids = [child.id for child in all_children]
     
     payments = FeePayment.objects.filter(
         student_id__in=children_ids

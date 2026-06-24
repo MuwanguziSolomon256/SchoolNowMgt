@@ -1,0 +1,264 @@
+{% extends "teacher/base.html" %}
+{% load static %}
+
+{% block title %}Performance Report - Department{% endblock %}
+
+{% block content %}
+<div class="performance-report">
+    <div class="page-header">
+        <h1>Department Performance Report</h1>
+    </div>
+
+    <!-- Subject Performance -->
+    <div class="report-section">
+        <h2>Subject Performance</h2>
+        <div class="table-section">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Subject</th>
+                        <th>Average Score</th>
+                        <th>Grades Entered</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in subject_performance %}
+                    <tr>
+                        <td><strong>{{ item.subject.subject_name }}</strong></td>
+                        <td>{{ item.avg_score|floatformat:1 }}</td>
+                        <td>{{ item.grades_count }}</td>
+                        <td>
+                            {% if item.avg_score >= 75 %}
+                            <span class="badge badge-high">Excellent</span>
+                            {% elif item.avg_score >= 60 %}
+                            <span class="badge badge-medium">Good</span>
+                            {% else %}
+                            <span class="badge badge-low">Needs Improvement</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Class Performance -->
+    {% if class_performance %}
+    <div class="report-section">
+        <h2>Class Performance</h2>
+        <div class="performance-grid">
+            {% for item in class_performance %}
+            <div class="performance-card">
+                <h4>{{ item.class.class_grade_level.level_name }} - {{ item.class.class_stream.stream_name }}</h4>
+                <div class="performance-bar">
+                    <div class="performance-fill" style="width: {{ item.avg_score|floatformat:0 }}%"></div>
+                </div>
+                <p class="performance-score">{{ item.avg_score|floatformat:1 }}%</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Summary Stats -->
+    <div class="summary-section">
+        <h2>Summary Statistics</h2>
+        <div class="summary-grid">
+            <div class="summary-item">
+                <p class="label">Total Students</p>
+                <p class="value">{{ total_students }}</p>
+            </div>
+            
+            <div class="summary-item">
+                <p class="label">Average Department Performance</p>
+                <p class="value">
+                    {% if subject_performance %}
+                    {% widthratio subject_performance|length 1 100 as count %}
+                    {% endif %}
+                    —
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="actions">
+        <a href="{% url 'subject_dept:dashboard' %}" class="btn btn-secondary">Back to Dashboard</a>
+    </div>
+</div>
+
+<style>
+.performance-report {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.page-header {
+    margin-bottom: 30px;
+}
+
+.page-header h1 {
+    margin: 0;
+    font-size: 28px;
+}
+
+.report-section,
+.summary-section {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+.report-section h2,
+.summary-section h2 {
+    margin-top: 0;
+    font-size: 18px;
+}
+
+.table-section {
+    overflow-x: auto;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table thead {
+    background: #f8f9fa;
+}
+
+.table th {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 2px solid #dee2e6;
+    font-weight: 600;
+}
+
+.table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.table tbody tr:nth-child(odd) {
+    background: #f8f9fa;
+}
+
+.badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.badge-high {
+    background: #d4edda;
+    color: #155724;
+}
+
+.badge-medium {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.badge-low {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.performance-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.performance-card {
+    border: 1px solid #eee;
+    padding: 15px;
+    border-radius: 6px;
+    background: #f8f9fa;
+}
+
+.performance-card h4 {
+    margin: 0;
+    font-size: 13px;
+    margin-bottom: 10px;
+}
+
+.performance-bar {
+    background: #e9ecef;
+    height: 20px;
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.performance-fill {
+    background: #28a745;
+    height: 100%;
+    transition: width 0.3s;
+}
+
+.performance-score {
+    margin: 0;
+    font-size: 14px;
+    font-weight: bold;
+    color: #333;
+    text-align: center;
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.summary-item {
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 4px;
+    text-align: center;
+}
+
+.summary-item .label {
+    margin: 0;
+    font-size: 12px;
+    color: #666;
+}
+
+.summary-item .value {
+    margin: 8px 0 0 0;
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+}
+
+.actions {
+    display: flex;
+    gap: 10px;
+}
+
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #545b62;
+}
+</style>
+{% endblock %}

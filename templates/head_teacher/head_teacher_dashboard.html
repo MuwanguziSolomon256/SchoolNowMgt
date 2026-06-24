@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Head Teacher Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+</head>
+<body class="bg-gray-50">
+    <style>
+        .admin-nav {
+            background: linear-gradient(135deg, #080b3a 0%, #1a1e4f 100%);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        .admin-nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 70px;
+        }
+        .admin-nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+        }
+        .admin-nav-icon {
+            width: 40px;
+            height: 40px;
+            background-color: #7c5800;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+        }
+        .admin-nav-text h2 {
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            margin: 0;
+        }
+        .admin-nav-text p {
+            color: #d4a574;
+            font-size: 12px;
+            margin: 2px 0 0 0;
+        }
+        .admin-nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .nav-user-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: white;
+            font-size: 14px;
+        }
+        .nav-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: transparent;
+            border: none;
+            color: white;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        .nav-btn:hover {
+            background-color: rgba(212, 165, 116, 0.15);
+            color: #d4a574;
+        }
+        .dashboard-content {
+            padding-top: 90px;
+        }
+    </style>
+
+    <div class="admin-nav">
+        <div class="admin-nav-container">
+            <div class="admin-nav-brand">
+                <div class="admin-nav-icon">🎓</div>
+                <div class="admin-nav-text">
+                    <h2>Head Teacher</h2>
+                    <p>{{ request.user.school.name|default:"School Management" }}</p>
+                </div>
+            </div>
+            
+            <div class="admin-nav-actions">
+                <div class="nav-user-info">
+                    <span>👤</span>
+                    <span>{{ request.user.get_full_name|default:request.user.username }}</span>
+                </div>
+                
+                <form method="post" action="{% url 'teacher:logout' %}" style="margin: 0;">
+                    {% csrf_token %}
+                    <button type="submit" class="nav-btn" title="Logout to Auth Login">
+                        <span>🚪</span>
+                        <span>Logout</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 py-8 dashboard-content">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900">Head Teacher Dashboard</h1>
+            <p class="text-gray-600 mt-2">Overall academic leadership and school performance</p>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <!-- Classes -->
+            <div class="bg-white rounded-lg shadow p-6 border-l-4 border-blue-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm">Total Classes</p>
+                        <p class="text-3xl font-bold text-gray-900">{{ statistics.classes }}</p>
+                    </div>
+                    <span class="material-symbols-rounded text-blue-500 text-4xl">school</span>
+                </div>
+            </div>
+
+            <!-- Subjects -->
+            <div class="bg-white rounded-lg shadow p-6 border-l-4 border-green-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm">Total Subjects</p>
+                        <p class="text-3xl font-bold text-gray-900">{{ statistics.subjects }}</p>
+                    </div>
+                    <span class="material-symbols-rounded text-green-500 text-4xl">library_books</span>
+                </div>
+            </div>
+
+            <!-- Students -->
+            <div class="bg-white rounded-lg shadow p-6 border-l-4 border-purple-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm">Total Students</p>
+                        <p class="text-3xl font-bold text-gray-900">{{ statistics.students }}</p>
+                    </div>
+                    <span class="material-symbols-rounded text-purple-500 text-4xl">group</span>
+                </div>
+            </div>
+
+            <!-- Timetable Entries -->
+            <div class="bg-white rounded-lg shadow p-6 border-l-4 border-amber-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm">Timetable Entries</p>
+                        <p class="text-3xl font-bold text-gray-900">{{ statistics.timetable_entries }}</p>
+                    </div>
+                    <span class="material-symbols-rounded text-amber-500 text-4xl">schedule</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="bg-white rounded-lg shadow p-6 mb-8">
+            <h2 class="text-xl font-bold text-gray-900 mb-4">Quick Actions</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <a href="{% url 'teacher:head_teacher:academic_performance' %}" class="p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg hover:shadow-lg transition border border-blue-200">
+                    <span class="material-symbols-rounded text-blue-600 text-3xl">trending_up</span>
+                    <p class="font-semibold text-gray-900 mt-2">Academic Performance</p>
+                </a>
+                <a href="{% url 'teacher:head_teacher:staff_oversight' %}" class="p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-lg hover:shadow-lg transition border border-green-200">
+                    <span class="material-symbols-rounded text-green-600 text-3xl">group</span>
+                    <p class="font-semibold text-gray-900 mt-2">Staff Oversight</p>
+                </a>
+                <a href="{% url 'teacher:head_teacher:school_timetable' %}" class="p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg hover:shadow-lg transition border border-purple-200">
+                    <span class="material-symbols-rounded text-purple-600 text-3xl">schedule</span>
+                    <p class="font-semibold text-gray-900 mt-2">School Timetable</p>
+                </a>
+                <a href="/teacher/" class="p-4 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg hover:shadow-lg transition border border-gray-200">
+                    <span class="material-symbols-rounded text-gray-600 text-3xl">arrow_back</span>
+                    <p class="font-semibold text-gray-900 mt-2">Back to Portal</p>
+                </a>
+            </div>
+        </div>
+
+        <!-- Recent Activities -->
+        {% if recent_activities %}
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-xl font-bold text-gray-900 mb-4">Recent Activities</h2>
+            <div class="space-y-3">
+                {% for activity in recent_activities %}
+                <div class="border-b pb-3 last:border-b-0">
+                    <p class="text-gray-900 font-medium">{{ activity.activity_type }}</p>
+                    <p class="text-gray-600 text-sm">By {{ activity.teacher.user.get_full_name }} on {{ activity.created_at|date:"M d, Y H:i" }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>

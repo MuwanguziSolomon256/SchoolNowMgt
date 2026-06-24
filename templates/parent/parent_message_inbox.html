@@ -1,0 +1,84 @@
+{% extends "parent/parent_base.html" %}
+
+{% block title %}Messages - Parent Portal{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Page Header -->
+    <div class="bg-white rounded-lg p-6 shadow-sm border border-outline/10">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-3xl font-bold text-on-surface">Messages</h1>
+                <p class="text-on-surface/70 mt-1">Communicate with school staff and teachers</p>
+            </div>
+            <div class="bg-primary/10 px-4 py-2 rounded-lg">
+                <p class="text-3xl font-bold text-primary">{{ unread_count }}</p>
+                <p class="text-xs font-medium text-on-surface/70">Unread</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Messages List -->
+    <div class="bg-white rounded-lg shadow-sm border border-outline/10 overflow-hidden">
+        {% if messages %}
+        <div class="divide-y divide-outline/10">
+            {% for message in messages %}
+            <a href="{% url 'parent_message_detail' message.id %}" class="block px-6 py-4 hover:bg-background transition-colors border-l-4 {% if message.is_read %}border-outline/20{% else %}border-primary{% endif %}">
+                <div class="flex items-start justify-between gap-4">
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2 mb-2">
+                            <h3 class="font-semibold text-on-surface truncate">
+                                {% if message.sender.first_name %}
+                                    {{ message.sender.get_full_name }}
+                                {% else %}
+                                    {{ message.sender.email }}
+                                {% endif %}
+                            </h3>
+                            {% if not message.is_read %}
+                            <span class="inline-block w-2 h-2 bg-primary rounded-full flex-shrink-0"></span>
+                            {% endif %}
+                        </div>
+                        <p class="text-sm font-medium text-on-surface mb-1 truncate">{{ message.subject }}</p>
+                        <p class="text-sm text-on-surface/60 line-clamp-2">{{ message.content }}</p>
+                    </div>
+                    <div class="flex items-center gap-3 flex-shrink-0">
+                        <span class="text-xs text-on-surface/60 whitespace-nowrap">{{ message.created_at|date:"M d" }}</span>
+                        {% if not message.is_read %}
+                        <span class="material-symbols-outlined text-sm text-primary">mail</span>
+                        {% else %}
+                        <span class="material-symbols-outlined text-sm text-on-surface/30">mail_outline</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if is_paginated %}
+        <div class="px-6 py-4 bg-background border-t border-outline/10 flex items-center justify-between">
+            <div class="text-sm text-on-surface/70">
+                Page {{ page_obj.number }} of {{ paginator.num_pages }}
+            </div>
+            <div class="flex gap-2">
+                {% if page_obj.has_previous %}
+                <a href="?page=1" class="px-3 py-2 rounded-lg border border-outline hover:bg-white text-sm">First</a>
+                <a href="?page={{ page_obj.previous_page_number }}" class="px-3 py-2 rounded-lg border border-outline hover:bg-white text-sm">Previous</a>
+                {% endif %}
+                
+                {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}" class="px-3 py-2 rounded-lg border border-outline hover:bg-white text-sm">Next</a>
+                <a href="?page={{ paginator.num_pages }}" class="px-3 py-2 rounded-lg border border-outline hover:bg-white text-sm">Last</a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+        {% else %}
+        <div class="px-6 py-12 text-center">
+            <span class="material-symbols-outlined text-4xl text-on-surface/30 block mb-4">mail_outline</span>
+            <p class="text-on-surface/60">No messages yet</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

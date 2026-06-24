@@ -8,6 +8,8 @@ from .models import (
     StudentAttendance, StaffAttendance, TeacherAttendance, BreakSession,
     Grade, FeeStructure, FeePayment,
     Timetable, RetentionAlert, SMSLog,
+    TeacherDepartment, ClassTeacherAssignment, Department, Hostel, ResidentAssignment,
+    StudentParentRelationship, Notification,
 )
 
 
@@ -115,12 +117,41 @@ class CustomUserAdmin(UserAdmin):
 
 @admin.register(StaffProfile)
 class StaffProfileAdmin(admin.ModelAdmin):
-    list_display = ['user', 'employee_id', 'position', 'is_full_time',
-                    'date_joined', 'date_left']
-    list_filter = ['position', 'is_full_time']
+    list_display = ['user', 'employee_id', 'position', 'teacher_admin_role', 
+                    'support_staff_role', 'is_full_time', 'date_joined', 'date_left']
+    list_filter = ['position', 'is_full_time', 'teacher_admin_role', 'support_staff_role']
     search_fields = ['user__first_name', 'user__last_name', 'employee_id',
                      'position']
-    raw_id_fields = ['user']
+    raw_id_fields = ['user', 'teacher_department', 'support_department', 'assigned_shift_supervisor']
+    
+    fieldsets = (
+        ('User & Basic Info', {
+            'fields': ('user', 'employee_id', 'position', 'qualification', 'is_full_time')
+        }),
+        ('Employment', {
+            'fields': ('date_joined', 'date_left', 'salary')
+        }),
+        ('Teacher Administration', {
+            'fields': ('teacher_admin_role', 'teacher_department'),
+            'classes': ('collapse',)
+        }),
+        ('Support Staff Administration', {
+            'fields': ('support_staff_role', 'support_department', 'assigned_shift_supervisor'),
+            'classes': ('collapse',)
+        }),
+        ('Contact Information', {
+            'fields': ('emergency_contact_name', 'emergency_contact_phone'),
+            'classes': ('collapse',)
+        }),
+        ('Banking Details', {
+            'fields': ('bank_account_number', 'bank_name', 'account_holder_name'),
+            'classes': ('collapse',)
+        }),
+        ('Subjects', {
+            'fields': ('subjects',),
+            'classes': ('collapse',)
+        }),
+    )
 
 
 # ============================================================================
@@ -461,3 +492,191 @@ class SMSLogAdmin(admin.ModelAdmin):
     def has_add_permission(self, request):
         # SMS logs are created only by the system, never manually
         return False
+
+
+# ============================================================================
+# NEW: TeacherDepartmentAdmin
+# ============================================================================
+
+@admin.register(TeacherDepartment)
+class TeacherDepartmentAdmin(admin.ModelAdmin):
+    list_display = ['name', 'department_type', 'school', 'head_of_department', 'is_active']
+    list_filter = ['department_type', 'school', 'is_active']
+    search_fields = ['name']
+    raw_id_fields = ['head_of_department']
+    
+    fieldsets = (
+        ('Department Information', {
+            'fields': ('school', 'name', 'department_type', 'description')
+        }),
+        ('Administration', {
+            'fields': ('head_of_department', 'annual_budget', 'is_active')
+        }),
+    )
+
+
+# ============================================================================
+# NEW: DepartmentAdmin (Support Staff Departments)
+# ============================================================================
+
+@admin.register(Department)
+class DepartmentAdmin(admin.ModelAdmin):
+    list_display = ['name', 'department_type', 'school', 'head_of_department', 'is_active']
+    list_filter = ['department_type', 'school', 'is_active']
+    search_fields = ['name']
+    raw_id_fields = ['head_of_department']
+    
+    fieldsets = (
+        ('Department Information', {
+            'fields': ('school', 'name', 'department_type', 'description')
+        }),
+        ('Administration', {
+            'fields': ('head_of_department', 'monthly_budget', 'is_active')
+        }),
+    )
+
+
+# ============================================================================
+# NEW: ClassTeacherAssignmentAdmin
+# ============================================================================
+
+@admin.register(ClassTeacherAssignment)
+class ClassTeacherAssignmentAdmin(admin.ModelAdmin):
+    list_display = ['teacher', 'class_grade', 'academic_year', 'start_date', 'end_date', 'is_active']
+    list_filter = ['academic_year', 'is_active', 'school']
+    search_fields = ['teacher__user__first_name', 'teacher__user__last_name', 'class_grade__name']
+    raw_id_fields = ['teacher', 'class_grade']
+    
+    fieldsets = (
+        ('Assignment Details', {
+            'fields': ('school', 'class_grade', 'teacher', 'academic_year')
+        }),
+        ('Duration', {
+            'fields': ('start_date', 'end_date', 'is_active')
+        }),
+    )
+
+
+# ============================================================================
+# NEW: ResidentAssignmentInline (for Hostel admin)
+# ============================================================================
+
+class ResidentAssignmentInline(admin.TabularInline):
+    model = ResidentAssignment
+    extra = 0
+    fields = ['student', 'room_number', 'assignment_date', 'status', 'is_active']
+    raw_id_fields = ['student']
+    readonly_fields = ['assignment_date']
+
+
+# ============================================================================
+# NEW: HostelAdmin
+# ============================================================================
+
+@admin.register(Hostel)
+class HostelAdmin(admin.ModelAdmin):
+    list_display = ['name', 'hostel_type', 'capacity', 'matron', 'school', 'is_active']
+    list_filter = ['hostel_type', 'school', 'is_active']
+    search_fields = ['name']
+    raw_id_fields = ['matron']
+    inlines = [ResidentAssignmentInline]
+    
+    fieldsets = (
+        ('Hostel Information', {
+            'fields': ('school', 'name', 'hostel_type', 'capacity')
+        }),
+        ('Management', {
+            'fields': ('matron', 'is_active')
+        }),
+    )
+
+
+# ============================================================================
+# NEW: ResidentAssignmentAdmin
+# ============================================================================
+
+@admin.register(ResidentAssignment)
+class ResidentAssignmentAdmin(admin.ModelAdmin):
+    list_display = ['student', 'hostel', 'room_number', 'assignment_date', 'status', 'is_active']
+    list_filter = ['hostel', 'status', 'assignment_date', 'is_active']
+    search_fields = ['student__first_name', 'student__last_name', 'room_number']
+    raw_id_fields = ['student', 'hostel']
+    readonly_fields = ['assignment_date']
+    
+    fieldsets = (
+        ('Assignment Information', {
+            'fields': ('hostel', 'student', 'room_number')
+        }),
+        ('Status', {
+            'fields': ('status', 'is_active')
+        }),
+        ('Dates', {
+            'fields': ('assignment_date',)
+        }),
+    )
+
+
+# ============================================================================
+# NEW: StudentParentRelationshipAdmin
+# ============================================================================
+
+@admin.register(StudentParentRelationship)
+class StudentParentRelationshipAdmin(admin.ModelAdmin):
+    list_display = ['parent', 'student', 'relationship_type', 'school', 'is_primary_guardian', 'is_active', 'date_linked']
+    list_filter = ['relationship_type', 'school', 'is_primary_guardian', 'is_active', 'date_linked']
+    search_fields = ['parent__first_name', 'parent__last_name', 'student__first_name', 'student__last_name']
+    raw_id_fields = ['parent', 'student']
+    readonly_fields = ['date_linked']
+    
+    fieldsets = (
+        ('Relationship Information', {
+            'fields': ('parent', 'student', 'school')
+        }),
+        ('Relationship Details', {
+            'fields': ('relationship_type', 'is_primary_guardian')
+        }),
+        ('Status', {
+            'fields': ('is_active', 'date_linked')
+        }),
+    )
+
+
+# ============================================================================
+# NEW: NotificationAdmin
+# ============================================================================
+
+@admin.register(Notification)
+class NotificationAdmin(admin.ModelAdmin):
+    list_display = ['title', 'recipient', 'notification_type', 'is_read', 'created_at']
+    list_filter = ['notification_type', 'is_read', 'created_at']
+    search_fields = ['recipient__first_name', 'recipient__last_name', 'recipient__email', 'title', 'message']
+    raw_id_fields = ['recipient', 'related_student', 'related_grade', 'related_payment', 'related_event', 'related_message']
+    readonly_fields = ['created_at', 'read_at']
+    date_hierarchy = 'created_at'
+    
+    fieldsets = (
+        ('Recipient', {
+            'fields': ('recipient',)
+        }),
+        ('Notification Content', {
+            'fields': ('notification_type', 'title', 'message')
+        }),
+        ('Related Objects', {
+            'fields': ('related_student', 'related_grade', 'related_payment', 'related_event', 'related_message'),
+            'classes': ('collapse',)
+        }),
+        ('Status', {
+            'fields': ('is_read', 'read_at', 'created_at')
+        }),
+        ('Action', {
+            'fields': ('action_url',),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def get_readonly_fields(self, request, obj=None):
+        """Make most fields readonly in list view"""
+        readonly = list(self.readonly_fields)
+        if obj:  # Editing existing notification
+            readonly.extend(['recipient', 'notification_type', 'title', 'message', 'related_student', 'related_grade', 'related_payment', 'related_event', 'related_message'])
+        return readonly

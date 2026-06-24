@@ -1,0 +1,216 @@
+{% extends "teacher/base.html" %}
+{% load static %}
+
+{% block title %}Class Performance - Class Teacher{% endblock %}
+
+{% block content %}
+<div class="class-performance">
+    <div class="page-header">
+        <h1>Class Performance Report</h1>
+        {% if my_class %}
+        <p class="subtitle">{{ my_class.class_grade_level.level_name }} - {{ my_class.class_stream.stream_name }}</p>
+        {% endif %}
+    </div>
+
+    {% if no_class %}
+    <div class="no-class-alert">
+        <p>⚠️ You have not been assigned as a class teacher yet.</p>
+    </div>
+    {% else %}
+
+    <!-- Summary Stats -->
+    <div class="summary-section">
+        <h2>Summary</h2>
+        <div class="summary-grid">
+            <div class="summary-item">
+                <p class="label">Total Students</p>
+                <p class="value">{{ total_students }}</p>
+            </div>
+            
+            <div class="summary-item">
+                <p class="label">Total Grades</p>
+                <p class="value">{{ total_grades }}</p>
+            </div>
+            
+            <div class="summary-item">
+                <p class="label">Class Average</p>
+                <p class="value">{{ overall_avg|floatformat:1 }}</p>
+            </div>
+            
+            <div class="summary-item">
+                <p class="label">Attendance Marked</p>
+                <p class="value">
+                    {% if attendance_marked_today %}
+                    ✓ Yes
+                    {% else %}
+                    ✗ No
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Subject Performance -->
+    {% if subject_performance %}
+    <div class="report-section">
+        <h2>Subject Performance</h2>
+        <div class="table-section">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Subject</th>
+                        <th>Average Score</th>
+                        <th>Grades Recorded</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in subject_performance %}
+                    <tr>
+                        <td><strong>{{ item.subject.subject_name }}</strong></td>
+                        <td>{{ item.avg_score|floatformat:1 }}</td>
+                        <td>{{ item.grades_count }}</td>
+                        <td>
+                            {% if item.avg_score >= 75 %}
+                            <span class="badge badge-high">Excellent</span>
+                            {% elif item.avg_score >= 60 %}
+                            <span class="badge badge-medium">Good</span>
+                            {% else %}
+                            <span class="badge badge-low">Needs Improvement</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    {% endif %}
+</div>
+
+<style>
+.class-performance {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.page-header {
+    margin-bottom: 30px;
+}
+
+.page-header h1 {
+    margin: 0;
+    font-size: 28px;
+}
+
+.page-header .subtitle {
+    color: #666;
+    margin: 5px 0 0 0;
+    font-size: 14px;
+}
+
+.no-class-alert {
+    background: #fff3cd;
+    border: 1px solid #ffc107;
+    padding: 20px;
+    border-radius: 8px;
+    color: #856404;
+}
+
+.summary-section,
+.report-section {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+.summary-section h2,
+.report-section h2 {
+    margin-top: 0;
+    font-size: 18px;
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 15px;
+}
+
+.summary-item {
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 4px;
+    text-align: center;
+}
+
+.summary-item .label {
+    margin: 0;
+    font-size: 12px;
+    color: #666;
+}
+
+.summary-item .value {
+    margin: 8px 0 0 0;
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+}
+
+.table-section {
+    overflow-x: auto;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table thead {
+    background: #f8f9fa;
+}
+
+.table th {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 2px solid #dee2e6;
+    font-weight: 600;
+}
+
+.table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.table tbody tr:nth-child(odd) {
+    background: #f8f9fa;
+}
+
+.badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.badge-high {
+    background: #d4edda;
+    color: #155724;
+}
+
+.badge-medium {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.badge-low {
+    background: #f8d7da;
+    color: #721c24;
+}
+</style>
+{% endblock %}

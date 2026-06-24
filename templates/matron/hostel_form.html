@@ -1,0 +1,188 @@
+{% extends "teacher/base.html" %}
+{% load static %}
+
+{% block title %}Edit Hostel - {{ hostel.name }}{% endblock %}
+
+{% block content %}
+<div class="hostel-form">
+    <div class="page-header">
+        <h1>Edit Hostel: {{ hostel.name }}</h1>
+    </div>
+
+    <form method="post" class="form">
+        {% csrf_token %}
+
+        <div class="form-section">
+            <h2>Hostel Information</h2>
+            
+            <div class="form-group">
+                <label for="name">Hostel Name <span class="required">*</span></label>
+                <input type="text" name="name" id="name" required value="{{ hostel.name }}">
+            </div>
+
+            <div class="form-group">
+                <label for="description">Description</label>
+                <textarea name="description" id="description" rows="4">{{ hostel.description }}</textarea>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h2>Management</h2>
+            
+            <div class="form-group">
+                <label for="head_of_department">Hostel Head</label>
+                <select name="head_of_department" id="head_of_department">
+                    <option value="">-- No Head --</option>
+                    {% for head in heads %}
+                    <option value="{{ head.id }}" {% if hostel.head_of_department.id == head.id %}selected{% endif %}>
+                        {{ head.user.get_full_name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h2>Capacity</h2>
+            
+            <div class="form-group">
+                <label for="capacity">Capacity</label>
+                <input type="number" name="capacity" id="capacity" step="1" 
+                       value="{% if hostel.monthly_budget %}{{ hostel.monthly_budget }}{% endif %}" 
+                       placeholder="0">
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h2>Status</h2>
+            
+            <div class="form-group">
+                <label for="is_active">
+                    <input type="checkbox" name="is_active" id="is_active" {% if hostel.is_active %}checked{% endif %}>
+                    Active
+                </label>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+            <a href="{% url 'teacher:matron:hostel_detail' hostel.id %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<style>
+.hostel-form {
+    padding: 20px;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.page-header {
+    margin-bottom: 30px;
+}
+
+.page-header h1 {
+    margin: 0;
+    font-size: 28px;
+}
+
+.form {
+    background: white;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.form-section {
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.form-section:last-of-type {
+    border-bottom: none;
+}
+
+.form-section h2 {
+    margin: 0 0 20px 0;
+    font-size: 16px;
+    color: #333;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    color: #333;
+}
+
+.required {
+    color: #dc3545;
+}
+
+.form-group select,
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    font-family: inherit;
+}
+
+.form-group select:focus,
+.form-group input:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0,123,255,0.25);
+}
+
+.form-group input[type="checkbox"] {
+    margin-right: 8px;
+}
+
+.form-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 30px;
+}
+
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-primary {
+    background: #007bff;
+    color: white;
+    flex: 1;
+}
+
+.btn-primary:hover {
+    background: #0056b3;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #545b62;
+}
+</style>
+{% endblock %}

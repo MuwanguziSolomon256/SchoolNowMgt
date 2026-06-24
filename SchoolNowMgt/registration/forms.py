@@ -55,6 +55,22 @@ class TeacherRegistrationForm(forms.Form):
         widget=forms.DateInput(attrs={'type': 'date'})
     )
     
+    TEACHER_ADMIN_ROLE_CHOICES = [
+        ('teacher', 'Class/Subject Teacher'),
+        ('dos', 'Director of Studies'),
+        ('department_head', 'Subject Department Head'),
+        ('head_teacher', 'Head Teacher'),
+        ('deputy_hm', 'Deputy Headmaster'),
+    ]
+    
+    teacher_admin_role = forms.ChoiceField(
+        required=False,
+        choices=TEACHER_ADMIN_ROLE_CHOICES,
+        initial='teacher',
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        help_text='Select administrative role if applicable. Leave as Teacher for regular class teachers.'
+    )
+    
     def clean_password1(self):
         """Validate password strength with separate errors for each rule."""
         password = self.cleaned_data.get('password1')
