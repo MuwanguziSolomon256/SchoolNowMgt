@@ -278,6 +278,24 @@ class URLRoutingTestSuite(TestCase):
             except Exception as e:
                 print(f"  ✗ reverse('{route}') failed: {e}")
 
+    def test_support_root_alias_redirects(self):
+        """Test that the root /support/ alias redirects to the support dashboard."""
+        print("\n🔍 TEST: Support root alias redirects")
+
+        response = self.client.get('/support/', follow=False)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertIn('/teacher/support/', response['Location'])
+        print("  ✓ /support/ redirects to /teacher/support/")
+
+    def test_teacher_support_base_route_resolves(self):
+        """Test that the base /teacher/support/ route resolves."""
+        print("\n🔍 TEST: Teacher support base route resolves")
+
+        resolved = resolve('/teacher/support/')
+        self.assertIsNotNone(resolved)
+        print("  ✓ /teacher/support/ resolves")
+
     def test_invalid_routes_return_404(self):
         """Test that invalid routes return 404"""
         print("\n🔍 TEST: Invalid routes return 404")

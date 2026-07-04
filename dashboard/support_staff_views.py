@@ -31,6 +31,27 @@ from SchoolNowMgt.decorators import (
 )
 
 
+@require_support_staff_role(['staff', 'supervisor', 'shift_supervisor', 'department_head', 'welfare_coordinator'])
+def support_staff_dashboard(request):
+    """Base support dashboard landing view for non-teaching staff."""
+    school = get_user_school(request)
+    staff_profile = get_object_or_404(StaffProfile, user=request.user)
+
+    if staff_profile.support_staff_role == 'department_head':
+        return redirect('/teacher/support/dept-head/')
+    if staff_profile.support_staff_role in {'supervisor', 'shift_supervisor'}:
+        return redirect('/teacher/support/shift-supervisor/')
+    if staff_profile.support_staff_role == 'welfare_coordinator':
+        return redirect('/teacher/support/welfare/')
+
+    context = {
+        'school': school,
+        'staff_profile': staff_profile,
+        'section': 'support_staff_dashboard',
+    }
+    return render(request, 'support_staff/support_staff_dashboard.html', context)
+
+
 # ============================================================================
 # DEPARTMENT HEAD DASHBOARD
 # ============================================================================
@@ -402,9 +423,9 @@ def welfare_coordinator_dashboard(request):
         role='student'
     ).count()
     
-    # Get recent activities
+    # Get recent activities for the current school via the related teacher profile
     recent_activities = ActivityLog.objects.filter(
-        school=school
+        teacher__user__school=school
     ).order_by('-created_at')[:10]
     
     statistics = {

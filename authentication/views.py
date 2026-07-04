@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.db import transaction, ProgrammingError
 from django.utils import timezone
 
-from SchoolNowMgt.models import CustomUser, School
+from SchoolNowMgt.models import CustomUser, School, StaffProfile
 from SchoolNowMgt.decorators import ensure_staff_profile
 from .forms import UnifiedLoginForm, UnifiedRegistrationForm, ParentRegistrationForm
 from SchoolNowMgt.registration.utils import generate_employee_id

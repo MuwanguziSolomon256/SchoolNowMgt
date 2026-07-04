@@ -21,6 +21,7 @@ def health_check(request):
 
 urlpatterns = [
     path('health/', health_check, name='health_check'),
+    path('support/', lambda request: redirect('/teacher/support/', permanent=False)),
     path('', home, name='home'),
     path('admin/', admin.site.urls),
     path('auth/', include('authentication.urls', namespace='auth')),

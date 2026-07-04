@@ -26,11 +26,15 @@ from dashboard.support_staff_views import (
     
     # Common Views
     support_staff_profile,
+    support_staff_dashboard,
 )
 
 app_name = 'support_staff'
 
 urlpatterns = [
+    # ===== BASE SUPPORT ROUTE =====
+    path('', support_staff_dashboard, name='dashboard'),
+
     # ===== DEPARTMENT HEAD ROUTES =====
     path('dept-head/',
          dept_head_dashboard,
