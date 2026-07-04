@@ -4,9 +4,33 @@ from django.contrib import messages
 from django.db import transaction, ProgrammingError
 from django.utils import timezone
 
-from SchoolNowMgt.models import CustomUser, School, StaffProfile
+from SchoolNowMgt.models import CustomUser, School
+from SchoolNowMgt.decorators import ensure_staff_profile
 from .forms import UnifiedLoginForm, UnifiedRegistrationForm, ParentRegistrationForm
 from SchoolNowMgt.registration.utils import generate_employee_id
+
+
+def _handle_missing_staff_profile(request, role_name='teacher'):
+    messages.error(
+        request,
+        f"Your {role_name.replace('_', ' ')} account is missing a staff profile. "
+        "Please contact your school administrator."
+    )
+    return redirect('/')
+
+
+def _get_support_role_redirect_path(staff_profile):
+    """Return the dashboard path for support staff based on their stored role values."""
+    support_role = (staff_profile.support_staff_role or '').strip()
+    teacher_admin_role = (staff_profile.teacher_admin_role or '').strip()
+
+    if support_role in {'welfare_coordinator', 'matron'} or teacher_admin_role in {'welfare_coordinator', 'matron'}:
+        return '/teacher/matron/'
+    if support_role in {'supervisor', 'shift_supervisor'} or teacher_admin_role in {'supervisor', 'shift_supervisor'}:
+        return '/teacher/support/shift-supervisor/'
+    if support_role == 'department_head' or teacher_admin_role == 'department_head':
+        return '/teacher/support/dept-head/'
+    return '/support/'
 
 
 def get_school_safe():
@@ -38,45 +62,25 @@ def unified_login(request):
         if request.user.is_superuser:
             return redirect('/admin/')
         elif request.user.role == 'teacher':
-            # Check if teacher has an admin role
-            try:
-                staff_profile = request.user.staffprofile
-                admin_role = staff_profile.teacher_admin_role
-                
-                # Redirect to admin dashboard based on admin role
-                if admin_role == 'dos':
-                    return redirect('/teacher/admin/dos/')
-                elif admin_role == 'deputy_hm':
-                    return redirect('/teacher/admin/deputy/')
-                elif admin_role == 'head_teacher':
-                    return redirect('/teacher/admin/head-teacher/')
-                elif admin_role == 'department_head':
-                    return redirect('/teacher/department/')
-                else:
-                    # Regular teacher
-                    return redirect('/teacher/')
-            except:
-                # No staff profile, redirect to teacher dashboard
+            # Ensure teacher has a StaffProfile and redirect based on admin role
+            staff_profile = ensure_staff_profile(request.user)
+            admin_role = staff_profile.teacher_admin_role
+            
+            if admin_role == 'dos':
+                return redirect('/teacher/admin/dos/')
+            elif admin_role == 'deputy_hm':
+                return redirect('/teacher/admin/deputy/')
+            elif admin_role == 'head_teacher':
+                return redirect('/teacher/admin/head-teacher/')
+            elif admin_role == 'department_head':
+                return redirect('/teacher/department/')
+            else:
+                # Regular teacher
                 return redirect('/teacher/')
         elif request.user.role == 'non_teaching_staff':
-            # Check if support staff has an admin role
-            try:
-                staff_profile = request.user.staffprofile
-                support_role = staff_profile.support_staff_role
-                
-                # Redirect to admin dashboard based on support staff role
-                if support_role == 'welfare_coordinator':
-                    return redirect('/teacher/matron/')
-                elif support_role == 'supervisor':
-                    return redirect('/teacher/support/shift-supervisor/')
-                elif support_role == 'department_head':
-                    return redirect('/teacher/support/dept-head/')
-                else:
-                    # Regular support staff
-                    return redirect('/support/')
-            except:
-                # No staff profile, redirect to support dashboard
-                return redirect('/support/')
+            # Ensure support staff has a StaffProfile and redirect based on role
+            staff_profile = ensure_staff_profile(request.user)
+            return redirect(_get_support_role_redirect_path(staff_profile))
         elif request.user.role == 'admin':
             return redirect('/admin/')
         elif request.user.role == 'parent':
@@ -104,48 +108,25 @@ def unified_login(request):
             if user.is_superuser:
                 return redirect('/admin/')
             elif user.role == 'teacher':
-                # Check if teacher has an admin role
-                try:
-                    staff_profile = user.staffprofile
-                    admin_role = staff_profile.teacher_admin_role
-                    
-                    # Redirect to admin dashboard based on admin role
-                    if admin_role == 'dos':
-                        return redirect('/teacher/admin/dos/')
-                    elif admin_role == 'deputy_hm':
-                        return redirect('/teacher/admin/deputy/')
-                    elif admin_role == 'head_teacher':
-                        return redirect('/teacher/department/')
-                    elif admin_role == 'department_head':
-                        return redirect('/teacher/support/dept-head/')
-                    else:
-                        # Regular teacher (admin_role == 'teacher')
-                        return redirect('/teacher/')
-                except Exception as e:
-                    # No staff profile, redirect to teacher dashboard
-                    import sys
-                    print(f"DEBUG: Exception in teacher redirect: {e}", file=sys.stderr)
+                # Ensure teacher has a StaffProfile and redirect based on admin role
+                staff_profile = ensure_staff_profile(user)
+                admin_role = staff_profile.teacher_admin_role
+                
+                if admin_role == 'dos':
+                    return redirect('/teacher/admin/dos/')
+                elif admin_role == 'deputy_hm':
+                    return redirect('/teacher/admin/deputy/')
+                elif admin_role == 'head_teacher':
+                    return redirect('/teacher/admin/head-teacher/')
+                elif admin_role == 'department_head':
+                    return redirect('/teacher/department/')
+                else:
+                    # Regular teacher (admin_role == 'teacher')
                     return redirect('/teacher/')
             elif user.role == 'non_teaching_staff':
-                # Check if support staff has an admin role
-                try:
-                    staff_profile = user.staffprofile
-                    support_role = staff_profile.support_staff_role
-                    
-                    # Redirect to admin dashboard based on support staff role
-                    if support_role == 'welfare_coordinator':
-                        return redirect('/teacher/matron/')
-                    elif support_role == 'supervisor':
-                        return redirect('/teacher/support/shift-supervisor/')
-                    elif support_role == 'department_head':
-                        return redirect('/teacher/support/dept-head/')
-                    else:
-                        # Regular support staff
-                        return redirect('/support/')
-                except Exception as e:
-                    import sys
-                    print(f"DEBUG: Exception in non_teaching_staff redirect: {e}", file=sys.stderr)
-                    return redirect('/support/')
+                # Ensure support staff has a StaffProfile and redirect based on role
+                staff_profile = ensure_staff_profile(user)
+                return redirect(_get_support_role_redirect_path(staff_profile))
             elif user.role == 'admin':
                 return redirect('SchoolNowMgt:dashboard')
             elif user.role == 'parent':

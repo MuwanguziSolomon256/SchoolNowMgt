@@ -177,24 +177,36 @@ def create_test_staff_profiles(school):
                 print(f"{Colors.RED}✗ Error creating user {staff_data['username']}: {str(e)}{Colors.END}")
                 continue
         
-        # Create or update StaffProfile with admin role
+        # Create or update StaffProfile with admin/support role
         if user:
             try:
+                profile_defaults = {
+                    'employee_id': employee_id,
+                    'position': position,
+                    'salary': 45000.00,
+                    'date_joined': date.today(),
+                    'is_full_time': True,
+                }
+                if user.role == 'teacher':
+                    profile_defaults['teacher_admin_role'] = admin_role
+                else:
+                    support_role_map = {
+                        'matron': 'welfare_coordinator',
+                        'shift_supervisor': 'supervisor',
+                        'support_dept_head': 'department_head',
+                    }
+                    profile_defaults['support_staff_role'] = support_role_map.get(admin_role, admin_role)
+
                 staff_profile, created = StaffProfile.objects.get_or_create(
                     user=user,
-                    defaults={
-                        'employee_id': employee_id,
-                        'position': position,
-                        'teacher_admin_role': admin_role,
-                        'salary': 45000.00,
-                        'date_joined': date.today(),
-                        'is_full_time': True,
-                    }
+                    defaults=profile_defaults
                 )
                 
-                # Update admin role if profile already existed
                 if not created:
-                    staff_profile.teacher_admin_role = admin_role
+                    if user.role == 'teacher':
+                        staff_profile.teacher_admin_role = admin_role
+                    else:
+                        staff_profile.support_staff_role = support_role_map.get(admin_role, admin_role)
                     staff_profile.position = position
                     staff_profile.save()
                     print(f"{Colors.CYAN}  └─ StaffProfile updated: {admin_role}{Colors.END}")

@@ -16,7 +16,7 @@ from dashboard.deputy_hm_views import (
     budget_overview,
 )
 
-app_name = 'deputy'
+app_name = 'deputy_hm'
 
 urlpatterns = [
     # Main Deputy HM Dashboard

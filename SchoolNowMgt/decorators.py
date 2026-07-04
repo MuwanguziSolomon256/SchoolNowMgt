@@ -6,10 +6,15 @@ Subject Department Heads, Class Teachers, and other admin roles.
 """
 
 from functools import wraps
+from datetime import date
+
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import redirect
 from django.urls import reverse
+
+from SchoolNowMgt.models import StaffProfile
+from SchoolNowMgt.registration.utils import generate_employee_id
 
 
 def get_user_school(request):
@@ -28,6 +33,26 @@ def get_user_school(request):
     if not request.user.school:
         raise PermissionDenied("User has no school assigned")
     return request.user.school
+
+
+def ensure_staff_profile(user):
+    """
+    Ensure a StaffProfile exists for the given user.
+
+    Creates a minimal default StaffProfile for legacy teacher/support
+    accounts that were created before staff profiles were enforced.
+    """
+    try:
+        return user.staffprofile
+    except StaffProfile.DoesNotExist:
+        return StaffProfile.objects.create(
+            user=user,
+            employee_id=generate_employee_id(user.school),
+            position='Teacher' if user.role == 'teacher' else 'Support Staff',
+            salary=0,
+            date_joined=date.today(),
+            is_full_time=True,
+        )
 
 
 def require_teacher_role(allowed_roles):
@@ -61,11 +86,8 @@ def require_teacher_role(allowed_roles):
             # Check if user has a school
             get_user_school(request)
             
-            # Check if user has StaffProfile
-            try:
-                staff_profile = request.user.staffprofile
-            except:
-                raise PermissionDenied("User has no staff profile")
+            # Ensure user has a StaffProfile
+            staff_profile = ensure_staff_profile(request.user)
             
             # Check if user has required admin role
             if staff_profile.teacher_admin_role not in allowed_roles:
@@ -99,13 +121,10 @@ def require_dos(view_func):
         # Check if user has a school
         get_user_school(request)
         
-        # Check if user has StaffProfile with DOS role
-        try:
-            staff_profile = request.user.staffprofile
-            if staff_profile.teacher_admin_role != 'dos':
-                raise PermissionDenied("User is not a Director of Studies")
-        except:
-            raise PermissionDenied("User has no staff profile or is not DOS")
+        # Ensure user has StaffProfile with DOS role
+        staff_profile = ensure_staff_profile(request.user)
+        if staff_profile.teacher_admin_role != 'dos':
+            raise PermissionDenied("User is not a Director of Studies")
         
         return view_func(request, *args, **kwargs)
     
@@ -131,13 +150,10 @@ def require_department_head(view_func):
         # Check if user has a school
         get_user_school(request)
         
-        # Check if user has StaffProfile with department_head role
-        try:
-            staff_profile = request.user.staffprofile
-            if staff_profile.teacher_admin_role != 'department_head':
-                raise PermissionDenied("User is not a Subject Department Head")
-        except:
-            raise PermissionDenied("User has no staff profile or is not a department head")
+        # Ensure user has StaffProfile with department_head role
+        staff_profile = ensure_staff_profile(request.user)
+        if staff_profile.teacher_admin_role != 'department_head':
+            raise PermissionDenied("User is not a Subject Department Head")
         
         return view_func(request, *args, **kwargs)
     
@@ -163,13 +179,10 @@ def require_head_teacher(view_func):
         # Check if user has a school
         get_user_school(request)
         
-        # Check if user has StaffProfile with head_teacher role
-        try:
-            staff_profile = request.user.staffprofile
-            if staff_profile.teacher_admin_role != 'head_teacher':
-                raise PermissionDenied("User is not a Head Teacher")
-        except:
-            raise PermissionDenied("User has no staff profile or is not a head teacher")
+        # Ensure user has StaffProfile with head_teacher role
+        staff_profile = ensure_staff_profile(request.user)
+        if staff_profile.teacher_admin_role != 'head_teacher':
+            raise PermissionDenied("User is not a Head Teacher")
         
         return view_func(request, *args, **kwargs)
     
@@ -198,11 +211,8 @@ def require_class_teacher(view_func):
         # Check if user has a school
         get_user_school(request)
         
-        # Check if user has StaffProfile
-        try:
-            staff_profile = request.user.staffprofile
-        except:
-            raise PermissionDenied("User has no staff profile")
+        # Ensure user has StaffProfile
+        staff_profile = ensure_staff_profile(request.user)
         
         # Note: Further validation of specific class assignment happens in the view
         # This decorator just ensures the user is a teacher
@@ -239,11 +249,8 @@ def require_support_staff_role(allowed_roles):
             # Check if user has a school
             get_user_school(request)
             
-            # Check if user has StaffProfile
-            try:
-                staff_profile = request.user.staffprofile
-            except:
-                raise PermissionDenied("User has no staff profile")
+            # Ensure user has a StaffProfile
+            staff_profile = ensure_staff_profile(request.user)
             
             # Check if user has required support staff role
             if staff_profile.support_staff_role not in allowed_roles:
@@ -277,13 +284,10 @@ def require_shift_supervisor(view_func):
         # Check if user has a school
         get_user_school(request)
         
-        # Check if user has StaffProfile with supervisor role
-        try:
-            staff_profile = request.user.staffprofile
-            if staff_profile.support_staff_role != 'supervisor':
-                raise PermissionDenied("User is not a Shift Supervisor")
-        except:
-            raise PermissionDenied("User has no staff profile or is not a shift supervisor")
+        # Ensure user has StaffProfile with supervisor role
+        staff_profile = ensure_staff_profile(request.user)
+        if staff_profile.support_staff_role not in {'supervisor', 'shift_supervisor'}:
+            raise PermissionDenied("User is not a Shift Supervisor")
         
         return view_func(request, *args, **kwargs)
     
@@ -333,13 +337,10 @@ def require_deputy_hm(view_func):
         # Check if user has a school
         get_user_school(request)
         
-        # Check if user has StaffProfile with deputy_hm role
-        try:
-            staff_profile = request.user.staffprofile
-            if staff_profile.teacher_admin_role != 'deputy_hm':
-                raise PermissionDenied("User is not a Deputy Headmaster")
-        except:
-            raise PermissionDenied("User has no staff profile or is not a Deputy Headmaster")
+        # Ensure user has StaffProfile with deputy_hm role
+        staff_profile = ensure_staff_profile(request.user)
+        if staff_profile.teacher_admin_role != 'deputy_hm':
+            raise PermissionDenied("User is not a Deputy Headmaster")
         
         return view_func(request, *args, **kwargs)
     
@@ -365,13 +366,10 @@ def require_support_dept_head(view_func):
         # Check if user has a school
         get_user_school(request)
         
-        # Check if user has StaffProfile with department_head role
-        try:
-            staff_profile = request.user.staffprofile
-            if staff_profile.support_staff_role != 'department_head':
-                raise PermissionDenied("User is not a support staff department head")
-        except:
-            raise PermissionDenied("User has no staff profile or is not a department head")
+        # Ensure user has StaffProfile with department_head role
+        staff_profile = ensure_staff_profile(request.user)
+        if staff_profile.support_staff_role != 'department_head':
+            raise PermissionDenied("User is not a support staff department head")
         
         return view_func(request, *args, **kwargs)
     
@@ -397,13 +395,10 @@ def require_welfare_coordinator(view_func):
         # Check if user has a school
         get_user_school(request)
         
-        # Check if user has StaffProfile with welfare_coordinator role
-        try:
-            staff_profile = request.user.staffprofile
-            if staff_profile.support_staff_role != 'welfare_coordinator':
-                raise PermissionDenied("User is not a Welfare Coordinator")
-        except:
-            raise PermissionDenied("User has no staff profile or is not a welfare coordinator")
+        # Ensure user has StaffProfile with welfare_coordinator role
+        staff_profile = ensure_staff_profile(request.user)
+        if staff_profile.support_staff_role not in {'welfare_coordinator', 'matron'}:
+            raise PermissionDenied("User is not a Welfare Coordinator")
         
         return view_func(request, *args, **kwargs)
     
@@ -437,13 +432,10 @@ def require_matron(view_func):
         # Check if user has a school
         get_user_school(request)
         
-        # Check if user has StaffProfile with welfare_coordinator role
-        try:
-            staff_profile = request.user.staffprofile
-            if staff_profile.support_staff_role != 'welfare_coordinator':
-                raise PermissionDenied("User is not a Welfare Coordinator/Matron")
-        except:
-            raise PermissionDenied("User has no staff profile or is not a matron")
+        # Ensure user has StaffProfile with welfare_coordinator role
+        staff_profile = ensure_staff_profile(request.user)
+        if staff_profile.support_staff_role not in {'welfare_coordinator', 'matron'}:
+            raise PermissionDenied("User is not a Welfare Coordinator/Matron")
         
         # If hostel_id is provided in kwargs, check if matron is assigned to that hostel
         if 'hostel_id' in kwargs:

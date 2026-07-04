@@ -1,5 +1,4 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect
 from django.utils import timezone
 from django.db.models import Count, Q, Avg
 from django.http import HttpResponse
@@ -10,7 +9,7 @@ from SchoolNowMgt.models import (
     StudentAttendance, RetentionAlert, Grade,
     TeacherTask, ActivityLog, TeacherAttendance, Subject
 )
-from SchoolNowMgt.decorators import require_teacher_role, get_user_school
+from SchoolNowMgt.decorators import require_teacher_role, get_user_school, ensure_staff_profile
 from SchoolNowMgt.utils import get_teacher_scope_data
 from datetime import timedelta
 
@@ -43,7 +42,7 @@ def teacher_dashboard(request):
     """
     # Get school and staff profile (verified by decorator)
     school = get_user_school(request)
-    staff = get_object_or_404(StaffProfile, user=request.user, user__school=school)
+    staff = ensure_staff_profile(request.user)
     
     # Get today's date
     today = timezone.localdate()
@@ -90,7 +89,7 @@ def teacher_dashboard(request):
     )
     
     my_students = Student.objects.filter(
-        school=school,
+        class_grade__school=school,
         class_grade__class_teacher=staff,
         status='active'
     )
@@ -98,27 +97,24 @@ def teacher_dashboard(request):
     # ===== PENDING TASKS (Real database) =====
     tasks = TeacherTask.objects.filter(
         teacher=staff,
-        school=school,
         status='pending'
     ).order_by('-priority', 'due_date')[:3]
     
     total_tasks_pending = TeacherTask.objects.filter(
         teacher=staff,
-        school=school,
         status='pending'
     ).count()
     
     # ===== RECENT ACTIVITIES (Real database) =====
     activities = ActivityLog.objects.filter(
-        staff=staff,
-        school=school
+        teacher=staff
     ).order_by('-created_at')[:3]
     
     # ===== PERFORMANCE STATISTICS =====
     # Calculate weekly grade averages (past 7 days, school-scoped)
     week_ago = today - timedelta(days=7)
     weekly_grades = Grade.objects.filter(
-        student__school=school,
+        student__class_grade__school=school,
         student__class_grade__class_teacher=staff,
         created_at__date__gte=week_ago
     ).aggregate(avg=Avg('score'))
@@ -184,8 +180,8 @@ def toggle_task_status(request, task_id):
     """
     try:
         school = get_user_school(request)
-        staff = get_object_or_404(StaffProfile, user=request.user, user__school=school)
-        task = TeacherTask.objects.get(id=task_id, teacher=staff, school=school)
+        staff = ensure_staff_profile(request.user)
+        task = TeacherTask.objects.get(id=task_id, teacher=staff)
         
         # Toggle status
         task.status = 'completed' if task.status == 'pending' else 'pending'
@@ -213,7 +209,7 @@ def create_task(request):
     """
     try:
         school = get_user_school(request)
-        staff = get_object_or_404(StaffProfile, user=request.user, user__school=school)
+        staff = ensure_staff_profile(request.user)
         
         title = request.POST.get('title')
         description = request.POST.get('description')
@@ -225,7 +221,6 @@ def create_task(request):
         
         task = TeacherTask.objects.create(
             teacher=staff,
-            school=school,
             title=title,
             description=description,
             due_date=due_date,
@@ -260,11 +255,11 @@ def student_search(request):
     
     try:
         school = get_user_school(request)
-        staff = get_object_or_404(StaffProfile, user=request.user, user__school=school)
+        staff = ensure_staff_profile(request.user)
         
         # Search in teacher's students (school-scoped)
         students = Student.objects.filter(
-            school=school,
+            class_grade__school=school,
             class_grade__class_teacher=staff,
             status='active'
         ).filter(
@@ -289,7 +284,7 @@ def quick_grade_entry(request):
     """
     try:
         school = get_user_school(request)
-        staff = get_object_or_404(StaffProfile, user=request.user, user__school=school)
+        staff = ensure_staff_profile(request.user)
         
         student_id = request.POST.get('student_id')
         subject_id = request.POST.get('subject_id')
@@ -307,7 +302,7 @@ def quick_grade_entry(request):
         
         student = Student.objects.get(
             id=student_id,
-            school=school,
+            class_grade__school=school,
             class_grade__class_teacher=staff
         )
         
@@ -346,7 +341,7 @@ def send_circular(request):
     """
     try:
         school = get_user_school(request)
-        staff = get_object_or_404(StaffProfile, user=request.user, user__school=school)
+        staff = ensure_staff_profile(request.user)
         
         class_id = request.POST.get('class_id')
         message = request.POST.get('message')
@@ -372,7 +367,7 @@ def send_circular(request):
         
         # Get parent count for response
         parent_count = Student.objects.filter(
-            school=school,
+            class_grade__school=school,
             class_grade_id=class_id
         ).values('parent_phone').distinct().count()
         
@@ -404,14 +399,14 @@ def teacher_students_list(request):
     """
     # Get school and staff profile (verified by decorator)
     school = get_user_school(request)
-    staff = get_object_or_404(StaffProfile, user=request.user, user__school=school)
+    staff = ensure_staff_profile(request.user)
     
     # Get today's date
     today = timezone.localdate()
     
     # Get all students from teacher's classes (school-scoped)
     students = Student.objects.filter(
-        school=school,
+        class_grade__school=school,
         class_grade__class_teacher=staff,
         status='active'
     ).select_related('class_grade').order_by('class_grade__level', 'first_name')
@@ -439,8 +434,8 @@ def teacher_students_list(request):
     
     # Attendance data for today (school-scoped)
     attendance_today = StudentAttendance.objects.filter(
-        school=school,
         date=today,
+        student__class_grade__school=school,
         student__class_grade__class_teacher=staff
     ).values('student_id', 'status')
     
@@ -477,7 +472,7 @@ def teacher_lessons_list(request):
     """
     # Get school and staff profile (verified by decorator)
     school = get_user_school(request)
-    staff = get_object_or_404(StaffProfile, user=request.user, user__school=school)
+    staff = ensure_staff_profile(request.user)
     
     # Get today's date
     today = timezone.localdate()
@@ -506,7 +501,7 @@ def teacher_lessons_list(request):
             # Annotate student count for each lesson
             for lesson in day_lessons:
                 lesson.student_count = Student.objects.filter(
-                    school=school,
+                    class_grade__school=school,
                     class_grade=lesson.class_grade,
                     status='active'
                 ).count()
@@ -534,11 +529,7 @@ def export_teacher_schedule_csv(request):
     Requires: Teacher role
     """
     school = get_user_school(request)
-    
-    try:
-        staff = StaffProfile.objects.get(user=request.user, user__school=school)
-    except StaffProfile.DoesNotExist:
-        return redirect('teacher:login')
+    staff = ensure_staff_profile(request.user)
     
     today = timezone.localdate()
     
@@ -579,11 +570,7 @@ def export_teacher_attendance_csv(request):
     Requires: Teacher role
     """
     school = get_user_school(request)
-    
-    try:
-        staff = StaffProfile.objects.get(user=request.user, user__school=school)
-    except StaffProfile.DoesNotExist:
-        return redirect('teacher:login')
+    staff = ensure_staff_profile(request.user)
     
     # Get attendance records for last 90 days (school-scoped via staff)
     from_date = timezone.localdate() - timedelta(days=90)
@@ -620,13 +607,13 @@ def get_student_info_ajax(request, student_id):
     Requires: Teacher role
     """
     school = get_user_school(request)
-    staff = get_object_or_404(StaffProfile, user=request.user, user__school=school)
+    staff = ensure_staff_profile(request.user)
     
     try:
         # Verify student belongs to teacher's classes and same school
         student = Student.objects.select_related('class_grade').get(
             id=student_id,
-            school=school,
+            class_grade__school=school,
             class_grade__class_teacher=staff
         )
         

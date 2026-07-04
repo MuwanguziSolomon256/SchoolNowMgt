@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth import authenticate
-from SchoolNowMgt.models import CustomUser
+from SchoolNowMgt.models import CustomUser, StaffProfile
 
 
 class RoleSelectionForm(forms.Form):
@@ -102,13 +102,26 @@ class UnifiedLoginForm(forms.Form):
         # Verify admin role if specified
         admin_role = cleaned_data.get('admin_role')
         if admin_role:
-            from SchoolNowMgt.models import StaffProfile
             try:
                 staff_profile = StaffProfile.objects.get(user=user)
-                if staff_profile.teacher_admin_role != admin_role:
-                    raise forms.ValidationError(
-                        f'This account is not assigned the {admin_role} role.'
-                    )
+                if user.role == 'non_teaching_staff':
+                    support_role_equivalents = {
+                        'matron': {'welfare_coordinator', 'matron'},
+                        'welfare_coordinator': {'welfare_coordinator', 'matron'},
+                        'shift_supervisor': {'supervisor', 'shift_supervisor'},
+                        'supervisor': {'supervisor', 'shift_supervisor'},
+                        'department_head': {'department_head'},
+                    }
+                    accepted_roles = support_role_equivalents.get(admin_role, {admin_role})
+                    if staff_profile.support_staff_role not in accepted_roles:
+                        raise forms.ValidationError(
+                            f'This account is not assigned the {admin_role} role.'
+                        )
+                else:
+                    if staff_profile.teacher_admin_role != admin_role:
+                        raise forms.ValidationError(
+                            f'This account is not assigned the {admin_role} role.'
+                        )
             except StaffProfile.DoesNotExist:
                 raise forms.ValidationError(
                     'This account does not have a staff profile. Please contact support.'

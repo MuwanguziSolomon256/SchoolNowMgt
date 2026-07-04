@@ -159,8 +159,8 @@ def grade_entry_interface(request):
     
     # Get subjects taught by this teacher (school-scoped)
     subjects = Subject.objects.filter(
-        school=school,
-        timetable_entries__teacher=staff
+        timetable_entries__teacher=staff,
+        timetable_entries__class_grade__school=school
     ).distinct().order_by('name')
     
     if request.method == 'GET':
@@ -174,7 +174,7 @@ def grade_entry_interface(request):
         
         # Get all students for single entry dropdown (school-scoped)
         all_students = Student.objects.filter(
-            school=school,
+            class_grade__school=school,
             status='active'
         ).select_related('class_grade').order_by('first_name', 'last_name')
         
@@ -229,8 +229,8 @@ def grade_entry_interface(request):
                 }, status=400)
             
             try:
-                student = Student.objects.get(id=student_id, school=school)
-                subject_obj = Subject.objects.get(id=subject_id, school=school)
+                student = Student.objects.get(id=student_id, class_grade__school=school)
+                subject_obj = Subject.objects.get(id=subject_id, timetable_entries__teacher=staff, timetable_entries__class_grade__school=school)
             except (Student.DoesNotExist, Subject.DoesNotExist):
                 return JsonResponse({
                     'success': False,
@@ -249,14 +249,12 @@ def grade_entry_interface(request):
                 defaults={
                     'score': Decimal(str(score)),
                     'recorded_by': request.user,
-                    'school': school,
                 }
             )
             
-            # Log activity (school-scoped)
+            # Log activity
             ActivityLog.objects.create(
-                staff=staff,
-                school=school,
+                teacher=staff,
                 activity_type='grade_entered',
                 description=f'Entered grade for {student.first_name} {student.last_name} in {subject_obj.name}: {score}',
                 severity='success',
@@ -291,7 +289,7 @@ def grade_entry_interface(request):
             
             try:
                 class_obj = ClassGrade.objects.get(id=class_id, school=school)
-                subject_obj = Subject.objects.get(id=subject_id, school=school)
+                subject_obj = Subject.objects.get(id=subject_id, timetable_entries__teacher=staff, timetable_entries__class_grade__school=school)
             except (ClassGrade.DoesNotExist, Subject.DoesNotExist):
                 return JsonResponse({'success': False, 'error': 'Invalid class or subject'}, status=404)
             
@@ -312,8 +310,8 @@ def grade_entry_interface(request):
                     
                     student = Student.objects.get(
                         id=student_id,
-                        school=school,
                         class_grade=class_obj,
+                        class_grade__school=school,
                         status='active'
                     )
                     
@@ -329,7 +327,6 @@ def grade_entry_interface(request):
                         defaults={
                             'score': Decimal(str(score)),
                             'recorded_by': request.user,
-                            'school': school,
                         }
                     )
                     
@@ -342,10 +339,9 @@ def grade_entry_interface(request):
                     failed_entries.append(f"Student {student_id_str}: {str(e)}")
                     continue
             
-            # Log activity (school-scoped)
+            # Log activity
             ActivityLog.objects.create(
-                staff=staff,
-                school=school,
+                teacher=staff,
                 activity_type='grade_entered',
                 description=f'Entered {class_obj.name} {subject_obj.name} grades: {created_count} new, {updated_count} updated',
                 severity='success',
@@ -897,7 +893,7 @@ def attendance_marking(request):
         if class_id:
             selected_class = get_object_or_404(classes, id=class_id)
             students = Student.objects.filter(
-                school=school,
+                class_grade__school=school,
                 class_grade=selected_class,
                 status='active'
             ).order_by('first_name', 'last_name')
@@ -905,7 +901,6 @@ def attendance_marking(request):
             # Check if attendance already marked for today
             today = timezone.localdate()
             existing_attendance = StudentAttendance.objects.filter(
-                school=school,
                 student__in=students,
                 date=today
             ).values_list('student_id', flat=True)
@@ -985,7 +980,6 @@ def mark_attendance_ajax(request):
             student_id = int(student_id_str)
             student = Student.objects.get(
                 id=student_id,
-                school=school,
                 class_grade=class_obj
             )
             
@@ -994,10 +988,9 @@ def mark_attendance_ajax(request):
             if status not in valid_statuses:
                 continue
             
-            # Create or update attendance (school-scoped)
+            # Create or update attendance
             attendance, created = StudentAttendance.objects.get_or_create(
                 student=student,
-                school=school,
                 date=today,
                 defaults={
                     'status': status,
@@ -1016,10 +1009,9 @@ def mark_attendance_ajax(request):
         except (ValueError, Student.DoesNotExist):
             continue
     
-    # Log activity (school-scoped)
+    # Log activity
     ActivityLog.objects.create(
-        staff=staff,
-        school=school,
+        teacher=staff,
         activity_type='attendance_marked',
         description=f'Marked attendance for {class_obj.name}: {created_count + updated_count} records',
         severity='success',
@@ -1082,9 +1074,8 @@ def attendance_history(request):
         else:
             end_date = timezone.localdate()
         
-        # Fetch attendance records (school-scoped)
+        # Fetch attendance records (school-scoped via class)
         attendance_qs = StudentAttendance.objects.filter(
-            school=school,
             student__class_grade=selected_class,
             date__range=[start_date, end_date]
         ).select_related('student').order_by('date', 'student__first_name')
@@ -1092,7 +1083,7 @@ def attendance_history(request):
         # Filter by student if specified
         if student_id:
             selected_student = get_object_or_404(
-                Student.objects.filter(school=school, class_grade=selected_class),
+                Student.objects.filter(class_grade=selected_class),
                 id=student_id
             )
             attendance_qs = attendance_qs.filter(student=selected_student)

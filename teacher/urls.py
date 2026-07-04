@@ -105,7 +105,7 @@ urlpatterns = [
     path('admin/dos/', include((dos_urls.urlpatterns, 'dos'), namespace='dos')),
     
     # ===== DEPUTY HEADMASTER ADMIN ROUTES =====
-    path('admin/deputy/', include((deputy_hm_urls.urlpatterns, 'deputy'), namespace='deputy')),
+    path('admin/deputy/', include((deputy_hm_urls.urlpatterns, 'deputy_hm'), namespace='deputy_hm')),
     
     # ===== HEAD TEACHER ADMIN ROUTES =====
     path('admin/head-teacher/', include((head_teacher_urls.urlpatterns, 'head_teacher'), namespace='head_teacher')),

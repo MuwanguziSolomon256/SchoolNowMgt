@@ -7,6 +7,7 @@ from django.db.models import Count, Q, Avg
 from django.contrib import messages
 from django.http import JsonResponse
 from .forms import TeacherLoginForm, TeacherRegistrationForm
+from SchoolNowMgt.decorators import ensure_staff_profile
 from SchoolNowMgt.models import (
     StaffProfile, Timetable, Student, ClassGrade,
     StudentAttendance, RetentionAlert, Grade, TeacherTask, ActivityLog, Subject
@@ -54,8 +55,8 @@ def teacher_dashboard(request):
     if request.user.role != 'teacher':
         return redirect('teacher:login')
     
-    # Fetch StaffProfile or redirect to profile setup
-    staff = get_object_or_404(StaffProfile, user=request.user)
+    # Ensure the teacher has a StaffProfile
+    staff = ensure_staff_profile(request.user)
     
     # Get today's date
     today = timezone.localtime()
@@ -228,7 +229,7 @@ def toggle_task_status(request, task_id):
         return redirect('teacher:login')
     
     try:
-        staff = StaffProfile.objects.get(user=request.user)
+        staff = ensure_staff_profile(request.user)
         task = TeacherTask.objects.get(id=task_id, teacher=staff)
         
         # Toggle status
@@ -260,7 +261,7 @@ def create_task(request):
         return redirect('teacher:login')
     
     try:
-        staff = StaffProfile.objects.get(user=request.user)
+        staff = ensure_staff_profile(request.user)
         
         title = request.POST.get('title', '').strip()
         description = request.POST.get('description', '').strip()
@@ -310,7 +311,7 @@ def student_search(request):
         return JsonResponse({'error': 'Unauthorized'}, status=401)
     
     try:
-        staff = StaffProfile.objects.get(user=request.user)
+        staff = ensure_staff_profile(request.user)
         query = request.GET.get('q', '').strip()
         
         if not query or len(query) < 2:
@@ -354,7 +355,7 @@ def quick_grade_entry(request):
     try:
         from datetime import datetime
         
-        staff = StaffProfile.objects.get(user=request.user)
+        staff = ensure_staff_profile(request.user)
         student_id = request.POST.get('student_id')
         subject_id = request.POST.get('subject_id')
         term = request.POST.get('term', 'term_1')
@@ -423,7 +424,7 @@ def send_circular(request):
         return redirect('teacher:login')
     
     try:
-        staff = StaffProfile.objects.get(user=request.user)
+        staff = ensure_staff_profile(request.user)
         message = request.POST.get('message', '').strip()
         class_id = request.POST.get('class_id')
         delivery_method = request.POST.get('delivery_method', 'sms')
