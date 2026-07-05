@@ -565,8 +565,10 @@ def grade_history(request):
     staff = get_teacher_staff_profile(request)
     if not staff:
         return redirect('teacher:profile')
-    
-    classes = get_teacher_classes(staff)
+
+    # Ensure we scope classes to the teacher's school
+    school = get_user_school(request)
+    classes = get_teacher_classes(staff, school)
     
     # Get selected student
     student_id = request.GET.get('student_id')
