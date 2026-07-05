@@ -79,6 +79,7 @@ def register_teacher(request):
                     employee_id = generate_employee_id(school)
                     
                     # Create StaffProfile
+                    teacher_admin_role = form.cleaned_data.get('teacher_admin_role', 'teacher')
                     staff_profile = StaffProfile(
                         user=user,
                         employee_id=employee_id,
@@ -86,14 +87,22 @@ def register_teacher(request):
                         date_joined=form.cleaned_data['date_joined'],
                         salary=0,  # Salary is set to 0 at registration. Admin must update this via the admin panel.
                         is_full_time=True,
-                        teacher_admin_role=form.cleaned_data.get('teacher_admin_role', 'teacher'),
+                        teacher_admin_role=teacher_admin_role,
                     )
                     staff_profile.save()
                     
                     # Log in the user
                     login(request, user)
                     
-                    # Redirect to teacher dashboard
+                    # Redirect to the appropriate dashboard for leadership roles
+                    if teacher_admin_role == 'dos':
+                        return redirect('/teacher/admin/dos/')
+                    elif teacher_admin_role == 'deputy_hm':
+                        return redirect('/teacher/admin/deputy/')
+                    elif teacher_admin_role == 'head_teacher':
+                        return redirect('/teacher/admin/head-teacher/')
+                    elif teacher_admin_role == 'department_head':
+                        return redirect('/teacher/department/')
                     return redirect('teacher:dashboard')
             
             except Exception as e:

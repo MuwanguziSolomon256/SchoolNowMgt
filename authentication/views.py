@@ -185,6 +185,7 @@ def unified_register(request):
             first_name = form.cleaned_data['first_name']
             last_name = form.cleaned_data['last_name']
             password = form.cleaned_data['password1']
+            admin_role = request.POST.get('admin_role', '').strip()
             
             # Create user based on role
             try:
@@ -212,6 +213,10 @@ def unified_register(request):
                             salary=0,
                             is_full_time=True,
                         )
+                        if role == 'teacher' and admin_role:
+                            staff_profile.teacher_admin_role = admin_role
+                        elif role == 'non_teaching_staff' and admin_role:
+                            staff_profile.support_staff_role = admin_role
                         staff_profile.save()
                 
                 # Log in the user (OUTSIDE transaction to avoid session issues)
@@ -220,11 +225,29 @@ def unified_register(request):
                 login(request, user)
                 messages.success(request, f'Welcome {first_name}! Your account has been created.')
                 
-                # Role-based redirect
+                # Role-based redirect after signup
                 if user.role == 'teacher':
+                    staff_profile = ensure_staff_profile(user)
+                    if staff_profile.teacher_admin_role == 'dos':
+                        return redirect('/teacher/admin/dos/')
+                    elif staff_profile.teacher_admin_role == 'deputy_hm':
+                        return redirect('/teacher/admin/deputy/')
+                    elif staff_profile.teacher_admin_role == 'head_teacher':
+                        return redirect('/teacher/admin/head-teacher/')
+                    elif staff_profile.teacher_admin_role == 'department_head':
+                        return redirect('/teacher/department/')
                     return redirect('teacher:dashboard')
                 elif user.role == 'parent':
                     return redirect('SchoolNowMgt:parent_dashboard')
+                elif user.role == 'non_teaching_staff':
+                    staff_profile = ensure_staff_profile(user)
+                    if staff_profile.support_staff_role in {'welfare_coordinator', 'matron'}:
+                        return redirect('/teacher/matron/')
+                    if staff_profile.support_staff_role in {'supervisor', 'shift_supervisor'}:
+                        return redirect('/teacher/support/shift-supervisor/')
+                    if staff_profile.support_staff_role == 'department_head':
+                        return redirect('/teacher/support/dept-head/')
+                    return redirect('/support/')
                 else:
                     return redirect('/')
             
