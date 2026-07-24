@@ -1,0 +1,92 @@
+{% extends 'matron/matron_base.html' %}
+{% load static %}
+
+{% block title %}Dormitory Roll Call | Matron{% endblock %}
+
+{% block matron_content %}
+<header class="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 mb-8">
+  <div>
+    <h2 class="font-display-lg text-display-lg text-primary">Dormitory Roll Call</h2>
+    <p class="text-on-surface-variant mt-1 font-body-lg">Monitor roll call progress and unresolved resident checks.</p>
+  </div>
+</header>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+  <div class="glass-card inner-glow p-6 rounded-[24px]">
+    <div class="flex justify-between items-start mb-4">
+      <div class="w-12 h-12 rounded-2xl bg-secondary-container/20 flex items-center justify-center">
+        <span class="material-symbols-outlined text-secondary">checklist_rtl</span>
+      </div>
+      <span class="text-xs font-bold text-secondary uppercase tracking-wider">Roll Call</span>
+    </div>
+    <h3 class="text-display-lg font-display-lg text-primary">{{ roll_call_overall }}%</h3>
+    <p class="text-body-md text-on-surface-variant">Overall dormitory attendance completion.</p>
+  </div>
+  <div class="glass-card inner-glow p-6 rounded-[24px]">
+    <div class="flex justify-between items-start mb-4">
+      <div class="w-12 h-12 rounded-2xl bg-primary-container/10 flex items-center justify-center">
+        <span class="material-symbols-outlined text-primary">people</span>
+      </div>
+      <span class="text-xs font-bold text-primary uppercase tracking-wider">Students</span>
+    </div>
+    <h3 class="text-display-lg font-display-lg text-primary">{{ statistics.total_residents }}</h3>
+    <p class="text-body-md text-on-surface-variant">Students currently assigned to hostels.</p>
+  </div>
+  <div class="glass-card inner-glow p-6 rounded-[24px]">
+    <div class="flex justify-between items-start mb-4">
+      <div class="w-12 h-12 rounded-2xl bg-outline-variant/20 flex items-center justify-center">
+        <span class="material-symbols-outlined text-outline">info</span>
+      </div>
+      <span class="text-xs font-bold text-outline uppercase tracking-wider">Alerts</span>
+    </div>
+    <h3 class="text-display-lg font-display-lg text-primary">{{ unaccounted_students|length }}</h3>
+    <p class="text-body-md text-on-surface-variant">Students with missing room assignment.</p>
+  </div>
+</div>
+
+<section class="glass-panel inner-glow rounded-[32px] p-8">
+  <div class="flex justify-between items-center mb-6">
+    <div>
+      <h3 class="font-headline-lg text-headline-lg text-primary">Active Roll Call Sessions</h3>
+      <p class="text-on-surface-variant">View progress for each hostel session.</p>
+    </div>
+  </div>
+  <div class="space-y-4">
+    {% for session in roll_call_sessions %}
+    <div class="flex items-center gap-6 p-4 rounded-2xl bg-white/40 border border-white/50 group hover:bg-white/60 transition-all">
+      <div class="w-14 h-14 rounded-full bg-secondary-container/20 flex items-center justify-center">
+        <span class="font-bold text-secondary text-xl">{{ session.code }}</span>
+      </div>
+      <div class="flex-grow">
+        <h4 class="font-bold text-primary">{{ session.name }}</h4>
+        <div class="flex items-center gap-4 mt-1">
+          <span class="text-xs text-on-surface-variant flex items-center gap-1">
+            <span class="material-symbols-outlined text-[14px]">person</span>
+            {{ session.count_text }}
+          </span>
+          <div class="h-1 w-24 bg-surface-variant rounded-full overflow-hidden">
+            <div class="h-full bg-secondary-container" style="width: {{ session.progress_width }}%;"></div>
+          </div>
+        </div>
+      </div>
+      <span class="px-3 py-1 rounded-full {% if session.status_color == 'green' %}bg-green-100 text-green-700{% elif session.status_color == 'yellow' %}bg-yellow-100 text-yellow-700{% else %}bg-slate-100 text-slate-700{% endif %} text-[10px] font-bold uppercase">{{ session.status_label }}</span>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="mt-8 glass-panel inner-glow rounded-[32px] p-8">
+  <h3 class="font-headline-lg text-headline-lg text-primary mb-6">Unaccounted Students</h3>
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    {% for student in unaccounted_students %}
+    <div class="p-4 rounded-2xl border border-error/20 bg-error-container/10 flex items-center gap-3">
+      <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center font-bold text-error">{{ student.initials }}</div>
+      <div>
+        <p class="text-sm font-bold text-primary">{{ student.name }}</p>
+        <p class="text-[10px] text-on-surface-variant">{{ student.details }}</p>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

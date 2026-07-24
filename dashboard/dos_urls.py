@@ -14,6 +14,8 @@ from dashboard.dos_views import (
     class_teacher_assignment_delete,
     departments_overview,
     academic_reports,
+    schemes_of_work,
+    pastoral_care,
 )
 from dashboard.dos_department_views import (
     departments_list, department_create, department_edit, department_detail,
@@ -91,6 +93,15 @@ urlpatterns = [
     path('departments-overview/',
          departments_overview,
          name='departments_overview'),
+
+    # ===== NEW DOS PAGES =====
+    path('schemes-of-work/',
+         schemes_of_work,
+         name='schemes_of_work'),
+
+    path('pastoral-care/',
+         pastoral_care,
+         name='pastoral_care'),
     
     # ===== REPORTING =====
     path('reports/',

@@ -1,0 +1,287 @@
+{% extends "teacher/base.html" %}
+{% load static %}
+
+{% block title %}Discipline Log - Deputy HM{% endblock %}
+
+{% block content %}
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>Discipline Log | SchoolNow Admin</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  
+  <style>
+    .glass-card {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      box-shadow: 0 8px 32px 0 rgba(30, 34, 79, 0.04);
+    }
+    .glass-card:hover {
+      border-color: rgba(255, 255, 255, 0.8);
+      box-shadow: 0 12px 40px 0 rgba(30, 34, 79, 0.08);
+    }
+    .severe-incident-border {
+      border-left: 4px solid #ba1a1a;
+    }
+    body {
+      background-color: #f8f9fc;
+      color: #191c1e;
+      overflow-x: hidden;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      vertical-align: middle;
+    }
+    .active-dot {
+      width: 6px;
+      height: 6px;
+      background-color: #feb700;
+      border-radius: 50%;
+      display: inline-block;
+    }
+  </style>
+  
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "on-primary-fixed-variant": "#3f4371",
+            "inverse-primary": "#bfc2fa",
+            "primary-container": "#1e224f",
+            "secondary": "#7c5800",
+            "surface-container-low": "#f2f3f6",
+            "surface-tint": "#565a8b",
+            "primary-fixed-dim": "#bfc2fa",
+            "on-secondary-fixed": "#271900",
+            "background": "#f8f9fc",
+            "surface-container": "#edeef1",
+            "on-primary-fixed": "#121643",
+            "surface-container-highest": "#e1e2e5",
+            "surface-bright": "#f8f9fc",
+            "primary-fixed": "#e0e0ff",
+            "on-tertiary-fixed": "#3c0800",
+            "inverse-on-surface": "#f0f1f4",
+            "surface-variant": "#e1e2e5",
+            "on-error-container": "#93000a",
+            "tertiary-fixed": "#ffdbd2",
+            "outline": "#777680",
+            "on-background": "#191c1e",
+            "on-secondary": "#ffffff",
+            "outline-variant": "#c7c5d0",
+            "on-tertiary": "#ffffff",
+            "tertiary-fixed-dim": "#ffb4a2",
+            "secondary-fixed-dim": "#ffba20",
+            "on-surface-variant": "#46464f",
+            "error": "#ba1a1a",
+            "on-error": "#ffffff",
+            "surface-container-high": "#e7e8eb",
+            "secondary-container": "#feb700",
+            "on-tertiary-fixed-variant": "#881f01",
+            "surface-container-lowest": "#ffffff",
+            "on-secondary-fixed-variant": "#5e4200",
+            "primary": "#080b3a",
+            "surface": "#f8f9fc",
+            "error-container": "#ffdad6",
+            "tertiary-container": "#500d00",
+            "on-tertiary-container": "#e96442",
+            "on-surface": "#191c1e",
+            "on-secondary-container": "#6b4b00",
+            "surface-dim": "#d9dadd",
+            "inverse-surface": "#2e3133",
+            "tertiary": "#2b0400",
+            "secondary-fixed": "#ffdea8",
+            "on-primary-container": "#868abd",
+            "on-primary": "#ffffff"
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          spacing: {
+            "container-padding": "20px",
+            "card-gap": "12px",
+            "gutter": "16px",
+            "section-margin": "32px",
+            "base": "8px"
+          },
+          fontFamily: {
+            "display-lg": ["Hanken Grotesk"],
+            "body-lg": ["Inter"],
+            "headline-lg": ["Hanken Grotesk"],
+            "label-md": ["Inter"],
+            "headline-md": ["Hanken Grotesk"],
+            "headline-lg-mobile": ["Hanken Grotesk"],
+            "body-md": ["Inter"]
+          },
+          fontSize: {
+            "display-lg": ["36px", {"lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+            "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+            "headline-lg": ["28px", {"lineHeight": "36px", "fontWeight": "600"}],
+            "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+            "headline-md": ["22px", {"lineHeight": "28px", "fontWeight": "600"}],
+            "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+            "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+          }
+        },
+      },
+    }
+  </script>
+</head>
+
+<body class="bg-background">
+<!-- TopNavBar -->
+<nav class="bg-surface/70 backdrop-blur-xl border-b border-white/20 shadow-sm flex justify-between items-center w-full px-container-padding py-4 sticky top-0 z-50">
+  <div class="flex items-center gap-8">
+    <span class="text-headline-md font-headline-md font-bold text-primary">SchoolNow</span>
+    <div class="hidden md:flex items-center gap-6">
+      <a class="text-on-surface-variant hover:text-primary transition-colors py-1 text-label-md font-label-md" href="{% url 'SchoolNowMgt:deputy_hm:dashboard' %}">Dashboard</a>
+      <a class="text-on-surface-variant hover:text-primary transition-colors py-1 text-label-md font-label-md" href="{% url 'SchoolNowMgt:deputy_hm:support_staff_list' %}">Staff Tracking</a>
+      <a class="text-primary font-bold border-b-2 border-secondary-container py-1 text-label-md font-label-md" href="{% url 'SchoolNowMgt:deputy_hm:discipline_log' %}">Discipline Log</a>
+      <a class="text-on-surface-variant hover:text-primary transition-colors py-1 text-label-md font-label-md" href="{% url 'SchoolNowMgt:deputy_hm:departments_list' %}">Governance</a>
+    </div>
+  </div>
+  <div class="flex items-center gap-4">
+    <button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors text-primary">
+      <span class="material-symbols-outlined">notifications</span>
+    </button>
+    <button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors text-primary">
+      <span class="material-symbols-outlined">settings</span>
+    </button>
+    <div class="h-10 w-10 rounded-full overflow-hidden border-2 border-secondary-container bg-primary-fixed flex items-center justify-center">
+      <span class="text-xs font-bold text-primary">{{ staff_profile.user.first_name|slice:":1" }}{{ staff_profile.user.last_name|slice:":1" }}</span>
+    </div>
+  </div>
+</nav>
+
+<main class="max-w-7xl mx-auto px-container-padding py-section-margin">
+  <!-- Header Section -->
+  <header class="mb-section-margin flex flex-col md:flex-row md:items-end justify-between gap-4">
+    <div>
+      <h1 class="font-headline-lg text-headline-lg text-primary">Discipline Log</h1>
+      <p class="font-body-md text-body-md text-on-surface-variant mt-1">Deputy Headteacher's Administrative Oversight</p>
+    </div>
+    <div class="flex gap-3">
+      <a href="{% url 'SchoolNowMgt:deputy_hm:dashboard' %}" class="flex items-center gap-2 px-6 py-3 bg-white text-primary border border-outline-variant rounded-xl font-semibold hover:bg-surface-container transition-all">
+        <span class="material-symbols-outlined">arrow_back</span>
+        <span>Back</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- Bento Grid Layout -->
+  <div class="grid grid-cols-1 md:grid-cols-12 gap-gutter">
+    <!-- Trending Analytics Column -->
+    <div class="md:col-span-4 space-y-gutter">
+      <!-- Trend Summary -->
+      <div class="glass-card p-6 rounded-2xl">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-headline-md text-headline-md text-primary">Recent Activity</h3>
+          <span class="text-label-md text-on-surface-variant">{{ activities|length }} entries</span>
+        </div>
+        <div class="space-y-3">
+          {% for activity in activities|slice:":5" %}
+            <div class="p-3 bg-surface-container rounded-xl">
+              <p class="text-label-md text-on-surface-variant">{{ activity.activity_type|title }}</p>
+              <p class="text-body-md font-bold text-primary">{{ activity.created_at|date:"M d, H:i" }}</p>
+            </div>
+          {% empty %}
+            <p class="text-body-md text-on-surface-variant">No activities recorded yet</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Log -->
+    <div class="md:col-span-8 space-y-gutter">
+      <!-- Searchable Log Table -->
+      <div class="glass-card rounded-2xl overflow-hidden">
+        <div class="p-6 border-b border-outline-variant">
+          <h3 class="font-headline-md text-headline-md text-primary">Activity Log</h3>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left">
+            <thead class="bg-surface-container-highest/30">
+              <tr>
+                <th class="px-6 py-4 text-label-md text-outline font-semibold">Activity & Date</th>
+                <th class="px-6 py-4 text-label-md text-outline font-semibold">Type</th>
+                <th class="px-6 py-4 text-label-md text-outline font-semibold">Severity</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-outline-variant/30">
+              {% for activity in activities %}
+                <tr class="hover:bg-primary/5 transition-colors">
+                  <td class="px-6 py-4">
+                    <p class="text-body-md font-semibold text-primary">{{ activity.description }}</p>
+                    <p class="text-label-md text-outline">{{ activity.created_at|date:"M d, Y • H:i" }}</p>
+                  </td>
+                  <td class="px-6 py-4">
+                    <span class="text-label-md bg-surface-container-highest px-2 py-1 rounded">{{ activity.activity_type|title }}</span>
+                  </td>
+                  <td class="px-6 py-4">
+                    <span class="inline-flex items-center gap-2">
+                      {% if activity.severity == "info" %}
+                        <span class="w-2 h-2 rounded-full bg-secondary-container"></span>
+                        <span class="text-label-md text-on-surface-variant">Info</span>
+                      {% elif activity.severity == "warning" %}
+                        <span class="w-2 h-2 rounded-full bg-secondary"></span>
+                        <span class="text-label-md text-secondary">Warning</span>
+                      {% elif activity.severity == "critical" %}
+                        <span class="w-2 h-2 rounded-full bg-error"></span>
+                        <span class="text-label-md text-error">Critical</span>
+                      {% else %}
+                        <span class="w-2 h-2 rounded-full bg-outline"></span>
+                        <span class="text-label-md text-outline">{{ activity.severity|title }}</span>
+                      {% endif %}
+                    </span>
+                  </td>
+                </tr>
+              {% empty %}
+                <tr>
+                  <td colspan="3" class="px-6 py-8 text-center text-body-md text-on-surface-variant">
+                    No discipline entries have been logged yet.
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Mobile Navigation -->
+<div class="fixed bottom-6 left-1/2 -translate-x-1/2 md:hidden z-50">
+  <div class="bg-surface/80 backdrop-blur-2xl border border-white/40 shadow-2xl rounded-full px-6 py-3 flex items-center gap-8">
+    <a href="{% url 'SchoolNowMgt:deputy_hm:dashboard' %}" class="flex flex-col items-center gap-1 text-on-surface-variant">
+      <span class="material-symbols-outlined">dashboard</span>
+      <span class="text-[10px] font-bold">Home</span>
+    </a>
+    <a href="{% url 'SchoolNowMgt:deputy_hm:discipline_log' %}" class="flex flex-col items-center gap-1 text-primary">
+      <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">task</span>
+      <span class="text-[10px] font-bold">Log</span>
+    </a>
+    <a href="{% url 'SchoolNowMgt:deputy_hm:support_staff_list' %}" class="flex flex-col items-center gap-1 text-on-surface-variant">
+      <span class="material-symbols-outlined">people</span>
+      <span class="text-[10px] font-bold">Staff</span>
+    </a>
+    <a href="{% url 'SchoolNowMgt:deputy_hm:departments_list' %}" class="flex flex-col items-center gap-1 text-on-surface-variant">
+      <span class="material-symbols-outlined">apartment</span>
+      <span class="text-[10px] font-bold">Gov</span>
+    </a>
+  </div>
+</div>
+
+</body>
+</html>
+{% endblock %}

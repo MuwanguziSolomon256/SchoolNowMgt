@@ -1,0 +1,102 @@
+{% extends "dos/dos_base.html" %}
+{% load static %}
+
+{% block dos_title %}Schemes of Work{% endblock %}
+
+{% block dos_content %}
+<div class="space-y-6">
+    <section class="rounded-[2rem] bg-white/95 p-6 shadow-[0_24px_80px_-32px_rgba(30,34,79,0.45)] ring-1 ring-slate-200/60 backdrop-blur-xl">
+        <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+                <p class="text-sm font-semibold uppercase tracking-[0.24em] text-secondary">Schemes of Work</p>
+                <h2 class="mt-2 text-3xl font-semibold text-slate-900">Curriculum planning and subject coverage</h2>
+                <p class="mt-2 text-sm text-slate-600">Review departmental alignment, subject offerings, and timetable readiness for the academic year.</p>
+            </div>
+            <a href="{% url 'teacher:dos:timetable_create' %}" class="inline-flex items-center gap-2 rounded-full bg-secondary px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-secondary-container/90">
+                <span class="material-symbols-outlined">menu_book</span>
+                Add scheme entry
+            </a>
+        </div>
+    </section>
+
+    <section class="grid gap-6 xl:grid-cols-[1.3fr_0.7fr]">
+        <div class="rounded-[2rem] bg-white/95 p-6 shadow-[0_24px_80px_-32px_rgba(30,34,79,0.45)] ring-1 ring-slate-200/60 backdrop-blur-xl">
+            <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                <div class="rounded-3xl bg-slate-50 p-5">
+                    <p class="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">Subjects</p>
+                    <p class="mt-3 text-3xl font-semibold text-slate-900">{{ subject_count }}</p>
+                </div>
+                <div class="rounded-3xl bg-slate-50 p-5">
+                    <p class="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">Departments</p>
+                    <p class="mt-3 text-3xl font-semibold text-slate-900">{{ department_cards|length }}</p>
+                </div>
+                <div class="rounded-3xl bg-slate-50 p-5">
+                    <p class="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">Classes</p>
+                    <p class="mt-3 text-3xl font-semibold text-slate-900">{{ classes }}</p>
+                </div>
+                <div class="rounded-3xl bg-slate-50 p-5">
+                    <p class="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">Timetable entries</p>
+                    <p class="mt-3 text-3xl font-semibold text-slate-900">{{ timetable_entries }}</p>
+                </div>
+            </div>
+
+            <div class="mt-6 overflow-x-auto rounded-[1.75rem] border border-slate-200 bg-slate-50 p-4">
+                <div class="flex items-center justify-between gap-3">
+                    <div>
+                        <h3 class="text-lg font-semibold text-slate-900">Department planning cards</h3>
+                        <p class="mt-1 text-sm text-slate-500">Subject coverage and head assignment status by department.</p>
+                    </div>
+                    <span class="inline-flex items-center gap-2 rounded-full bg-secondary/10 px-3 py-2 text-sm font-semibold text-secondary">Live</span>
+                </div>
+                <div class="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                    {% for department in department_cards %}
+                    <div class="rounded-[1.5rem] bg-white p-5 shadow-sm border border-slate-200">
+                        <div class="flex items-center justify-between gap-3">
+                            <div>
+                                <p class="text-sm font-semibold text-slate-900">{{ department.name }}</p>
+                                <p class="mt-1 text-xs text-slate-500">{{ department.type }}</p>
+                            </div>
+                            <span class="inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">{{ department.head_assigned|yesno:"Head assigned,No head" }}</span>
+                        </div>
+                        <div class="mt-5 grid gap-3">
+                            <div class="rounded-3xl bg-slate-50 p-4">
+                                <p class="text-xs uppercase tracking-[0.24em] text-slate-500">Teachers</p>
+                                <p class="mt-2 text-2xl font-semibold text-slate-900">{{ department.teachers }}</p>
+                            </div>
+                            <div class="rounded-3xl bg-slate-50 p-4">
+                                <p class="text-xs uppercase tracking-[0.24em] text-slate-500">Budget</p>
+                                <p class="mt-2 text-2xl font-semibold text-slate-900">{{ department.budget|default:'N/A' }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <aside class="space-y-6">
+            <div class="rounded-[1.75rem] bg-slate-950/95 p-6 text-white shadow-[0_24px_80px_-32px_rgba(30,34,79,0.45)] ring-1 ring-slate-200/15 backdrop-blur-xl">
+                <h3 class="text-lg font-semibold">Curriculum readiness</h3>
+                <p class="mt-2 text-sm text-slate-300">Monitor core subject coverage and timetable balance across departments.</p>
+                <div class="mt-5 space-y-4">
+                    <div class="rounded-3xl bg-slate-900/80 p-4">
+                        <p class="text-sm text-slate-400">Total curriculum subjects</p>
+                        <p class="mt-2 text-3xl font-semibold">{{ subject_count }}</p>
+                    </div>
+                    <div class="rounded-3xl bg-slate-900/80 p-4">
+                        <p class="text-sm text-slate-400">Subject schemes ready</p>
+                        <p class="mt-2 text-3xl font-semibold">{{ department_cards|length }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="rounded-[1.75rem] bg-white/95 p-6 shadow-[0_24px_80px_-32px_rgba(30,34,79,0.45)] ring-1 ring-slate-200/60 backdrop-blur-xl">
+                <h3 class="text-lg font-semibold text-slate-900">Actions</h3>
+                <div class="mt-4 space-y-3">
+                    <a href="{% url 'teacher:dos:department_create' %}" class="block rounded-3xl bg-secondary px-4 py-3 text-sm font-semibold text-white text-center hover:bg-secondary-container/95">Add department</a>
+                    <a href="{% url 'teacher:dos:timetable_list' %}" class="block rounded-3xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-900 text-center hover:bg-slate-50">Review timetable</a>
+                </div>
+            </div>
+        </aside>
+    </section>
+</div>
+{% endblock %}

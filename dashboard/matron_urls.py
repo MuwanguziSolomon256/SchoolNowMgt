@@ -19,6 +19,9 @@ from dashboard.matron_views import (
     residents_list,
     resident_detail,
     duty_roster,
+    roll_call_dashboard,
+    infirmary_dashboard,
+    maintenance_dashboard,
 )
 
 app_name = 'matron'
@@ -50,6 +53,19 @@ urlpatterns = [
     path('residents/<int:student_id>/',
          resident_detail,
          name='resident_detail'),
+    
+    # ===== SUB-DASHBOARDS =====
+    path('roll-call/',
+         roll_call_dashboard,
+         name='roll_call'),
+    
+    path('infirmary/',
+         infirmary_dashboard,
+         name='infirmary'),
+    
+    path('maintenance/',
+         maintenance_dashboard,
+         name='maintenance'),
     
     # ===== DUTY ROSTER =====
     path('duty-roster/',

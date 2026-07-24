@@ -1,277 +1,117 @@
-{% extends "teacher/base.html" %}
+{% extends "dos/dos_base.html" %}
 {% load static %}
 
-{% block title %}Academic Reports - DOS{% endblock %}
+{% block dos_title %}Academic Reports{% endblock %}
 
-{% block content %}
-<div class="dos-reports">
-    <div class="page-header">
-        <h1>Academic Reports & Analytics</h1>
-    </div>
+{% block dos_content %}
+<div class="space-y-6">
+    <section class="rounded-[2rem] bg-white/95 p-6 shadow-[0_24px_80px_-32px_rgba(30,34,79,0.45)] ring-1 ring-slate-200/60 backdrop-blur-xl">
+        <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+                <h2 class="text-2xl font-semibold text-slate-900">Academic Reports</h2>
+                <p class="mt-2 text-sm text-slate-600">Analyze performance by subject, teacher, or class.</p>
+            </div>
+            <div class="flex flex-wrap gap-2">
+                <a href="?report_type=subject_performance" class="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition {% if report_type == 'subject_performance' %}bg-slate-900 text-white{% else %}bg-slate-100 text-slate-700 hover:bg-slate-200{% endif %}">Subject Performance</a>
+                <a href="?report_type=teacher_performance" class="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition {% if report_type == 'teacher_performance' %}bg-slate-900 text-white{% else %}bg-slate-100 text-slate-700 hover:bg-slate-200{% endif %}">Teacher Performance</a>
+                <a href="?report_type=class_performance" class="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition {% if report_type == 'class_performance' %}bg-slate-900 text-white{% else %}bg-slate-100 text-slate-700 hover:bg-slate-200{% endif %}">Class Performance</a>
+            </div>
+        </div>
+    </section>
 
-    <!-- Report Type Selector -->
-    <div class="report-selector">
-        <a href="?report_type=subject_performance" class="report-btn {% if report_type == 'subject_performance' %}active{% endif %}">
-            📊 Subject Performance
-        </a>
-        <a href="?report_type=teacher_performance" class="report-btn {% if report_type == 'teacher_performance' %}active{% endif %}">
-            👨‍🏫 Teacher Performance
-        </a>
-        <a href="?report_type=class_performance" class="report-btn {% if report_type == 'class_performance' %}active{% endif %}">
-            🏫 Class Performance
-        </a>
-    </div>
-
-    <!-- Subject Performance Report -->
     {% if report_type == 'subject_performance' and subject_data %}
-    <div class="report-section">
-        <h2>Subject Performance Summary</h2>
-        <div class="table-section">
-            <table class="table">
+    <section class="rounded-[2rem] bg-white/95 p-6 shadow-[0_24px_80px_-32px_rgba(30,34,79,0.45)] ring-1 ring-slate-200/60 backdrop-blur-xl">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <h3 class="text-xl font-semibold text-slate-900">Subject Performance Summary</h3>
+            <p class="text-sm text-slate-500">Performance overview for each subject.</p>
+        </div>
+        <div class="mt-5 overflow-x-auto">
+            <table class="min-w-full text-left text-sm text-slate-600">
                 <thead>
-                    <tr>
-                        <th>Subject</th>
-                        <th>Average Score</th>
-                        <th>Pass Count</th>
-                        <th>Fail Count</th>
-                        <th>Pass Rate</th>
+                    <tr class="border-b border-slate-200 text-slate-700">
+                        <th class="px-4 py-3">Subject</th>
+                        <th class="px-4 py-3">Average Score</th>
+                        <th class="px-4 py-3">Pass Count</th>
+                        <th class="px-4 py-3">Fail Count</th>
+                        <th class="px-4 py-3">Pass Rate</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for subject in subject_data %}
-                    <tr>
-                        <td><strong>{{ subject.subject.name }}</strong></td>
-                        <td>
-                            <div class="score-badge">{{ subject.avg_score }}%</div>
-                        </td>
-                        <td>
-                            <span class="badge badge-success">{{ subject.pass_count }}</span>
-                        </td>
-                        <td>
-                            <span class="badge badge-danger">{{ subject.fail_count }}</span>
-                        </td>
-                        <td>
-                            <div class="progress">
-                                <div class="progress-bar" style="width: {{ subject.pass_rate }}%">{{ subject.pass_rate }}%</div>
-                            </div>
-                        </td>
+                    <tr class="border-b border-slate-100 hover:bg-slate-50">
+                        <td class="px-4 py-4"><strong>{{ subject.subject.name }}</strong></td>
+                        <td class="px-4 py-4">{{ subject.avg_score }}%</td>
+                        <td class="px-4 py-4">{{ subject.pass_count }}</td>
+                        <td class="px-4 py-4">{{ subject.fail_count }}</td>
+                        <td class="px-4 py-4">{{ subject.pass_rate }}%</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
-    </div>
-    {% endif %}
-
-    <!-- Teacher Performance Report -->
-    {% if report_type == 'teacher_performance' and teacher_data %}
-    <div class="report-section">
-        <h2>Teacher Performance Summary</h2>
-        <div class="table-section">
-            <table class="table">
+    </section>
+    {% elif report_type == 'teacher_performance' and teacher_data %}
+    <section class="rounded-[2rem] bg-white/95 p-6 shadow-[0_24px_80px_-32px_rgba(30,34,79,0.45)] ring-1 ring-slate-200/60 backdrop-blur-xl">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <h3 class="text-xl font-semibold text-slate-900">Teacher Performance Summary</h3>
+            <p class="text-sm text-slate-500">Grades recorded by teacher and student coverage.</p>
+        </div>
+        <div class="mt-5 overflow-x-auto">
+            <table class="min-w-full text-left text-sm text-slate-600">
                 <thead>
-                    <tr>
-                        <th>Teacher</th>
-                        <th>Average Score</th>
-                        <th>Students</th>
-                        <th>Grades Recorded</th>
+                    <tr class="border-b border-slate-200 text-slate-700">
+                        <th class="px-4 py-3">Teacher</th>
+                        <th class="px-4 py-3">Average Score</th>
+                        <th class="px-4 py-3">Students</th>
+                        <th class="px-4 py-3">Grades Recorded</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for teacher in teacher_data %}
-                    <tr>
-                        <td><strong>{{ teacher.teacher }}</strong></td>
-                        <td>
-                            <div class="score-badge">{{ teacher.avg_score }}%</div>
-                        </td>
-                        <td>{{ teacher.student_count }}</td>
-                        <td>{{ teacher.grades_count }}</td>
+                    <tr class="border-b border-slate-100 hover:bg-slate-50">
+                        <td class="px-4 py-4"><strong>{{ teacher.teacher }}</strong></td>
+                        <td class="px-4 py-4">{{ teacher.avg_score }}%</td>
+                        <td class="px-4 py-4">{{ teacher.student_count }}</td>
+                        <td class="px-4 py-4">{{ teacher.grades_count }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
-    </div>
-    {% endif %}
-
-    <!-- Class Performance Report -->
-    {% if report_type == 'class_performance' and class_data %}
-    <div class="report-section">
-        <h2>Class Performance Summary</h2>
-        <div class="table-section">
-            <table class="table">
+    </section>
+    {% elif report_type == 'class_performance' and class_data %}
+    <section class="rounded-[2rem] bg-white/95 p-6 shadow-[0_24px_80px_-32px_rgba(30,34,79,0.45)] ring-1 ring-slate-200/60 backdrop-blur-xl">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <h3 class="text-xl font-semibold text-slate-900">Class Performance Summary</h3>
+            <p class="text-sm text-slate-500">Academic performance trends for each class.</p>
+        </div>
+        <div class="mt-5 overflow-x-auto">
+            <table class="min-w-full text-left text-sm text-slate-600">
                 <thead>
-                    <tr>
-                        <th>Class</th>
-                        <th>Average Score</th>
-                        <th>Students</th>
-                        <th>Grades Recorded</th>
+                    <tr class="border-b border-slate-200 text-slate-700">
+                        <th class="px-4 py-3">Class</th>
+                        <th class="px-4 py-3">Average Score</th>
+                        <th class="px-4 py-3">Students</th>
+                        <th class="px-4 py-3">Grades Recorded</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for class in class_data %}
-                    <tr>
-                        <td><strong>{{ class.class }}</strong></td>
-                        <td>
-                            <div class="score-badge">{{ class.avg_score }}%</div>
-                        </td>
-                        <td>{{ class.student_count }}</td>
-                        <td>{{ class.grade_count }}</td>
+                    <tr class="border-b border-slate-100 hover:bg-slate-50">
+                        <td class="px-4 py-4"><strong>{{ class.class }}</strong></td>
+                        <td class="px-4 py-4">{{ class.avg_score }}%</td>
+                        <td class="px-4 py-4">{{ class.student_count }}</td>
+                        <td class="px-4 py-4">{{ class.grade_count }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
-    </div>
-    {% endif %}
-
-    {% if not subject_data and not teacher_data and not class_data %}
-    <div class="empty-state">
-        <p>No data available for this report type.</p>
-    </div>
+    </section>
+    {% else %}
+    <section class="rounded-[2rem] bg-slate-50 p-12 text-center text-slate-600">
+        No data available for this report type.
+    </section>
     {% endif %}
 </div>
-
-<style>
-.dos-reports {
-    padding: 20px;
-    max-width: 1200px;
-    margin: 0 auto;
-}
-
-.page-header {
-    margin-bottom: 30px;
-}
-
-.page-header h1 {
-    margin: 0;
-    font-size: 28px;
-}
-
-.report-selector {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 30px;
-    flex-wrap: wrap;
-}
-
-.report-btn {
-    padding: 12px 20px;
-    border: 2px solid #ddd;
-    background: white;
-    color: #333;
-    text-decoration: none;
-    border-radius: 6px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.report-btn:hover {
-    border-color: #007bff;
-    color: #007bff;
-}
-
-.report-btn.active {
-    background: #007bff;
-    color: white;
-    border-color: #007bff;
-}
-
-.report-section {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    margin-bottom: 30px;
-}
-
-.report-section h2 {
-    margin-top: 0;
-    margin-bottom: 20px;
-    font-size: 20px;
-}
-
-.table-section {
-    overflow-x: auto;
-}
-
-.table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.table thead {
-    background: #f8f9fa;
-}
-
-.table th {
-    padding: 15px;
-    text-align: left;
-    border-bottom: 2px solid #dee2e6;
-    font-weight: 600;
-}
-
-.table td {
-    padding: 15px;
-    border-bottom: 1px solid #dee2e6;
-}
-
-.score-badge {
-    display: inline-block;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-weight: 600;
-    font-size: 14px;
-}
-
-.badge {
-    display: inline-block;
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: 600;
-}
-
-.badge-success {
-    background: #d4edda;
-    color: #155724;
-}
-
-.badge-danger {
-    background: #f8d7da;
-    color: #721c24;
-}
-
-.progress {
-    display: inline-block;
-    height: 24px;
-    width: 100%;
-    background: #e9ecef;
-    border-radius: 12px;
-    overflow: hidden;
-}
-
-.progress-bar {
-    height: 100%;
-    background: linear-gradient(90deg, #28a745, #20c997);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 12px;
-    font-weight: 600;
-}
-
-.empty-state {
-    text-align: center;
-    padding: 60px 20px;
-    color: #666;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-</style>
 {% endblock %}

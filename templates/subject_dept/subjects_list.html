@@ -1,204 +1,82 @@
-{% extends "teacher/base.html" %}
+{% extends "teacher/app_base.html" %}
 {% load static %}
 
-{% block title %}Subjects - Department Management{% endblock %}
+{% block title %}Subjects - Department{% endblock %}
 
 {% block content %}
-<div class="subjects-list">
-    <div class="page-header">
-        <h1>Department Subjects</h1>
-    </div>
+<main class="px-4 py-24 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-8">
+  <section class="grid gap-4 lg:grid-cols-[1fr_280px]">
+    <div class="space-y-4">
+      <div class="rounded-[1.5rem] bg-white p-8 shadow-lg border border-slate-200">
+        <p class="text-sm uppercase tracking-[0.24em] text-secondary">Department Subjects</p>
+        <h1 class="mt-4 text-3xl font-semibold text-primary">Subjects in your department</h1>
+        <p class="mt-2 text-sm text-slate-600">Search and review the subjects currently assigned to your team.</p>
+      </div>
 
-    <!-- Filters -->
-    <div class="filters-section">
-        <form method="get" class="filters-form">
-            <div class="filter-group">
-                <input type="text" name="search" placeholder="Search subjects..." value="{{ request.GET.search }}">
-            </div>
-            
-            <button type="submit" class="btn btn-primary">Search</button>
+      <div class="rounded-[1.5rem] bg-white p-6 shadow-lg border border-slate-200">
+        <form method="get" class="grid gap-4 sm:grid-cols-[1fr_auto] items-end">
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">Search subjects</label>
+            <input type="text" name="search" placeholder="Search subjects..." value="{{ request.GET.search }}" class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10" />
+          </div>
+          <button type="submit" class="rounded-2xl bg-primary px-5 py-3 text-sm font-semibold text-white hover:bg-slate-900">Search</button>
         </form>
+      </div>
     </div>
 
-    <!-- Subjects Table -->
-    {% if page_obj %}
-    <div class="table-section">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Subject Name</th>
-                    <th>Code</th>
-                    <th>Head</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for subject in page_obj %}
-                <tr>
-                    <td><strong>{{ subject.subject_name }}</strong></td>
-                    <td>{{ subject.subject_code }}</td>
-                    <td>{{ subject.department_head.user.get_full_name }}</td>
-                    <td>
-                        <a href="{% url 'subject_dept:subject_detail' subject.id %}" class="btn-action">View</a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <div class="rounded-[1.5rem] bg-white p-8 shadow-lg border border-slate-200 space-y-4">
+      <p class="text-sm uppercase tracking-[0.24em] text-secondary">Department info</p>
+      <div class="space-y-2">
+        <p class="text-sm text-slate-500">Active subjects</p>
+        <p class="text-3xl font-semibold text-primary">{{ page_obj.paginator.count }}</p>
+      </div>
+      <div class="grid grid-cols-1 gap-3">
+        <a href="/teacher/department/" class="rounded-2xl bg-slate-50 px-4 py-3 text-sm font-semibold text-primary">Back to dashboard</a>
+      </div>
     </div>
+  </section>
 
-    <!-- Pagination -->
-    {% if page_obj.has_other_pages %}
-    <div class="pagination">
-        {% if page_obj.has_previous %}
-        <a href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" class="page-link">« First</a>
-        <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" class="page-link">‹ Previous</a>
-        {% endif %}
-        
-        <span class="page-info">Page {{ page_obj.number }} of {{ paginator.num_pages }}</span>
-        
-        {% if page_obj.has_next %}
-        <a href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" class="page-link">Next ›</a>
-        <a href="?page={{ paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" class="page-link">Last »</a>
-        {% endif %}
+  <section class="rounded-[1.5rem] bg-white p-8 shadow-lg border border-slate-200 overflow-x-auto">
+    <table class="w-full min-w-[640px] border-collapse text-left text-sm">
+      <thead class="bg-slate-50 text-slate-600">
+        <tr>
+          <th class="px-6 py-4 font-semibold">Subject Name</th>
+          <th class="px-6 py-4 font-semibold">Code</th>
+          <th class="px-6 py-4 font-semibold">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for subject in page_obj %}
+        <tr class="border-b border-slate-200 hover:bg-slate-50">
+          <td class="px-6 py-4 font-medium text-slate-900">{{ subject.name }}</td>
+          <td class="px-6 py-4 text-slate-600">{{ subject.code }}</td>
+          <td class="px-6 py-4">
+            <a href="/teacher/department/subjects/{{ subject.id }}" class="text-primary font-semibold hover:text-secondary">View</a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="3" class="px-6 py-8 text-center text-slate-500">No subjects found.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  {% if page_obj.has_other_pages %}
+  <section class="flex flex-wrap items-center justify-between gap-4 rounded-[1.5rem] bg-white p-6 shadow-lg border border-slate-200">
+    <div class="text-sm text-slate-600">Page {{ page_obj.number }} of {{ paginator.num_pages }}</div>
+    <div class="flex flex-wrap items-center gap-2">
+      {% if page_obj.has_previous %}
+      <a href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" class="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">First</a>
+      <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" class="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">Previous</a>
+      {% endif %}
+      {% if page_obj.has_next %}
+      <a href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" class="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">Next</a>
+      <a href="?page={{ paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" class="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">Last</a>
+      {% endif %}
     </div>
-    {% endif %}
-    {% else %}
-    <div class="no-results">
-        <p>No subjects found.</p>
-    </div>
-    {% endif %}
-</div>
-
-<style>
-.subjects-list {
-    padding: 20px;
-    max-width: 1200px;
-    margin: 0 auto;
-}
-
-.page-header {
-    margin-bottom: 30px;
-}
-
-.page-header h1 {
-    margin: 0;
-    font-size: 28px;
-}
-
-.filters-section {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    margin-bottom: 20px;
-}
-
-.filters-form {
-    display: flex;
-    gap: 10px;
-    align-items: flex-end;
-}
-
-.filter-group {
-    flex: 1;
-}
-
-.filter-group input {
-    width: 100%;
-    padding: 8px 12px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 14px;
-}
-
-.btn-primary {
-    background: #007bff;
-    color: white;
-    padding: 8px 20px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: 600;
-}
-
-.btn-primary:hover {
-    background: #0056b3;
-}
-
-.table-section {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    margin-bottom: 20px;
-    overflow-x: auto;
-}
-
-.table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.table thead {
-    background: #f8f9fa;
-}
-
-.table th {
-    padding: 15px;
-    text-align: left;
-    border-bottom: 2px solid #dee2e6;
-    font-weight: 600;
-}
-
-.table td {
-    padding: 15px;
-    border-bottom: 1px solid #dee2e6;
-}
-
-.table tbody tr:nth-child(odd) {
-    background: #f8f9fa;
-}
-
-.btn-action {
-    color: #007bff;
-    text-decoration: none;
-    font-weight: 600;
-}
-
-.btn-action:hover {
-    text-decoration: underline;
-}
-
-.pagination {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 8px;
-}
-
-.page-link {
-    padding: 8px 12px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    text-decoration: none;
-    color: #007bff;
-}
-
-.page-link:hover {
-    background: #f8f9fa;
-}
-
-.page-info {
-    padding: 0 12px;
-}
-
-.no-results {
-    background: white;
-    padding: 40px;
-    border-radius: 8px;
-    text-align: center;
-    color: #666;
-}
-</style>
+  </section>
+  {% endif %}
+</main>
 {% endblock %}

@@ -8,6 +8,10 @@ Base path: /teacher/admin/deputy/
 from django.urls import path
 from dashboard.deputy_hm_views import (
     deputy_hm_dashboard,
+    deputy_profile,
+    discipline_log,
+    governance_dashboard,
+    export_reports,
     support_staff_list, support_staff_edit,
     departments_list, department_create, department_edit, department_detail, department_delete,
     hostels_list, hostel_create, hostel_edit, hostel_detail, hostel_delete,
@@ -23,6 +27,22 @@ urlpatterns = [
     path('',
          deputy_hm_dashboard,
          name='dashboard'),
+
+    path('profile/',
+         deputy_profile,
+         name='profile'),
+
+    path('discipline/',
+         discipline_log,
+         name='discipline_log'),
+
+    path('governance/',
+         governance_dashboard,
+         name='governance_dashboard'),
+
+    path('reports/export/',
+         export_reports,
+         name='export_reports'),
     
     # ===== SUPPORT STAFF MANAGEMENT =====
     path('staff/',

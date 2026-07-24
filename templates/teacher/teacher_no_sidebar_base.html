@@ -215,7 +215,39 @@
             transform: translateY(-2px);
             box-shadow: 0 12px 24px rgba(8, 11, 58, 0.25);
         }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.72);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border: 1px solid rgba(255, 255, 255, 0.32);
+            box-shadow: 0 10px 30px rgba(30, 34, 79, 0.05);
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.72);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.28);
+            transition: all 0.3s ease;
+        }
+        .glass-card:hover {
+            background: rgba(255, 255, 255, 0.88);
+            transform: translateY(-2px);
+            box-shadow: 0 14px 34px rgba(30, 34, 79, 0.08);
+        }
+        .inner-glow::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            border-top: 1px solid rgba(255, 255, 255, 0.8);
+            border-left: 1px solid rgba(255, 255, 255, 0.8);
+            border-radius: inherit;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
     </style>
+    {% block extra_css %}{% endblock %}
 </head>
 <body class="font-body-md text-on-surface min-h-screen">
     <!-- Main Canvas (NO SIDEBAR - Full Width) -->

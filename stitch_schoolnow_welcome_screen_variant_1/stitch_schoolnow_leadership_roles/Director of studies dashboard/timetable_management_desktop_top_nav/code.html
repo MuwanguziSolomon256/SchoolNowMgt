@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SchoolNow | Timetable Management</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind Configuration -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-highest": "#e1e2e5",
+                    "on-surface-variant": "#46464f",
+                    "error-container": "#ffdad6",
+                    "surface-container-lowest": "#ffffff",
+                    "on-secondary-container": "#6b4b00",
+                    "on-error-container": "#93000a",
+                    "error": "#ba1a1a",
+                    "on-tertiary-fixed": "#3c0800",
+                    "surface-container-low": "#f2f3f6",
+                    "on-primary-fixed": "#121643",
+                    "surface": "#f8f9fc",
+                    "on-background": "#191c1e",
+                    "secondary-container": "#feb700",
+                    "on-primary": "#ffffff",
+                    "secondary": "#7c5800",
+                    "outline-variant": "#c7c5d0",
+                    "surface-variant": "#e1e2e5",
+                    "inverse-surface": "#2e3133",
+                    "surface-container": "#edeef1",
+                    "surface-container-high": "#e7e8eb",
+                    "tertiary": "#2b0400",
+                    "on-error": "#ffffff",
+                    "tertiary-container": "#500d00",
+                    "on-secondary": "#ffffff",
+                    "inverse-primary": "#bfc2fa",
+                    "tertiary-fixed": "#ffdbd2",
+                    "inverse-on-surface": "#f0f1f4",
+                    "surface-dim": "#d9dadd",
+                    "on-tertiary-fixed-variant": "#881f01",
+                    "primary-container": "#1e224f",
+                    "on-secondary-fixed": "#271900",
+                    "secondary-fixed-dim": "#ffba20",
+                    "on-tertiary-container": "#e96442",
+                    "on-primary-fixed-variant": "#3f4371",
+                    "surface-tint": "#565a8b",
+                    "primary-fixed": "#e0e0ff",
+                    "outline": "#777680",
+                    "on-surface": "#191c1e",
+                    "tertiary-fixed-dim": "#ffb4a2",
+                    "primary-fixed-dim": "#bfc2fa",
+                    "on-secondary-fixed-variant": "#5e4200",
+                    "on-tertiary": "#ffffff",
+                    "secondary-fixed": "#ffdea8",
+                    "on-primary-container": "#868abd",
+                    "surface-bright": "#f8f9fc",
+                    "primary": "#080b3a",
+                    "background": "#f8f9fc"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "container-padding": "20px",
+                    "gutter": "16px",
+                    "base": "8px",
+                    "section-margin": "32px",
+                    "card-gap": "12px"
+            },
+            "fontFamily": {
+                    "headline-lg": ["Hanken Grotesk"],
+                    "headline-md": ["Hanken Grotesk"],
+                    "body-md": ["Inter"],
+                    "label-md": ["Inter"],
+                    "display-lg": ["Hanken Grotesk"],
+                    "body-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-lg": ["28px", {"lineHeight": "36px", "fontWeight": "600"}],
+                    "headline-md": ["22px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "display-lg": ["36px", {"lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background: #f8f9fc;
+            overflow-x: hidden;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255, 255, 255, 0.8);
+            border-left: 1px solid rgba(255, 255, 255, 0.8);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .timetable-grid {
+            display: grid;
+            grid-template-columns: 80px repeat(5, 1fr);
+        }
+        .animate-pulse-subtle {
+            animation: pulse-subtle 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse-subtle {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+        .sun-gold-glow:hover {
+            box-shadow: 0 10px 20px -5px rgba(254, 183, 0, 0.4);
+        }
+    </style>
+</head>
+<body class="font-body-md text-on-surface">
+<!-- UNIFIED TOP NAVIGATION BAR -->
+<header class="h-20 fixed top-0 left-0 right-0 border-b border-white/20 bg-white/70 backdrop-blur-[20px] shadow-[0_10px_30px_rgba(30,34,79,0.08)] flex items-center justify-between px-8 z-50">
+<div class="flex items-center gap-8">
+<!-- Brand Logo -->
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-secondary-container">
+<span class="material-symbols-outlined text-[24px]">school</span>
+</div>
+<div class="hidden lg:block">
+<h1 class="font-headline-md text-headline-md font-bold text-primary leading-tight">SchoolNow</h1>
+</div>
+</div>
+<!-- Role-Specific Tabs -->
+<nav class="flex items-center h-20">
+<a class="h-full px-6 flex items-center gap-2 text-on-surface-variant/80 hover:text-primary hover:bg-white/40 transition-all duration-200 border-b-4 border-transparent" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="hidden md:inline">Dashboard</span>
+</a>
+<a class="h-full px-6 flex items-center gap-2 text-on-surface-variant/80 hover:text-primary hover:bg-white/40 transition-colors duration-200 border-b-4 border-transparent" href="#">
+<span class="material-symbols-outlined">menu_book</span>
+<span class="hidden md:inline">Curriculum</span>
+</a>
+<a class="h-full px-6 flex items-center gap-2 text-on-surface-variant/80 hover:text-primary hover:bg-white/40 transition-colors duration-200 border-b-4 border-transparent" href="#">
+<span class="material-symbols-outlined">verified_user</span>
+<span class="hidden md:inline">Appraisal</span>
+</a>
+<a class="h-full px-6 flex items-center gap-2 text-on-surface-variant/80 hover:text-primary hover:bg-white/40 transition-colors duration-200 border-b-4 border-transparent" href="#">
+<span class="material-symbols-outlined">assignment</span>
+<span class="hidden md:inline">Lesson Plans</span>
+</a>
+<a class="h-full px-6 flex items-center gap-2 text-primary font-bold border-b-4 border-secondary-container bg-white/40 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">calendar_month</span>
+<span class="hidden md:inline">Timetable</span>
+</a>
+<a class="h-full px-6 flex items-center gap-2 text-on-surface-variant/80 hover:text-primary hover:bg-white/40 transition-colors duration-200 border-b-4 border-transparent" href="#">
+<span class="material-symbols-outlined">account_tree</span>
+<span class="hidden md:inline">Schemes of Work</span>
+</a>
+</nav>
+</div>
+<div class="flex items-center gap-6">
+<!-- Search -->
+<div class="hidden xl:flex items-center bg-surface-container rounded-full px-4 py-2 w-80 transition-all focus-within:ring-2 focus-within:ring-secondary-container/50 focus-within:bg-white">
+<span class="material-symbols-outlined text-outline">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-body-md w-full placeholder:text-outline-variant" placeholder="Search Master Schedule..." type="text"/>
+</div>
+<div class="flex items-center gap-4">
+<button class="relative text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-0 right-0 w-2 h-2 bg-secondary-container rounded-full ring-2 ring-white"></span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">help_outline</span>
+</button>
+<div class="h-8 w-[1px] bg-outline-variant/30"></div>
+<div class="flex items-center gap-3 cursor-pointer group">
+<div class="text-right hidden sm:block">
+<p class="font-body-md font-semibold text-primary leading-none">Dr. Julian Vance</p>
+<p class="text-[10px] text-on-surface-variant/70 uppercase font-bold tracking-tighter">Director of Studies</p>
+</div>
+<div class="w-10 h-10 rounded-full border-2 border-secondary overflow-hidden group-hover:scale-105 transition-transform bg-surface-container">
+<img class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCieffZVaRmdXWCo2T_bPcjhIglK-M2IGE0n9Ki3M1pchWWPqe_EKvVpJ2es-UX6oed1WPJgh-ltgDm2sJDv_v0jM7UtE5D5LBFA1BSfTpx_I-tu3QkGtKslEIKMvT9NpSPgDdVvfy-QUxBXXWBvtgCotr-8WbI6U6VJewP8GnH8h3Gfxfr35_xwV6ffk9Da3a0MnZS9SnpwOD4JIRBErf9DVePX56Jolp3lPMV7hhdnF3uhgdZ1mlyGpZv3WMKczd0eNeiBF4n0oLx"/>
+</div>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="pt-32 pb-12 px-8 min-h-screen max-w-[1600px] mx-auto">
+<!-- Dashboard Header -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+<div>
+<h2 class="font-display-lg text-display-lg text-primary tracking-tight">Timetable Management</h2>
+<p class="font-body-lg text-on-surface-variant/80 mt-1">Academics Term 2 • Optimization Cycle #4</p>
+</div>
+<div class="flex gap-4">
+<button class="flex items-center gap-2 px-6 py-3 glass-panel rounded-xl text-primary font-bold hover:bg-white/90 transition-all">
+<span class="material-symbols-outlined">auto_fix_high</span>
+                Auto-Generate
+            </button>
+<button class="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] transition-transform active:scale-[0.98] sun-gold-glow">
+<span class="material-symbols-outlined">save</span>
+                Publish Master
+            </button>
+</div>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-12 gap-gutter">
+<!-- Conflict Resolver (Alert Area) -->
+<div class="col-span-12 glass-panel p-6 rounded-2xl flex items-center justify-between border-l-4 border-l-secondary-container">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-xl bg-secondary-container/20 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">warning</span>
+</div>
+<div>
+<h4 class="font-headline-md text-primary">Conflict Resolver</h4>
+<p class="text-body-md text-on-surface-variant">3 overlaps detected in Senior Secondary teacher assignments.</p>
+</div>
+</div>
+<div class="flex gap-2">
+<div class="flex -space-x-3">
+<div class="w-8 h-8 rounded-full border-2 border-white bg-surface-container overflow-hidden">
+<img class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuASUtCfac74Vro8nqQECh_jQfbGXXIRBYqQO_4dpgky1FOJuNt3kPosAOzzQGlmZcay0fmYWTnEw6KBSuSeoKz_-65VhBxxQCGE7O73GFSzle64t1qNonXqma2PjPRXlbaMbDsTzlzdXJa_uH3j9_P-7ARczNTtkTS0kd2FIMRiGQWFSDXrhhxtL-ZjwevI5ccSzx9GEuXhyfExgQbtTzTFEpj8lDv5Zqff5G_znQmlSsBdLxDR7ZwVCe-1ZElYGij8EA_lfe2Rt2f2"/>
+</div>
+<div class="w-8 h-8 rounded-full border-2 border-white bg-surface-container overflow-hidden">
+<img class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCn4WZaiJuCrOwXAgAnjB4mq3fUYpCjZqs-xHqoERPDkr0T8zdeI2xVJY8Pk_QKPszrVXVENVOWkLyUL3ODQ0lZMNb_R5mHDBwx1hAbgJ9ib_H33XQfT1mdwBCUKhqlHhSsE-zlhZfQPIPNJOcv0xKLsWRGxZrjgL3oKfkFjsO7uP4Wl246WaZOVmZakCk30IhUankjL3xxq6RViTeweHJH54-JK6taM62Mwnvz6NBeLA5zbhc3CSh7miTpvsn-phW42nUTi5dXgAKw"/>
+</div>
+</div>
+<button class="text-secondary font-bold px-4 py-2 hover:bg-secondary/10 rounded-lg transition-colors">Review Conflicts</button>
+</div>
+</div>
+<!-- Master Schedule View -->
+<div class="col-span-12 lg:col-span-9 space-y-gutter">
+<div class="glass-panel rounded-3xl overflow-hidden shadow-xl">
+<div class="p-6 border-b border-white/20 flex items-center justify-between bg-white/30">
+<div class="flex items-center gap-4">
+<h3 class="font-headline-md text-primary">Master Schedule View</h3>
+<div class="flex bg-surface-container-low p-1 rounded-lg">
+<button class="px-4 py-1 text-label-md bg-white rounded shadow-sm text-primary font-bold">Class View</button>
+<button class="px-4 py-1 text-label-md text-outline hover:text-primary">Staff View</button>
+<button class="px-4 py-1 text-label-md text-outline hover:text-primary">Room View</button>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 hover:bg-white/50 rounded-lg transition-colors">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<span class="font-body-md font-bold px-2">Week 12 (Current)</span>
+<button class="p-2 hover:bg-white/50 rounded-lg transition-colors">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+<!-- Timetable Spreadsheet/Grid -->
+<div class="overflow-x-auto">
+<div class="min-w-[800px] p-6 bg-white/20">
+<div class="timetable-grid border-b border-white/30 pb-4 text-label-md text-outline font-bold uppercase tracking-wider">
+<div>Time</div>
+<div class="text-center">Mon 12</div>
+<div class="text-center">Tue 13</div>
+<div class="text-center">Wed 14</div>
+<div class="text-center">Thu 15</div>
+<div class="text-center">Fri 16</div>
+</div>
+<!-- Rows -->
+<div class="divide-y divide-white/20">
+<!-- Period 1 -->
+<div class="timetable-grid py-6 items-start">
+<div class="text-label-md font-bold text-primary pt-1">08:00 AM</div>
+<div class="px-2">
+<div class="p-3 rounded-xl bg-primary text-white shadow-lg space-y-1">
+<p class="font-bold text-xs">Mathematics (SS1)</p>
+<p class="text-[10px] opacity-80">Dr. Sarah O.</p>
+<div class="flex justify-between items-center pt-1 border-t border-white/10">
+<span class="text-[9px] font-bold">Rm 104</span>
+<span class="material-symbols-outlined text-xs">more_vert</span>
+</div>
+</div>
+</div>
+<div class="px-2">
+<div class="p-3 rounded-xl bg-white/60 border border-white/80 space-y-1">
+<p class="font-bold text-xs text-primary">Physics (SS3)</p>
+<p class="text-[10px] text-on-surface-variant">Prof. Adeyemi</p>
+<div class="flex justify-between items-center pt-1 border-t border-black/5">
+<span class="text-[9px] font-bold text-on-surface-variant">Lab A</span>
+</div>
+</div>
+</div>
+<div class="px-2">
+<div class="p-3 rounded-xl bg-primary text-white shadow-lg space-y-1">
+<p class="font-bold text-xs">Mathematics (SS1)</p>
+<p class="text-[10px] opacity-80">Dr. Sarah O.</p>
+<div class="flex justify-between items-center pt-1 border-t border-white/10">
+<span class="text-[9px] font-bold">Rm 104</span>
+</div>
+</div>
+</div>
+<div class="px-2">
+<div class="p-3 rounded-xl border-2 border-dashed border-secondary/40 flex items-center justify-center h-20 text-secondary/60">
+<span class="material-symbols-outlined">add</span>
+</div>
+</div>
+<div class="px-2">
+<div class="p-3 rounded-xl bg-error-container text-on-error-container space-y-1 relative overflow-hidden">
+<div class="absolute inset-0 bg-error/5 animate-pulse-subtle"></div>
+<p class="font-bold text-xs">English (SS2)</p>
+<p class="text-[10px]">Conflict: Room Ovr</p>
+</div>
+</div>
+</div>
+<!-- Period 2 -->
+<div class="timetable-grid py-6 items-start">
+<div class="text-label-md font-bold text-primary pt-1">09:15 AM</div>
+<div class="px-2">
+<div class="p-3 rounded-xl bg-white/60 border border-white/80 space-y-1">
+<p class="font-bold text-xs text-primary">Chemistry (SS2)</p>
+<p class="text-[10px] text-on-surface-variant">Mr. Ibrahim</p>
+</div>
+</div>
+<div class="px-2">
+<div class="p-3 rounded-xl bg-secondary text-primary shadow-lg space-y-1">
+<p class="font-bold text-xs">Staff Meeting</p>
+<p class="text-[10px] opacity-80">All Faculty</p>
+</div>
+</div>
+<div class="px-2">
+<div class="p-3 rounded-xl bg-white/60 border border-white/80 space-y-1">
+<p class="font-bold text-xs text-primary">History (SS1)</p>
+<p class="text-[10px] text-on-surface-variant">Mrs. Okafor</p>
+</div>
+</div>
+<div class="px-2">
+<div class="p-3 rounded-xl bg-white/60 border border-white/80 space-y-1">
+<p class="font-bold text-xs text-primary">Chemistry (SS2)</p>
+</div>
+</div>
+<div class="px-2">
+<div class="p-3 rounded-xl bg-white/60 border border-white/80 space-y-1">
+<p class="font-bold text-xs text-primary">Physics (SS3)</p>
+</div>
+</div>
+</div>
+<!-- Break -->
+<div class="timetable-grid py-3 items-center bg-surface-container/30">
+<div class="text-[10px] font-bold text-outline text-center uppercase col-span-6 tracking-[0.4em]">Mid-Morning Interval</div>
+</div>
+<!-- Period 3 -->
+<div class="timetable-grid py-6 items-start">
+<div class="text-label-md font-bold text-primary pt-1">11:00 AM</div>
+<div class="px-2 col-span-2">
+<div class="p-3 rounded-xl bg-primary text-white shadow-lg space-y-1">
+<p class="font-bold text-xs">Computer Science (Workshop)</p>
+<p class="text-[10px] opacity-80">SS1, SS2 Combined</p>
+</div>
+</div>
+<div class="px-2">
+<div class="p-3 rounded-xl bg-white/60 border border-white/80 space-y-1">
+<p class="font-bold text-xs text-primary">Civics (SS3)</p>
+</div>
+</div>
+<div class="px-2">
+<div class="p-3 rounded-xl bg-white/60 border border-white/80 space-y-1">
+<p class="font-bold text-xs text-primary">Biology (SS1)</p>
+</div>
+</div>
+<div class="px-2">
+<div class="p-3 rounded-xl bg-white/60 border border-white/80 space-y-1">
+<p class="font-bold text-xs text-primary">Geography (SS2)</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Optimization Metrics -->
+<div class="grid grid-cols-3 gap-gutter">
+<div class="glass-panel p-5 rounded-2xl">
+<div class="flex items-center justify-between mb-2">
+<span class="text-label-md font-bold text-outline">Utilization Score</span>
+<span class="material-symbols-outlined text-secondary">trending_up</span>
+</div>
+<div class="flex items-end gap-2">
+<span class="text-2xl font-bold text-primary">87.4%</span>
+<span class="text-xs text-secondary font-bold mb-1">+2.1%</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container rounded-full mt-3 overflow-hidden">
+<div class="h-full bg-secondary" style="width: 87%;"></div>
+</div>
+</div>
+<div class="glass-panel p-5 rounded-2xl">
+<div class="flex items-center justify-between mb-2">
+<span class="text-label-md font-bold text-outline">Room Efficiency</span>
+<span class="material-symbols-outlined text-primary">meeting_room</span>
+</div>
+<div class="flex items-end gap-2">
+<span class="text-2xl font-bold text-primary">92%</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container rounded-full mt-3 overflow-hidden">
+<div class="h-full bg-primary" style="width: 92%;"></div>
+</div>
+</div>
+<div class="glass-panel p-5 rounded-2xl">
+<div class="flex items-center justify-between mb-2">
+<span class="text-label-md font-bold text-outline">Staff Prep-Time</span>
+<span class="material-symbols-outlined text-on-tertiary-container">timer</span>
+</div>
+<div class="flex items-end gap-2">
+<span class="text-2xl font-bold text-primary">12.5h</span>
+<span class="text-xs text-outline font-bold mb-1">Avg/Wk</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container rounded-full mt-3 overflow-hidden">
+<div class="h-full bg-on-tertiary-container" style="width: 65%;"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Teacher Availability Sidebar -->
+<div class="col-span-12 lg:col-span-3 space-y-gutter">
+<div class="glass-panel rounded-3xl p-6 min-h-full">
+<div class="flex items-center justify-between mb-6">
+<h3 class="font-headline-md text-primary">Teacher Tracking</h3>
+<button class="p-2 hover:bg-white/50 rounded-lg text-outline">
+<span class="material-symbols-outlined">filter_list</span>
+</button>
+</div>
+<div class="space-y-4">
+<!-- Teacher Card 1 -->
+<div class="p-4 rounded-2xl border border-white/40 bg-white/20 hover:bg-white/40 transition-all group">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBeWT-H-ZeeZO0WbScXdtGm_f12rlKZLOXjFMiXCXHMnfAIQiqkuhmzj36PHS-ukzUI9atpSz_kjNSOHFixJnFVjNREK8TjRlgqU4ZpON9lfOB8srAjQuL72n_drcLycneT4MsnBStttmUEyE08BoL2YAiH4TbwA_R35OatxhDYERh8D6JueU0lKiAieph9icFjQxk4eJFx_-bfpSj6jyKT8_Mnu740nx1JNR5zIXBZh5BkSg8-g3g-N3TWQvU7bF94mzoE040ITOKB"/>
+</div>
+<div class="flex-1">
+<p class="font-bold text-primary group-hover:text-secondary transition-colors">Prof. Adeyemi</p>
+<p class="text-[10px] text-outline font-bold uppercase">Physics Dept.</p>
+</div>
+<div class="w-2.5 h-2.5 rounded-full bg-green-500 shadow-lg shadow-green-500/20"></div>
+</div>
+<div class="mt-4 grid grid-cols-5 gap-1">
+<div class="h-1 rounded-full bg-primary"></div>
+<div class="h-1 rounded-full bg-primary"></div>
+<div class="h-1 rounded-full bg-surface-container"></div>
+<div class="h-1 rounded-full bg-primary"></div>
+<div class="h-1 rounded-full bg-primary"></div>
+</div>
+<p class="text-[10px] text-outline mt-2">Available: Wed (Full Day)</p>
+</div>
+<!-- Teacher Card 2 -->
+<div class="p-4 rounded-2xl border border-white/40 bg-white/20 hover:bg-white/40 transition-all group">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBtUYGqqawh7IVp2YrblbqEzJIUSvjs_lGCsuFnvGJPp9LqiyR5qSFm-ho23VHVPszPwLAvpzVp4urxs4Y4ypcthRH6EYzk-8QTXgF9TzT4OIxlKH1Q1Q46eZNQOc3bOtmEeE7vjThjyQdZyvQm5QZekixH66d8s9LZPkV7qOyZIBN5g5NUJkBp94HV7FKGHQlmicdZIaQytUgb_0oQE7KUyYdHnnFbozpDXrNBfdPyM4trcUF3J_y2m7JxqE80-_PZ0yxyvJ8kdlE1"/>
+</div>
+<div class="flex-1">
+<p class="font-bold text-primary group-hover:text-secondary transition-colors">Dr. Sarah O.</p>
+<p class="text-[10px] text-outline font-bold uppercase">Math Dept.</p>
+</div>
+<div class="w-2.5 h-2.5 rounded-full bg-secondary shadow-lg shadow-secondary/20"></div>
+</div>
+<div class="mt-4 grid grid-cols-5 gap-1">
+<div class="h-1 rounded-full bg-primary"></div>
+<div class="h-1 rounded-full bg-primary"></div>
+<div class="h-1 rounded-full bg-primary"></div>
+<div class="h-1 rounded-full bg-secondary"></div>
+<div class="h-1 rounded-full bg-primary"></div>
+</div>
+<p class="text-[10px] text-secondary font-bold mt-2">On Medical Leave (Thu)</p>
+</div>
+<!-- Teacher Card 3 -->
+<div class="p-4 rounded-2xl border border-white/40 bg-white/20 hover:bg-white/40 transition-all group">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDE2v4xWf4MXbbcMfzOzn1ScTsPtq7ZAufVTMnEypBMt_ILLvISqDgXBJ2PX1nCzoTwhWblzrjN7w8Hk4168e8z8z9RTtt_C2Tfvpg6wDA0cWNjRuxeBcuj1v0ua3eU5ivDUVZGGSdEM_DpXZKnC7quee9bLmmeeMi3x6bzdiFaxIy31cFg_Zd8Qf5oueGA3AcQqg2QmhSGjNnd89O7yItiaQT5PL_FbrAmiek_5TdKnsI63j6vHBCVPweFn6WTUQGmZD2p7arg7j00"/>
+</div>
+<div class="flex-1">
+<p class="font-bold text-primary group-hover:text-secondary transition-colors">Mr. Ibrahim</p>
+<p class="text-[10px] text-outline font-bold uppercase">Chemistry Dept.</p>
+</div>
+<div class="w-2.5 h-2.5 rounded-full bg-green-500 shadow-lg shadow-green-500/20"></div>
+</div>
+<div class="mt-4 grid grid-cols-5 gap-1">
+<div class="h-1 rounded-full bg-primary"></div>
+<div class="h-1 rounded-full bg-surface-container"></div>
+<div class="h-1 rounded-full bg-primary"></div>
+<div class="h-1 rounded-full bg-primary"></div>
+<div class="h-1 rounded-full bg-primary"></div>
+</div>
+<p class="text-[10px] text-outline mt-2">Max Capacity: 22h/24h</p>
+</div>
+<!-- Mini Stats Card -->
+<div class="mt-8 p-6 rounded-3xl bg-primary text-white relative overflow-hidden">
+<div class="relative z-10">
+<p class="text-label-md font-bold opacity-60 uppercase mb-1">Room Capacity</p>
+<h4 class="text-3xl font-bold mb-4">42 / 48</h4>
+<p class="text-xs opacity-80 leading-relaxed">Most lab spaces are at peak utilization for the upcoming exam block.</p>
+</div>
+<!-- Background abstract shapes -->
+<div class="absolute -right-4 -bottom-4 w-24 h-24 bg-secondary/20 rounded-full blur-2xl"></div>
+<div class="absolute -left-4 -top-4 w-16 h-16 bg-white/10 rounded-full blur-xl"></div>
+</div>
+</div>
+<button class="w-full mt-6 py-4 rounded-2xl border-2 border-primary/10 border-dashed text-primary font-bold hover:bg-primary/5 transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">person_add</span>
+                    View All Staff
+                </button>
+</div>
+</div>
+</div>
+<!-- Float Action Button (Contextual) -->
+<button class="fixed bottom-8 right-8 w-16 h-16 bg-primary text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-50 sun-gold-glow">
+<span class="material-symbols-outlined text-3xl">add</span>
+</button>
+</main>
+<!-- Floating Background Decoration (Ethos aesthetic) -->
+<div class="fixed top-[-10%] right-[-10%] w-[40%] h-[40%] bg-secondary-container/10 rounded-full blur-[120px] pointer-events-none z-[-1]"></div>
+<div class="fixed bottom-[-5%] left-[10%] w-[30%] h-[30%] bg-primary/10 rounded-full blur-[100px] pointer-events-none z-[-1]"></div>
+<!-- Micro-interaction Scripts -->
+<script>
+    // Simple drag feedback simulation
+    const scheduleCards = document.querySelectorAll('.timetable-grid div > div');
+    scheduleCards.forEach(card => {
+        card.addEventListener('mousedown', () => {
+            card.classList.add('scale-95', 'opacity-80');
+            card.style.transition = 'transform 0.1s ease';
+        });
+        card.addEventListener('mouseup', () => {
+            card.classList.remove('scale-95', 'opacity-80');
+        });
+        card.addEventListener('mouseleave', () => {
+            card.classList.remove('scale-95', 'opacity-80');
+        });
+    });
+
+    // Search bar focus effect
+    const searchInput = document.querySelector('input[type="text"]');
+    const searchContainer = searchInput.parentElement;
+    searchInput.addEventListener('focus', () => {
+        searchContainer.classList.add('border-primary/40', 'ring-2', 'ring-primary/10', 'bg-white');
+    });
+    searchInput.addEventListener('blur', () => {
+        searchContainer.classList.remove('border-primary/40', 'ring-2', 'ring-primary/10', 'bg-white');
+    });
+</script>
+</body></html>

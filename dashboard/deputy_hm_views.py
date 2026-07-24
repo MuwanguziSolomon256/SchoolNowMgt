@@ -8,6 +8,7 @@ Permission: Requires Deputy HM role via @require_deputy_hm decorator
 School Isolation: All queries filtered by school=user.school
 """
 
+import csv
 import json
 from datetime import datetime, timedelta
 from decimal import Decimal
@@ -27,6 +28,7 @@ from SchoolNowMgt.models import (
     StudentAttendance, StaffAttendance, TeacherAttendance
 )
 from SchoolNowMgt.decorators import require_deputy_hm, get_user_school
+from user_profile.forms import TeacherProfileForm
 
 
 # ============================================================================
@@ -91,6 +93,34 @@ def deputy_hm_dashboard(request):
     
     # Get staff without department assignment
     staff_without_dept = all_support_staff.filter(support_department__isnull=True)
+
+    # Recent staff sample for dashboard table (limit 6)
+    recent_staff = all_support_staff.order_by('user__first_name')[:6]
+
+    # Today's late arrivals count
+    try:
+        today = timezone.localdate()
+        late_arrivals = StaffAttendance.objects.filter(
+            staff__in=all_support_staff,
+            date=today,
+            status='late'
+        ).count()
+    except Exception:
+        late_arrivals = 0
+
+    # Attach today's attendance record to each recent staff member to avoid
+    # complex template lookups (templates cannot call queryset filters).
+    try:
+        for member in recent_staff:
+            member.today_attendance = StaffAttendance.objects.filter(
+                staff=member,
+                date=today
+            ).first()
+    except Exception:
+        # If anything goes wrong, ensure attribute exists to avoid template errors
+        for member in recent_staff:
+            if not hasattr(member, 'today_attendance'):
+                member.today_attendance = None
     
     context = {
         'school': school,
@@ -101,6 +131,8 @@ def deputy_hm_dashboard(request):
         'departments_without_head': departments_without_head,
         'staff_without_dept': staff_without_dept,
         'total_staff': all_support_staff.count(),
+        'recent_staff': recent_staff,
+        'late_arrivals': late_arrivals,
         'section': 'deputy_hm_dashboard',
     }
     
@@ -114,6 +146,106 @@ def deputy_hm_dashboard(request):
     )
     
     return render(request, 'deputy_hm/deputy_hm_dashboard.html', context)
+
+
+@require_deputy_hm
+@require_http_methods(['GET', 'POST'])
+def deputy_profile(request):
+    """View and edit the deputy headmaster profile information."""
+    staff = get_object_or_404(StaffProfile, user=request.user)
+
+    if request.method == 'POST':
+        profile_form = TeacherProfileForm(
+            request.POST,
+            request.FILES,
+            instance=request.user,
+        )
+        if profile_form.is_valid():
+            profile_form.save()
+            messages.success(request, 'Your profile was updated successfully.')
+            return redirect('SchoolNowMgt:deputy_hm:profile')
+    else:
+        profile_form = TeacherProfileForm(instance=request.user)
+
+    context = {
+        'staff_profile': staff,
+        'profile_form': profile_form,
+        'section': 'profile',
+    }
+    return render(request, 'deputy_hm/deputy_profile.html', context)
+
+
+@require_deputy_hm
+def discipline_log(request):
+    """Display the discipline activity log for the deputy dashboard."""
+    school = get_user_school(request)
+    staff = get_object_or_404(StaffProfile, user=request.user)
+
+    activities = ActivityLog.objects.filter(
+        teacher=staff
+    ).order_by('-created_at')[:20]
+
+    context = {
+        'school': school,
+        'staff_profile': staff,
+        'activities': activities,
+        'section': 'discipline_log',
+    }
+    return render(request, 'deputy_hm/discipline_log.html', context)
+
+
+@require_deputy_hm
+def governance_dashboard(request):
+    """Display governance and compliance dashboard."""
+    school = get_user_school(request)
+    staff = get_object_or_404(StaffProfile, user=request.user)
+    
+    # Get departments for governance overview
+    from SchoolNowMgt.models import Department
+    departments = Department.objects.filter(school=school).select_related('head_of_department').order_by('name')
+    
+    context = {
+        'school': school,
+        'staff_profile': staff,
+        'departments': departments,
+        'section': 'governance',
+    }
+    return render(request, 'deputy_hm/governance_dashboard.html', context)
+
+
+@require_deputy_hm
+def export_reports(request):
+    """Download a CSV report of support staff for the current school."""
+    school = get_user_school(request)
+    staff = get_object_or_404(StaffProfile, user=request.user)
+
+    support_staff = StaffProfile.objects.filter(
+        user__school=school,
+        user__role='non_teaching_staff'
+    ).select_related('user', 'support_department').order_by('user__first_name')
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="deputy_support_staff_report.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(['Name', 'Department', 'Role', 'Status'])
+    for member in support_staff:
+        writer.writerow([
+            member.user.get_full_name(),
+            member.support_department.name if member.support_department else 'Unassigned',
+            member.get_support_staff_role_display() if hasattr(member, 'get_support_staff_role_display') else member.support_staff_role,
+            'Active' if member.user.is_active else 'Inactive',
+        ])
+
+    ActivityLog.objects.create(
+        teacher=staff,
+        activity_type='other',
+        description='Exported Deputy HM support staff report',
+        severity='info',
+        icon_name='download'
+    )
+
+    return response
 
 
 # ============================================================================
@@ -170,11 +302,16 @@ def support_staff_list(request):
     paginator = Paginator(support_staff, 20)
     page_number = request.GET.get('page', 1)
     page_obj = paginator.get_page(page_number)
-    
+
+    # Summary counts for the dashboard cards
+    active_support_staff_count = support_staff.filter(user__is_active=True).count()
+    inactive_support_staff_count = support_staff.filter(user__is_active=False).count()
+    unassigned_staff_count = support_staff.filter(support_department__isnull=True).count()
+
     # Get filter options
     departments = Department.objects.filter(school=school, is_active=True)
     role_choices = StaffProfile.SUPPORT_STAFF_ROLE_CHOICES
-    
+
     context = {
         'school': school,
         'staff_profile': staff,
@@ -186,6 +323,9 @@ def support_staff_list(request):
         'selected_role': role,
         'selected_status': status,
         'search_query': search,
+        'active_support_staff_count': active_support_staff_count,
+        'inactive_support_staff_count': inactive_support_staff_count,
+        'unassigned_staff_count': unassigned_staff_count,
         'section': 'support_staff_list',
     }
     
@@ -241,7 +381,7 @@ def support_staff_edit(request, staff_id):
             )
             
             messages.success(request, 'Support staff updated successfully')
-            return redirect('deputy_hm:support_staff_list')
+            return redirect('SchoolNowMgt:deputy_hm:support_staff_list')
         
         except Exception as e:
             messages.error(request, f'Error updating staff: {str(e)}')
@@ -375,7 +515,7 @@ def department_edit(request, department_id):
             )
             
             messages.success(request, 'Department updated successfully')
-            return redirect('deputy_hm:departments_list')
+            return redirect('SchoolNowMgt:deputy_hm:departments_list')
         
         except Exception as e:
             messages.error(request, f'Error updating department: {str(e)}')
@@ -432,16 +572,16 @@ def department_create(request):
             # Validation
             if not name:
                 messages.error(request, 'Department name is required')
-                return redirect('deputy_hm:department_create')
+                return redirect('SchoolNowMgt:deputy_hm:department_create')
             
             if not dept_type:
                 messages.error(request, 'Department type is required')
-                return redirect('deputy_hm:department_create')
+                return redirect('SchoolNowMgt:deputy_hm:department_create')
             
             # Check if type already exists in this school
             if Department.objects.filter(school=school, department_type=dept_type).exists():
                 messages.error(request, f'Department type "{dept_type}" already exists in your school')
-                return redirect('deputy_hm:department_create')
+                return redirect('SchoolNowMgt:deputy_hm:department_create')
             
             # Create department
             department = Department(
@@ -459,11 +599,11 @@ def department_create(request):
                     budget = Decimal(monthly_budget)
                     if budget < 0:
                         messages.error(request, 'Monthly budget must be positive')
-                        return redirect('deputy_hm:department_create')
+                        return redirect('SchoolNowMgt:deputy_hm:department_create')
                     department.monthly_budget = budget
                 except (ValueError, Decimal.InvalidOperation):
                     messages.error(request, 'Invalid budget amount')
-                    return redirect('deputy_hm:department_create')
+                    return redirect('SchoolNowMgt:deputy_hm:department_create')
             
             # Handle optional head assignment
             head_id = request.POST.get('head_of_department')
@@ -477,7 +617,7 @@ def department_create(request):
                     department.head_of_department = head
                 except StaffProfile.DoesNotExist:
                     messages.error(request, 'Invalid department head selection')
-                    return redirect('deputy_hm:department_create')
+                    return redirect('SchoolNowMgt:deputy_hm:department_create')
             
             department.save()
             
@@ -490,11 +630,11 @@ def department_create(request):
             )
             
             messages.success(request, f'Department "{department.name}" created successfully')
-            return redirect('deputy_hm:departments_list')
+            return redirect('SchoolNowMgt:deputy_hm:departments_list')
         
         except Exception as e:
             messages.error(request, f'Error creating department: {str(e)}')
-            return redirect('deputy_hm:department_create')
+            return redirect('SchoolNowMgt:deputy_hm:department_create')
     
     # GET request
     department_heads = StaffProfile.objects.filter(
@@ -591,7 +731,7 @@ def department_delete(request, department_id):
                 f'Cannot delete department with {active_staff} active staff member(s). '
                 'Please reassign staff first.'
             )
-            return redirect('deputy_hm:department_detail', department_id=department.id)
+            return redirect('SchoolNowMgt:deputy_hm:department_detail', department_id=department.id)
         
         # Soft delete
         department.is_active = False
@@ -606,11 +746,11 @@ def department_delete(request, department_id):
         )
         
         messages.success(request, 'Department deleted successfully')
-        return redirect('deputy_hm:departments_list')
+        return redirect('SchoolNowMgt:deputy_hm:departments_list')
     
     except Exception as e:
         messages.error(request, f'Error deleting department: {str(e)}')
-        return redirect('deputy_hm:department_detail', department_id=department.id)
+        return redirect('SchoolNowMgt:deputy_hm:department_detail', department_id=department.id)
 
 
 # ============================================================================
@@ -724,29 +864,29 @@ def hostel_create(request):
             # Validation
             if not name:
                 messages.error(request, 'Hostel name is required')
-                return redirect('deputy_hm:hostel_create')
+                return redirect('SchoolNowMgt:deputy_hm:hostel_create')
             
             if not hostel_type:
                 messages.error(request, 'Hostel type is required')
-                return redirect('deputy_hm:hostel_create')
+                return redirect('SchoolNowMgt:deputy_hm:hostel_create')
             
             if not capacity:
                 messages.error(request, 'Capacity is required')
-                return redirect('deputy_hm:hostel_create')
+                return redirect('SchoolNowMgt:deputy_hm:hostel_create')
             
             try:
                 capacity = int(capacity)
                 if capacity <= 0:
                     messages.error(request, 'Capacity must be a positive number')
-                    return redirect('deputy_hm:hostel_create')
+                    return redirect('SchoolNowMgt:deputy_hm:hostel_create')
             except ValueError:
                 messages.error(request, 'Invalid capacity value')
-                return redirect('deputy_hm:hostel_create')
+                return redirect('SchoolNowMgt:deputy_hm:hostel_create')
             
             # Check if name already exists in this school
             if Hostel.objects.filter(school=school, name=name).exists():
                 messages.error(request, f'Hostel "{name}" already exists in your school')
-                return redirect('deputy_hm:hostel_create')
+                return redirect('SchoolNowMgt:deputy_hm:hostel_create')
             
             # Create hostel
             hostel = Hostel(
@@ -770,7 +910,7 @@ def hostel_create(request):
                     hostel.matron = matron
                 except StaffProfile.DoesNotExist:
                     messages.error(request, 'Invalid matron selection')
-                    return redirect('deputy_hm:hostel_create')
+                    return redirect('SchoolNowMgt:deputy_hm:hostel_create')
             
             hostel.save()
             
@@ -783,11 +923,11 @@ def hostel_create(request):
             )
             
             messages.success(request, f'Hostel "{hostel.name}" created successfully')
-            return redirect('deputy_hm:hostels_list')
+            return redirect('SchoolNowMgt:deputy_hm:hostels_list')
         
         except Exception as e:
             messages.error(request, f'Error creating hostel: {str(e)}')
-            return redirect('deputy_hm:hostel_create')
+            return redirect('SchoolNowMgt:deputy_hm:hostel_create')
     
     # GET request
     # Get available matrons (welfare_coordinator role)
@@ -843,11 +983,11 @@ def hostel_edit(request, hostel_id):
                     capacity = int(capacity)
                     if capacity <= 0:
                         messages.error(request, 'Capacity must be a positive number')
-                        return redirect('deputy_hm:hostel_edit', hostel_id=hostel.id)
+                        return redirect('SchoolNowMgt:deputy_hm:hostel_edit', hostel_id=hostel.id)
                     hostel.capacity = capacity
                 except ValueError:
                     messages.error(request, 'Invalid capacity value')
-                    return redirect('deputy_hm:hostel_edit', hostel_id=hostel.id)
+                    return redirect('SchoolNowMgt:deputy_hm:hostel_edit', hostel_id=hostel.id)
             
             matron_id = request.POST.get('matron')
             if matron_id:
@@ -861,7 +1001,7 @@ def hostel_edit(request, hostel_id):
                     hostel.matron = matron
                 except StaffProfile.DoesNotExist:
                     messages.error(request, 'Invalid matron selection')
-                    return redirect('deputy_hm:hostel_edit', hostel_id=hostel.id)
+                    return redirect('SchoolNowMgt:deputy_hm:hostel_edit', hostel_id=hostel.id)
             else:
                 hostel.matron = None
             
@@ -877,7 +1017,7 @@ def hostel_edit(request, hostel_id):
             )
             
             messages.success(request, 'Hostel updated successfully')
-            return redirect('deputy_hm:hostels_list')
+            return redirect('SchoolNowMgt:deputy_hm:hostels_list')
         
         except Exception as e:
             messages.error(request, f'Error updating hostel: {str(e)}')
@@ -981,7 +1121,7 @@ def hostel_delete(request, hostel_id):
                 f'Cannot delete hostel with {active_residents} active resident(s). '
                 'Please transfer residents first.'
             )
-            return redirect('deputy_hm:hostel_detail', hostel_id=hostel.id)
+            return redirect('SchoolNowMgt:deputy_hm:hostel_detail', hostel_id=hostel.id)
         
         # Soft delete
         hostel.is_active = False
@@ -996,11 +1136,11 @@ def hostel_delete(request, hostel_id):
         )
         
         messages.success(request, 'Hostel deleted successfully')
-        return redirect('deputy_hm:hostels_list')
+        return redirect('SchoolNowMgt:deputy_hm:hostels_list')
     
     except Exception as e:
         messages.error(request, f'Error deleting hostel: {str(e)}')
-        return redirect('deputy_hm:hostel_detail', hostel_id=hostel.id)
+        return redirect('SchoolNowMgt:deputy_hm:hostel_detail', hostel_id=hostel.id)
 
 
 @require_deputy_hm

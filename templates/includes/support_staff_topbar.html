@@ -22,6 +22,11 @@
             </div>
         </div>
         {% endif %}
+
+        <a href="{% url 'SchoolNowMgt:custom_logout' %}" class="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-on-primary hover:bg-primary/90 transition-all text-label-md font-label-md">
+            <span class="material-symbols-outlined text-lg">logout</span>
+            <span>Log out</span>
+        </a>
         
         <!-- Current Date/Time -->
         <div class="text-right text-on-surface-variant">

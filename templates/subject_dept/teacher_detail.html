@@ -1,15 +1,22 @@
-{% extends "teacher/base.html" %}
+{% extends "teacher/app_base.html" %}
 {% load static %}
 
 {% block title %}Teacher Detail - {{ teacher.user.get_full_name }}{% endblock %}
 
 {% block content %}
-<div class="teacher-detail">
-    <div class="page-header">
-        <h1>{{ teacher.user.get_full_name }}</h1>
-        <p class="subtitle">Teacher Profile</p>
+<main class="px-4 py-24 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-8">
+  <section class="rounded-[1.5rem] bg-white p-8 shadow-lg border border-slate-200">
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <p class="text-sm uppercase tracking-[0.24em] text-secondary">Teacher profile</p>
+        <h1 class="mt-3 text-3xl font-semibold text-primary">{{ teacher.user.get_full_name }}</h1>
+        <p class="mt-2 text-sm text-slate-600">Profile and schedule for this department teacher.</p>
+      </div>
+      <a href="/teacher/department/teachers/" class="rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white hover:bg-slate-800">Back to teachers</a>
     </div>
+  </section>
 
+  <section class="grid gap-6 lg:grid-cols-[1fr_320px]">
     <!-- Teacher Information -->
     <div class="info-section">
         <h2>Personal Information</h2>
@@ -52,80 +59,87 @@
         </div>
     </div>
 
-    <!-- Subjects -->
-    {% if subjects %}
-    <div class="subjects-section">
-        <h2>Teaching Subjects ({{ subjects|length }})</h2>
-        <div class="subjects-list">
-            {% for subject in subjects %}
-            <div class="subject-item">
-                <h4>{{ subject.subject_name }}</h4>
-                <p class="code">{{ subject.subject_code }}</p>
-            </div>
-            {% endfor %}
-        </div>
+    <div class="rounded-[1.5rem] bg-slate-50 p-6 shadow-inner border border-slate-200">
+      <p class="text-sm uppercase tracking-[0.24em] text-secondary">Performance</p>
+      <div class="mt-6 rounded-3xl bg-white p-6">
+        <p class="text-sm text-slate-500">Grades entered</p>
+        <p class="mt-3 text-4xl font-semibold text-primary">{{ grades_entered }}</p>
+      </div>
     </div>
-    {% endif %}
+  </section>
 
-    <!-- Classes -->
-    {% if classes %}
-    <div class="classes-section">
-        <h2>Classes ({{ classes|length }})</h2>
-        <div class="classes-list">
-            {% for cls in classes %}
-            <div class="class-item">
-                <p><strong>{{ cls.class_grade_level.level_name }}</strong> - {{ cls.class_stream.stream_name }}</p>
-                <p class="subject">{{ cls.subject.subject_name }}</p>
-            </div>
-            {% endfor %}
-        </div>
+  {% if subjects %}
+  <section class="rounded-[1.5rem] bg-white p-8 shadow-lg border border-slate-200">
+    <div class="flex items-center justify-between gap-4">
+      <div>
+        <p class="text-sm uppercase tracking-[0.24em] text-secondary">Teaching subjects</p>
+        <h2 class="mt-3 text-2xl font-semibold text-primary">Subjects assigned</h2>
+      </div>
+      <p class="text-sm text-slate-500">{{ subjects|length }} subjects</p>
     </div>
-    {% endif %}
+    <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {% for subject in subjects %}
+      <div class="rounded-3xl bg-slate-50 p-5">
+        <p class="text-sm text-slate-500">{{ subject.code }}</p>
+        <p class="mt-2 text-lg font-semibold text-slate-900">{{ subject.name }}</p>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
 
-    <!-- Timetable -->
-    {% if timetable %}
-    <div class="timetable-section">
-        <h2>Teaching Schedule ({{ timetable|length }} slots)</h2>
-        <div class="table-section">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Day</th>
-                        <th>Time</th>
-                        <th>Subject</th>
-                        <th>Class</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for slot in timetable %}
-                    <tr>
-                        <td>{{ slot.day }}</td>
-                        <td>{{ slot.start_time|time:"H:i" }} - {{ slot.end_time|time:"H:i" }}</td>
-                        <td>{{ slot.subject.subject_name }}</td>
-                        <td>{{ slot.class_grade.class_grade_level.level_name }} {{ slot.class_grade.class_stream.stream_name }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+  {% if classes %}
+  <section class="rounded-[1.5rem] bg-white p-8 shadow-lg border border-slate-200">
+    <div class="flex items-center justify-between gap-4">
+      <div>
+        <p class="text-sm uppercase tracking-[0.24em] text-secondary">Classes</p>
+        <h2 class="mt-3 text-2xl font-semibold text-primary">Class coverage</h2>
+      </div>
+      <p class="text-sm text-slate-500">{{ classes|length }} classes</p>
     </div>
-    {% endif %}
+    <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {% for cls in classes %}
+      <div class="rounded-3xl bg-slate-50 p-5">
+        <p class="text-sm text-slate-500">{{ cls.name }} {{ cls.level }}</p>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
 
-    <!-- Performance -->
-    <div class="performance-section">
-        <h2>Teaching Performance</h2>
-        <div class="performance-stats">
-            <div class="stat-item">
-                <p class="label">Grades Entered</p>
-                <p class="value">{{ grades_entered }}</p>
-            </div>
-        </div>
+  {% if timetable %}
+  <section class="rounded-[1.5rem] bg-white p-8 shadow-lg border border-slate-200 overflow-x-auto">
+    <div class="flex items-center justify-between gap-4">
+      <div>
+        <p class="text-sm uppercase tracking-[0.24em] text-secondary">Teaching schedule</p>
+        <h2 class="mt-3 text-2xl font-semibold text-primary">Upcoming lessons</h2>
+      </div>
+      <p class="text-sm text-slate-500">{{ timetable|length }} slots</p>
     </div>
+    <table class="mt-6 w-full min-w-[720px] border-collapse text-sm text-left">
+      <thead class="bg-slate-50 text-slate-600">
+        <tr>
+          <th class="px-6 py-4 font-semibold">Day</th>
+          <th class="px-6 py-4 font-semibold">Time</th>
+          <th class="px-6 py-4 font-semibold">Subject</th>
+          <th class="px-6 py-4 font-semibold">Class</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for slot in timetable %}
+        <tr class="border-b border-slate-200 hover:bg-slate-50">
+          <td class="px-6 py-4 font-medium text-slate-900">{{ slot.day_of_week|capfirst }}</td>
+          <td class="px-6 py-4 text-slate-600">{{ slot.start_time|time:"H:i" }} – {{ slot.end_time|time:"H:i" }}</td>
+          <td class="px-6 py-4 text-slate-600">{{ slot.subject.name }}</td>
+          <td class="px-6 py-4 text-slate-600">{{ slot.class_grade.name }} {{ slot.class_grade.level }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+  {% endif %}
 
-    <div class="actions">
-        <a href="{% url 'subject_dept:teachers_list' %}" class="btn btn-secondary">Back to Teachers</a>
-    </div>
-</div>
+</main>
 
 <style>
 .teacher-detail {

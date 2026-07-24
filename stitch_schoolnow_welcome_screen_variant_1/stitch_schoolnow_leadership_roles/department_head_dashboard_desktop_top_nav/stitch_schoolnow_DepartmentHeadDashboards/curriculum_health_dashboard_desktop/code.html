@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>EduAdmin Pro - Curriculum Health</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700&amp;family=Inter:wght@400;600&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@100..900&amp;family=Inter:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-bright": "#f8f9fc",
+                    "on-error": "#ffffff",
+                    "surface-container-high": "#e7e8eb",
+                    "secondary": "#7c5800",
+                    "on-tertiary-fixed": "#3c0800",
+                    "on-secondary-fixed": "#271900",
+                    "error-container": "#ffdad6",
+                    "on-tertiary-container": "#e96442",
+                    "on-primary-fixed": "#121643",
+                    "on-surface-variant": "#46464f",
+                    "inverse-primary": "#bfc2fa",
+                    "primary-fixed-dim": "#bfc2fa",
+                    "surface-variant": "#e1e2e5",
+                    "primary-container": "#1e224f",
+                    "on-tertiary": "#ffffff",
+                    "inverse-on-surface": "#f0f1f4",
+                    "surface-container-low": "#f2f3f6",
+                    "primary-fixed": "#e0e0ff",
+                    "tertiary-container": "#500d00",
+                    "primary": "#080b3a",
+                    "tertiary": "#2b0400",
+                    "secondary-fixed": "#ffdea8",
+                    "on-primary-container": "#868abd",
+                    "outline": "#777680",
+                    "surface-container-highest": "#e1e2e5",
+                    "surface": "#f8f9fc",
+                    "on-primary-fixed-variant": "#3f4371",
+                    "on-background": "#191c1e",
+                    "on-secondary": "#ffffff",
+                    "background": "#f8f9fc",
+                    "secondary-container": "#feb700",
+                    "on-surface": "#191c1e",
+                    "inverse-surface": "#2e3133",
+                    "error": "#ba1a1a",
+                    "tertiary-fixed-dim": "#ffb4a2",
+                    "on-secondary-container": "#6b4b00",
+                    "on-secondary-fixed-variant": "#5e4200",
+                    "surface-tint": "#565a8b",
+                    "on-tertiary-fixed-variant": "#881f01",
+                    "surface-container": "#edeef1",
+                    "outline-variant": "#c7c5d0",
+                    "tertiary-fixed": "#ffdbd2",
+                    "secondary-fixed-dim": "#ffba20",
+                    "on-error-container": "#93000a",
+                    "surface-dim": "#d9dadd",
+                    "surface-container-lowest": "#ffffff",
+                    "on-primary": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "base": "8px",
+                    "card-gap": "12px",
+                    "container-padding": "20px",
+                    "section-margin": "32px",
+                    "gutter": "16px"
+            },
+            "fontFamily": {
+                    "display-lg": ["Hanken Grotesk"],
+                    "body-md": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "headline-lg-mobile": ["Hanken Grotesk"],
+                    "label-md": ["Inter"],
+                    "headline-lg": ["Hanken Grotesk"],
+                    "headline-md": ["Hanken Grotesk"]
+            },
+            "fontSize": {
+                    "display-lg": ["36px", {"lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "headline-lg": ["28px", {"lineHeight": "36px", "fontWeight": "600"}],
+                    "headline-md": ["22px", {"lineHeight": "28px", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #f8f9fc;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(254, 183, 0, 0.05) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(30, 34, 79, 0.05) 0px, transparent 50%);
+            min-height: 100vh;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
+        }
+        .glass-header {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .progress-ring-circle {
+            transition: stroke-dashoffset 0.35s;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+    </style>
+</head>
+<body class="font-body-md text-on-surface">
+<!-- TopNavBar Component -->
+<header class="fixed top-0 z-50 w-full glass-header shadow-[0_10px_30px_rgba(30,34,79,0.08)]">
+<div class="max-w-7xl mx-auto flex justify-between items-center px-container-padding py-base">
+<div class="flex items-center gap-8">
+<span class="font-display-lg text-display-lg font-bold text-primary">EduAdmin Pro</span>
+<nav class="hidden md:flex items-center gap-6">
+<a class="font-body-md text-on-surface-variant hover:text-primary transition-colors" href="#">Dashboard</a>
+<a class="font-body-md text-on-surface-variant hover:text-primary transition-colors" href="#">Subject Performance</a>
+<a class="font-body-md text-primary border-b-2 border-secondary-container font-bold pb-1" href="#">Curriculum Health</a>
+<a class="font-body-md text-on-surface-variant hover:text-primary transition-colors" href="#">Resource Inventory</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 hover:bg-white/40 rounded-lg transition-all text-on-surface-variant">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 hover:bg-white/40 rounded-lg transition-all text-on-surface-variant">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="flex items-center gap-3 pl-4 ml-4 border-l border-outline-variant">
+<div class="text-right hidden sm:block">
+<p class="font-label-md text-primary leading-none">Dr. Elena Vance</p>
+<p class="text-[10px] text-on-surface-variant">Head of Mathematics</p>
+</div>
+<img class="w-10 h-10 rounded-full border-2 border-secondary-container object-cover" data-alt="A professional headshot of a middle-aged female educator with a warm and authoritative expression. She has short dark hair and is wearing professional attire in a modern, brightly lit office environment. The lighting is soft and high-key, aligning with a clean, academic light-mode aesthetic. The background is a soft-focus library or academic setting with deep indigo and gold accents." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDTH40K0uZPlse0KTNTPY0Pi_EI8KB3OAsUpD4_-ARNYjqTsZW_cr3-Wjjx1EPMRrM5HRAYfF5o_6t5ND7WR9RqMnMDzHxXtl7EJpDaL-77p9VM2OhJy9VsCC98oTAks-Ng3EqlneOTSlQ4nr4ZUWM8q5ZZj6GiI6uBJYc-WDCFjVSbjXep5KiIxdyZiCnewXusiLqknwHc1tCu5XvreR_0CRcnnbGb8hng_QIzF2GoQlMK2wPItV5KVfkpjN7fJj2vn6WA9qx8Kgtc"/>
+</div>
+</div>
+</div>
+</header>
+<main class="pt-24 pb-12 px-container-padding max-w-7xl mx-auto">
+<!-- Page Header -->
+<div class="mb-section-margin flex flex-col md:flex-row md:items-end justify-between gap-4">
+<div>
+<h1 class="font-headline-lg text-headline-lg text-primary">Curriculum Health Dashboard</h1>
+<p class="font-body-md text-on-surface-variant">Mathematics Department Overview &amp; Health Metrics</p>
+</div>
+<div class="flex gap-3">
+<button class="flex items-center gap-2 px-4 py-2 glass-card rounded-xl text-primary font-label-md hover:bg-white transition-all">
+<span class="material-symbols-outlined text-sm">download</span> Export Report
+                </button>
+<button class="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl font-label-md hover:bg-primary-container transition-all shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined text-sm">add</span> Adjust Syllabus
+                </button>
+</div>
+</div>
+<!-- Bento Grid Content -->
+<div class="grid grid-cols-12 gap-gutter">
+<!-- 1. Syllabus Progress Tracker -->
+<div class="col-span-12 lg:col-span-8 glass-card rounded-3xl p-6 relative overflow-hidden">
+<div class="flex justify-between items-center mb-8">
+<div>
+<h2 class="font-headline-md text-headline-md text-primary">Syllabus Progress</h2>
+<p class="font-body-md text-on-surface-variant">Real-time completion across key stages</p>
+</div>
+<span class="material-symbols-outlined text-secondary-container text-4xl opacity-50">analytics</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+<!-- Key Stage 3 -->
+<div class="flex flex-col items-center">
+<div class="relative w-32 h-32 mb-4">
+<svg class="w-full h-full" viewbox="0 0 100 100">
+<circle class="text-surface-container-high stroke-current" cx="50" cy="50" fill="transparent" r="40" stroke-width="8"></circle>
+<circle class="text-secondary-container stroke-current progress-ring-circle" cx="50" cy="50" fill="transparent" r="40" stroke-dasharray="251.2" stroke-dashoffset="62.8" stroke-linecap="round" stroke-width="8"></circle>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span class="font-display-lg text-xl text-primary">75%</span>
+</div>
+</div>
+<h3 class="font-label-md text-primary uppercase tracking-wider">Key Stage 3</h3>
+<p class="text-[11px] text-on-surface-variant">On Track</p>
+</div>
+<!-- GCSE -->
+<div class="flex flex-col items-center">
+<div class="relative w-32 h-32 mb-4">
+<svg class="w-full h-full" viewbox="0 0 100 100">
+<circle class="text-surface-container-high stroke-current" cx="50" cy="50" fill="transparent" r="40" stroke-width="8"></circle>
+<circle class="text-primary-container stroke-current progress-ring-circle" cx="50" cy="50" fill="transparent" r="40" stroke-dasharray="251.2" stroke-dashoffset="100.48" stroke-linecap="round" stroke-width="8"></circle>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span class="font-display-lg text-xl text-primary">60%</span>
+</div>
+</div>
+<h3 class="font-label-md text-primary uppercase tracking-wider">GCSE</h3>
+<p class="text-[11px] text-error font-semibold">Behind Schedule</p>
+</div>
+<!-- A-Level -->
+<div class="flex flex-col items-center">
+<div class="relative w-32 h-32 mb-4">
+<svg class="w-full h-full" viewbox="0 0 100 100">
+<circle class="text-surface-container-high stroke-current" cx="50" cy="50" fill="transparent" r="40" stroke-width="8"></circle>
+<circle class="text-secondary-container stroke-current progress-ring-circle" cx="50" cy="50" fill="transparent" r="40" stroke-dasharray="251.2" stroke-dashoffset="25.12" stroke-linecap="round" stroke-width="8"></circle>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span class="font-display-lg text-xl text-primary">90%</span>
+</div>
+</div>
+<h3 class="font-label-md text-primary uppercase tracking-wider">A-Level</h3>
+<p class="text-[11px] text-on-surface-variant">Ahead of Plan</p>
+</div>
+</div>
+<!-- Subtle Decorative Background Area -->
+<div class="absolute -bottom-10 -right-10 w-40 h-40 bg-secondary-container/10 rounded-full blur-3xl"></div>
+</div>
+<!-- 2. Curriculum Gaps Alerts -->
+<div class="col-span-12 lg:col-span-4 glass-card rounded-3xl p-6 border-l-4 border-error/50">
+<div class="flex items-center justify-between mb-6">
+<h2 class="font-headline-md text-headline-md text-primary">Critical Gaps</h2>
+<span class="flex items-center justify-center w-8 h-8 bg-error/10 text-error rounded-full animate-pulse">
+<span class="material-symbols-outlined text-base">warning</span>
+</span>
+</div>
+<div class="space-y-4">
+<div class="p-4 bg-white/50 rounded-2xl border border-error-container">
+<div class="flex justify-between items-start mb-2">
+<h4 class="font-body-lg font-bold text-primary">Trigonometry</h4>
+<span class="text-[10px] px-2 py-0.5 bg-error-container text-on-error-container rounded-full font-bold">LATE</span>
+</div>
+<p class="text-body-md text-on-surface-variant">2 weeks behind scheduled assessment</p>
+<div class="mt-3 w-full bg-surface-container h-1 rounded-full overflow-hidden">
+<div class="bg-error w-[45%] h-full"></div>
+</div>
+</div>
+<div class="p-4 bg-white/50 rounded-2xl border border-surface-container-high">
+<div class="flex justify-between items-start mb-2">
+<h4 class="font-body-lg font-bold text-primary">Calculus II</h4>
+<span class="text-[10px] px-2 py-0.5 bg-secondary-container/20 text-on-secondary-container rounded-full font-bold">WARNING</span>
+</div>
+<p class="text-body-md text-on-surface-variant">Resource gap identified in Level 3</p>
+<div class="mt-3 w-full bg-surface-container h-1 rounded-full overflow-hidden">
+<div class="bg-secondary-container w-[70%] h-full"></div>
+</div>
+</div>
+<div class="p-4 bg-white/50 rounded-2xl border border-surface-container-high opacity-70">
+<div class="flex justify-between items-start mb-2">
+<h4 class="font-body-lg font-bold text-primary">Set Theory</h4>
+<span class="text-[10px] px-2 py-0.5 bg-surface-container-high text-on-surface-variant rounded-full font-bold">UPCOMING</span>
+</div>
+<p class="text-body-md text-on-surface-variant">Starts in 4 days</p>
+</div>
+</div>
+</div>
+<!-- 3. Resource Alignment Widget -->
+<div class="col-span-12 md:col-span-6 lg:col-span-5 glass-card rounded-3xl p-6">
+<div class="flex items-center gap-3 mb-6">
+<div class="w-12 h-12 rounded-2xl bg-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-white">inventory_2</span>
+</div>
+<div>
+<h2 class="font-headline-md text-headline-md text-primary">Resource Alignment</h2>
+<p class="font-label-md text-on-surface-variant">Instructional Match Rate</p>
+</div>
+</div>
+<div class="space-y-6">
+<div>
+<div class="flex justify-between text-body-md mb-2">
+<span class="text-on-surface-variant">Textbooks (Digital &amp; Print)</span>
+<span class="font-bold text-primary">94% Match</span>
+</div>
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-secondary-container" style="width: 94%"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between text-body-md mb-2">
+<span class="text-on-surface-variant">Practice Exam Papers</span>
+<span class="font-bold text-primary">82% Match</span>
+</div>
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary-container" style="width: 82%"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between text-body-md mb-2">
+<span class="text-on-surface-variant">Interactive Visualizers</span>
+<span class="font-bold text-error">45% Match</span>
+</div>
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-error" style="width: 45%"></div>
+</div>
+</div>
+</div>
+<div class="mt-8 p-4 rounded-2xl bg-surface-container-low flex items-center gap-4">
+<span class="material-symbols-outlined text-secondary-container">info</span>
+<p class="text-[11px] text-on-surface-variant">New GeoGebra modules requested for GCSE Trigonometry to improve match rate.</p>
+</div>
+</div>
+<!-- 4. Teacher Feedback Stream -->
+<div class="col-span-12 md:col-span-6 lg:col-span-7 glass-card rounded-3xl p-6">
+<div class="flex items-center justify-between mb-6">
+<h2 class="font-headline-md text-headline-md text-primary">Curriculum Feedback</h2>
+<button class="text-primary font-label-md hover:underline">View All</button>
+</div>
+<div class="space-y-4">
+<div class="flex gap-4 p-4 hover:bg-white/40 rounded-2xl transition-colors cursor-pointer group">
+<img class="w-10 h-10 rounded-full object-cover grayscale group-hover:grayscale-0 transition-all" data-alt="A portrait of a male teacher in his late 20s, wearing a casual polo shirt and glasses. He has an approachable, friendly smile. The image is set in a modern mathematics classroom with whiteboards containing equations in the background. The style is clean, sharp, and uses a daylight-filled light-mode aesthetic with soft shadows." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCIDXQ87jOJ44fjbvCkaZiZLjUkQ05rQYzADZJPRGOO5GuP34fhFzgyi66kgv6GFakFLYWe6EhZzX6JXN9QkNUoHdFOfXm9Ed84Gs-jhLTyDhqAQyOBMCaAi4qMPNcCIe2xg70u7ooCsGGfcqxExl7tGvJjG6xqTcCcenmDpoZUYS8O82l8dg4YWR81DZRAA2IRw9V2FYi12hv43TdDC5rZABcjWeX630zHeNSx5bdP6KkJHpBgRwFQwO_0YnG8a-CIaic653ZpMCvo"/>
+<div class="flex-1">
+<div class="flex justify-between items-center mb-1">
+<h4 class="font-body-lg font-bold text-primary">Mr. Julian Chen</h4>
+<span class="text-[10px] text-on-surface-variant">2h ago</span>
+</div>
+<p class="text-body-md text-on-surface-variant italic">"Students are struggling with the pacing of the new A-Level Mechanics section. Suggesting an extra week for Vectors."</p>
+<div class="mt-2 flex gap-4">
+<span class="text-[10px] flex items-center gap-1 text-primary-container"><span class="material-symbols-outlined text-[12px]">sentiment_dissatisfied</span> Difficulty: High</span>
+<span class="text-[10px] flex items-center gap-1 text-secondary-container"><span class="material-symbols-outlined text-[12px]">topic</span> Mechanics</span>
+</div>
+</div>
+</div>
+<div class="flex gap-4 p-4 hover:bg-white/40 rounded-2xl transition-colors cursor-pointer group">
+<img class="w-10 h-10 rounded-full object-cover grayscale group-hover:grayscale-0 transition-all" data-alt="A portrait of a senior female teacher with a professional and knowledgeable look. She is wearing a dark navy blazer and has graying hair styled neatly. Background is a bright, airy school hallway. The photographic style is crisp and professional, fitting into a modern educational design system with high-key lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBZAUdzuZ0EHt84ECwOE_tszEagQOFlKjvIx8ohBDnYbcT5x931dYSPt-0U8bdieCECQFxKYU2jKET9MPWe8ra1E5ZuLgEORsCsC1reNq1OhtwhTv2bKXln0QWhxy9LlRBuCh-w0GA81f-nR6PPcAieSdbR3fwR6-nR1fYPmPCpnuV5vSH0wutp7BFXDedjWtcCiXVNu6gHIYBtNhsT-CaGp559pmN-opwmcwit_ZDl0khXnNbyBhDtWuBksy_ApbCQVcP5w07PDDy9"/>
+<div class="flex-1">
+<div class="flex justify-between items-center mb-1">
+<h4 class="font-body-lg font-bold text-primary">Mrs. Sarah Jenkins</h4>
+<span class="text-[10px] text-on-surface-variant">5h ago</span>
+</div>
+<p class="text-body-md text-on-surface-variant italic">"The digital assessment for KS3 Algebra was excellently aligned. Saw 15% better engagement."</p>
+<div class="mt-2 flex gap-4">
+<span class="text-[10px] flex items-center gap-1 text-green-600"><span class="material-symbols-outlined text-[12px]">sentiment_very_satisfied</span> Difficulty: Optimal</span>
+<span class="text-[10px] flex items-center gap-1 text-secondary-container"><span class="material-symbols-outlined text-[12px]">topic</span> Algebra</span>
+</div>
+</div>
+</div>
+<div class="flex gap-4 p-4 hover:bg-white/40 rounded-2xl transition-colors cursor-pointer group border-t border-white/20 pt-6">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface-variant">forum</span>
+</div>
+<div class="flex-1 flex items-center">
+<input class="w-full bg-transparent border-0 border-b border-surface-container-high focus:ring-0 focus:border-primary text-body-md py-1" placeholder="Reply to department feedback..." type="text"/>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Animated Background Elements -->
+<div class="fixed top-0 left-0 w-full h-full -z-10 pointer-events-none opacity-30">
+
+</div>
+</main>
+<!-- Contextual FAB (Suppressed on Details as per rules, but showing for Dashboard main view) -->
+<button class="fixed bottom-8 right-8 w-16 h-16 bg-primary text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-50">
+<span class="material-symbols-outlined text-3xl">edit_document</span>
+</button>
+<script>
+        // Simple Interaction logic for Progress Rings
+        document.querySelectorAll('.progress-ring-circle').forEach(circle => {
+            const radius = circle.r.baseVal.value;
+            const circumference = radius * 2 * Math.PI;
+            circle.style.strokeDasharray = `${circumference} ${circumference}`;
+            
+            // Re-triggering the transition for visual effect on load
+            const offset = circle.getAttribute('stroke-dashoffset');
+            circle.style.strokeDashoffset = circumference;
+            setTimeout(() => {
+                circle.style.strokeDashoffset = offset;
+            }, 500);
+        });
+
+        // Search bar interaction
+        document.addEventListener('keydown', (e) => {
+            if (e.key === '/' && !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
+                e.preventDefault();
+                alert('Search triggered');
+            }
+        });
+    </script>
+</body></html>

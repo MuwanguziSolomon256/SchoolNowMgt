@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SchoolNow | Supervisor Operations Command</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&amp;family=Hanken+Grotesk:wght@600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary-container": "#500d00",
+                    "inverse-on-surface": "#f0f1f4",
+                    "surface-container": "#edeef1",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-container-low": "#f2f3f6",
+                    "on-error-container": "#93000a",
+                    "surface-variant": "#e1e2e5",
+                    "primary-fixed-dim": "#bfc2fa",
+                    "inverse-surface": "#2e3133",
+                    "on-tertiary": "#ffffff",
+                    "secondary-fixed": "#ffdea8",
+                    "on-tertiary-fixed": "#3c0800",
+                    "on-secondary": "#ffffff",
+                    "error-container": "#ffdad6",
+                    "background": "#f8f9fc",
+                    "on-primary": "#ffffff",
+                    "on-primary-fixed": "#121643",
+                    "surface-container-high": "#e7e8eb",
+                    "on-secondary-fixed-variant": "#5e4200",
+                    "inverse-primary": "#bfc2fa",
+                    "surface": "#f8f9fc",
+                    "secondary-container": "#feb700",
+                    "outline-variant": "#c7c5d0",
+                    "surface-container-highest": "#e1e2e5",
+                    "secondary-fixed-dim": "#ffba20",
+                    "secondary": "#7c5800",
+                    "on-secondary-container": "#6b4b00",
+                    "on-secondary-fixed": "#271900",
+                    "on-background": "#191c1e",
+                    "on-tertiary-fixed-variant": "#881f01",
+                    "on-error": "#ffffff",
+                    "on-primary-container": "#868abd",
+                    "tertiary-fixed": "#ffdbd2",
+                    "primary-fixed": "#e0e0ff",
+                    "error": "#ba1a1a",
+                    "primary": "#080b3a",
+                    "tertiary-fixed-dim": "#ffb4a2",
+                    "on-surface-variant": "#46464f",
+                    "surface-tint": "#565a8b",
+                    "on-tertiary-container": "#e96442",
+                    "on-surface": "#191c1e",
+                    "primary-container": "#1e224f",
+                    "on-primary-fixed-variant": "#3f4371",
+                    "tertiary": "#2b0400",
+                    "surface-bright": "#f8f9fc",
+                    "outline": "#777680",
+                    "surface-dim": "#d9dadd"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "container-padding": "20px",
+                    "base": "8px",
+                    "section-margin": "32px",
+                    "gutter": "16px",
+                    "card-gap": "12px"
+            },
+            "fontFamily": {
+                    "headline-lg-mobile": ["Hanken Grotesk"],
+                    "body-md": ["Inter"],
+                    "label-md": ["Inter"],
+                    "display-lg": ["Hanken Grotesk"],
+                    "headline-md": ["Hanken Grotesk"],
+                    "headline-lg": ["Hanken Grotesk"],
+                    "body-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "display-lg": ["36px", {"lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-md": ["22px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "headline-lg": ["28px", {"lineHeight": "36px", "fontWeight": "600"}],
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #f8f9fc;
+            color: #191c1e;
+            overflow-x: hidden;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 4px 20px rgba(30, 34, 79, 0.04);
+            border-radius: 1rem;
+        }
+
+        .glass-card:hover {
+            border-color: rgba(30, 34, 79, 0.1);
+            transform: translateY(-2px);
+            transition: all 0.3s ease;
+        }
+
+        .ethos-gradient {
+            background: radial-gradient(circle at top right, rgba(254, 183, 0, 0.05), transparent),
+                        radial-gradient(circle at bottom left, rgba(8, 11, 58, 0.03), transparent);
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        .active-glow {
+            box-shadow: 0 0 15px rgba(254, 183, 0, 0.3);
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(8, 11, 58, 0.1);
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="font-body-md text-body-md ethos-gradient">
+<!-- Top Navigation Bar -->
+<header class="h-20 fixed top-0 left-0 right-0 bg-white/70 backdrop-blur-[20px] shadow-[0_4px_30px_rgba(30,34,79,0.06)] flex items-center justify-between px-8 z-50 border-b border-white/40">
+<div class="flex items-center gap-8">
+<div class="flex flex-col">
+<h1 class="font-headline-md text-headline-md font-bold text-primary leading-tight">SchoolNow</h1>
+<p class="text-[10px] text-on-surface-variant/70 tracking-wider uppercase">Ethos Management</p>
+</div>
+<div class="h-10 w-px bg-primary/10"></div>
+<nav class="flex items-center gap-1">
+<a class="px-4 py-2 rounded-full text-primary font-bold bg-secondary-container/20 border border-secondary-container/30 transition-all text-sm" href="#">Dashboard</a>
+<a class="px-4 py-2 rounded-full text-on-surface-variant hover:text-primary hover:bg-white/40 transition-all text-sm" href="#">Staff Roster</a>
+<a class="px-4 py-2 rounded-full text-on-surface-variant hover:text-primary hover:bg-white/40 transition-all text-sm" href="#">Maintenance</a>
+<a class="px-4 py-2 rounded-full text-on-surface-variant hover:text-primary hover:bg-white/40 transition-all text-sm" href="#">Supply Requests</a>
+</nav>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center bg-surface-container-low px-4 py-2 rounded-full w-80 border border-white/40">
+<span class="material-symbols-outlined text-outline text-sm" data-icon="search">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm w-full ml-2" placeholder="Search operations..." type="text"/>
+</div>
+<div class="flex items-center gap-4">
+<button class="relative text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute -top-0.5 -right-0.5 w-2 h-2 bg-secondary rounded-full border-2 border-white"></span>
+</button>
+<div class="flex items-center gap-3 border-l pl-4 border-primary/10">
+<div class="text-right">
+<p class="font-bold text-xs text-primary">Chief Supervisor</p>
+<p class="text-[10px] text-on-surface-variant">Operations HQ</p>
+</div>
+<img class="w-9 h-9 rounded-full object-cover border-2 border-secondary-container" data-alt="Professional headshot of a school operations supervisor with a focused expression, wearing a navy blazer, in a brightly lit modern office setting with glass partitions. High-key lighting, professional corporate photography style, 8k resolution." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC9RU1jreHNIoZ34fMwIyx8ZqZUW0N7jSSe4xMjUZpHDEMERuCf0b9oMDEAidHhm8HZy1voK0akuDBJ0OQSW3feKVDEhCPk6DJa-fFOtSKjNwT3nskUIDmveMltv9c__gbGLE2DRU74BHddUM8vMfpPjuvqGkP8kGmHVyxwqigYw63VT_uGyBlMMFf0YS7HZToL93D5Qo2UrC692o_0eN0_bFineQp-J-ahNjda5YKIrkSC9NGTek7tiScze9qHpxMh7M0Jyw921Fax"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="min-h-screen pt-20">
+<!-- Dashboard Content -->
+<div class="pt-12 px-8 pb-12 max-w-[1600px] mx-auto">
+<div class="flex items-end justify-between mb-8">
+<div>
+<h2 class="font-display-lg text-display-lg text-primary">Operations Command Center</h2>
+<p class="text-on-surface-variant">Real-time oversight and administrative logistics</p>
+</div>
+<div class="flex gap-3">
+<button class="px-5 py-2.5 rounded-full border border-white/60 bg-white/40 text-primary font-semibold text-sm hover:bg-white/60 transition-all flex items-center gap-2">
+<span class="material-symbols-outlined text-base" data-icon="calendar_today">calendar_today</span>
+                        June 14, 2024
+                    </button>
+<button class="px-5 py-2.5 rounded-full bg-primary text-white font-semibold text-sm hover:shadow-lg hover:shadow-primary/20 transition-all flex items-center gap-2">
+<span class="material-symbols-outlined text-base" data-icon="add">add</span>
+                        New Task
+                    </button>
+</div>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-12 gap-6">
+<!-- Campus Maintenance Status (Large Card) -->
+<div class="col-span-12 lg:col-span-8 glass-card p-6 flex flex-col gap-6">
+<div class="flex items-center justify-between">
+<h3 class="font-headline-md text-headline-md text-primary flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary" data-icon="architecture">architecture</span>
+                            Campus Maintenance Status
+                        </h3>
+<span class="px-3 py-1 rounded-full bg-secondary-container/20 text-secondary text-xs font-bold uppercase tracking-wider">4 Active Alerts</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="relative h-48 rounded-2xl overflow-hidden group">
+<div class="w-full h-full bg-cover bg-center transition-transform duration-700 group-hover:scale-110" data-alt="Top-down architectural mapping of a modern university campus with green spaces, sleek concrete structures, and highlighted zones in soft blue and amber overlays. Glassmorphic aesthetic with data points floating over the map." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuC2nFp4MFddwEEKBeR9DcL8fYNvgYfhQCD79mhYJbRuvjnodWYETDnM3QpL9RzNb5gC6c_EKXmued34tdHGCDY2gLcOAtftvZVYFQAmcuxs4ReOtcqROR9Y5v-IkZF9mjj9OfdmQmwWX5zjWiPMibS_09kqAyZx0s-M_M5N4IRzXmYYDEMfbwA6BToQ69jlQBK8mJv0ZkOLNAeXR2vZDNE-FPw-ybDQyPQztYHq9-9-9U9qKJrymVxf5xtqycgtxPxcECa2furbToAc')"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-primary/80 to-transparent flex items-end p-4">
+<div>
+<p class="text-white font-bold">North Wing Ventilation</p>
+<p class="text-white/70 text-xs">Routine Filter Replacement Required</p>
+</div>
+</div>
+<div class="absolute top-3 right-3 px-2 py-1 bg-error text-white text-[10px] font-bold rounded flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]" data-icon="warning">warning</span>
+                                URGENT
+                            </div>
+</div>
+<div class="flex flex-col gap-3">
+<div class="p-3 rounded-xl bg-surface-container-low border border-white/50 flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined" data-icon="plumbing">plumbing</span>
+</div>
+<div class="flex-1">
+<p class="text-sm font-bold">Water Facility Block C</p>
+<div class="w-full bg-outline-variant/30 h-1 rounded-full mt-1">
+<div class="bg-secondary h-1 rounded-full w-75%"></div>
+</div>
+</div>
+<span class="text-xs font-bold text-on-surface-variant">75%</span>
+</div>
+<div class="p-3 rounded-xl bg-surface-container-low border border-white/50 flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-primary/5 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" data-icon="electrical_services">electrical_services</span>
+</div>
+<div class="flex-1">
+<p class="text-sm font-bold">IT Hub Wiring Audit</p>
+<div class="w-full bg-outline-variant/30 h-1 rounded-full mt-1">
+<div class="bg-primary h-1 rounded-full w-25%"></div>
+</div>
+</div>
+<span class="text-xs font-bold text-on-surface-variant">25%</span>
+</div>
+<div class="p-3 rounded-xl bg-surface-container-low border border-white/50 flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-700">
+<span class="material-symbols-outlined" data-icon="check_circle">check_circle</span>
+</div>
+<div class="flex-1">
+<p class="text-sm font-bold">Main Gate Security Tech</p>
+<p class="text-xs text-green-700">Completed</p>
+</div>
+<span class="material-symbols-outlined text-green-700 text-sm" data-icon="verified">verified</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Staff Duty Roster (Medium Card) -->
+<div class="col-span-12 lg:col-span-4 glass-card p-6 flex flex-col gap-6">
+<div class="flex items-center justify-between">
+<h3 class="font-headline-md text-headline-md text-primary">Staff Roster</h3>
+<button class="text-secondary text-xs font-bold flex items-center gap-1 hover:underline">
+                            MANAGE <span class="material-symbols-outlined text-sm" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+<div class="space-y-4 overflow-y-auto max-h-[340px] pr-2">
+<div class="flex items-center justify-between p-3 border-b border-primary/5">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center">
+<img class="w-full h-full object-cover rounded-lg" data-alt="Candid portrait of a professional female staff member in business casual attire, minimalist aesthetic, soft natural lighting from a window, clean composition, muted warm tones." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCkSIIlt04aKqNRQV-koE6H8WxtNOjhWF7788O_tox_CW32iLK4FEQHScFUaV9o9JgmrcJldFO1V_Vq7XWginD4vMwM9YffsTW3IkOVqb4-Hx561PP5q1KaizouTHNgUr1xd-sW-8oikhJmFle-WtC0jdaB4lS0ifqKZmZnQcqn_FcCkox50xnAzN0-DUxXN4SUuHgAmBwf2FbC02aIDpdLi78PvXIZdj20-E72X_GApOi_WSleNh88DprntNYukNYgnl2QXQtDUI5l"/>
+</div>
+<div>
+<p class="text-sm font-bold">Sarah Jenkins</p>
+<p class="text-[10px] text-on-surface-variant uppercase">Morning Shift • Front Desk</p>
+</div>
+</div>
+<div class="w-2 h-2 rounded-full bg-green-500 active-glow"></div>
+</div>
+<div class="flex items-center justify-between p-3 border-b border-primary/5">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center">
+<img class="w-full h-full object-cover rounded-lg" data-alt="Portrait of a diverse male facilities manager wearing high-visibility accents, smiling confidently, bright clean background, professional lighting, industrial modern style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDjbrEWGyHwJcKDXCcVJyQk0nMJri_ksgz-Rx_sgvnTi7C0gR4JaCrgSWyUtUYsGO49kxGG1_F1c0-29ySdTdU_y_GIoRxIrqnYc5LOC4jOioiWebhBs72vx1xjV-TC7e5AmUDD3BaX93j8_j5P1Rml6DZof9rBK-Ak2VBTtciNLXBb5SoZOetX7GNI8CoW3U5gjMDwCx_0V8cXimFSq77Ns_z4SYhlYejxZgkAE2L9M_gJVLeqsM-lVE0lSToV__bu9LzDwRu5HJqL"/>
+</div>
+<div>
+<p class="text-sm font-bold">David Okoro</p>
+<p class="text-[10px] text-on-surface-variant uppercase">General Duty • Security</p>
+</div>
+</div>
+<div class="w-2 h-2 rounded-full bg-green-500 active-glow"></div>
+</div>
+<div class="flex items-center justify-between p-3 border-b border-primary/5 opacity-50">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center">
+<img class="w-full h-full object-cover rounded-lg" data-alt="Professional studio portrait of an administrative assistant, soft lighting, neutral background, modern corporate look, high resolution, soft focus background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAz_wd7x1zUj6N6CknFqbV2GhJqv9XkqNVGS-YtDR_r28Hhc-my7nM9yN1JyBP0TWt0MqSmqBVwajLD5MTZn83gkWAbmNoKUbfKFCbr4eXdUInOqqFtCR-UASqy5A3Q2Psi6iG4GoLV7T5lm6gqwE6CHLLqawiPBRTHd2VLe0sBEYoLTTHE4x-scT_5yjkH5qmoSm7qT5ogDevONdONKXdVWkjS3Y5P_8_5xtcwfhLiNmZBHJtMlpB9BQEdMAxUPd7Cb16AO13HuCkr"/>
+</div>
+<div>
+<p class="text-sm font-bold">Elena Vance</p>
+<p class="text-[10px] text-on-surface-variant uppercase">Evening Shift • Logistics</p>
+</div>
+</div>
+<div class="w-2 h-2 rounded-full bg-outline-variant"></div>
+</div>
+<div class="flex items-center justify-between p-3 border-b border-primary/5">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center">
+<img class="w-full h-full object-cover rounded-lg" data-alt="Close-up portrait of a senior staff member with a kind expression, wearing professional attire, illuminated by soft warm light, minimalist elegant background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAdWCaJf4TAG-tMrilie_DMfGyCJ5HrdvsCamfSyt2haKKb0IwPUGdqCpKrw1AZYdIj7QLAyUxUQMKAZ_hiCQCX6QQE5_UQjjSiJWKVph4S8tyJrlMg9-4d4chuzu8cs1r4LfLXn1aRz9SG4l7LEtK-2mSy7q5cPa1g5L_eOoIYuV0vYF0udTO4JqZAGleuccmbXxaerYsZc4OdopxNMbl_3Hhg9zk-kbNlIBg3MC3B7efE8Ns5q2bfzD6C4aNeDKnv-6cRHl4wMhqV"/>
+</div>
+<div>
+<p class="text-sm font-bold">Marcus Thorne</p>
+<p class="text-[10px] text-on-surface-variant uppercase">Morning Shift • Maintenance</p>
+</div>
+</div>
+<div class="w-2 h-2 rounded-full bg-green-500 active-glow"></div>
+</div>
+</div>
+</div>
+<!-- Supply Request Approvals (Medium Card) -->
+<div class="col-span-12 md:col-span-6 lg:col-span-5 glass-card p-6 flex flex-col gap-6">
+<h3 class="font-headline-md text-headline-md text-primary flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary" data-icon="inventory">inventory</span>
+                        Supply Requests
+                    </h3>
+<div class="space-y-4">
+<div class="p-4 rounded-xl border border-secondary-container/30 bg-secondary-container/5">
+<div class="flex justify-between items-start mb-3">
+<div>
+<p class="font-bold text-sm">Industrial Cleaning Supplies</p>
+<p class="text-xs text-on-surface-variant">Req #4928 • Sanitation Dept.</p>
+</div>
+<span class="text-primary font-bold">$1,240.00</span>
+</div>
+<div class="flex gap-2">
+<button class="flex-1 py-2 bg-primary text-white text-xs font-bold rounded-lg hover:bg-primary-container transition-colors">APPROVE</button>
+<button class="flex-1 py-2 border border-outline-variant text-on-surface-variant text-xs font-bold rounded-lg hover:bg-white transition-colors">DECLINE</button>
+</div>
+</div>
+<div class="p-4 rounded-xl border border-primary/5 bg-white/20">
+<div class="flex justify-between items-start mb-3">
+<div>
+<p class="font-bold text-sm">Cisco Network Switches (x2)</p>
+<p class="text-xs text-on-surface-variant">Req #4931 • IT Infrastructure</p>
+</div>
+<span class="text-primary font-bold">$4,850.00</span>
+</div>
+<div class="flex gap-2">
+<button class="flex-1 py-2 bg-primary text-white text-xs font-bold rounded-lg hover:bg-primary-container transition-colors">APPROVE</button>
+<button class="flex-1 py-2 border border-outline-variant text-on-surface-variant text-xs font-bold rounded-lg hover:bg-white transition-colors">DECLINE</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Task Completion Reports (Large Bento Piece) -->
+<div class="col-span-12 md:col-span-6 lg:col-span-7 glass-card p-6 flex flex-col">
+<div class="flex items-center justify-between mb-6">
+<h3 class="font-headline-md text-headline-md text-primary">Task Completion Index</h3>
+<div class="flex gap-2">
+<span class="w-3 h-3 rounded-full bg-secondary"></span>
+<span class="text-[10px] font-bold text-on-surface-variant">COMPLETED</span>
+<span class="w-3 h-3 rounded-full bg-primary/10 ml-2"></span>
+<span class="text-[10px] font-bold text-on-surface-variant">PENDING</span>
+</div>
+</div>
+<div class="flex-1 flex items-center justify-center relative py-4">
+<!-- Custom Data Viz Placeholder -->
+<div class="w-full h-48 flex items-end gap-4 px-4">
+<div class="flex-1 bg-primary/10 rounded-t-lg relative group h-[40%] transition-all hover:bg-secondary/20">
+<div class="absolute bottom-0 w-full bg-secondary h-[70%] rounded-t-lg"></div>
+<span class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] font-bold text-on-surface-variant">MON</span>
+</div>
+<div class="flex-1 bg-primary/10 rounded-t-lg relative group h-[60%] transition-all hover:bg-secondary/20">
+<div class="absolute bottom-0 w-full bg-secondary h-[85%] rounded-t-lg"></div>
+<span class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] font-bold text-on-surface-variant">TUE</span>
+</div>
+<div class="flex-1 bg-primary/10 rounded-t-lg relative group h-[90%] transition-all hover:bg-secondary/20">
+<div class="absolute bottom-0 w-full bg-secondary h-[50%] rounded-t-lg"></div>
+<span class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] font-bold text-on-surface-variant">WED</span>
+</div>
+<div class="flex-1 bg-primary/10 rounded-t-lg relative group h-[75%] transition-all hover:bg-secondary/20">
+<div class="absolute bottom-0 w-full bg-secondary h-[90%] rounded-t-lg"></div>
+<span class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] font-bold text-on-surface-variant">THU</span>
+</div>
+<div class="flex-1 bg-primary/10 rounded-t-lg relative group h-[100%] transition-all hover:bg-secondary/20">
+<div class="absolute bottom-0 w-full bg-secondary h-[40%] rounded-t-lg"></div>
+<span class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] font-bold text-on-surface-variant">FRI</span>
+</div>
+<div class="flex-1 bg-primary/10 rounded-t-lg relative group h-[30%] transition-all hover:bg-secondary/20">
+<div class="absolute bottom-0 w-full bg-secondary h-[95%] rounded-t-lg"></div>
+<span class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] font-bold text-on-surface-variant">SAT</span>
+</div>
+</div>
+</div>
+<div class="mt-8 grid grid-cols-3 divide-x divide-primary/5">
+<div class="text-center">
+<p class="text-2xl font-bold text-primary">88%</p>
+<p class="text-[10px] text-on-surface-variant uppercase font-bold tracking-widest">Efficiency</p>
+</div>
+<div class="text-center">
+<p class="text-2xl font-bold text-primary">12</p>
+<p class="text-[10px] text-on-surface-variant uppercase font-bold tracking-widest">Open Tasks</p>
+</div>
+<div class="text-center">
+<p class="text-2xl font-bold text-primary">24h</p>
+<p class="text-[10px] text-on-surface-variant uppercase font-bold tracking-widest">Avg TAT</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Micro-interaction script -->
+<script>
+        document.querySelectorAll('.glass-card').forEach(card => {
+            card.addEventListener('mousedown', () => {
+                card.style.transform = 'scale(0.98)';
+                card.style.transition = 'transform 0.1s ease';
+            });
+            card.addEventListener('mouseup', () => {
+                card.style.transform = 'scale(1)';
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'scale(1)';
+            });
+        });
+
+        // Add subtle parallax effect to the map background
+        document.addEventListener('mousemove', (e) => {
+            const map = document.querySelector('[data-alt*="architectural mapping"]');
+            if (map) {
+                const moveX = (e.clientX - window.innerWidth / 2) * 0.01;
+                const moveY = (e.clientY - window.innerHeight / 2) * 0.01;
+                map.style.transform = `scale(1.1) translate(${moveX}px, ${moveY}px)`;
+            }
+        });
+    </script>
+</body></html>

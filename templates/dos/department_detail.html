@@ -1,206 +1,131 @@
-{% extends "teacher/base.html" %}
+{% extends "dos/dos_base.html" %}
 {% load static %}
 
-{% block title %}{{ department.name }} - Department Details{% endblock %}
+{% block dos_title %}{{ department.name }} - Department Details{% endblock %}
 
-{% block content %}
-<div class="dashboard-content" style="padding-top: 120px;">
-    <!-- Header Section -->
-    <div style="background: linear-gradient(135deg, #080b3a 0%, #1a1e4f 100%); padding: 30px 0; margin-bottom: 30px;">
-        <div style="max-width: 1400px; margin: 0 auto; padding: 0 20px;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                    <h1 style="color: white; margin: 0; font-size: 32px; font-weight: 600;">
-                        📚 {{ department.name }}
-                    </h1>
-                    <p style="color: rgba(255,255,255,0.7); margin: 10px 0 0 0;">
-                        {{ department.get_department_type_display }} Department
-                    </p>
-                </div>
-                <div style="display: flex; gap: 10px;">
-                    <a href="{% url 'teacher:dos:department_edit' department.id %}" 
-                       style="background: #7c5800; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: 500;">
-                        Edit
-                    </a>
-                    <a href="{% url 'teacher:dos:departments_list' %}" 
-                       style="background: rgba(255,255,255,0.2); color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: 500;">
-                        Back
-                    </a>
-                </div>
+{% block dos_content %}
+<div class="space-y-6">
+    <section class="rounded-[2rem] bg-white/95 p-6 shadow-[0_24px_80px_-32px_rgba(30,34,79,0.45)] ring-1 ring-slate-200/60 backdrop-blur-xl">
+        <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+                <h2 class="text-2xl font-semibold text-slate-900">{{ department.name }}</h2>
+                <p class="mt-2 text-sm text-slate-600">{{ department.get_department_type_display }} department overview and performance.</p>
+            </div>
+            <div class="flex flex-wrap gap-2">
+                <a href="{% url 'teacher:dos:department_edit' department.id %}" class="inline-flex items-center gap-2 rounded-full bg-secondary px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-secondary-container/90">Edit</a>
+                <a href="{% url 'teacher:dos:departments_list' %}" class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-900 shadow-sm transition hover:bg-slate-50">Back</a>
             </div>
         </div>
-    </div>
+    </section>
 
-    <div style="max-width: 1400px; margin: 0 auto; padding: 0 20px 40px;">
-        
-        <!-- Main Grid -->
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px;">
-            
-            <!-- Left Column: Department Info -->
-            <div>
-                <!-- Department Details Card -->
-                <div style="background: white; border-radius: 12px; padding: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px;">
-                    <h3 style="color: #333; margin: 0 0 20px 0; font-size: 18px; font-weight: 600;">Department Information</h3>
-                    
-                    <div style="margin-bottom: 15px;">
-                        <label style="display: block; color: #666; font-size: 12px; font-weight: 500; margin-bottom: 5px;">DEPARTMENT HEAD</label>
+    <section class="grid gap-6 lg:grid-cols-2">
+        <div class="space-y-4">
+            <div class="rounded-[1.75rem] bg-white/95 p-6 shadow-[0_24px_80px_-32px_rgba(30,34,79,0.45)] ring-1 ring-slate-200/60 backdrop-blur-xl">
+                <h3 class="text-lg font-semibold text-slate-900">Department Information</h3>
+                <div class="mt-4 grid gap-4">
+                    <div>
+                        <p class="text-sm text-slate-500">Department Head</p>
                         {% if department.head_of_department %}
-                            <div style="color: #333; font-weight: 500;">
-                                {{ department.head_of_department.user.get_full_name }}
-                            </div>
-                            <small style="color: #999;">{{ department.head_of_department.user.email }}</small>
+                        <p class="font-semibold text-slate-900">{{ department.head_of_department.user.get_full_name }}</p>
+                        <p class="text-sm text-slate-500">{{ department.head_of_department.user.email }}</p>
                         {% else %}
-                            <div style="color: #999; font-style: italic;">No department head assigned</div>
+                        <p class="text-slate-500">No head assigned</p>
                         {% endif %}
                     </div>
-
-                    <div style="border-top: 1px solid #eee; padding-top: 15px; margin-bottom: 15px;">
-                        <label style="display: block; color: #666; font-size: 12px; font-weight: 500; margin-bottom: 5px;">ANNUAL BUDGET</label>
-                        {% if department.annual_budget %}
-                            <div style="color: #333; font-weight: 500; font-size: 18px;">
-                                {{ department.annual_budget|floatformat:2 }} UGX
-                            </div>
-                        {% else %}
-                            <div style="color: #999; font-style: italic;">No budget allocated</div>
-                        {% endif %}
+                    <div>
+                        <p class="text-sm text-slate-500">Annual Budget</p>
+                        <p class="font-semibold text-slate-900">{% if department.annual_budget %}{{ department.annual_budget|floatformat:2 }} UGX{% else %}Not set{% endif %}</p>
                     </div>
-
-                    <div style="border-top: 1px solid #eee; padding-top: 15px;">
-                        <label style="display: block; color: #666; font-size: 12px; font-weight: 500; margin-bottom: 5px;">STATUS</label>
-                        {% if department.is_active %}
-                            <span style="background: #d4edda; color: #155724; padding: 6px 12px; border-radius: 4px; font-size: 12px; font-weight: 500;">
-                                ✓ Active
-                            </span>
-                        {% else %}
-                            <span style="background: #f8d7da; color: #721c24; padding: 6px 12px; border-radius: 4px; font-size: 12px; font-weight: 500;">
-                                ✗ Inactive
-                            </span>
-                        {% endif %}
+                    <div>
+                        <p class="text-sm text-slate-500">Status</p>
+                        <p class="inline-flex rounded-full px-3 py-1 text-xs font-semibold {% if department.is_active %}bg-emerald-100 text-emerald-700{% else %}bg-slate-100 text-slate-700{% endif %}">{% if department.is_active %}Active{% else %}Inactive{% endif %}</p>
                     </div>
                 </div>
-
-                <!-- Description Card -->
-                {% if department.description %}
-                <div style="background: white; border-radius: 12px; padding: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-                    <h3 style="color: #333; margin: 0 0 15px 0; font-size: 18px; font-weight: 600;">Description</h3>
-                    <p style="color: #666; line-height: 1.6; margin: 0;">{{ department.description }}</p>
-                </div>
-                {% endif %}
             </div>
 
-            <!-- Right Column: Statistics -->
-            <div>
-                <!-- Key Metrics -->
-                <div style="background: white; border-radius: 12px; padding: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px;">
-                    <h3 style="color: #333; margin: 0 0 20px 0; font-size: 18px; font-weight: 600;">Performance Metrics</h3>
-                    
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
-                            <div style="color: #7c5800; font-size: 24px; font-weight: 700;">{{ teacher_count }}</div>
-                            <div style="color: #666; font-size: 12px; margin-top: 5px;">Teachers</div>
-                        </div>
-                        
-                        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
-                            <div style="color: #0066cc; font-size: 24px; font-weight: 700;">{{ subject_count }}</div>
-                            <div style="color: #666; font-size: 12px; margin-top: 5px;">Subjects</div>
-                        </div>
-                        
-                        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
-                            <div style="color: #28a745; font-size: 24px; font-weight: 700;">{{ avg_performance }}</div>
-                            <div style="color: #666; font-size: 12px; margin-top: 5px;">Avg Performance</div>
-                        </div>
-                        
-                        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
-                            <div style="color: #ffc107; font-size: 24px; font-weight: 700;">{{ pass_rate }}%</div>
-                            <div style="color: #666; font-size: 12px; margin-top: 5px;">Pass Rate</div>
-                        </div>
-                    </div>
+            {% if department.description %}
+            <div class="rounded-[1.75rem] bg-white/95 p-6 shadow-[0_24px_80px_-32px_rgba(30,34,79,0.45)] ring-1 ring-slate-200/60 backdrop-blur-xl">
+                <h3 class="text-lg font-semibold text-slate-900">Description</h3>
+                <p class="mt-3 text-slate-600">{{ department.description }}</p>
+            </div>
+            {% endif %}
+        </div>
 
-                    <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee;">
-                        <small style="color: #666;">Based on {{ grade_count }} grades recorded</small>
+        <div class="space-y-4">
+            <div class="rounded-[1.75rem] bg-slate-950/95 p-6 text-white shadow-[0_24px_80px_-32px_rgba(30,34,79,0.45)] ring-1 ring-slate-200/15 backdrop-blur-xl">
+                <h3 class="text-lg font-semibold">Performance Metrics</h3>
+                <div class="mt-4 grid gap-4 sm:grid-cols-2">
+                    <div class="rounded-3xl bg-slate-900/90 p-4">
+                        <p class="text-sm text-slate-400">Teachers</p>
+                        <p class="mt-2 text-2xl font-semibold">{{ teacher_count }}</p>
+                    </div>
+                    <div class="rounded-3xl bg-slate-900/90 p-4">
+                        <p class="text-sm text-slate-400">Subjects</p>
+                        <p class="mt-2 text-2xl font-semibold">{{ subject_count }}</p>
+                    </div>
+                    <div class="rounded-3xl bg-slate-900/90 p-4">
+                        <p class="text-sm text-slate-400">Avg Performance</p>
+                        <p class="mt-2 text-2xl font-semibold">{{ avg_performance }}</p>
+                    </div>
+                    <div class="rounded-3xl bg-slate-900/90 p-4">
+                        <p class="text-sm text-slate-400">Pass Rate</p>
+                        <p class="mt-2 text-2xl font-semibold">{{ pass_rate }}%</p>
                     </div>
                 </div>
+            </div>
 
-                <!-- Quick Links -->
-                <div style="background: white; border-radius: 12px; padding: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-                    <h3 style="color: #333; margin: 0 0 15px 0; font-size: 18px; font-weight: 600;">Quick Actions</h3>
-                    <div style="display: grid; gap: 10px;">
-                        <a href="{% url 'teacher:dos:department_edit' department.id %}" 
-                           style="display: block; padding: 12px; background: #f8f9fa; border: 1px solid #ddd; border-radius: 6px; text-decoration: none; color: #333; font-weight: 500; text-align: center; transition: all 0.3s;">
-                            ✏️ Edit Department
-                        </a>
-                        <a href="{% url 'teacher:dos:departments_list' %}" 
-                           style="display: block; padding: 12px; background: #f8f9fa; border: 1px solid #ddd; border-radius: 6px; text-decoration: none; color: #333; font-weight: 500; text-align: center; transition: all 0.3s;">
-                            📋 All Departments
-                        </a>
-                    </div>
+            <div class="rounded-[1.75rem] bg-white/95 p-6 shadow-[0_24px_80px_-32px_rgba(30,34,79,0.45)] ring-1 ring-slate-200/60 backdrop-blur-xl">
+                <h3 class="text-lg font-semibold text-slate-900">Quick Links</h3>
+                <div class="mt-4 grid gap-3">
+                    <a href="{% url 'teacher:dos:department_edit' department.id %}" class="inline-flex items-center justify-center rounded-3xl bg-secondary px-4 py-3 text-sm font-semibold text-white hover:bg-secondary-container/95">Edit department</a>
+                    <a href="{% url 'teacher:dos:departments_list' %}" class="inline-flex items-center justify-center rounded-3xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-900 hover:bg-slate-50">Back to list</a>
                 </div>
             </div>
         </div>
+    </section>
 
-        <!-- Teachers Section -->
-        <div style="background: white; border-radius: 12px; padding: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 30px;">
-            <h3 style="color: #333; margin: 0 0 20px 0; font-size: 18px; font-weight: 600;">
-                👥 Department Teachers ({{ teacher_count }})
-            </h3>
-            
-            {% if teachers %}
-            <table style="width: 100%; border-collapse: collapse;">
-                <thead style="background: #f8f9fa; border-bottom: 1px solid #ddd;">
-                    <tr>
-                        <th style="padding: 12px; text-align: left; font-weight: 600; color: #333;">Teacher Name</th>
-                        <th style="padding: 12px; text-align: left; font-weight: 600; color: #333;">Email</th>
-                        <th style="padding: 12px; text-align: left; font-weight: 600; color: #333;">Role</th>
+    <section class="rounded-[1.75rem] bg-white/95 p-6 shadow-[0_24px_80px_-32px_rgba(30,34,79,0.45)] ring-1 ring-slate-200/60 backdrop-blur-xl">
+        <h3 class="text-lg font-semibold text-slate-900">Department Teachers</h3>
+        {% if teachers %}
+        <div class="mt-4 overflow-x-auto">
+            <table class="min-w-full text-left text-sm text-slate-600">
+                <thead>
+                    <tr class="border-b border-slate-200 text-slate-700">
+                        <th class="px-4 py-3">Teacher</th>
+                        <th class="px-4 py-3">Email</th>
+                        <th class="px-4 py-3">Role</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for teacher in teachers %}
-                    <tr style="border-bottom: 1px solid #eee;">
-                        <td style="padding: 12px;">
-                            <strong>{{ teacher.user.get_full_name }}</strong>
-                            {% if teacher == department.head_of_department %}<span style="background: #7c5800; color: white; padding: 2px 6px; border-radius: 3px; font-size: 11px; margin-left: 8px;">HEAD</span>{% endif %}
-                        </td>
-                        <td style="padding: 12px;">{{ teacher.user.email }}</td>
-                        <td style="padding: 12px;">
-                            <span style="background: #e8f4f8; color: #0066cc; padding: 4px 8px; border-radius: 4px; font-size: 12px;">
-                                {{ teacher.teacher_admin_role|default:"Teacher" }}
-                            </span>
-                        </td>
+                    <tr class="border-b border-slate-100 hover:bg-slate-50">
+                        <td class="px-4 py-4">{{ teacher.user.get_full_name }}{% if teacher == department.head_of_department %} <span class="inline-flex rounded-full bg-emerald-100 px-2 py-1 text-xs font-semibold text-emerald-700">HEAD</span>{% endif %}</td>
+                        <td class="px-4 py-4">{{ teacher.user.email }}</td>
+                        <td class="px-4 py-4">{{ teacher.teacher_admin_role|default:"Teacher" }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
-            {% else %}
-            <p style="color: #999; text-align: center; padding: 30px;">No teachers assigned to this department yet.</p>
-            {% endif %}
         </div>
+        {% else %}
+            <div class="rounded-[1.5rem] bg-slate-50 p-8 text-center text-slate-600">No teachers assigned to this department yet.</div>
+        {% endif %}
+    </section>
 
-        <!-- Subjects Section -->
-        <div style="background: white; border-radius: 12px; padding: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-            <h3 style="color: #333; margin: 0 0 20px 0; font-size: 18px; font-weight: 600;">
-                📖 Department Subjects ({{ subject_count }})
-            </h3>
-            
-            {% if subjects %}
-            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px;">
-                {% for subject in subjects %}
-                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #7c5800;">
-                    <h4 style="color: #333; margin: 0 0 8px 0; font-weight: 600;">{{ subject.name }}</h4>
-                    <p style="color: #666; font-size: 12px; margin: 0;">
-                        {% if subject.teacher %}
-                            Taught by: <strong>{{ subject.teacher.user.get_full_name }}</strong>
-                        {% else %}
-                            No teacher assigned
-                        {% endif %}
-                    </p>
-                </div>
-                {% endfor %}
+    <section class="rounded-[1.75rem] bg-white/95 p-6 shadow-[0_24px_80px_-32px_rgba(30,34,79,0.45)] ring-1 ring-slate-200/60 backdrop-blur-xl">
+        <h3 class="text-lg font-semibold text-slate-900">Department Subjects</h3>
+        {% if subjects %}
+        <div class="mt-4 grid gap-4 sm:grid-cols-2">
+            {% for subject in subjects %}
+            <div class="rounded-[1.5rem] bg-slate-50 p-4">
+                <p class="font-semibold text-slate-900">{{ subject.name }}</p>
+                <p class="text-sm text-slate-600 mt-2">{% if subject.teacher %}Taught by {{ subject.teacher.user.get_full_name }}{% else %}No teacher assigned{% endif %}</p>
             </div>
-            {% else %}
-            <p style="color: #999; text-align: center; padding: 30px;">No subjects assigned to this department yet.</p>
-            {% endif %}
+            {% endfor %}
         </div>
-
-    </div>
+        {% else %}
+            <div class="rounded-[1.5rem] bg-slate-50 p-8 text-center text-slate-600">No subjects linked to this department yet.</div>
+        {% endif %}
+    </section>
 </div>
 {% endblock %}

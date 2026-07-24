@@ -1,291 +1,126 @@
-{% extends "teacher/base.html" %}
+{% extends "dos/dos_base.html" %}
 {% load static %}
 
-{% block title %}Class Teacher Assignments - DOS{% endblock %}
+{% block dos_title %}Class Teacher Assignments{% endblock %}
 
-{% block content %}
-<div class="dos-assignments">
-    <div class="page-header">
-        <h1>Class Teacher Assignments</h1>
-        <a href="{% url 'teacher:dos:class_teacher_assignment_create' %}" class="btn btn-primary">➕ Create Assignment</a>
-    </div>
-
-    <!-- Filters -->
-    <div class="filter-section">
-        <form method="get" class="filter-form">
-            <div class="filter-group">
-                <label for="class_id">Filter by Class:</label>
-                <select name="class_id" id="class_id">
-                    <option value="">All Classes</option>
-                    {% for class in classes %}
-                    <option value="{{ class.id }}" {% if selected_class|stringformat:"s" == class.id|stringformat:"s" %}selected{% endif %}>
-                        {{ class.name }}
-                    </option>
-                    {% endfor %}
-                </select>
+{% block dos_content %}
+<div class="space-y-6">
+    <section class="rounded-[2rem] bg-white/95 p-6 shadow-[0_24px_80px_-32px_rgba(30,34,79,0.45)] ring-1 ring-slate-200/60 backdrop-blur-xl">
+        <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+                <h2 class="text-2xl font-semibold text-slate-900">Class Teacher Assignments</h2>
+                <p class="mt-2 text-sm text-slate-600">Manage assignment records and active teaching responsibilities.</p>
             </div>
+            <a href="{% url 'teacher:dos:class_teacher_assignment_create' %}" class="inline-flex items-center gap-2 rounded-full bg-secondary px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-secondary-container/90">
+                <span class="material-symbols-outlined">person_add</span>
+                Create Assignment
+            </a>
+        </div>
 
-            <div class="filter-group">
-                <label for="teacher_id">Filter by Teacher:</label>
-                <select name="teacher_id" id="teacher_id">
-                    <option value="">All Teachers</option>
-                    {% for teacher in teachers %}
-                    <option value="{{ teacher.id }}" {% if selected_teacher|stringformat:"s" == teacher.id|stringformat:"s" %}selected{% endif %}>
-                        {{ teacher.user.get_full_name }}
-                    </option>
-                    {% endfor %}
-                </select>
+        <form id="filter-form" method="get" class="mt-6 grid gap-4 lg:grid-cols-[1.5fr_1fr_1fr]">
+            <div class="rounded-[1.5rem] bg-slate-50 p-5">
+                <h3 class="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">Filters</h3>
+                <div class="mt-4 grid gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700" for="class_id">Class</label>
+                        <select id="class_id" name="class_id" class="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900">
+                            <option value="">All Classes</option>
+                            {% for class in classes %}
+                            <option value="{{ class.id }}" {% if selected_class|stringformat:"s" == class.id|stringformat:"s" %}selected{% endif %}>{{ class.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700" for="teacher_id">Teacher</label>
+                        <select id="teacher_id" name="teacher_id" class="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900">
+                            <option value="">All Teachers</option>
+                            {% for teacher in teachers %}
+                            <option value="{{ teacher.id }}" {% if selected_teacher|stringformat:"s" == teacher.id|stringformat:"s" %}selected{% endif %}>{{ teacher.user.get_full_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
             </div>
-
-            <div class="filter-group">
-                <label for="academic_year">Academic Year:</label>
-                <select name="academic_year" id="academic_year">
+            <div class="rounded-[1.5rem] bg-slate-50 p-5">
+                <label class="block text-sm font-semibold text-slate-700" for="academic_year">Academic Year</label>
+                <select id="academic_year" name="academic_year" class="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900">
                     <option value="">All Years</option>
                     {% for year in academic_years %}
-                    <option value="{{ year }}" {% if selected_academic_year == year %}selected{% endif %}>
-                        {{ year }}
-                    </option>
+                    <option value="{{ year }}" {% if selected_academic_year == year %}selected{% endif %}>{{ year }}</option>
                     {% endfor %}
                 </select>
             </div>
-
-            <div class="filter-group">
-                <label for="status">Status:</label>
-                <select name="status" id="status">
+            <div class="rounded-[1.5rem] bg-slate-50 p-5">
+                <label class="block text-sm font-semibold text-slate-700" for="status">Status</label>
+                <select id="status" name="status" class="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900">
+                    <option value="all" {% if selected_status == "all" %}selected{% endif %}>All</option>
                     <option value="active" {% if selected_status == "active" %}selected{% endif %}>Active</option>
                     <option value="inactive" {% if selected_status == "inactive" %}selected{% endif %}>Inactive</option>
-                    <option value="">All</option>
                 </select>
+                <button type="submit" class="mt-4 inline-flex w-full items-center justify-center rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-800">Apply filters</button>
             </div>
-
-            <button type="submit" class="btn btn-secondary">Filter</button>
         </form>
-    </div>
+    </section>
 
-    <!-- Assignments Table -->
-    {% if assignments %}
-    <div class="table-section">
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Teacher</th>
-                    <th>Class</th>
-                    <th>Academic Year</th>
-                    <th>Start Date</th>
-                    <th>End Date</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for assignment in assignments %}
-                <tr>
-                    <td>{{ assignment.teacher.user.get_full_name }}</td>
-                    <td>{{ assignment.class_grade.name }}</td>
-                    <td>{{ assignment.academic_year }}</td>
-                    <td>{{ assignment.start_date|date:"M d, Y" }}</td>
-                    <td>{% if assignment.end_date %}{{ assignment.end_date|date:"M d, Y" }}{% else %}-{% endif %}</td>
-                    <td>
-                        {% if assignment.is_active %}
-                            <span class="badge badge-success">Active</span>
-                        {% else %}
-                            <span class="badge badge-gray">Inactive</span>
-                        {% endif %}
-                    </td>
-                    <td class="actions">
-                        <a href="{% url 'teacher:dos:class_teacher_assignment_edit' assignment.id %}" class="btn btn-sm btn-edit">Edit</a>
-                        <form method="post" action="{% url 'teacher:dos:class_teacher_assignment_delete' assignment.id %}" class="inline-form" onsubmit="return confirm('Deactivate this assignment?');">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-sm btn-danger">Deactivate</button>
-                        </form>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <section class="rounded-[2rem] bg-white/95 p-6 shadow-[0_24px_80px_-32px_rgba(30,34,79,0.45)] ring-1 ring-slate-200/60 backdrop-blur-xl">
+        {% if assignments %}
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-left text-sm text-slate-600">
+                <thead>
+                    <tr class="border-b border-slate-200 text-slate-700">
+                        <th class="px-4 py-3">Teacher</th>
+                        <th class="px-4 py-3">Class</th>
+                        <th class="px-4 py-3">Academic Year</th>
+                        <th class="px-4 py-3">Start Date</th>
+                        <th class="px-4 py-3">End Date</th>
+                        <th class="px-4 py-3">Status</th>
+                        <th class="px-4 py-3">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for assignment in assignments %}
+                    <tr class="border-b border-slate-100 hover:bg-slate-50">
+                        <td class="px-4 py-4">{{ assignment.teacher.user.get_full_name }}</td>
+                        <td class="px-4 py-4">{{ assignment.class_grade.name }}</td>
+                        <td class="px-4 py-4">{{ assignment.academic_year }}</td>
+                        <td class="px-4 py-4">{{ assignment.start_date|date:"M d, Y" }}</td>
+                        <td class="px-4 py-4">{% if assignment.end_date %}{{ assignment.end_date|date:"M d, Y" }}{% else %}-{% endif %}</td>
+                        <td class="px-4 py-4"><span class="inline-flex rounded-full px-3 py-1 text-xs font-semibold {% if assignment.is_active %}bg-emerald-100 text-emerald-700{% else %}bg-slate-100 text-slate-700{% endif %}">{% if assignment.is_active %}Active{% else %}Inactive{% endif %}</span></td>
+                        <td class="px-4 py-4">
+                            <div class="flex flex-wrap gap-2">
+                                <a href="{% url 'teacher:dos:class_teacher_assignment_edit' assignment.id %}" class="inline-flex rounded-2xl bg-slate-900 px-3 py-2 text-sm font-semibold text-white hover:bg-slate-800">Edit</a>
+                                <form method="post" action="{% url 'teacher:dos:class_teacher_assignment_delete' assignment.id %}" class="inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="inline-flex rounded-2xl bg-rose-500 px-3 py-2 text-sm font-semibold text-white hover:bg-rose-600" onclick="return confirm('Deactivate this assignment?');">Deactivate</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
 
-        <!-- Pagination -->
         {% if page_obj.has_other_pages %}
-        <div class="pagination">
-            {% if page_obj.has_previous %}
-                <a href="?page=1">First</a>
-                <a href="?page={{ page_obj.previous_page_number }}">Previous</a>
-            {% endif %}
-
-            <span class="page-info">
-                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
-            </span>
-
-            {% if page_obj.has_next %}
-                <a href="?page={{ page_obj.next_page_number }}">Next</a>
-                <a href="?page={{ page_obj.paginator.num_pages }}">Last</a>
-            {% endif %}
+        <div class="mt-6 flex flex-wrap items-center justify-between gap-3 text-sm text-slate-600">
+            <div>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</div>
+            <div class="flex flex-wrap items-center gap-2">
+                {% if page_obj.has_previous %}
+                <a href="?page=1" class="text-slate-700 hover:text-slate-900">First</a>
+                <a href="?page={{ page_obj.previous_page_number }}" class="text-slate-700 hover:text-slate-900">Previous</a>
+                {% endif %}
+                {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}" class="text-slate-700 hover:text-slate-900">Next</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}" class="text-slate-700 hover:text-slate-900">Last</a>
+                {% endif %}
+            </div>
         </div>
         {% endif %}
-    </div>
-    {% else %}
-    <div class="empty-state">
-        <p>No class teacher assignments found. <a href="{% url 'teacher:dos:class_teacher_assignment_create' %}">Create one now</a></p>
-    </div>
-    {% endif %}
+        {% else %}
+        <div class="rounded-[1.75rem] border border-dashed border-slate-200 bg-slate-50 p-12 text-center text-slate-600">
+            No class teacher assignments found. <a href="{% url 'teacher:dos:class_teacher_assignment_create' %}" class="font-semibold text-secondary">Create one now</a>
+        </div>
+        {% endif %}
+    </section>
 </div>
-
-<style>
-.dos-assignments {
-    padding: 20px;
-    max-width: 1200px;
-    margin: 0 auto;
-}
-
-.page-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 30px;
-}
-
-.page-header h1 {
-    margin: 0;
-    font-size: 28px;
-}
-
-.filter-section {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.filter-form {
-    display: flex;
-    gap: 15px;
-    flex-wrap: wrap;
-    align-items: flex-end;
-}
-
-.filter-group {
-    flex: 1;
-    min-width: 180px;
-}
-
-.filter-group label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: 600;
-    font-size: 14px;
-}
-
-.filter-group select {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 14px;
-}
-
-.table-section {
-    background: white;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.table thead {
-    background: #f8f9fa;
-}
-
-.table th {
-    padding: 15px;
-    text-align: left;
-    border-bottom: 2px solid #dee2e6;
-    font-weight: 600;
-}
-
-.table td {
-    padding: 15px;
-    border-bottom: 1px solid #dee2e6;
-}
-
-.table-striped tbody tr:nth-child(odd) {
-    background: #f8f9fa;
-}
-
-.badge {
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: 600;
-}
-
-.badge-success {
-    background: #d4edda;
-    color: #155724;
-}
-
-.badge-gray {
-    background: #e2e3e5;
-    color: #383d41;
-}
-
-.actions {
-    display: flex;
-    gap: 10px;
-}
-
-.btn-sm {
-    padding: 6px 12px;
-    font-size: 12px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-.btn-edit {
-    background: #17a2b8;
-    color: white;
-    text-decoration: none;
-}
-
-.btn-danger {
-    background: #dc3545;
-    color: white;
-}
-
-.inline-form {
-    display: inline;
-    margin: 0;
-}
-
-.pagination {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    padding: 20px;
-    align-items: center;
-}
-
-.pagination a {
-    padding: 8px 12px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    text-decoration: none;
-    color: #007bff;
-}
-
-.page-info {
-    padding: 0 20px;
-}
-
-.empty-state {
-    text-align: center;
-    padding: 60px 20px;
-    color: #666;
-}
-</style>
 {% endblock %}

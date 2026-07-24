@@ -1,501 +1,330 @@
-{% extends "teacher/base.html" %}
+﻿{% extends "teacher/teacher_no_sidebar_base.html" %}
 {% load static %}
 
 {% block title %}Shift Supervisor Dashboard{% endblock %}
 
+{% block extra_css %}
+<style>
+    .dashboard-shadow {
+        box-shadow: 0 4px 30px rgba(30, 34, 79, 0.08);
+    }
+    .dashboard-header {
+        backdrop-filter: blur(20px);
+        background: rgba(255, 255, 255, 0.88);
+        border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+    }
+    .avatar-fallback {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+    }
+    .timeline-bar {
+        transition: width 0.35s ease;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<style>
-  .admin-nav {
-    background: linear-gradient(135deg, #080b3a 0%, #1a1e4f 100%);
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 100;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  }
-  .admin-nav-container {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 0 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: 70px;
-  }
-  .admin-nav-brand {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex: 1;
-  }
-  .admin-nav-icon {
-    width: 40px;
-    height: 40px;
-    background-color: #7c5800;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
-    color: white;
-  }
-  .admin-nav-text h2 {
-    color: white;
-    font-size: 16px;
-    font-weight: 600;
-    margin: 0;
-  }
-  .admin-nav-text p {
-    color: #d4a574;
-    font-size: 12px;
-    margin: 2px 0 0 0;
-  }
-  .admin-nav-actions {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-  }
-  .nav-user-info {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: white;
-    font-size: 14px;
-  }
-  .nav-btn {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    background: transparent;
-    border: none;
-    color: white;
-    cursor: pointer;
-    padding: 8px 12px;
-    border-radius: 6px;
-    font-size: 14px;
-    transition: all 0.3s ease;
-  }
-  .nav-btn:hover {
-    background-color: rgba(212, 165, 116, 0.15);
-    color: #d4a574;
-  }
-  .dashboard-content {
-    padding-top: 90px;
-  }
-</style>
-
-<div class="admin-nav">
-  <div class="admin-nav-container">
-    <div class="admin-nav-brand">
-      <div class="admin-nav-icon">📊</div>
-      <div class="admin-nav-text">
-        <h2>Shift Supervisor</h2>
-        <p>{{ request.user.school.name|default:"School Management" }}</p>
-      </div>
-    </div>
-    
-    <div class="admin-nav-actions">
-      <div class="nav-user-info">
-        <span>👤</span>
-        <span>{{ request.user.get_full_name|default:request.user.username }}</span>
-      </div>
-      
-      <form method="post" action="{% url 'teacher:logout' %}" style="margin: 0;">
-        {% csrf_token %}
-        <button type="submit" class="nav-btn" title="Logout to Auth Login">
-          <span>🚪</span>
-          <span>Logout</span>
-        </button>
-      </form>
-    </div>
-  </div>
-</div>
-
-<div class="shift-supervisor-dashboard dashboard-content">
-    <div class="page-header">
-        <h1>Shift Supervisor Dashboard</h1>
-        <p class="date">{{ today|date:"l, F j, Y" }}</p>
-    </div>
-
-    <!-- Statistics Cards -->
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-icon">👥</div>
-            <div class="stat-content">
-                <h3>Total Staff</h3>
-                <p class="stat-value">{{ statistics.total_staff }}</p>
+<header class="dashboard-header fixed top-0 left-0 right-0 z-50 px-6 py-4">
+    <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 max-w-[1600px] mx-auto">
+        <div class="flex items-center gap-4">
+            <div class="w-11 h-11 rounded-2xl bg-secondary flex items-center justify-center text-white text-lg shadow-lg">
+                <span class="material-symbols-outlined">dashboard</span>
+            </div>
+            <div>
+                <h1 class="text-lg font-semibold text-primary">SchoolNow</h1>
+                <p class="text-[11px] uppercase tracking-[0.25em] text-on-surface-variant">Ethos Management</p>
             </div>
         </div>
-        
-        <div class="stat-card">
-            <div class="stat-icon">✅</div>
-            <div class="stat-content">
-                <h3>On Duty Today</h3>
-                <p class="stat-value">{{ statistics.on_duty_today }}</p>
+        <nav class="flex flex-wrap items-center gap-2">
+            <a href="#" class="px-4 py-2 rounded-full bg-secondary-container/20 border border-secondary-container/40 text-secondary text-sm font-semibold">Dashboard</a>
+            <a href="#" class="px-4 py-2 rounded-full text-on-surface-variant hover:text-primary hover:bg-white/70 transition-all text-sm">Staff Roster</a>
+            <a href="#" class="px-4 py-2 rounded-full text-on-surface-variant hover:text-primary hover:bg-white/70 transition-all text-sm">Maintenance</a>
+            <a href="#" class="px-4 py-2 rounded-full text-on-surface-variant hover:text-primary hover:bg-white/70 transition-all text-sm">Supply Requests</a>
+        </nav>
+        <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2 rounded-full bg-surface-container-low px-3 py-2 border border-white/50 shadow-sm">
+                <span class="material-symbols-outlined text-base text-outline">search</span>
+                <input type="text" placeholder="Search operations..." class="bg-transparent border-none focus:ring-0 text-sm text-primary placeholder:text-on-surface-variant w-52" />
             </div>
-        </div>
-        
-        <div class="stat-card">
-            <div class="stat-icon">🕐</div>
-            <div class="stat-content">
-                <h3>Clocked Out</h3>
-                <p class="stat-value">{{ statistics.clocked_out_today }}</p>
-            </div>
-        </div>
-        
-        <div class="stat-card">
-            <div class="stat-icon">❌</div>
-            <div class="stat-content">
-                <h3>Absent Today</h3>
-                <p class="stat-value">{{ statistics.absent_today }}</p>
+            <button class="relative text-on-surface-variant hover:text-primary transition-colors">
+                <span class="material-symbols-outlined">notifications</span>
+                <span class="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-secondary border border-white"></span>
+            </button>
+            <div class="flex items-center gap-3 border-l border-primary/10 pl-4">
+                <div class="text-right hidden sm:block">
+                    <p class="text-xs font-semibold text-primary">{{ request.user.get_full_name|default:request.user.username }}</p>
+                    <p class="text-[10px] uppercase tracking-[0.2em] text-on-surface-variant">{{ school.name|default:'School' }}</p>
+                </div>
+                <div class="w-10 h-10 rounded-full border-2 border-secondary-container overflow-hidden">
+                    {% if request.user.profile_picture %}
+                        <img src="{{ request.user.profile_picture.url }}" alt="Supervisor avatar" class="w-full h-full object-cover" />
+                    {% else %}
+                        <div class="w-full h-full bg-secondary flex items-center justify-center text-white font-bold">{{ request.user.get_full_name|default:request.user.username|slice:"0:1" }}</div>
+                    {% endif %}
+                </div>
+                <a href="{% url 'SchoolNowMgt:custom_logout' %}" class="inline-flex items-center gap-2 rounded-full bg-primary px-3 py-2 text-xs font-semibold text-white shadow-sm hover:bg-primary/90 transition-all">
+                    <span class="material-symbols-outlined text-sm">logout</span>
+                    <span class="hidden sm:inline">Logout</span>
+                </a>
             </div>
         </div>
     </div>
+</header>
 
-    <!-- Quick Actions -->
-    <div class="quick-actions">
-        <h2>Quick Actions</h2>
-        <div class="action-buttons">
-            <a href="/teacher/support/shift-supervisor/attendance/" class="btn btn-primary">
-                📋 View Attendance
-            </a>
-            <a href="#" class="btn btn-secondary">
-                📊 Generate Report
-            </a>
-            <a href="#" class="btn btn-secondary">
-                ⏰ Manage Shifts
-            </a>
+<div class="pt-32 pb-12 px-4 sm:px-6 lg:px-8 bg-background min-h-screen">
+    <div class="max-w-[1600px] mx-auto space-y-8">
+        <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+                <h2 class="font-display-lg text-3xl lg:text-4xl font-bold text-primary">Operations Command Center</h2>
+                <p class="mt-2 text-sm text-on-surface-variant max-w-2xl">Real-time oversight and administrative logistics</p>
+            </div>
+            <div class="flex flex-wrap gap-3">
+                <button class="inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-primary shadow-sm border border-white/60 hover:shadow-lg transition-all">
+                    <span class="material-symbols-outlined">calendar_today</span>
+                    {{ today|date:'F j, Y' }}
+                </button>
+                <a href="#" class="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white hover:shadow-lg transition-all">
+                    <span class="material-symbols-outlined">add</span>
+                    New Task
+                </a>
+            </div>
         </div>
-    </div>
 
-    <!-- Today's Attendance -->
-    {% if today_attendance %}
-    <div class="attendance-section">
-        <h2>Today's Attendance Overview</h2>
-        <div class="table-section">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Staff Name</th>
-                        <th>Department</th>
-                        <th>Clock In</th>
-                        <th>Clock Out</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for att in today_attendance|slice:":10" %}
-                    <tr>
-                        <td>{{ att.staff.user.get_full_name }}</td>
-                        <td>{% if att.staff.support_department %}{{ att.staff.support_department.name }}{% else %}-{% endif %}</td>
-                        <td>{{ att.clock_in_time|time:"H:i" }}</td>
-                        <td>{% if att.clock_out_time %}{{ att.clock_out_time|time:"H:i" }}{% else %}-{% endif %}</td>
-                        <td>
-                            {% if att.clock_out_time %}
-                            <span class="badge badge-clocked-out">Clocked Out</span>
+        <div class="grid grid-cols-12 gap-6">
+            <div class="col-span-12 xl:col-span-7 glass-card p-6 flex flex-col gap-6 dashboard-shadow">
+                <div class="flex items-center justify-between">
+                    <h3 class="font-headline-md text-xl font-semibold text-primary flex items-center gap-2">
+                        <span class="material-symbols-outlined text-secondary">architecture</span>
+                        Campus Maintenance Status
+                    </h3>
+                    <span class="px-3 py-1 rounded-full bg-secondary-container/20 text-secondary text-[11px] font-bold uppercase tracking-[0.25em]">4 Active Alerts</span>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <div class="relative h-56 rounded-[1.5rem] overflow-hidden group">
+                        <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" style="background-image: url('{{ maintenance_alerts.0.image_url }}');"></div>
+                        <div class="absolute inset-0 bg-gradient-to-t from-primary/80 to-transparent"></div>
+                        <div class="absolute inset-0 p-6 flex flex-col justify-end gap-2">
+                            <p class="text-white text-sm font-semibold">{{ maintenance_alerts.0.title }}</p>
+                            <p class="text-xs text-white/70">{{ maintenance_alerts.0.subtitle }}</p>
+                        </div>
+                        <div class="absolute top-4 right-4 inline-flex items-center gap-1 rounded-full bg-error px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-white">
+                            <span class="material-symbols-outlined text-sm">warning</span>
+                            {{ maintenance_alerts.0.status }}
+                        </div>
+                    </div>
+                    <div class="flex flex-col gap-3">
+                        {% for card in maintenance_alerts|slice:'1:4' %}
+                        <div class="p-4 rounded-2xl border border-primary/5 bg-surface-container-low flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
+                                <span class="material-symbols-outlined">{{ card.icon }}</span>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-sm font-semibold">{{ card.title }}</p>
+                                <p class="text-xs text-on-surface-variant">{{ card.subtitle }}</p>
+                                {% if card.progress %}
+                                <div class="mt-3 h-2 rounded-full bg-outline-variant overflow-hidden">
+                                    <div class="h-full rounded-full bg-secondary" style="width: {{ card.progress }}%"></div>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="text-right">
+                                <p class="text-xs font-bold {{ card.status_class }}">{{ card.status_text }}</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-span-12 xl:col-span-5 glass-card p-6 flex flex-col gap-6 dashboard-shadow">
+                <div class="flex items-center justify-between">
+                    <h3 class="font-headline-md text-xl font-semibold text-primary">Staff Roster</h3>
+                    <a href="#" class="text-secondary text-xs font-bold flex items-center gap-1 hover:underline">
+                        MANAGE
+                        <span class="material-symbols-outlined text-sm">chevron_right</span>
+                    </a>
+                </div>
+                <div class="space-y-4 overflow-y-auto max-h-[340px] pr-2">
+                    {% for staff in staff_roster %}
+                    <div class="flex items-center justify-between p-3 rounded-2xl border border-primary/5 bg-white/80">
+                        <div class="flex items-center gap-3">
+                            {% if staff.avatar_url %}
+                            <img src="{{ staff.avatar_url }}" alt="{{ staff.full_name }}" class="w-12 h-12 rounded-xl object-cover" />
                             {% else %}
-                            <span class="badge badge-on-duty">On Duty</span>
+                            <div class="w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center text-sm font-semibold text-primary">{{ staff.full_name|slice:"0:1" }}</div>
                             {% endif %}
-                        </td>
-                    </tr>
+                            <div>
+                                <p class="text-sm font-semibold">{{ staff.full_name }}</p>
+                                <p class="text-[10px] uppercase tracking-[0.2em] text-on-surface-variant">{{ staff.department }}</p>
+                            </div>
+                        </div>
+                        <div class="w-2.5 h-2.5 rounded-full {{ staff.status_class }}"></div>
+                    </div>
                     {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% if today_attendance.count > 10 %}
-        <a href="/teacher/support/shift-supervisor/attendance/" class="view-all">View All →</a>
-        {% endif %}
-    </div>
-    {% endif %}
-
-    <!-- Weekly Summary -->
-    {% if week_attendance %}
-    <div class="weekly-section">
-        <h2>This Week's Attendance Summary</h2>
-        <div class="chart">
-            {% for day in week_attendance %}
-            <div class="day-bar">
-                <div class="day-label">{{ day.date|date:"M d" }}</div>
-                <div class="bar-container">
-                    <div class="bar-fill" style="width: {% widthratio day.on_duty_count 10 100 %}%"></div>
-                </div>
-                <div class="day-value">{{ day.count }} staff</div>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-    {% endif %}
-
-    <!-- Recent Activities -->
-    {% if recent_activities %}
-    <div class="activities-section">
-        <h2>Recent Activities</h2>
-        <div class="activities-list">
-            {% for activity in recent_activities %}
-            <div class="activity-item">
-                <div class="activity-icon">{{ activity.icon_name }}</div>
-                <div class="activity-content">
-                    <p class="activity-description">{{ activity.description }}</p>
-                    <p class="activity-time">{{ activity.created_at|timesince }} ago</p>
                 </div>
             </div>
-            {% endfor %}
+
+            <div class="col-span-12 md:col-span-6 lg:col-span-5 glass-card p-6 dashboard-shadow">
+                <h3 class="font-headline-md text-xl font-semibold text-primary flex items-center gap-2">
+                    <span class="material-symbols-outlined text-secondary">inventory</span>
+                    Supply Requests
+                </h3>
+                <div class="space-y-4">
+                    {% for request in supply_requests %}
+                    <div class="p-4 rounded-2xl border border-secondary-container/30 bg-secondary-container/5">
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <p class="text-sm font-semibold">{{ request.title }}</p>
+                                <p class="text-xs text-on-surface-variant">{{ request.reference }} • {{ request.department }}</p>
+                            </div>
+                            <span class="text-primary font-bold">{{ request.amount }}</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <button class="flex-1 py-2 rounded-xl bg-primary text-white text-xs font-bold hover:bg-primary-container transition-colors">{{ request.primary_button }}</button>
+                            <button class="flex-1 py-2 rounded-xl border border-outline-variant text-on-surface-variant text-xs font-bold bg-white hover:bg-surface-container transition-colors">{{ request.secondary_button }}</button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="col-span-12 md:col-span-6 lg:col-span-7 glass-card p-6 flex flex-col dashboard-shadow">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="font-headline-md text-xl font-semibold text-primary">Task Completion Index</h3>
+                    <div class="flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.22em] text-on-surface-variant">
+                        <span class="inline-flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-secondary"></span>COMPLETED</span>
+                        <span class="inline-flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-primary/10"></span>PENDING</span>
+                    </div>
+                </div>
+                <div class="flex-1 flex items-center justify-center py-4">
+                    <div class="w-full h-56 flex items-end gap-4 px-3">
+                        {% for bar in week_summary %}
+                        <div class="flex-1 rounded-t-3xl bg-primary/10 relative group" style="height: {{ bar.height }}%;">
+                            <div class="absolute bottom-0 left-0 right-0 bg-secondary rounded-t-3xl" style="height: calc({{ bar.height }}% - 0%);"></div>
+                            <span class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] font-bold text-on-surface-variant">{{ bar.label }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="mt-8 grid grid-cols-1 sm:grid-cols-3 text-center divide-y sm:divide-y-0 sm:divide-x divide-primary/5 gap-4 sm:gap-0">
+                    <div class="py-3">
+                        <p class="text-2xl font-bold text-primary">{{ task_completion.efficiency }}%</p>
+                        <p class="text-[10px] uppercase tracking-[0.2em] text-on-surface-variant font-bold">Efficiency</p>
+                    </div>
+                    <div class="py-3">
+                        <p class="text-2xl font-bold text-primary">{{ task_completion.open_tasks }}</p>
+                        <p class="text-[10px] uppercase tracking-[0.2em] text-on-surface-variant font-bold">Open Tasks</p>
+                    </div>
+                    <div class="py-3">
+                        <p class="text-2xl font-bold text-primary">{{ task_completion.avg_tat }}</p>
+                        <p class="text-[10px] uppercase tracking-[0.2em] text-on-surface-variant font-bold">Avg TAT</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-span-12 xl:col-span-8 grid gap-6">
+                <div class="glass-card p-6 dashboard-shadow">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <div>
+                            <h3 class="font-headline-md text-xl font-semibold text-primary">Today's Attendance Overview</h3>
+                            <p class="text-sm text-on-surface-variant">Latest shift attendance and live staff status.</p>
+                        </div>
+                        <a href="{% url 'teacher:support_staff:shift_attendance_list' %}" class="text-primary font-semibold text-sm hover:underline">View full attendance</a>
+                    </div>
+                    <div class="mt-6 overflow-x-auto">
+                        <table class="w-full text-left border-separate border-spacing-y-2">
+                            <thead>
+                                <tr class="text-xs uppercase tracking-[0.2em] text-on-surface-variant">
+                                    <th class="pb-3">Staff Name</th>
+                                    <th class="pb-3">Department</th>
+                                    <th class="pb-3">Clock In</th>
+                                    <th class="pb-3">Clock Out</th>
+                                    <th class="pb-3">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for att in today_attendance|slice:":10" %}
+                                <tr class="bg-white/90 rounded-3xl border border-surface-container-highest shadow-sm">
+                                    <td class="py-4 px-4">{{ att.staff.user.get_full_name }}</td>
+                                    <td class="py-4 px-4 text-sm text-on-surface-variant">
+                                        {% if att.staff.support_department %}
+                                            {{ att.staff.support_department.name }}
+                                        {% else %}
+                                            General Duty
+                                        {% endif %}
+                                    </td>
+                                    <td class="py-4 px-4 text-sm">{{ att.time_in|time:"H:i"|default:'-' }}</td>
+                                    <td class="py-4 px-4 text-sm">{{ att.time_out|time:"H:i"|default:'-' }}</td>
+                                    <td class="py-4 px-4">
+                                        {% if att.time_out %}
+                                        <span class="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-800">Clocked Out</span>
+                                        {% else %}
+                                        <span class="inline-flex items-center rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800">On Duty</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="py-8 text-center text-sm text-on-surface-variant">No attendance records found for today.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% if today_attendance|length > 10 %}
+                    <div class="mt-4 text-right">
+                        <a href="{% url 'teacher:support_staff:shift_attendance_list' %}" class="text-primary font-semibold hover:underline">View All →</a>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="glass-card p-6 dashboard-shadow">
+                    <div class="flex items-center justify-between gap-4">
+                        <div>
+                            <h3 class="font-headline-md text-xl font-semibold text-primary">Recent Activities</h3>
+                            <p class="text-sm text-on-surface-variant">Track the latest updates from the team and system.</p>
+                        </div>
+                        <span class="text-[10px] uppercase tracking-[0.2em] text-on-surface-variant font-semibold">Latest 10</span>
+                    </div>
+                    <div class="mt-6 space-y-4">
+                        {% for activity in recent_activities %}
+                        <div class="flex items-start gap-4 rounded-3xl border border-primary/5 bg-white/90 p-4">
+                            <div class="w-11 h-11 rounded-2xl bg-surface-container flex items-center justify-center text-primary text-xl">
+                                <span class="material-symbols-outlined">{{ activity.icon_name|default:'info' }}</span>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-sm font-semibold text-primary">{{ activity.description }}</p>
+                                <p class="mt-1 text-xs text-on-surface-variant">{{ activity.created_at|timesince }} ago</p>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="rounded-3xl border border-primary/5 bg-white/90 p-6 text-center text-sm text-on-surface-variant">
+                            No recent activities available.
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-    {% endif %}
 </div>
+{% endblock %}
 
-<style>
-.shift-supervisor-dashboard {
-    padding: 20px;
-    max-width: 1200px;
-    margin: 0 auto;
-}
-
-.page-header {
-    margin-bottom: 30px;
-}
-
-.page-header h1 {
-    margin: 0;
-    font-size: 28px;
-}
-
-.page-header .date {
-    color: #666;
-    margin: 5px 0 0 0;
-    font-size: 14px;
-}
-
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
-    margin-bottom: 30px;
-}
-
-.stat-card {
-    display: flex;
-    align-items: center;
-    padding: 20px;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.stat-icon {
-    font-size: 32px;
-    margin-right: 15px;
-}
-
-.stat-content h3 {
-    margin: 0;
-    font-size: 14px;
-    color: #666;
-}
-
-.stat-value {
-    margin: 5px 0 0 0;
-    font-size: 24px;
-    font-weight: bold;
-    color: #333;
-}
-
-.quick-actions {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    margin-bottom: 30px;
-}
-
-.quick-actions h2 {
-    margin-top: 0;
-    font-size: 18px;
-}
-
-.action-buttons {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-}
-
-.btn {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 4px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    text-decoration: none;
-    display: inline-block;
-}
-
-.btn-primary {
-    background: #007bff;
-    color: white;
-}
-
-.btn-primary:hover {
-    background: #0056b3;
-}
-
-.btn-secondary {
-    background: #6c757d;
-    color: white;
-}
-
-.btn-secondary:hover {
-    background: #545b62;
-}
-
-.attendance-section,
-.weekly-section,
-.activities-section {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    margin-bottom: 30px;
-}
-
-.attendance-section h2,
-.weekly-section h2,
-.activities-section h2 {
-    margin-top: 0;
-    font-size: 18px;
-}
-
-.table-section {
-    overflow-x: auto;
-}
-
-.table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.table thead {
-    background: #f8f9fa;
-}
-
-.table th {
-    padding: 15px;
-    text-align: left;
-    border-bottom: 2px solid #dee2e6;
-    font-weight: 600;
-}
-
-.table td {
-    padding: 15px;
-    border-bottom: 1px solid #dee2e6;
-}
-
-.table tbody tr:nth-child(odd) {
-    background: #f8f9fa;
-}
-
-.badge {
-    display: inline-block;
-    padding: 4px 8px;
-    border-radius: 3px;
-    font-size: 12px;
-    font-weight: 600;
-}
-
-.badge-on-duty {
-    background: #d4edda;
-    color: #155724;
-}
-
-.badge-clocked-out {
-    background: #d1ecf1;
-    color: #0c5460;
-}
-
-.view-all {
-    display: inline-block;
-    margin-top: 15px;
-    color: #007bff;
-    text-decoration: none;
-    font-weight: 600;
-}
-
-.view-all:hover {
-    text-decoration: underline;
-}
-
-.chart {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-    gap: 15px;
-}
-
-.day-bar {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.day-label {
-    font-size: 12px;
-    font-weight: 600;
-    margin-bottom: 8px;
-}
-
-.bar-container {
-    width: 100%;
-    height: 30px;
-    background: #f0f0f0;
-    border-radius: 4px;
-    overflow: hidden;
-}
-
-.bar-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #28a745, #20c997);
-}
-
-.day-value {
-    font-size: 12px;
-    color: #666;
-    margin-top: 8px;
-}
-
-.activities-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.activity-item {
-    display: flex;
-    gap: 12px;
-    padding: 12px;
-    background: #f8f9fa;
-    border-radius: 4px;
-}
-
-.activity-icon {
-    font-size: 20px;
-    flex-shrink: 0;
-}
-
-.activity-content {
-    flex: 1;
-}
-
-.activity-description {
-    margin: 0;
-    font-size: 14px;
-    color: #333;
-}
-
-.activity-time {
-    margin: 3px 0 0 0;
-    font-size: 12px;
-    color: #999;
-}
-</style>
+{% block extra_js %}
+<script>
+    document.querySelectorAll('.glass-card').forEach(card => {
+        card.addEventListener('mousedown', () => {
+            card.style.transform = 'scale(0.995)';
+            card.style.transition = 'transform 0.15s ease';
+        });
+        card.addEventListener('mouseup', () => {
+            card.style.transform = 'scale(1)';
+        });
+        card.addEventListener('mouseleave', () => {
+            card.style.transform = 'scale(1)';
+        });
+    });
+</script>
 {% endblock %}

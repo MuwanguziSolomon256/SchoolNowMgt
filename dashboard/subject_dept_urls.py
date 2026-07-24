@@ -12,6 +12,9 @@ urlpatterns = [
     # Department Overview
     path('', subject_dept_views.dept_dashboard, name='dashboard'),
     
+    # Profile Management
+    path('profile/', subject_dept_views.dept_profile, name='profile'),
+    
     # Teachers Management
     path('teachers/', subject_dept_views.teachers_list, name='teachers_list'),
     path('teachers/<int:teacher_id>/', subject_dept_views.teacher_detail, name='teacher_detail'),

@@ -11,8 +11,8 @@
             <p class="badge badge-primary">{{ department.get_department_type_display }}</p>
         </div>
         <div class="header-actions">
-            <a href="{% url 'teacher:deputy:department_edit' department.id %}" class="btn btn-secondary">Edit</a>
-            <a href="{% url 'teacher:deputy:departments_list' %}" class="btn btn-default">Back to Departments</a>
+            <a href="{% url 'SchoolNowMgt:deputy_hm:department_edit' department.id %}" class="btn btn-secondary">Edit</a>
+            <a href="{% url 'SchoolNowMgt:deputy_hm:departments_list' %}" class="btn btn-default">Back to Departments</a>
         </div>
     </div>
 
@@ -93,12 +93,12 @@
             <div class="actions-card">
                 <h2>Quick Actions</h2>
                 <div class="action-links">
-                    <a href="{% url 'teacher:deputy:department_edit' department.id %}" class="action-link">
+                    <a href="{% url 'SchoolNowMgt:deputy_hm:department_edit' department.id %}" class="action-link">
                         <span class="icon">✏️</span>
                         <span>Edit Department</span>
                     </a>
                     {% if staff_count == 0 %}
-                    <form method="post" action="{% url 'teacher:deputy:department_delete' department.id %}" style="display: inline;" onclick="return confirm('Are you sure you want to delete this department?');">
+                    <form method="post" action="{% url 'SchoolNowMgt:deputy_hm:department_delete' department.id %}" style="display: inline;" onclick="return confirm('Are you sure you want to delete this department?');">
                         {% csrf_token %}
                         <button type="submit" class="action-link danger">
                             <span class="icon">🗑️</span>

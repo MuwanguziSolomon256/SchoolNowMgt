@@ -277,7 +277,7 @@ def shift_supervisor_dashboard(request):
     today_attendance = StaffAttendance.objects.filter(
         staff__user__school=school,
         date=today
-    ).select_related('staff__user')
+    ).select_related('staff__user', 'staff__support_department')
     
     on_duty = today_attendance.filter(time_out__isnull=True).count()
     clocked_out = today_attendance.filter(time_out__isnull=False).count()
@@ -294,8 +294,10 @@ def shift_supervisor_dashboard(request):
         on_duty_count=Count('id', filter=Q(time_out__isnull=True))
     ).order_by('date')
     
-    # Recent activities
-    recent_activities = ActivityLog.objects.all().select_related('teacher').order_by('-created_at')[:10]
+    # Recent activities for current school only
+    recent_activities = ActivityLog.objects.filter(
+        teacher__user__school=school
+    ).select_related('teacher').order_by('-created_at')[:10]
     
     statistics = {
         'total_staff': all_staff,
@@ -305,13 +307,122 @@ def shift_supervisor_dashboard(request):
         'week_days': week_attendance.count(),
     }
     
+    # Roster for supervisor dashboard
+    roster_staff = StaffProfile.objects.filter(
+        user__school=school,
+        user__role='non_teaching_staff'
+    ).select_related('user', 'support_department').order_by('user__first_name')[:6]
+    today_on_duty_ids = set(
+        today_attendance.filter(time_out__isnull=True).values_list('staff_id', flat=True)
+    )
+    staff_roster = []
+    for staff in roster_staff:
+        staff_roster.append({
+            'full_name': staff.user.get_full_name(),
+            'role_label': staff.position,
+            'department': staff.support_department.name if staff.support_department else 'General Duty',
+            'status': 'On Duty' if staff.id in today_on_duty_ids else 'Offline',
+            'status_class': 'bg-green-500' if staff.id in today_on_duty_ids else 'bg-slate-300',
+            'avatar_url': staff.user.profile_picture.url if getattr(staff.user, 'profile_picture', None) else '',
+        })
+    
+    # Build material card context placeholders where system data is not yet modelled
+    maintenance_alerts = [
+        {
+            'title': 'North Wing Ventilation',
+            'subtitle': 'Routine Filter Replacement Required',
+            'status': 'URGENT',
+            'badge_class': 'bg-error text-white',
+            'image_url': 'https://lh3.googleusercontent.com/aida-public/AB6AXuC2nFp4MFddwEEKBeR9DcL8fYNvgYfhQCD79mhYJbRuvjnodWYETDnM3QpL9RzNb5gC6c_EKXmued34tdHGCDY2gLcOAtftvZVYFQAmcuxs4ReOtcqROR9Y5v-IkZF9mjj9OfdmQmwWX5zjWiPMibS_09kqAyZx0s-M_M5N4IRzXmYYDEMfbwA6BToQ69jlQBK8mJv0ZkOLNAeXR2vZDNE-FPw-ybDQyPQztYHq9-9-9U9qKJrymVxf5xtqycgtxPxcECa2furbToAc',
+        },
+        {
+            'title': 'Water Facility Block C',
+            'subtitle': '75% complete',
+            'progress': 75,
+            'icon': 'plumbing',
+            'status_text': '75%',
+            'status_class': 'text-secondary',
+        },
+        {
+            'title': 'IT Hub Wiring Audit',
+            'subtitle': '25% complete',
+            'progress': 25,
+            'icon': 'electrical_services',
+            'status_text': '25%',
+            'status_class': 'text-primary',
+        },
+        {
+            'title': 'Main Gate Security Tech',
+            'subtitle': 'Completed',
+            'icon': 'check_circle',
+            'status_text': 'Completed',
+            'status_class': 'text-green-700',
+        },
+    ]
+
+    supply_requests = [
+        {
+            'title': 'Industrial Cleaning Supplies',
+            'reference': 'Req #4928',
+            'department': 'Sanitation Dept.',
+            'amount': '$1,240.00',
+            'primary_button': 'Approve',
+            'secondary_button': 'Decline',
+        },
+        {
+            'title': 'Cisco Network Switches (x2)',
+            'reference': 'Req #4931',
+            'department': 'IT Infrastructure',
+            'amount': '$4,850.00',
+            'primary_button': 'Approve',
+            'secondary_button': 'Decline',
+        },
+    ]
+
+    clocked_out_records = today_attendance.filter(time_out__isnull=False, time_in__isnull=False)
+    avg_tat = 24
+    if clocked_out_records.exists():
+        total_seconds = 0
+        valid_count = 0
+        for record in clocked_out_records:
+            if record.time_in and record.time_out:
+                total_seconds += (record.time_out - record.time_in).total_seconds()
+                valid_count += 1
+        if valid_count:
+            avg_tat = max(1, int(total_seconds / valid_count / 3600))
+
+    task_completion = {
+        'efficiency': int((on_duty / all_staff * 100) if all_staff else 0),
+        'open_tasks': absent,
+        'avg_tat': f"{avg_tat}h",
+    }
+
+    week_summary = []
+    week_records = list(week_attendance)
+    max_count = max((item['count'] for item in week_records), default=1)
+    for item in week_records:
+        bar_height = int(item['count'] / max_count * 100) if max_count else 20
+        if bar_height < 20:
+            bar_height = 20
+        week_summary.append({
+            'label': item['date'].strftime('%a').upper(),
+            'count': item['count'],
+            'height': bar_height,
+        })
+
     context = {
         'school': school,
         'staff_profile': staff_profile,
+        'today': today,
         'statistics': statistics,
         'today_attendance': today_attendance,
         'week_attendance': week_attendance,
+        'week_summary': week_summary,
         'recent_activities': recent_activities,
+        'staff_roster': staff_roster,
+        'maintenance_alerts': maintenance_alerts,
+        'supply_requests': supply_requests,
+        'task_completion': task_completion,
         'section': 'shift_supervisor_dashboard',
     }
     

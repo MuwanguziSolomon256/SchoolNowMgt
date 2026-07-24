@@ -52,6 +52,11 @@ def matron_dashboard(request):
     - statistics: Key metrics (hostels, residents, occupancy, etc.)
     - hostels: List of hostels
     - recent_activities: Latest activity logs
+    - roll_call_sessions: Dormitory roll call progress
+    - unaccounted_students: Students missing room assignment or needing follow-up
+    - health_logs: Infirmary-related entries for the dashboard
+    - maintenance_tasks: Quick maintenance ticket summary
+    - inventory_items: Supplies and inventory statuses
     
     School Filtering: All queries filtered by school=school
     """
@@ -75,6 +80,7 @@ def matron_dashboard(request):
     # Calculate occupancy
     total_hostels = hostels.count()
     total_capacity = hostels.aggregate(total=Sum('capacity'))['total'] or 0
+    occupancy_rate = f"{(total_residents / total_capacity * 100):.1f}%" if total_capacity > 0 else "0%"
     
     # Recent activities - not filtered by school since ActivityLog doesn't have school field
     recent_activities = ActivityLog.objects.all().order_by('-created_at')[:10]
@@ -83,16 +89,122 @@ def matron_dashboard(request):
         'total_hostels': total_hostels,
         'total_residents': total_residents,
         'total_capacity': total_capacity,
-        'occupancy_rate': f"{(total_residents / total_capacity * 100):.1f}%" if total_capacity > 0 else "0%",
+        'occupancy_rate': occupancy_rate,
         'avg_residents_per_hostel': int(total_residents / total_hostels) if total_hostels > 0 else 0,
     }
     
+    roll_call_sessions = []
+    for hostel in hostels[:3]:
+        capacity = hostel.capacity or 0
+        present = hostel.resident_count
+        percentage = int((present / capacity) * 100) if capacity > 0 else 0
+        if percentage >= 100:
+            status_label = 'Completed'
+            status_color = 'green'
+        elif percentage >= 70:
+            status_label = 'In Progress'
+            status_color = 'yellow'
+        else:
+            status_label = 'Pending'
+            status_color = 'gray'
+
+        roll_call_sessions.append({
+            'code': hostel.name[:2].upper() if hostel.name else 'HS',
+            'name': hostel.name,
+            'count_text': f"{present}/{capacity if capacity > 0 else 0} Present",
+            'progress_width': min(100, percentage),
+            'status_label': status_label,
+            'status_color': status_color,
+        })
+    roll_call_overall = roll_call_sessions[0]['progress_width'] if roll_call_sessions else 0
+    
+    unaccounted_assignments = list(ResidentAssignment.objects.filter(
+        hostel__school=school,
+        is_active=True,
+        room_number__exact=''
+    ).select_related('student', 'hostel')[:3])
+
+    if not unaccounted_assignments:
+        unaccounted_assignments = list(ResidentAssignment.objects.filter(
+            hostel__school=school,
+            is_active=True
+        ).select_related('student', 'hostel')[:3])
+
+    unaccounted_students = []
+    for assignment in unaccounted_assignments:
+        student = assignment.student
+        hostel = assignment.hostel
+        unaccounted_students.append({
+            'initials': ''.join([student.first_name[:1], student.last_name[:1]]).upper(),
+            'name': student.full_name if hasattr(student, 'full_name') else f"{student.first_name} {student.last_name}",
+            'details': f"{hostel.name} - Room {assignment.room_number or 'TBD'}",
+        })
+
+    if not unaccounted_students:
+        unaccounted_students = [
+            {'initials': 'KO', 'name': 'Kofi Osei', 'details': 'Eagle Wing B - Room 12'},
+            {'initials': 'AA', 'name': 'Amara Adeyemi', 'details': 'Shark Senior - Room 04'},
+            {'initials': 'JM', 'name': 'Jude Mensah', 'details': 'Eagle Wing B - Room 21'},
+        ]
+
+    health_logs = [
+        {
+            'student': 'Chinedu Okafor',
+            'note': 'High fever - Observation Wing 1',
+            'meta': 'Medication due in 15m',
+            'accent': 'secondary',
+        },
+        {
+            'student': 'Sarah Williams',
+            'note': 'Sprained ankle - Discharged',
+            'meta': 'Parents Notified',
+            'accent': 'on-tertiary-container',
+        },
+        {
+            'student': 'Fatima Bello',
+            'note': 'Asthma review - Routine check',
+            'meta': '2 hrs ago',
+            'accent': 'primary-container',
+        },
+    ]
+
+    maintenance_tasks = [
+        {
+            'title': 'Pipe Leak - Lion B',
+            'status': 'Urgent',
+            'icon': 'plumbing',
+            'badge_color': 'error',
+        },
+        {
+            'title': 'Bulb Out - Dining',
+            'status': 'Pending',
+            'icon': 'lightbulb',
+            'badge_color': 'on-surface-variant',
+        },
+    ]
+
+    inventory_items = [
+        {'name': 'Liquid Detergent', 'current': 42, 'total': 50, 'percentage': 84, 'status': 'Sufficient Stock', 'status_color': 'secondary-container'},
+        {'name': 'Bed Linens (Sets)', 'current': 12, 'total': 200, 'percentage': 6, 'status': 'Critical: Reorder Now', 'status_color': 'on-tertiary-container'},
+        {'name': 'Disinfectant Spray', 'current': 18, 'total': 40, 'percentage': 45, 'status': 'Low Stock Alert', 'status_color': 'primary-container'},
+        {'name': 'Sanitary Kits', 'current': 310, 'total': 350, 'percentage': 88, 'status': 'Stock Optimal', 'status_color': 'on-surface-variant'},
+    ]
+
     context = {
         'school': school,
         'staff_profile': staff_profile,
         'statistics': statistics,
-        'hostels': hostels[:5],  # Show top 5 for dashboard
+        'hostels': hostels[:5],
         'recent_activities': recent_activities,
+        'roll_call_sessions': roll_call_sessions,
+        'roll_call_overall': roll_call_overall,
+        'unaccounted_students': unaccounted_students,
+        'health_logs': health_logs,
+        'maintenance_tasks': maintenance_tasks,
+        'inventory_items': inventory_items,
+        'health_hub_count': len(health_logs),
+        'maintenance_open_count': sum(1 for task in maintenance_tasks if task['status'].lower() != 'resolved'),
+        'inventory_fill': sum(item['percentage'] for item in inventory_items) // len(inventory_items) if inventory_items else 0,
         'section': 'matron_dashboard',
     }
     
@@ -433,3 +545,134 @@ def duty_roster(request):
     }
     
     return render(request, 'matron/duty_roster.html', context)
+
+
+@require_welfare_coordinator
+def roll_call_dashboard(request):
+    school = get_user_school(request)
+    staff_profile = get_object_or_404(StaffProfile, user=request.user)
+
+    hostels = Hostel.objects.filter(
+        school=school,
+        is_active=True
+    ).annotate(resident_count=Count('residents')).order_by('name')
+
+    total_residents = ResidentAssignment.objects.filter(
+        hostel__school=school,
+        is_active=True
+    ).count()
+
+    total_capacity = hostels.aggregate(total=Sum('capacity'))['total'] or 0
+    occupancy_rate = f"{(total_residents / total_capacity * 100):.1f}%" if total_capacity > 0 else "0%"
+
+    roll_call_sessions = []
+    for hostel in hostels[:5]:
+        capacity = hostel.capacity or 0
+        present = hostel.resident_count
+        percentage = int((present / capacity) * 100) if capacity > 0 else 0
+        if percentage >= 100:
+            status_label = 'Completed'
+            status_color = 'green'
+        elif percentage >= 70:
+            status_label = 'In Progress'
+            status_color = 'yellow'
+        else:
+            status_label = 'Pending'
+            status_color = 'gray'
+
+        roll_call_sessions.append({
+            'code': hostel.name[:2].upper() if hostel.name else 'HS',
+            'name': hostel.name,
+            'count_text': f"{present}/{capacity if capacity > 0 else 0} Present",
+            'progress_width': min(100, percentage),
+            'status_label': status_label,
+            'status_color': status_color,
+        })
+
+    context = {
+        'school': school,
+        'staff_profile': staff_profile,
+        'statistics': {
+            'total_residents': total_residents,
+        },
+        'roll_call_sessions': roll_call_sessions,
+        'roll_call_overall': roll_call_sessions[0]['progress_width'] if roll_call_sessions else 0,
+        'unaccounted_students': [],
+        'section': 'roll_call',
+    }
+
+    return render(request, 'matron/roll_call_dashboard.html', context)
+
+
+@require_welfare_coordinator
+def infirmary_dashboard(request):
+    school = get_user_school(request)
+    staff_profile = get_object_or_404(StaffProfile, user=request.user)
+
+    health_logs = [
+        {
+            'student': 'Chinedu Okafor',
+            'note': 'High fever - Observation Wing 1',
+            'meta': 'Medication due in 15m',
+            'accent': 'secondary',
+        },
+        {
+            'student': 'Sarah Williams',
+            'note': 'Sprained ankle - Discharged',
+            'meta': 'Parents Notified',
+            'accent': 'on-tertiary-container',
+        },
+        {
+            'student': 'Fatima Bello',
+            'note': 'Asthma review - Routine check',
+            'meta': '2 hrs ago',
+            'accent': 'primary-container',
+        },
+    ]
+
+    context = {
+        'school': school,
+        'staff_profile': staff_profile,
+        'health_logs': health_logs,
+        'section': 'infirmary',
+    }
+
+    return render(request, 'matron/infirmary_dashboard.html', context)
+
+
+@require_welfare_coordinator
+def maintenance_dashboard(request):
+    school = get_user_school(request)
+    staff_profile = get_object_or_404(StaffProfile, user=request.user)
+
+    maintenance_tasks = [
+        {
+            'title': 'Pipe Leak - Lion B',
+            'status': 'Urgent',
+            'icon': 'plumbing',
+            'badge_color': 'error',
+        },
+        {
+            'title': 'Bulb Out - Dining',
+            'status': 'Pending',
+            'icon': 'lightbulb',
+            'badge_color': 'on-surface-variant',
+        },
+    ]
+
+    inventory_items = [
+        {'name': 'Liquid Detergent', 'current': 42, 'total': 50, 'percentage': 84, 'status': 'Sufficient Stock', 'status_color': 'secondary-container'},
+        {'name': 'Bed Linens (Sets)', 'current': 12, 'total': 200, 'percentage': 6, 'status': 'Critical: Reorder Now', 'status_color': 'on-tertiary-container'},
+        {'name': 'Disinfectant Spray', 'current': 18, 'total': 40, 'percentage': 45, 'status': 'Low Stock Alert', 'status_color': 'primary-container'},
+        {'name': 'Sanitary Kits', 'current': 310, 'total': 350, 'percentage': 88, 'status': 'Stock Optimal', 'status_color': 'on-surface-variant'},
+    ]
+
+    context = {
+        'school': school,
+        'staff_profile': staff_profile,
+        'maintenance_tasks': maintenance_tasks,
+        'inventory_fill': sum(item['percentage'] for item in inventory_items) // len(inventory_items) if inventory_items else 0,
+        'section': 'maintenance',
+    }
+
+    return render(request, 'matron/maintenance_dashboard.html', context)

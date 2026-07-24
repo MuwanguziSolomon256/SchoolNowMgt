@@ -1,0 +1,70 @@
+{% extends 'matron/matron_base.html' %}
+{% load static %}
+
+{% block title %}Infirmary Log | Matron{% endblock %}
+
+{% block matron_content %}
+<header class="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 mb-8">
+  <div>
+    <h2 class="font-display-lg text-display-lg text-primary">Infirmary Log</h2>
+    <p class="text-on-surface-variant mt-1 font-body-lg">Track student wellness and recent infirmary updates.</p>
+  </div>
+</header>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+  <div class="glass-card inner-glow p-6 rounded-[24px]">
+    <div class="flex justify-between items-start mb-4">
+      <div class="w-12 h-12 rounded-2xl bg-on-tertiary-container/10 flex items-center justify-center">
+        <span class="material-symbols-outlined text-on-tertiary-container">medical_services</span>
+      </div>
+      <span class="text-xs font-bold text-on-tertiary-container uppercase tracking-wider">Active Cases</span>
+    </div>
+    <h3 class="text-display-lg font-display-lg text-primary">{{ health_logs|length }}</h3>
+    <p class="text-body-md text-on-surface-variant">Current infirmary entries.</p>
+  </div>
+  <div class="glass-card inner-glow p-6 rounded-[24px]">
+    <div class="flex justify-between items-start mb-4">
+      <div class="w-12 h-12 rounded-2xl bg-secondary-container/20 flex items-center justify-center">
+        <span class="material-symbols-outlined text-secondary">healing</span>
+      </div>
+      <span class="text-xs font-bold text-secondary uppercase tracking-wider">Alerts</span>
+    </div>
+    <h3 class="text-display-lg font-display-lg text-primary">{{ health_logs|length }}</h3>
+    <p class="text-body-md text-on-surface-variant">Students needing follow-up.</p>
+  </div>
+  <div class="glass-card inner-glow p-6 rounded-[24px]">
+    <div class="flex justify-between items-start mb-4">
+      <div class="w-12 h-12 rounded-2xl bg-primary-container/10 flex items-center justify-center">
+        <span class="material-symbols-outlined text-primary">info</span>
+      </div>
+      <span class="text-xs font-bold text-primary uppercase tracking-wider">Status</span>
+    </div>
+    <h3 class="text-display-lg font-display-lg text-primary">Stable</h3>
+    <p class="text-body-md text-on-surface-variant">Basic wellness triage is active.</p>
+  </div>
+</div>
+
+<section class="glass-panel inner-glow rounded-[32px] p-8">
+  <div class="flex justify-between items-center mb-6">
+    <div>
+      <h3 class="font-headline-lg text-headline-lg text-primary">Recent Infirmary Cases</h3>
+      <p class="text-on-surface-variant">Latest student health updates and notes.</p>
+    </div>
+  </div>
+  <div class="space-y-4">
+    {% for log in health_logs %}
+    <div class="flex gap-4 p-3 rounded-xl hover:bg-white/50 transition-colors">
+      <div class="w-2 rounded-full {% if log.accent == 'secondary' %}bg-secondary{% elif log.accent == 'on-tertiary-container' %}bg-on-tertiary-container{% else %}bg-primary-container{% endif %}"></div>
+      <div>
+        <p class="text-sm font-bold text-primary">{{ log.student }}</p>
+        <p class="text-xs text-on-surface-variant mt-0.5">{{ log.note }}</p>
+        <p class="text-[10px] text-on-surface-variant mt-2 flex items-center gap-1">
+          <span class="material-symbols-outlined text-[12px]">schedule</span>
+          {{ log.meta }}
+        </p>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

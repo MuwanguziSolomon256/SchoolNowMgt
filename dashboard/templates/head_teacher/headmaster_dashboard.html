@@ -1,0 +1,815 @@
+{% load static %}
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>SchoolNow | Institutional Pulse</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Hanken+Grotesk:wght@600;700;800&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-container": "#500d00",
+                        "inverse-on-surface": "#f0f1f4",
+                        "surface-container": "#edeef1",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-low": "#f2f3f6",
+                        "on-error-container": "#93000a",
+                        "surface-variant": "#e1e2e5",
+                        "primary-fixed-dim": "#bfc2fa",
+                        "inverse-surface": "#2e3133",
+                        "on-tertiary": "#ffffff",
+                        "secondary-fixed": "#ffdea8",
+                        "on-tertiary-fixed": "#3c0800",
+                        "on-secondary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "background": "#f8f9fc",
+                        "on-primary": "#ffffff",
+                        "on-primary-fixed": "#121643",
+                        "surface-container-high": "#e7e8eb",
+                        "on-secondary-fixed-variant": "#5e4200",
+                        "inverse-primary": "#bfc2fa",
+                        "surface": "#f8f9fc",
+                        "secondary-container": "#feb700",
+                        "outline-variant": "#c7c5d0",
+                        "surface-container-highest": "#e1e2e5",
+                        "secondary-fixed-dim": "#ffba20",
+                        "secondary": "#7c5800",
+                        "on-secondary-container": "#6b4b00",
+                        "on-secondary-fixed": "#271900",
+                        "on-background": "#191c1e",
+                        "on-tertiary-fixed-variant": "#881f01",
+                        "on-error": "#ffffff",
+                        "on-primary-container": "#868abd",
+                        "tertiary-fixed": "#ffdbd2",
+                        "primary-fixed": "#e0e0ff",
+                        "error": "#ba1a1a",
+                        "primary": "#080b3a",
+                        "tertiary-fixed-dim": "#ffb4a2",
+                        "on-surface-variant": "#46464f",
+                        "surface-tint": "#565a8b",
+                        "on-tertiary-container": "#e96442",
+                        "on-surface": "#191c1e",
+                        "primary-container": "#1e224f",
+                        "on-primary-fixed-variant": "#3f4371",
+                        "tertiary": "#2b0400",
+                        "surface-bright": "#f8f9fc",
+                        "outline": "#777680",
+                        "surface-dim": "#d9dadd"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "container-padding": "20px",
+                        "base": "8px",
+                        "section-margin": "32px",
+                        "gutter": "16px",
+                        "card-gap": "12px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Hanken Grotesk"],
+                        "body-md": ["Inter"],
+                        "label-md": ["Inter"],
+                        "display-lg": ["Hanken Grotesk"],
+                        "headline-md": ["Hanken Grotesk"],
+                        "headline-lg": ["Hanken Grotesk"],
+                        "body-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "display-lg": ["36px", {"lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "headline-md": ["22px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "headline-lg": ["28px", {"lineHeight": "36px", "fontWeight": "600"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 10px 30px rgba(30, 34, 79, 0.04);
+        }
+        .glass-card:hover {
+            border-color: rgba(255, 255, 255, 0.6);
+            box-shadow: 0 15px 40px rgba(30, 34, 79, 0.08);
+        }
+        .glass-edge {
+            border-top: 1px solid rgba(255, 255, 255, 0.8);
+            border-left: 1px solid rgba(255, 255, 255, 0.8);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(8, 11, 58, 0.1);
+            border-radius: 10px;
+        }
+        .chart-gradient {
+            background: linear-gradient(180deg, rgba(254, 183, 0, 0.15) 0%, rgba(254, 183, 0, 0) 100%);
+        }
+    </style>
+</head>
+<body class="bg-background font-body-md text-on-background min-h-screen overflow-x-hidden selection:bg-secondary-container/30">
+    {% csrf_token %}
+    
+    <!-- Integrated Top Navigation -->
+    <header class="fixed top-0 left-0 right-0 h-16 md:h-20 bg-white/70 backdrop-blur-[20px] shadow-[0_10px_30px_rgba(30,34,79,0.08)] flex items-center px-4 md:px-8 z-50 border-b border-white/20">
+        <!-- Branding: icon only to save space -->
+        <div class="flex items-center gap-3 mr-4 md:mr-12 shrink-0">
+            <div class="w-9 md:w-10 h-9 md:h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg">
+                <span class="material-symbols-outlined text-white text-xl md:text-2xl">school</span>
+            </div>
+        </div>
+        
+        <!-- Mobile hamburger + Role-specific Navigation Tabs - Responsive -->
+        <div class="flex items-center gap-2 md:gap-4">
+            <button id="navToggle" aria-label="Toggle navigation" class="md:hidden inline-flex items-center justify-center p-2 rounded-md hover:bg-surface-container-low transition-colors">
+                <span class="material-symbols-outlined text-primary">menu</span>
+            </button>
+        </div>
+
+        <nav id="topNavLinks" class="hidden md:flex items-center gap-1 md:gap-2 h-full overflow-x-auto">
+            {% url 'teacher:head_teacher:dashboard' as dashboard_url %}
+            {% url 'teacher:head_teacher:financials' as financials_url %}
+            {% url 'teacher:head_teacher:enrollment' as enrollment_url %}
+            {% url 'teacher:head_teacher:calendar' as calendar_url %}
+
+            <a class="flex items-center gap-1 md:gap-2 px-2 md:px-4 h-full transition-all whitespace-nowrap text-xs md:text-sm {% if request.path == dashboard_url %}border-b-2 border-secondary-container text-primary font-bold{% else %}border-b-2 border-transparent text-on-surface-variant/70 hover:text-primary hover:border-primary/20{% endif %}" href="{{ dashboard_url }}">
+                <span class="material-symbols-outlined text-[16px] md:text-[20px]">dashboard</span>
+                <span class="hidden sm:inline">Dashboard</span>
+            </a>
+            <a class="flex items-center gap-1 md:gap-2 px-2 md:px-4 h-full transition-all whitespace-nowrap text-xs md:text-sm {% if request.path == financials_url %}border-b-2 border-secondary-container text-primary font-bold{% else %}border-b-2 border-transparent text-on-surface-variant/70 hover:text-primary hover:border-primary/20{% endif %}" href="{{ financials_url }}" onclick="filterCharts('term')">
+                <span class="material-symbols-outlined text-[16px] md:text-[20px]">payments</span>
+                <span class="hidden sm:inline">Financials</span>
+            </a>
+            <a class="flex items-center gap-1 md:gap-2 px-2 md:px-4 h-full transition-all whitespace-nowrap text-xs md:text-sm {% if request.path == enrollment_url %}border-b-2 border-secondary-container text-primary font-bold{% else %}border-b-2 border-transparent text-on-surface-variant/70 hover:text-primary hover:border-primary/20{% endif %}" href="{{ enrollment_url }}">
+                <span class="material-symbols-outlined text-[16px] md:text-[20px]">group</span>
+                <span class="hidden sm:inline">Enrollment</span>
+            </a>
+            <a class="flex items-center gap-1 md:gap-2 px-2 md:px-4 h-full transition-all whitespace-nowrap text-xs md:text-sm {% if request.path == calendar_url %}border-b-2 border-secondary-container text-primary font-bold{% else %}border-b-2 border-transparent text-on-surface-variant/70 hover:text-primary hover:border-primary/20{% endif %}" href="{{ calendar_url }}">
+                <span class="material-symbols-outlined text-[16px] md:text-[20px]">calendar_month</span>
+                <span class="hidden sm:inline">Calendar</span>
+            </a>
+        </nav>
+
+        <!-- Mobile nav popup (hidden by default) -->
+        <div id="mobileNav" class="hidden md:hidden fixed top-16 left-0 right-0 bg-white/95 backdrop-blur-sm z-40 border-b border-white/20 shadow-sm">
+            <div class="flex flex-col py-2">
+                <a href="{{ dashboard_url }}" class="px-4 py-3 text-sm font-bold text-primary border-b border-surface-container-low">Dashboard</a>
+                <a href="{{ financials_url }}" onclick="filterCharts('term')" class="px-4 py-3 text-sm font-medium text-on-surface-variant border-b">Financials</a>
+                <a href="{{ enrollment_url }}" class="px-4 py-3 text-sm font-medium text-on-surface-variant border-b">Enrollment</a>
+                <a href="{{ calendar_url }}" class="px-4 py-3 text-sm font-medium text-on-surface-variant">Calendar</a>
+            </div>
+        </div>
+        
+        <!-- Search, Utils & Profile -->
+        <div class="ml-auto flex items-center gap-2 md:gap-6">
+            <div class="hidden 2xl:flex items-center gap-3 bg-surface-container-low/50 px-4 py-2 rounded-full border border-white/50 w-48 focus-within:w-64 transition-all">
+                <span class="material-symbols-outlined text-on-surface-variant/60 text-xl">search</span>
+                <input class="bg-transparent border-none focus:ring-0 text-xs w-full placeholder:text-on-surface-variant/40" placeholder="Search records..." type="text"/>
+            </div>
+            <div class="flex items-center gap-1 md:gap-2">
+                <a id="notificationsButton" href="{% url 'teacher:message_inbox' %}" class="w-9 md:w-10 h-9 md:h-10 flex items-center justify-center rounded-full hover:bg-primary/5 transition-colors relative" title="Messages" onclick="openComposeQuick(event)">
+                    <span class="material-symbols-outlined text-primary text-[18px] md:text-[20px]">notifications</span>
+                    <span class="absolute top-1 md:top-2 right-1 md:right-2 w-1.5 md:w-2 h-1.5 md:h-2 bg-secondary-container rounded-full border border-white"></span>
+                </a>
+                <form id="logoutForm" method="post" action="{% url 'teacher:logout' %}" class="inline">
+                    {% csrf_token %}
+                    <button type="submit" class="w-9 md:w-10 h-9 md:h-10 flex items-center justify-center rounded-full hover:bg-primary/5 transition-colors hidden sm:flex" title="Logout">
+                        <span class="material-symbols-outlined text-primary text-[18px] md:text-[20px]">logout</span>
+                    </button>
+                </form>
+            </div>
+            <div class="hidden md:block h-8 w-[1px] bg-outline-variant/30"></div>
+            <a href="{% url 'teacher:head_teacher:dashboard' %}" class="flex items-center gap-2 md:gap-3 group cursor-pointer">
+                <div class="text-right hidden md:block">
+                    <p class="text-xs font-bold text-primary">{{ staff_profile.user.get_full_name }}</p>
+                    <p class="text-[10px] text-on-surface-variant/60 font-medium">{{ staff_profile.position }}</p>
+                </div>
+                <div class="w-8 md:w-10 h-8 md:h-10 rounded-full border-2 border-secondary-container/30 overflow-hidden group-hover:border-secondary-container transition-all shrink-0">
+                    {% if staff_profile.user.profile_picture %}
+                        <img class="w-full h-full object-cover" src="{{ staff_profile.user.profile_picture.url }}" alt="Profile"/>
+                    {% else %}
+                        <div class="w-full h-full bg-primary flex items-center justify-center text-white text-xs md:text-sm font-bold">
+                            {{ staff_profile.user.first_name.0|upper }}
+                        </div>
+                    {% endif %}
+                </div>
+            </a>
+        </div>
+    </header>
+    
+    <!-- Main Content Area -->
+    <main class="min-h-screen relative">
+        <!-- Canvas -->
+        <div class="pt-20 md:pt-28 px-4 md:px-6 lg:px-8 pb-12 max-w-7xl mx-auto">
+            <!-- Institutional Pulse Header -->
+            <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 md:gap-0 mb-6 md:mb-8">
+                <div class="flex-1">
+                    <h2 class="font-display-lg text-2xl md:text-3xl lg:text-4xl text-primary tracking-tight">Institutional Pulse</h2>
+                    <p class="text-on-surface-variant text-sm md:text-base flex items-center gap-2 mt-1">
+                        <span class="material-symbols-outlined text-sm">calendar_today</span>
+                        <span class="truncate">Michaelmas Term · Academic Year 2024/25</span>
+                    </p>
+                </div>
+                <div class="flex gap-2 md:gap-3 w-full md:w-auto">
+                    {% if active_section == 'financials' %}
+                        <button onclick="exportReport()" class="flex items-center gap-2 px-3 md:px-5 py-2 md:py-2.5 bg-white border border-outline-variant/30 text-primary font-bold text-sm rounded-lg md:rounded-xl hover:bg-surface-container-low transition-all shadow-sm flex-1 md:flex-none justify-center md:justify-start">
+                            <span class="material-symbols-outlined text-base md:text-lg">download</span>
+                            <span class="hidden sm:inline">Export</span>
+                        </button>
+                    {% elif active_section == 'calendar' %}
+                        <button onclick="openNewEventModal()" class="flex items-center gap-2 px-4 md:px-6 py-2 md:py-2.5 bg-primary text-white font-bold text-sm rounded-lg md:rounded-xl hover:shadow-[0_4px_15px_rgba(8,11,58,0.3)] transition-all glass-edge flex-1 md:flex-none justify-center">
+                            <span class="material-symbols-outlined text-base md:text-lg">add</span>
+                            <span class="hidden sm:inline">Event</span>
+                        </button>
+                    {% elif active_section == 'dashboard' %}
+                        <!-- Dashboard save button is inside the profile form -->
+                    {% endif %}
+                </div>
+            </div>
+            
+            {% if active_section == 'dashboard' %}
+                <div class="col-span-1 md:col-span-12 glass-card rounded-xl md:rounded-[24px] p-4 md:p-8">
+                    <div class="flex flex-col lg:flex-row lg:items-start gap-6">
+                        <div class="w-full lg:w-1/3 bg-surface-container-lowest rounded-2xl p-5">
+                            <div class="flex items-center gap-4">
+                                <div class="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary text-2xl">
+                                    {{ staff_profile.user.first_name.0|upper }}
+                                </div>
+                                <div>
+                                    <p class="text-sm font-bold text-primary">{{ staff_profile.user.get_full_name }}</p>
+                                <!-- Quick Compose Modal for Headmaster Messaging -->
+                                <div id="composeModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4 py-8 sm:py-0">
+                                    <div class="bg-white rounded-lg md:rounded-[24px] p-4 md:p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto">
+                                        <h3 class="font-headline-md text-base md:text-xl text-primary mb-4 md:mb-6">New Message</h3>
+                                        <form id="composeForm" method="post" onsubmit="return submitComposeForm(event)">
+                                            {% csrf_token %}
+                                            <div class="space-y-3 md:space-y-4 text-sm">
+                                                <div>
+                                                    <label class="block text-xs font-bold text-primary mb-1">Recipient Type</label>
+                                                    <select id="recipient_type" name="recipient_type" class="w-full px-3 py-2 border border-outline-variant/30 rounded-lg text-sm" onchange="composeRecipientTypeChanged()">
+                                                        <option value="class_announcement">Class Announcement</option>
+                                                        <option value="individual_parent">Individual Parent</option>
+                                                        <option value="specific_teacher">Specific Teacher</option>
+                                                        <option value="admin">Admin</option>
+                                                    </select>
+                                                </div>
+                                                <div id="targetClassWrap" class="hidden">
+                                                    <label class="block text-xs font-bold text-primary mb-1">Target Class (ID)</label>
+                                                    <input id="target_class" name="target_class" type="text" class="w-full px-3 py-2 border border-outline-variant/30 rounded-lg text-sm" placeholder="e.g., 12A" />
+                                                </div>
+                                                <div id="targetUserWrap" class="hidden">
+                                                    <label class="block text-xs font-bold text-primary mb-1">Target User (ID)</label>
+                                                    <input id="target_user" name="target_user" type="text" class="w-full px-3 py-2 border border-outline-variant/30 rounded-lg text-sm" placeholder="User ID" />
+                                                </div>
+                                                <div>
+                                                    <label class="block text-xs font-bold text-primary mb-1">Subject</label>
+                                                    <input id="compose_subject" name="subject" type="text" required class="w-full px-3 py-2 border border-outline-variant/30 rounded-lg text-sm" />
+                                                </div>
+                                                <div>
+                                                    <label class="block text-xs font-bold text-primary mb-1">Message</label>
+                                                    <textarea id="compose_body" name="body" required rows="4" class="w-full px-3 py-2 border border-outline-variant/30 rounded-lg text-sm"></textarea>
+                                                </div>
+                                            </div>
+                                            <div class="flex gap-2 mt-4">
+                                                <button type="button" onclick="closeComposeModal()" class="flex-1 px-3 py-2 bg-surface-container text-primary font-bold text-sm rounded-lg">Cancel</button>
+                                                <button type="submit" class="flex-1 px-3 py-2 bg-primary text-white font-bold text-sm rounded-lg">Send</button>
+                                            </div>
+                                            <p class="text-xs text-on-surface-variant mt-3">Or <a href="{% url 'teacher:message_inbox' %}" class="text-secondary-container font-bold">open full inbox</a></p>
+                                        </form>
+                                    </div>
+                                </div>
+
+                                <script>
+                                    function openComposeQuick(e) {
+                                        if (e) e.preventDefault();
+                                        document.getElementById('composeModal').classList.remove('hidden');
+                                    }
+
+                                    function closeComposeModal() {
+                                        document.getElementById('composeModal').classList.add('hidden');
+                                        // reset form
+                                        document.getElementById('composeForm').reset();
+                                        composeRecipientTypeChanged();
+                                    }
+
+                                    function composeRecipientTypeChanged() {
+                                        const type = document.getElementById('recipient_type').value;
+                                        document.getElementById('targetClassWrap').classList.toggle('hidden', type !== 'class_announcement');
+                                        document.getElementById('targetUserWrap').classList.toggle('hidden', type !== 'individual_parent' && type !== 'specific_teacher');
+                                    }
+
+                                    function getCSRFToken() {
+                                        const el = document.querySelector('#composeForm [name=csrfmiddlewaretoken]') || document.querySelector('[name=csrfmiddlewaretoken]');
+                                        return el ? el.value : '';
+                                    }
+
+                                    function submitComposeForm(e) {
+                                        e.preventDefault();
+                                        const url = '{% url "teacher:send_message_ajax" %}';
+                                        const data = {
+                                            recipient_type: document.getElementById('recipient_type').value,
+                                            target_class: document.getElementById('target_class') ? document.getElementById('target_class').value : '',
+                                            target_user: document.getElementById('target_user') ? document.getElementById('target_user').value : '',
+                                            subject: document.getElementById('compose_subject').value,
+                                            body: document.getElementById('compose_body').value
+                                        };
+                                        fetch(url, {
+                                            method: 'POST',
+                                            credentials: 'same-origin',
+                                            headers: {
+                                                'Content-Type': 'application/json',
+                                                'X-CSRFToken': getCSRFToken(),
+                                                'Accept': 'application/json'
+                                            },
+                                            body: JSON.stringify(data)
+                                        }).then(r => r.json()).then(resp => {
+                                            if (resp.success) {
+                                                alert('Message sent');
+                                                closeComposeModal();
+                                                // Optionally navigate to inbox
+                                                // location.href = '{% url "teacher:message_inbox" %}';
+                                            } else {
+                                                alert('Error sending message: ' + (resp.error || 'unknown'));
+                                            }
+                                        }).catch(err => { alert('Network error: ' + err); });
+                                        return false;
+                                    }
+
+                                    // Initialize compose UI state
+                                    composeRecipientTypeChanged();
+
+                                </script>
+                            </div>
+                            <div class="mt-6 space-y-3 text-sm text-on-surface-variant">
+                                <p><span class="font-bold text-primary">Phone:</span> {{ staff_profile.user.phone }}</p>
+                                <p><span class="font-bold text-primary">Joined:</span> {{ staff_profile.date_joined }}</p>
+                                <p><span class="font-bold text-primary">Employee ID:</span> {{ staff_profile.employee_id }}</p>
+                                <p><span class="font-bold text-primary">Department:</span> {{ staff_profile.teacher_department }}</p>
+                            </div>
+                        </div>
+                        <div class="w-full lg:w-2/3">
+                            <form id="profileForm" method="post" enctype="multipart/form-data" class="space-y-6">
+                                {% csrf_token %}
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {{ profile_form.as_p }}
+                                </div>
+                                <div class="grid grid-cols-1 gap-4">
+                                    {{ qualification_form.as_p }}
+                                </div>
+                                <button type="submit" class="w-full md:w-auto px-4 py-3 bg-primary text-white font-bold rounded-xl hover:shadow-lg transition-all">Save Profile</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            {% elif active_section == 'financials' %}
+                <div class="col-span-1 md:col-span-8 glass-card rounded-xl md:rounded-[24px] p-4 md:p-8 relative overflow-hidden" id="financials">
+                    <div class="absolute top-0 right-0 w-64 h-64 bg-secondary-container/5 rounded-full blur-3xl -mr-20 -mt-20"></div>
+                    <div class="flex items-start justify-between relative z-10">
+                        <div>
+                            <h3 class="font-headline-md text-base md:text-xl text-primary mb-1">Financial Health</h3>
+                            <p class="text-on-surface-variant text-xs md:text-sm">Current Term Revenue & Collections</p>
+                        </div>
+                        <div class="flex items-center gap-2 bg-primary/5 px-2 md:px-3 py-1 md:py-1.5 rounded-full">
+                            <span class="w-2 h-2 bg-secondary-container rounded-full animate-pulse"></span>
+                            <span class="text-[10px] md:text-xs font-bold text-primary">Live Updates</span>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8 mt-6 md:mt-10 relative z-10">
+                        <div class="space-y-1">
+                            <p class="text-[10px] md:text-xs font-bold text-on-surface-variant/60 uppercase tracking-widest">Total Revenue</p>
+                            <div class="flex items-baseline gap-2">
+                                <p class="text-2xl md:text-3xl font-bold text-primary tracking-tight" id="total-revenue">{{ financial_data.total_revenue_formatted }}</p>
+                                <span class="text-[10px] md:text-xs font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded flex items-center gap-0.5">
+                                    <span class="material-symbols-outlined text-[10px]">trending_up</span> {{ financial_data.current_month_payments|floatformat:0 }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="space-y-1">
+                            <p class="text-[10px] md:text-xs font-bold text-on-surface-variant/60 uppercase tracking-widest">Collections</p>
+                            <p class="text-2xl md:text-3xl font-bold text-primary tracking-tight" id="collections">{{ financial_data.collections_percentage|floatformat:1 }}%</p>
+                            <p class="text-[10px] md:text-xs text-on-surface-variant font-medium mt-1">{{ financial_data.collections_percentage|floatformat:1 }}% Target Met</p>
+                        </div>
+                        <div class="space-y-1">
+                            <p class="text-[10px] md:text-xs font-bold text-on-surface-variant/60 uppercase tracking-widest">Outstanding</p>
+                            <p class="text-2xl md:text-3xl font-bold text-on-tertiary-container tracking-tight" id="outstanding">UGX {{ financial_data.outstanding|floatformat:0 }}</p>
+                            <p class="text-[10px] md:text-xs text-error font-medium mt-1">{{ financial_data.outstanding_percentage|floatformat:1 }}% Arrears</p>
+                        </div>
+                    </div>
+                    <div class="mt-6 md:mt-10 grid gap-4 md:grid-cols-2">
+                        <div class="rounded-3xl bg-surface-container-low p-4">
+                            <p class="text-xs text-on-surface-variant uppercase tracking-widest">This term payments</p>
+                            <p class="mt-2 text-2xl font-bold text-primary">UGX {{ financial_data.term_payments|floatformat:0 }}</p>
+                        </div>
+                        <div class="rounded-3xl bg-surface-container-low p-4">
+                            <p class="text-xs text-on-surface-variant uppercase tracking-widest">Expected fees</p>
+                            <p class="mt-2 text-2xl font-bold text-primary">UGX {{ financial_data.total_revenue|floatformat:0 }}</p>
+                        </div>
+                    </div>
+                    <div class="mt-6 md:mt-10 h-56">
+                        <canvas id="financialChart" class="w-full h-full"></canvas>
+                    </div>
+                </div>
+                <div class="col-span-1 md:col-span-4 glass-card rounded-xl md:rounded-[24px] p-4 md:p-8">
+                    <h3 class="font-headline-md text-base md:text-xl text-primary mb-4">Revenue Breakdown</h3>
+                    <ul class="space-y-3 text-sm text-on-surface-variant">
+                        <li class="flex justify-between"><span>Current month payments</span><span class="font-bold text-primary">UGX {{ financial_data.current_month_payments|floatformat:0 }}</span></li>
+                        <li class="flex justify-between"><span>Term payments</span><span class="font-bold text-primary">UGX {{ financial_data.term_payments|floatformat:0 }}</span></li>
+                        <li class="flex justify-between"><span>Outstanding</span><span class="font-bold text-error">UGX {{ financial_data.outstanding|floatformat:0 }}</span></li>
+                        <li class="flex justify-between"><span>Collections rate</span><span class="font-bold text-primary">{{ financial_data.collections_percentage|floatformat:1 }}%</span></li>
+                    </ul>
+                </div>
+            {% elif active_section == 'enrollment' %}
+                <div class="col-span-1 md:col-span-12 glass-card rounded-xl md:rounded-[24px] p-4 md:p-8" id="enrollment">
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-8">
+                        <div>
+                            <h3 class="font-headline-md text-base md:text-xl text-primary mb-1">Enrollment Mix</h3>
+                            <p class="text-on-surface-variant text-xs md:text-sm">Student distribution by boarding status.</p>
+                        </div>
+                        <div class="flex items-center gap-3 text-xs text-on-surface-variant">
+                            <span class="font-bold text-primary">Total:</span> {{ enrollment_data.total_enrollment }} students
+                        </div>
+                    </div>
+                    <div class="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-4">
+                        <div class="rounded-3xl bg-surface-container-low p-5">
+                            <p class="text-xs text-on-surface-variant uppercase tracking-widest">Day Scholars</p>
+                            <p class="mt-3 text-3xl font-bold text-primary">{{ enrollment_data.day_scholars }}</p>
+                            <p class="text-xs text-on-surface-variant mt-2">{{ enrollment_data.day_scholars_percentage|floatformat:1 }}%</p>
+                        </div>
+                        <div class="rounded-3xl bg-surface-container-low p-5">
+                            <p class="text-xs text-on-surface-variant uppercase tracking-widest">Boarding</p>
+                            <p class="mt-3 text-3xl font-bold text-primary">{{ enrollment_data.boarding_students }}</p>
+                            <p class="text-xs text-on-surface-variant mt-2">{{ enrollment_data.boarding_percentage|floatformat:1 }}%</p>
+                        </div>
+                        <div class="rounded-3xl bg-surface-container-low p-5">
+                            <p class="text-xs text-on-surface-variant uppercase tracking-widest">Enrollment Trend</p>
+                            <p class="mt-3 text-3xl font-bold text-primary">{{ enrollment_data.total_enrollment }}</p>
+                            <p class="text-xs text-on-surface-variant mt-2">Enrollment stability view</p>
+                        </div>
+                    </div>
+                    <div class="mt-6 h-56">
+                        <canvas id="enrollmentChart" class="w-full h-full"></canvas>
+                    </div>
+                </div>
+            {% elif active_section == 'calendar' %}
+                <div class="col-span-1 md:col-span-12 glass-card rounded-xl md:rounded-[24px] overflow-hidden" id="calendar">
+                    <div class="p-4 md:p-8 border-b border-white/20 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                        <div class="flex-1">
+                            <h3 class="font-headline-md text-base md:text-xl text-primary">Term Calendar</h3>
+                            <p class="text-on-surface-variant text-xs md:text-sm">Upcoming major events and milestones</p>
+                        </div>
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
+                            <div class="flex bg-surface-container-low p-1 rounded-lg md:rounded-xl text-xs md:text-sm">
+                                <button class="px-3 md:px-4 py-1 md:py-1.5 bg-white text-primary font-bold rounded-md md:rounded-lg shadow-sm" onclick="switchCalendarView('monthly')">Monthly</button>
+                                <button class="px-3 md:px-4 py-1 md:py-1.5 text-on-surface-variant/60 font-bold rounded-md md:rounded-lg" onclick="switchCalendarView('weekly')">Weekly</button>
+                                <button class="px-3 md:px-4 py-1 md:py-1.5 text-on-surface-variant/60 font-bold rounded-md md:rounded-lg" onclick="switchCalendarView('agenda')">Agenda</button>
+                            </div>
+                            <div class="flex gap-1 md:gap-2">
+                                <button class="w-8 md:w-10 h-8 md:h-10 flex items-center justify-center rounded-lg md:rounded-xl border border-outline-variant/30 hover:bg-white transition-colors text-sm md:text-base" onclick="previousMonth()">
+                                    <span class="material-symbols-outlined">chevron_left</span>
+                                </button>
+                                <button class="w-8 md:w-10 h-8 md:h-10 flex items-center justify-center rounded-lg md:rounded-xl border border-outline-variant/30 hover:bg-white transition-colors text-sm md:text-base" onclick="nextMonth()">
+                                    <span class="material-symbols-outlined">chevron_right</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-7 border-b border-white/20">
+                        <div class="py-2 md:py-4 text-center text-[9px] md:text-xs font-bold text-on-surface-variant/40 uppercase tracking-widest">Mon</div>
+                        <div class="py-2 md:py-4 text-center text-[9px] md:text-xs font-bold text-on-surface-variant/40 uppercase tracking-widest">Tue</div>
+                        <div class="py-2 md:py-4 text-center text-[9px] md:text-xs font-bold text-on-surface-variant/40 uppercase tracking-widest">Wed</div>
+                        <div class="py-2 md:py-4 text-center text-[9px] md:text-xs font-bold text-on-surface-variant/40 uppercase tracking-widest">Thu</div>
+                        <div class="py-2 md:py-4 text-center text-[9px] md:text-xs font-bold text-on-surface-variant/40 uppercase tracking-widest">Fri</div>
+                        <div class="py-2 md:py-4 text-center text-[9px] md:text-xs font-bold text-on-surface-variant/40 uppercase tracking-widest">Sat</div>
+                        <div class="py-2 md:py-4 text-center text-[9px] md:text-xs font-bold text-on-surface-variant/40 uppercase tracking-widest">Sun</div>
+                    </div>
+                    <div class="grid grid-cols-7 auto-rows-[80px] sm:auto-rows-[120px] md:auto-rows-[160px]" id="calendar-grid">
+                        {% for day, events in calendar_events.items %}
+                            <div class="p-2 sm:p-3 md:p-4 border-r border-b border-white/10 bg-surface-container-lowest/40 overflow-hidden">
+                                <span class="text-[10px] sm:text-xs md:text-sm font-bold text-primary block">{{ day }}</span>
+                                {% for event in events %}
+                                    <div class="mt-1 space-y-0.5">
+                                        <div class="px-1.5 py-0.5 sm:px-2 sm:py-1 md:py-1 bg-primary/10 border-l-2 md:border-l-4 border-primary rounded text-[8px] sm:text-[9px] md:text-[10px] font-bold text-primary truncate"
+                                             data-event-id="{{ event.id }}"
+                                             data-title="{{ event.title|escapejs }}"
+                                             data-description="{{ event.description|default:''|escapejs }}"
+                                             data-start="{{ event.start_date }}"
+                                             data-end="{{ event.end_date }}"
+                                             data-location="{{ event.location|default:''|escapejs }}"
+                                             onclick="editEvent(this)">
+                                            {{ event.title }}
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+            
+            <!-- Bottom Quick Actions / System Status -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 md:gap-6 mt-6 md:mt-8">
+                {% for key, status in system_status.items %}
+                    <div class="glass-card rounded-lg md:rounded-[20px] p-4 md:p-6 flex items-center gap-3 md:gap-4">
+                        <div class="w-10 md:w-12 h-10 md:h-12 rounded-full bg-{{ status.color }}/10 flex items-center justify-center flex-shrink-0">
+                            <span class="material-symbols-outlined text-{{ status.color }} text-lg md:text-2xl">{{ status.icon }}</span>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-xs md:text-sm font-bold text-primary truncate">
+                            </p>
+                            <p class="text-[10px] md:text-xs text-on-surface-variant">{{ status.message }}</p>
+                        </div>
+                        <div class="ml-auto flex-shrink-0">
+                            {% if status.status == "connected" or status.status == "secured" or status.status == "active" %}
+                                <div class="w-2 md:w-3 h-2 md:h-3 bg-emerald-500 rounded-full"></div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </main>
+    
+    <!-- New Event Modal -->
+    <div id="eventModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4 py-8 sm:py-0">
+        <div class="bg-white rounded-lg md:rounded-[24px] p-4 md:p-8 max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <h3 class="font-headline-md text-base md:text-xl text-primary mb-4 md:mb-6">Create New Event</h3>
+            <form id="eventForm" method="post" action="{% url 'teacher:head_teacher:create_event' %}">
+                {% csrf_token %}
+                <input type="hidden" name="event_id" id="event_id" value="" />
+                <div class="space-y-3 md:space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-primary mb-1 md:mb-2">Event Title</label>
+                        <input type="text" name="title" required class="w-full px-3 md:px-4 py-2 md:py-2.5 border border-outline-variant/30 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-sm" placeholder="e.g., Staff Meeting"/>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-primary mb-1 md:mb-2">Event Type</label>
+                        <select name="event_type" class="w-full px-3 md:px-4 py-2 md:py-2.5 border border-outline-variant/30 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-sm">
+                            <option value="other">Other Event</option>
+                            <option value="holiday">Holiday</option>
+                            <option value="exam">Examination</option>
+                            <option value="activity">School Activity</option>
+                            <option value="meeting">Staff Meeting</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-primary mb-1 md:mb-2">Start Date</label>
+                        <input type="date" name="start_date" required class="w-full px-3 md:px-4 py-2 md:py-2.5 border border-outline-variant/30 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-sm"/>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-primary mb-1 md:mb-2">End Date</label>
+                        <input type="date" name="end_date" required class="w-full px-3 md:px-4 py-2 md:py-2.5 border border-outline-variant/30 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-sm"/>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-primary mb-1 md:mb-2">Description</label>
+                        <textarea name="description" class="w-full px-3 md:px-4 py-2 md:py-2.5 border border-outline-variant/30 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-sm" rows="3" placeholder="Event details..."></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-primary mb-1 md:mb-2">Location</label>
+                        <input type="text" name="location" class="w-full px-3 md:px-4 py-2 md:py-2.5 border border-outline-variant/30 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-sm" placeholder="Event location"/>
+                    </div>
+                </div>
+                <div class="flex gap-2 md:gap-3 mt-4 md:mt-6">
+                    <button type="button" onclick="closeNewEventModal()" class="flex-1 px-3 md:px-4 py-2 md:py-2.5 bg-surface-container text-primary font-bold text-sm rounded-lg md:rounded-lg hover:bg-surface-container-high transition-all">
+                        Cancel
+                    </button>
+                    <button id="deleteEventBtn" type="button" onclick="deleteEvent()" class="hidden px-3 md:px-4 py-2 md:py-2.5 bg-red-600 text-white font-bold text-sm rounded-lg md:rounded-lg hover:opacity-90 transition-all">Delete</button>
+                    <button id="submitEventBtn" type="submit" class="flex-1 px-3 md:px-4 py-2 md:py-2.5 bg-primary text-white font-bold text-sm rounded-lg md:rounded-lg hover:shadow-[0_4px_15px_rgba(8,11,58,0.3)] transition-all">
+                        Create Event
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        // Event Modal Functions
+        function openNewEventModal() {
+            document.getElementById('eventModal').classList.remove('hidden');
+        }
+        
+        function closeNewEventModal() {
+            document.getElementById('eventModal').classList.add('hidden');
+        }
+        
+        // Form submission with AJAX
+        document.getElementById('eventForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const form = this;
+            const eventId = document.getElementById('event_id').value;
+            const formData = new FormData(form);
+
+            // Decide endpoint based on whether we're editing or creating
+            let url = '{% url "teacher:head_teacher:create_event" %}';
+            if (eventId) {
+                url = `/teacher/admin/head-teacher/headmaster/event/${eventId}/update/`;
+            }
+
+            fetch(url, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const msg = eventId ? 'Event updated successfully!' : 'Event created successfully!';
+                    alert(msg);
+                    closeNewEventModal();
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            }).catch(err => { alert('Network error: ' + err); });
+        });
+        
+        // Calendar functions
+        function switchCalendarView(view) {
+            console.log('Switching to ' + view + ' view');
+            // TODO: Implement calendar view switching
+        }
+        
+        function previousMonth() {
+            console.log('Previous month');
+        }
+        
+        function nextMonth() {
+            console.log('Next month');
+        }
+        
+        function editEvent(el) {
+            // accept element (from data- attributes) or id
+            let dataset = null;
+            if (typeof el === 'string' || typeof el === 'number') {
+                // fallback: try to find element by data-event-id
+                const found = document.querySelector(`[data-event-id='${el}']`);
+                if (!found) return;
+                dataset = found.dataset;
+            } else if (el && el.dataset) {
+                dataset = el.dataset;
+            }
+            if (!dataset) return;
+
+            // Prefill modal
+            document.getElementById('event_id').value = dataset.eventId || dataset.eventId || dataset.eventId;
+            document.querySelector('[name=title]').value = dataset.title || '';
+            document.querySelector('[name=description]').value = dataset.description || '';
+            if (document.querySelector('[name=event_type]')) document.querySelector('[name=event_type]').value = dataset.eventType || document.querySelector('[name=event_type]').value;
+            if (document.querySelector('[name=start_date]')) document.querySelector('[name=start_date]').value = dataset.start || '';
+            if (document.querySelector('[name=end_date]')) document.querySelector('[name=end_date]').value = dataset.end || '';
+            if (document.querySelector('[name=location]')) document.querySelector('[name=location]').value = dataset.location || '';
+
+            // Show delete button and change submit label
+            document.getElementById('deleteEventBtn').classList.remove('hidden');
+            document.getElementById('submitEventBtn').textContent = 'Update Event';
+            document.getElementById('eventModal').classList.remove('hidden');
+        }
+
+        function deleteEvent() {
+            const eventId = document.getElementById('event_id').value;
+            if (!eventId) return alert('No event selected');
+            if (!confirm('Delete this event?')) return;
+            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            fetch(`/teacher/admin/head-teacher/headmaster/event/${eventId}/delete/`, {
+                method: 'POST', credentials: 'same-origin', headers: { 'X-CSRFToken': csrftoken, 'Accept': 'application/json' }
+            }).then(r => r.json()).then(data => {
+                if (data.success) { alert('Event deleted'); closeNewEventModal(); location.reload(); }
+                else alert('Error: ' + (data.error || 'unknown'));
+            }).catch(e => alert('Network error: ' + e));
+        }
+        
+        // Chart filtering
+        // Charts (Chart.js)
+        let enrollmentChart = null;
+        let financialChart = null;
+
+        function initCharts() {
+            // Enrollment doughnut
+            const ctxE = document.getElementById('enrollmentChart');
+            if (ctxE) {
+                enrollmentChart = new Chart(ctxE.getContext('2d'), {
+                    type: 'doughnut', data: { labels: ['Day Scholars','Boarding'], datasets: [{ data: [1,1], backgroundColor: ['#080b3a','#feb700'] }] }, options: { responsive: true, maintainAspectRatio: false }
+                });
+            }
+
+            const ctxF = document.getElementById('financialChart');
+            if (ctxF) {
+                financialChart = new Chart(ctxF.getContext('2d'), {
+                    type: 'bar', data: { labels: ['Total'], datasets: [{ label: 'Payments', data: [0], backgroundColor: ['#feb700'] }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
+                });
+            }
+            // initial load
+            filterCharts('month');
+        }
+
+        function updateCharts(data) {
+            if (!data) return;
+            if (data.enrollment && enrollmentChart) {
+                const day = data.enrollment.day_scholars || 0;
+                const board = data.enrollment.boarding || 0;
+                enrollmentChart.data.datasets[0].data = [day, board];
+                enrollmentChart.update();
+            }
+            if (data.financial && financialChart) {
+                const total = Number(data.financial.total) || 0;
+                financialChart.data.datasets[0].data = [total];
+                financialChart.update();
+            }
+            if (data.financial && data.financial.formatted) {
+                document.getElementById('total-revenue').textContent = data.financial.formatted;
+            }
+            if (data.enrollment) {
+                const totalStudents = (data.enrollment.day_scholars||0) + (data.enrollment.boarding||0) || 1;
+                document.getElementById('collections').textContent = Math.round((data.enrollment.day_scholars||0)/totalStudents*100) + '%';
+            }
+        }
+
+        function filterCharts(range) {
+            fetch('{% url "teacher:head_teacher:get_chart_data" %}?range=' + range, { credentials: 'same-origin' })
+                .then(response => response.json())
+                .then(data => { if (data.success) updateCharts(data); })
+                .catch(e => console.warn('Chart load failed', e));
+        }
+        
+        // Export Report
+        function exportReport() {
+            window.location.href = '{% url "teacher:head_teacher:export_report" %}';
+        }
+        
+        // Glass card interaction
+        document.querySelectorAll('.glass-card').forEach(card => {
+            card.addEventListener('mousedown', () => {
+                card.style.transform = 'scale(0.98)';
+                card.style.transition = 'transform 0.1s ease';
+            });
+            card.addEventListener('mouseup', () => {
+                card.style.transform = 'scale(1)';
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'scale(1)';
+            });
+        });
+
+        // Mobile nav toggle
+        (function() {
+            const navToggle = document.getElementById('navToggle');
+            const mobileNav = document.getElementById('mobileNav');
+            if (!navToggle || !mobileNav) return;
+
+            navToggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                mobileNav.classList.toggle('hidden');
+            });
+
+            // Close when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!mobileNav.classList.contains('hidden')) {
+                    if (!mobileNav.contains(e.target) && !navToggle.contains(e.target)) {
+                        mobileNav.classList.add('hidden');
+                    }
+                }
+            });
+
+            // Hide mobile nav on resize to medium and above
+            window.addEventListener('resize', () => {
+                if (window.innerWidth >= 768) {
+                    mobileNav.classList.add('hidden');
+                }
+            });
+        })();
+
+        // Load Chart.js dynamically if not present, then initialize charts
+        window.addEventListener('load', function() {
+            if (typeof Chart === 'undefined') {
+                const s = document.createElement('script');
+                s.src = 'https://cdn.jsdelivr.net/npm/chart.js';
+                s.onload = initCharts;
+                document.head.appendChild(s);
+            } else {
+                initCharts();
+            }
+        });
+    </script>
+</body>
+</html>

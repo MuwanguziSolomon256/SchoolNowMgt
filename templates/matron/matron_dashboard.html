@@ -1,495 +1,328 @@
-{% extends "teacher/base.html" %}
+{% extends 'matron/matron_base.html' %}
 {% load static %}
 
-{% block title %}Matron Dashboard{% endblock %}
+{% block title %}Hostel Operations | Matron Dashboard{% endblock %}
 
-{% block content %}
+{% block extra_css %}
 <style>
-  .admin-nav {
-    background: linear-gradient(135deg, #080b3a 0%, #1a1e4f 100%);
-    position: fixed;
+  .glass-panel {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 10px 30px rgba(30, 34, 79, 0.04);
+  }
+  .glass-card {
+    background: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    transition: all 0.3s ease;
+  }
+  .glass-card:hover {
+    background: rgba(255, 255, 255, 0.8);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(30, 34, 79, 0.08);
+  }
+  .inner-glow {
+    position: relative;
+  }
+  .inner-glow::after {
+    content: '';
+    position: absolute;
     top: 0;
     left: 0;
     right: 0;
-    z-index: 100;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    bottom: 0;
+    pointer-events: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.8);
+    border-left: 1px solid rgba(255, 255, 255, 0.8);
+    border-radius: inherit;
   }
-  .admin-nav-container {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 0 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: 70px;
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
   }
-  .admin-nav-brand {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex: 1;
+  body {
+    background-color: #f8f9fc;
+    background-image:
+      radial-gradient(at 0% 0%, rgba(191, 194, 250, 0.15) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, rgba(254, 183, 0, 0.1) 0px, transparent 50%);
   }
-  .admin-nav-icon {
-    width: 40px;
-    height: 40px;
-    background-color: #7c5800;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
-    color: white;
+  ::-webkit-scrollbar {
+    width: 6px;
   }
-  .admin-nav-text h2 {
-    color: white;
-    font-size: 16px;
-    font-weight: 600;
-    margin: 0;
-  }
-  .admin-nav-text p {
-    color: #d4a574;
-    font-size: 12px;
-    margin: 2px 0 0 0;
-  }
-  .admin-nav-actions {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-  }
-  .nav-user-info {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: white;
-    font-size: 14px;
-  }
-  .nav-btn {
-    display: flex;
-    align-items: center;
-    gap: 6px;
+  ::-webkit-scrollbar-track {
     background: transparent;
-    border: none;
-    color: white;
-    cursor: pointer;
-    padding: 8px 12px;
-    border-radius: 6px;
-    font-size: 14px;
-    transition: all 0.3s ease;
   }
-  .nav-btn:hover {
-    background-color: rgba(212, 165, 116, 0.15);
-    color: #d4a574;
-  }
-  .dashboard-content {
-    padding-top: 90px;
+  ::-webkit-scrollbar-thumb {
+    background: rgba(30, 34, 79, 0.1);
+    border-radius: 10px;
   }
 </style>
+{% endblock %}
 
-<div class="admin-nav">
-  <div class="admin-nav-container">
-    <div class="admin-nav-brand">
-      <div class="admin-nav-icon">👩‍⚕️</div>
-      <div class="admin-nav-text">
-        <h2>Matron</h2>
-        <p>{{ request.user.school.name|default:"School Management" }}</p>
-      </div>
+{% block matron_content %}
+  <header class="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 mb-8">
+    <div>
+      <h2 class="font-display-lg text-display-lg text-primary">Hostel Operations</h2>
+      <p class="text-on-surface-variant mt-1 font-body-lg">Welcome back, {{ staff_profile.user.get_full_name|default:request.user.username }}. {{ statistics.total_residents }} students in residence.</p>
     </div>
-    
-    <div class="admin-nav-actions">
-      <div class="nav-user-info">
-        <span>👤</span>
-        <span>{{ request.user.get_full_name|default:request.user.username }}</span>
-      </div>
-      
-      <form method="post" action="{% url 'teacher:logout' %}" style="margin: 0;">
+    <div class="flex items-center gap-4">
+      <button class="flex items-center gap-2 px-4 py-2 rounded-xl text-on-surface-variant hover:bg-white/40 transition-colors font-label-md">
+        <span class="material-symbols-outlined">settings</span>
+        Settings
+      </button>
+      <form method="post" action="{% url 'teacher:logout' %}" class="m-0">
         {% csrf_token %}
-        <button type="submit" class="nav-btn" title="Logout to Auth Login">
-          <span>🚪</span>
-          <span>Logout</span>
+        <button type="submit" class="flex items-center gap-2 px-4 py-2 rounded-xl text-error hover:bg-error-container/10 transition-colors font-label-md">
+          <span class="material-symbols-outlined">logout</span>
+          Log Out
         </button>
       </form>
     </div>
+  </header>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+    <div class="glass-card inner-glow p-6 rounded-[24px]">
+      <div class="flex justify-between items-start mb-4">
+        <div class="w-12 h-12 rounded-2xl bg-secondary-container/20 flex items-center justify-center">
+          <span class="material-symbols-outlined text-secondary">checklist_rtl</span>
+        </div>
+        <span class="text-xs font-bold text-secondary uppercase tracking-wider">Roll Call</span>
+      </div>
+      <h3 class="text-display-lg font-display-lg text-primary">{{ roll_call_overall }}%</h3>
+      <p class="text-body-md text-on-surface-variant">Check-ins completed</p>
+    </div>
+
+    <div class="glass-card inner-glow p-6 rounded-[24px]">
+      <div class="flex justify-between items-start mb-4">
+        <div class="w-12 h-12 rounded-2xl bg-primary-container/10 flex items-center justify-center">
+          <span class="material-symbols-outlined text-primary">home</span>
+        </div>
+        <span class="text-xs font-bold text-primary uppercase tracking-wider">Hostels</span>
+      </div>
+      <h3 class="text-display-lg font-display-lg text-primary">{{ statistics.total_hostels }}</h3>
+      <p class="text-body-md text-on-surface-variant">{{ statistics.occupancy_rate }} occupancy • {{ statistics.avg_residents_per_hostel }} avg / hostel</p>
+    </div>
+
+    <div class="glass-card inner-glow p-6 rounded-[24px]">
+      <div class="flex justify-between items-start mb-4">
+        <div class="w-12 h-12 rounded-2xl bg-on-tertiary-container/10 flex items-center justify-center">
+          <span class="material-symbols-outlined text-on-tertiary-container">medical_services</span>
+        </div>
+        <span class="text-xs font-bold text-on-tertiary-container uppercase tracking-wider">Health Hub</span>
+      </div>
+      <h3 class="text-display-lg font-display-lg text-primary">{{ health_hub_count }}</h3>
+      <p class="text-body-md text-on-surface-variant">Active infirmary logs</p>
+    </div>
+
+    <div class="glass-card inner-glow p-6 rounded-[24px]">
+      <div class="flex justify-between items-start mb-4">
+        <div class="w-12 h-12 rounded-2xl bg-primary-container/10 flex items-center justify-center">
+          <span class="material-symbols-outlined text-primary">engineering</span>
+        </div>
+        <span class="text-xs font-bold text-primary uppercase tracking-wider">Maintenance</span>
+      </div>
+      <h3 class="text-display-lg font-display-lg text-primary">{{ maintenance_open_count }}</h3>
+      <p class="text-body-md text-on-surface-variant">Open work tickets</p>
+    </div>
+
+    <div class="glass-card inner-glow p-6 rounded-[24px]">
+      <div class="flex justify-between items-start mb-4">
+        <div class="w-12 h-12 rounded-2xl bg-outline-variant/20 flex items-center justify-center">
+          <span class="material-symbols-outlined text-outline">inventory_2</span>
+        </div>
+        <span class="text-xs font-bold text-outline uppercase tracking-wider">Inventory</span>
+      </div>
+      <h3 class="text-display-lg font-display-lg text-primary">{{ inventory_fill }}%</h3>
+      <p class="text-body-md text-on-surface-variant">Cleaning supplies stock</p>
+    </div>
   </div>
-</div>
 
-<div class="matron-dashboard dashboard-content">
-    <div class="page-header">
-        <h1>Matron Dashboard</h1>
-        <p class="subtitle">Hostel & Resident Management</p>
+  <section class="mb-8 glass-panel inner-glow rounded-[32px] p-8" id="hostel-overview">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+      <div>
+        <h3 class="font-headline-lg text-headline-lg text-primary">Hostel Overview</h3>
+        <p class="text-on-surface-variant">Quick glance at capacity, occupancy and matron assignments.</p>
+      </div>
+      <a href="{% url 'teacher:matron:hostels_list' %}" class="text-primary text-sm font-bold underline">Manage Hostels</a>
     </div>
-
-    <!-- Statistics Cards -->
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-icon">🏢</div>
-            <div class="stat-content">
-                <h3>Total Hostels</h3>
-                <p class="stat-value">{{ statistics.total_hostels }}</p>
-            </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+      {% for hostel in hostels %}
+      <div class="glass-card p-6 rounded-[24px]">
+        <div class="flex justify-between items-start gap-4 mb-4">
+          <div>
+            <p class="text-sm font-bold text-primary">{{ hostel.name }}</p>
+            <p class="text-[11px] uppercase tracking-[0.18em] text-on-surface-variant">{{ hostel.get_hostel_type_display }}</p>
+          </div>
+          <span class="text-[10px] font-bold uppercase {% if hostel.is_active %}text-secondary{% else %}text-error{% endif %}">
+            {% if hostel.is_active %}Active{% else %}Inactive{% endif %}
+          </span>
         </div>
-        
-        <div class="stat-card">
-            <div class="stat-icon">👨‍👩‍👧‍👦</div>
-            <div class="stat-content">
-                <h3>Total Residents</h3>
-                <p class="stat-value">{{ statistics.total_residents }}</p>
-            </div>
+        <div class="space-y-3 text-sm text-on-surface-variant">
+          <div class="flex justify-between">
+            <span>Capacity</span>
+            <span>{{ hostel.capacity }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span>Residents</span>
+            <span>{{ hostel.resident_count }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span>Matron</span>
+            <span>{{ hostel.matron.user.get_full_name|default:"Unassigned" }}</span>
+          </div>
         </div>
-        
-        <div class="stat-card">
-            <div class="stat-icon">📊</div>
-            <div class="stat-content">
-                <h3>Occupancy Rate</h3>
-                <p class="stat-value">{{ statistics.occupancy_rate }}</p>
-            </div>
-        </div>
-        
-        <div class="stat-card">
-            <div class="stat-icon">📈</div>
-            <div class="stat-content">
-                <h3>Avg per Hostel</h3>
-                <p class="stat-value">{{ statistics.avg_residents_per_hostel }}</p>
-            </div>
-        </div>
+      </div>
+      {% empty %}
+      <div class="glass-card p-6 rounded-[24px] text-center text-on-surface-variant">
+        No hostels are configured for your school yet.
+      </div>
+      {% endfor %}
     </div>
+  </section>
 
-    <!-- Quick Actions -->
-    <div class="quick-actions">
-        <h2>Quick Actions</h2>
-        <div class="action-buttons">
-            <a href="{% url 'teacher:matron:hostels_list' %}" class="btn btn-primary">
-                🏠 Manage Hostels
-            </a>
-            <a href="{% url 'teacher:matron:residents_list' %}" class="btn btn-secondary">
-                👥 Manage Residents
-            </a>
-            <a href="{% url 'teacher:matron:duty_roster' %}" class="btn btn-secondary">
-                📋 Duty Roster
-            </a>
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6" id="hostel-roll-call">
+    <section class="lg:col-span-8 glass-panel inner-glow rounded-[32px] p-8">
+      <div class="flex justify-between items-center mb-6">
+        <div>
+          <h3 class="font-headline-lg text-headline-lg text-primary">Dormitory Roll Call</h3>
+          <p class="text-on-surface-variant">Real-time occupancy and attendance monitoring</p>
         </div>
-    </div>
-
-    <!-- Hostels Overview -->
-    {% if hostels %}
-    <div class="hostels-section">
-        <h2>Hostels</h2>
-        <div class="hostels-grid">
-            {% for hostel in hostels %}
-            <div class="hostel-card">
-                <div class="hostel-header">
-                    <h3>{{ hostel.name }}</h3>
-                    <span class="type-badge">{{ hostel.get_department_type_display }}</span>
-                </div>
-                
-                <div class="hostel-info">
-                    {% if hostel.head_of_department %}
-                    <p><strong>Head:</strong> {{ hostel.head_of_department.user.get_full_name }}</p>
-                    {% else %}
-                    <p class="no-head">⚠️ No head assigned</p>
-                    {% endif %}
-                    
-                    {% if hostel.description %}
-                    <p class="description">{{ hostel.description }}</p>
-                    {% endif %}
-                </div>
-                
-                <div class="hostel-actions">
-                    <a href="{% url 'teacher:matron:hostel_detail' hostel.id %}" class="btn-view">View</a>
-                    <a href="{% url 'teacher:matron:hostel_edit' hostel.id %}" class="btn-edit">Edit</a>
-                </div>
+        <button class="bg-primary text-white px-6 py-2.5 rounded-full font-label-md flex items-center gap-2 hover:shadow-lg hover:shadow-primary/20 transition-all">
+          <span class="material-symbols-outlined text-[18px]">add</span>
+          Start New Session
+        </button>
+      </div>
+      <div class="space-y-4">
+        {% for session in roll_call_sessions %}
+        <div class="flex items-center gap-6 p-4 rounded-2xl bg-white/40 border border-white/50 group hover:bg-white/60 transition-all">
+          <div class="w-14 h-14 rounded-full bg-secondary-container/20 flex items-center justify-center">
+            <span class="font-bold text-secondary text-xl">{{ session.code }}</span>
+          </div>
+          <div class="flex-grow">
+            <h4 class="font-bold text-primary">{{ session.name }}</h4>
+            <div class="flex items-center gap-4 mt-1">
+              <span class="text-xs text-on-surface-variant flex items-center gap-1">
+                <span class="material-symbols-outlined text-[14px]">person</span>
+                {{ session.count_text }}
+              </span>
+              <div class="h-1 w-24 bg-surface-variant rounded-full overflow-hidden">
+                <div class="h-full bg-secondary-container" style="width: {{ session.progress_width }}%;"></div>
+              </div>
             </div>
-            {% endfor %}
+          </div>
+          <div class="flex gap-2">
+            <span class="px-3 py-1 rounded-full {% if session.status_color == 'green' %}bg-green-100 text-green-700{% elif session.status_color == 'yellow' %}bg-yellow-100 text-yellow-700{% else %}bg-slate-100 text-slate-700{% endif %} text-[10px] font-bold uppercase">{{ session.status_label }}</span>
+            <button class="p-2 text-primary hover:bg-primary/5 rounded-lg">
+              <span class="material-symbols-outlined">more_vert</span>
+            </button>
+          </div>
         </div>
-        <a href="{% url 'teacher:matron:hostels_list' %}" class="view-all">View All Hostels →</a>
-    </div>
-    {% endif %}
-
-    <!-- Recent Activities -->
-    {% if recent_activities %}
-    <div class="activities-section">
-        <h2>Recent Activities</h2>
-        <div class="activities-list">
-            {% for activity in recent_activities %}
-            <div class="activity-item">
-                <div class="activity-icon">{{ activity.icon_name }}</div>
-                <div class="activity-content">
-                    <p class="activity-description">{{ activity.description }}</p>
-                    <p class="activity-time">{{ activity.created_at|timesince }} ago</p>
-                </div>
+        {% endfor %}
+      </div>
+      <div class="mt-8">
+        <h4 class="font-bold text-primary mb-4 flex items-center gap-2">
+          <span class="material-symbols-outlined text-secondary">warning</span>
+          Alert: Unaccounted Students ({{ unaccounted_students|length }})
+        </h4>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {% for student in unaccounted_students %}
+          <div class="p-4 rounded-2xl border border-error/20 bg-error-container/10 flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center font-bold text-error">{{ student.initials }}</div>
+            <div>
+              <p class="text-sm font-bold text-primary">{{ student.name }}</p>
+              <p class="text-[10px] text-on-surface-variant">{{ student.details }}</p>
             </div>
-            {% endfor %}
+          </div>
+          {% endfor %}
         </div>
+      </div>
+    </section>
+
+    <section class="lg:col-span-4 flex flex-col gap-6">
+      <div class="glass-panel inner-glow rounded-[32px] p-6" id="infirmary-log">
+        <div class="flex justify-between items-center mb-6">
+          <h3 class="font-headline-md text-headline-md text-primary">Infirmary Log</h3>
+          <a class="text-primary text-xs font-bold underline" href="#">View All</a>
+        </div>
+        <div class="space-y-4">
+          {% for log in health_logs %}
+          <div class="flex gap-4 p-3 rounded-xl hover:bg-white/50 transition-colors">
+            <div class="w-2 rounded-full {% if log.accent == 'secondary' %}bg-secondary{% elif log.accent == 'on-tertiary-container' %}bg-on-tertiary-container{% else %}bg-primary-container{% endif %}"></div>
+            <div>
+              <p class="text-sm font-bold text-primary">{{ log.student }}</p>
+              <p class="text-xs text-on-surface-variant mt-0.5">{{ log.note }}</p>
+              <p class="text-[10px] text-on-surface-variant mt-2 flex items-center gap-1">
+                <span class="material-symbols-outlined text-[12px]">schedule</span>
+                {{ log.meta }}
+              </p>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        <div class="mt-6 p-4 rounded-2xl bg-primary-container text-white">
+          <div class="flex justify-between items-start mb-2">
+            <span class="material-symbols-outlined">info</span>
+            <span class="text-[10px] font-bold uppercase opacity-60">Status</span>
+          </div>
+          <p class="text-sm font-medium">Duty Nurse: Nurse Ifeoma</p>
+          <p class="text-xs opacity-80 mt-1">Contact: Ext 402 / Emergency 911-S</p>
+        </div>
+      </div>
+
+      <div class="glass-panel inner-glow rounded-[32px] p-6" id="maintenance-panel">
+        <h3 class="font-headline-md text-headline-md text-primary mb-4">Maintenance</h3>
+        <div class="flex flex-col gap-3">
+          {% for task in maintenance_tasks %}
+          <div class="flex justify-between items-center p-3 bg-white/30 rounded-xl">
+            <div class="flex items-center gap-3">
+              <span class="material-symbols-outlined">{{ task.icon }}</span>
+              <span class="text-sm font-medium">{{ task.title }}</span>
+            </div>
+            <span class="text-[10px] font-bold uppercase {% if task.badge_color == 'error' %}text-error{% else %}text-on-surface-variant{% endif %}">{{ task.status }}</span>
+          </div>
+          {% endfor %}
+          <button class="w-full py-2 border border-dashed border-primary/20 rounded-xl text-primary text-sm font-bold hover:bg-white/40 transition-all">
+            + Create Ticket
+          </button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <section class="mt-8 glass-panel inner-glow rounded-[32px] p-8">
+    <div class="flex justify-between items-center mb-8">
+      <div>
+        <h3 class="font-headline-lg text-headline-lg text-primary">Supplies & Inventory</h3>
+        <p class="text-on-surface-variant">Monitoring cleaning, bedding, and toiletries stock levels</p>
+      </div>
+      <div class="flex gap-2">
+        <button class="p-2 glass-card rounded-lg">
+          <span class="material-symbols-outlined text-primary">download</span>
+        </button>
+        <button class="p-2 glass-card rounded-lg">
+          <span class="material-symbols-outlined text-primary">filter_list</span>
+        </button>
+      </div>
     </div>
-    {% endif %}
-</div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+      {% for item in inventory_items %}
+      <div class="space-y-3">
+        <div class="flex justify-between items-end">
+          <span class="text-sm font-bold text-primary">{{ item.name }}</span>
+          <span class="text-xs text-on-surface-variant">{{ item.current }} / {{ item.total }}</span>
+        </div>
+        <div class="h-2 w-full bg-surface-variant rounded-full overflow-hidden">
+          <div class="h-full bg-secondary-container" style="width: {{ item.percentage }}%;"></div>
+        </div>
+        <p class="text-[10px] {% if item.status_color == 'on-tertiary-container' %}text-on-tertiary-container{% elif item.status_color == 'primary-container' %}text-primary-container{% else %}text-on-surface-variant{% endif %} uppercase font-bold tracking-tighter">{{ item.status }}</p>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+</main>
 
-<style>
-.matron-dashboard {
-    padding: 20px;
-    max-width: 1200px;
-    margin: 0 auto;
-}
-
-.page-header {
-    margin-bottom: 30px;
-}
-
-.page-header h1 {
-    margin: 0;
-    font-size: 28px;
-}
-
-.page-header .subtitle {
-    color: #666;
-    margin: 5px 0 0 0;
-    font-size: 14px;
-}
-
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
-    margin-bottom: 30px;
-}
-
-.stat-card {
-    display: flex;
-    align-items: center;
-    padding: 20px;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.stat-icon {
-    font-size: 32px;
-    margin-right: 15px;
-}
-
-.stat-content h3 {
-    margin: 0;
-    font-size: 14px;
-    color: #666;
-}
-
-.stat-value {
-    margin: 5px 0 0 0;
-    font-size: 24px;
-    font-weight: bold;
-    color: #333;
-}
-
-.quick-actions {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    margin-bottom: 30px;
-}
-
-.quick-actions h2 {
-    margin-top: 0;
-    font-size: 18px;
-}
-
-.action-buttons {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-}
-
-.btn {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 4px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    text-decoration: none;
-    display: inline-block;
-}
-
-.btn-primary {
-    background: #007bff;
-    color: white;
-}
-
-.btn-primary:hover {
-    background: #0056b3;
-}
-
-.btn-secondary {
-    background: #6c757d;
-    color: white;
-}
-
-.btn-secondary:hover {
-    background: #545b62;
-}
-
-.hostels-section {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    margin-bottom: 30px;
-}
-
-.hostels-section h2 {
-    margin-top: 0;
-    font-size: 18px;
-}
-
-.hostels-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 15px;
-    margin-bottom: 15px;
-}
-
-.hostel-card {
-    display: flex;
-    flex-direction: column;
-    padding: 15px;
-    border: 1px solid #eee;
-    border-radius: 6px;
-    transition: all 0.3s ease;
-}
-
-.hostel-card:hover {
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    transform: translateY(-2px);
-}
-
-.hostel-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-}
-
-.hostel-header h3 {
-    margin: 0;
-    font-size: 16px;
-    color: #333;
-}
-
-.type-badge {
-    background: #e9ecef;
-    padding: 2px 8px;
-    border-radius: 3px;
-    font-size: 11px;
-    color: #666;
-}
-
-.hostel-info p {
-    margin: 5px 0;
-    font-size: 12px;
-}
-
-.hostel-info .no-head {
-    color: #dc3545;
-}
-
-.hostel-info .description {
-    color: #999;
-    font-style: italic;
-}
-
-.hostel-actions {
-    display: flex;
-    gap: 8px;
-    margin-top: auto;
-    padding-top: 10px;
-}
-
-.btn-view,
-.btn-edit {
-    flex: 1;
-    padding: 6px 12px;
-    border: none;
-    border-radius: 4px;
-    font-size: 12px;
-    font-weight: 600;
-    text-decoration: none;
-    text-align: center;
-    cursor: pointer;
-}
-
-.btn-view {
-    background: #17a2b8;
-    color: white;
-}
-
-.btn-view:hover {
-    background: #138496;
-}
-
-.btn-edit {
-    background: #ffc107;
-    color: #333;
-}
-
-.btn-edit:hover {
-    background: #e0a800;
-}
-
-.view-all {
-    display: inline-block;
-    color: #007bff;
-    text-decoration: none;
-    font-weight: 600;
-}
-
-.view-all:hover {
-    text-decoration: underline;
-}
-
-.activities-section {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.activities-section h2 {
-    margin-top: 0;
-    font-size: 18px;
-}
-
-.activities-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.activity-item {
-    display: flex;
-    gap: 12px;
-    padding: 12px;
-    background: #f8f9fa;
-    border-radius: 4px;
-}
-
-.activity-icon {
-    font-size: 20px;
-    flex-shrink: 0;
-}
-
-.activity-content {
-    flex: 1;
-}
-
-.activity-description {
-    margin: 0;
-    font-size: 14px;
-    color: #333;
-}
-
-.activity-time {
-    margin: 3px 0 0 0;
-    font-size: 12px;
-    color: #999;
-}
-</style>
+<button class="fixed bottom-10 right-10 w-16 h-16 rounded-full bg-primary text-white shadow-2xl flex items-center justify-center hover:scale-105 transition-transform group z-50">
+  <span class="material-symbols-outlined text-3xl group-hover:rotate-90 transition-transform">add</span>
+</button>
 {% endblock %}

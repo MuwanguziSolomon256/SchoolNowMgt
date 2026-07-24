@@ -1,0 +1,66 @@
+{% extends 'matron/matron_base.html' %}
+{% load static %}
+
+{% block title %}Maintenance | Matron{% endblock %}
+
+{% block matron_content %}
+<header class="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 mb-8">
+  <div>
+    <h2 class="font-display-lg text-display-lg text-primary">Maintenance</h2>
+    <p class="text-on-surface-variant mt-1 font-body-lg">Review current maintenance requests and prepare work orders.</p>
+  </div>
+</header>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+  <div class="glass-card inner-glow p-6 rounded-[24px]">
+    <div class="flex justify-between items-start mb-4">
+      <div class="w-12 h-12 rounded-2xl bg-primary-container/10 flex items-center justify-center">
+        <span class="material-symbols-outlined text-primary">engineering</span>
+      </div>
+      <span class="text-xs font-bold text-primary uppercase tracking-wider">Open Tasks</span>
+    </div>
+    <h3 class="text-display-lg font-display-lg text-primary">{{ maintenance_open_count }}</h3>
+    <p class="text-body-md text-on-surface-variant">Pending work items for hostels.</p>
+  </div>
+  <div class="glass-card inner-glow p-6 rounded-[24px]">
+    <div class="flex justify-between items-start mb-4">
+      <div class="w-12 h-12 rounded-2xl bg-secondary-container/20 flex items-center justify-center">
+        <span class="material-symbols-outlined text-secondary">bolt</span>
+      </div>
+      <span class="text-xs font-bold text-secondary uppercase tracking-wider">Priority</span>
+    </div>
+    <h3 class="text-display-lg font-display-lg text-primary">High</h3>
+    <p class="text-body-md text-on-surface-variant">Critical repairs prioritized first.</p>
+  </div>
+  <div class="glass-card inner-glow p-6 rounded-[24px]">
+    <div class="flex justify-between items-start mb-4">
+      <div class="w-12 h-12 rounded-2xl bg-outline-variant/20 flex items-center justify-center">
+        <span class="material-symbols-outlined text-outline">inventory_2</span>
+      </div>
+      <span class="text-xs font-bold text-outline uppercase tracking-wider">Supplies</span>
+    </div>
+    <h3 class="text-display-lg font-display-lg text-primary">{{ inventory_fill }}%</h3>
+    <p class="text-body-md text-on-surface-variant">Maintenance stock readiness.</p>
+  </div>
+</div>
+
+<section class="glass-panel inner-glow rounded-[32px] p-8">
+  <div class="flex justify-between items-center mb-6">
+    <div>
+      <h3 class="font-headline-lg text-headline-lg text-primary">Current Maintenance Requests</h3>
+      <p class="text-on-surface-variant">Latest issues requiring attention.</p>
+    </div>
+  </div>
+  <div class="flex flex-col gap-3">
+    {% for task in maintenance_tasks %}
+    <div class="flex justify-between items-center p-3 bg-white/30 rounded-xl">
+      <div class="flex items-center gap-3">
+        <span class="material-symbols-outlined">{{ task.icon }}</span>
+        <span class="text-sm font-medium text-primary">{{ task.title }}</span>
+      </div>
+      <span class="text-[10px] font-bold uppercase {% if task.badge_color == 'error' %}text-error{% else %}text-on-surface-variant{% endif %}">{{ task.status }}</span>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Staff Tracking | SchoolNow Admin</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700;900&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 10px 30px -10px rgba(30, 34, 79, 0.08);
+        }
+        .glass-nav {
+            background: rgba(248, 249, 252, 0.7);
+            backdrop-filter: blur(20px);
+        }
+        .inner-glow {
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.8);
+        }
+        .staff-matrix-grid {
+            display: grid;
+            grid-template-columns: 240px repeat(14, 1fr);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #e1e2e5;
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #c7c5d0;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-fixed-variant": "#3f4371",
+                        "inverse-primary": "#bfc2fa",
+                        "primary-container": "#1e224f",
+                        "secondary": "#7c5800",
+                        "surface-container-low": "#f2f3f6",
+                        "surface-tint": "#565a8b",
+                        "primary-fixed-dim": "#bfc2fa",
+                        "on-secondary-fixed": "#271900",
+                        "background": "#f8f9fc",
+                        "surface-container": "#edeef1",
+                        "on-primary-fixed": "#121643",
+                        "surface-container-highest": "#e1e2e5",
+                        "surface-bright": "#f8f9fc",
+                        "primary-fixed": "#e0e0ff",
+                        "on-tertiary-fixed": "#3c0800",
+                        "inverse-on-surface": "#f0f1f4",
+                        "surface-variant": "#e1e2e5",
+                        "on-error-container": "#93000a",
+                        "tertiary-fixed": "#ffdbd2",
+                        "outline": "#777680",
+                        "on-background": "#191c1e",
+                        "on-secondary": "#ffffff",
+                        "outline-variant": "#c7c5d0",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-fixed-dim": "#ffb4a2",
+                        "secondary-fixed-dim": "#ffba20",
+                        "on-surface-variant": "#46464f",
+                        "error": "#ba1a1a",
+                        "on-error": "#ffffff",
+                        "surface-container-high": "#e7e8eb",
+                        "secondary-container": "#feb700",
+                        "on-tertiary-fixed-variant": "#881f01",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary-fixed-variant": "#5e4200",
+                        "primary": "#080b3a",
+                        "surface": "#f8f9fc",
+                        "error-container": "#ffdad6",
+                        "tertiary-container": "#500d00",
+                        "on-tertiary-container": "#e96442",
+                        "on-surface": "#191c1e",
+                        "on-secondary-container": "#6b4b00",
+                        "surface-dim": "#d9dadd",
+                        "inverse-surface": "#2e3133",
+                        "tertiary": "#2b0400",
+                        "secondary-fixed": "#ffdea8",
+                        "on-primary-container": "#868abd",
+                        "on-primary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "container-padding": "20px",
+                        "card-gap": "12px",
+                        "gutter": "16px",
+                        "section-margin": "32px",
+                        "base": "8px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Hanken Grotesk"],
+                        "body-lg": ["Inter"],
+                        "headline-lg": ["Hanken Grotesk"],
+                        "label-md": ["Inter"],
+                        "headline-md": ["Hanken Grotesk"],
+                        "headline-lg-mobile": ["Hanken Grotesk"],
+                        "body-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["36px", {"lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-lg": ["28px", {"lineHeight": "36px", "fontWeight": "600"}],
+                        "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "headline-md": ["22px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen overflow-x-hidden">
+<!-- TopNavBar (The Ethos Glass Shell) -->
+<header class="bg-surface/70 backdrop-blur-xl border-b border-white/20 shadow-sm flex justify-between items-center w-full px-container-padding py-4 sticky top-0 z-50">
+<div class="flex items-center gap-8">
+<span class="text-headline-md font-headline-md font-bold text-primary">SchoolNow</span>
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-label-md font-label-md text-on-surface-variant hover:bg-white/10 transition-colors px-2 py-1" href="#">Dashboard</a>
+<a class="text-label-md font-label-md text-primary font-bold border-b-2 border-secondary-container px-2 py-1" href="#">Staff Tracking</a>
+<a class="text-label-md font-label-md text-on-surface-variant hover:bg-white/10 transition-colors px-2 py-1" href="#">Students</a>
+<a class="text-label-md font-label-md text-on-surface-variant hover:bg-white/10 transition-colors px-2 py-1" href="#">Finance</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="hidden md:flex bg-surface-container rounded-full px-4 py-2 items-center gap-2">
+<span class="material-symbols-outlined text-outline text-lg">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-body-md w-48" placeholder="Search staff..." type="text"/>
+</div>
+<button class="material-symbols-outlined text-primary p-2 rounded-full hover:bg-white/10 active:scale-95 transition-all">notifications</button>
+<button class="material-symbols-outlined text-primary p-2 rounded-full hover:bg-white/10 active:scale-95 transition-all">settings</button>
+<div class="w-10 h-10 rounded-full bg-primary overflow-hidden border-2 border-secondary-container shadow-sm">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of an African school administrator, a Deputy Headteacher in her 40s, wearing a smart charcoal blazer over a kente-inspired blouse. She has a confident, warm expression. The lighting is soft and professional, set against a blurred academic background. The image has a clean, high-fidelity light-mode feel." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAmZcztfQGjPlcU4zaZQXvfYbPT2Jzt1qDH6YP-DPYmRsU_lImnzjBEGq2gGb1-unL832ISAeJFSK6cq6eOx02ASHLyaFHykOUY8Psl088BmvsvSdO5q0-o0UfuvdnijjH8LQx4-GXFUdMJl2C78ma6h2R02eh4wcV3-UH15_Z1kNYbU7yKfmVC8D72xhWSdtYUnRIDRfxMkw0P3JJea402lnxbULvFBO234YYRGUIEXs1pCuDkp9MtRZYXfkZmJ_Sb6iclWqIlZr5w"/>
+</div>
+</div>
+</header>
+<main class="max-w-[1440px] mx-auto px-container-padding py-section-margin flex flex-col gap-8">
+<!-- Header & Action Row -->
+<section class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+<div>
+<p class="text-label-md font-label-md text-on-primary-container mb-1">DEPUTY HEAD PORTAL</p>
+<h1 class="text-display-lg font-display-lg text-primary">Staff Attendance &amp; Tracking</h1>
+</div>
+<div class="flex items-center gap-3">
+<div class="glass-card flex items-center p-1 rounded-xl">
+<button class="bg-primary text-on-primary px-4 py-2 rounded-lg text-label-md font-label-md">Daily View</button>
+<button class="px-4 py-2 text-on-surface-variant hover:text-primary transition-colors text-label-md font-label-md">Weekly</button>
+<button class="px-4 py-2 text-on-surface-variant hover:text-primary transition-colors text-label-md font-label-md">Monthly</button>
+</div>
+<button class="bg-primary text-on-primary px-6 py-2.5 rounded-xl font-semibold flex items-center gap-2 hover:bg-primary-container transition-all shadow-lg active:scale-95">
+<span class="material-symbols-outlined text-lg">add</span>
+                    New Shift Log
+                </button>
+</div>
+</section>
+<!-- Analytics Overview Bento -->
+<section class="grid grid-cols-1 md:grid-cols-4 gap-gutter">
+<!-- Attendance Rate -->
+<div class="glass-card p-6 rounded-3xl flex flex-col justify-between min-h-[160px] border-l-4 border-l-secondary-container">
+<div class="flex justify-between items-start">
+<div class="p-2 bg-secondary-fixed/30 rounded-lg">
+<span class="material-symbols-outlined text-secondary">person_check</span>
+</div>
+<span class="text-label-md text-secondary font-bold">+2.4%</span>
+</div>
+<div>
+<p class="text-body-md text-on-surface-variant">Avg. Attendance Rate</p>
+<h3 class="text-headline-lg font-headline-lg text-primary">94.8%</h3>
+</div>
+</div>
+<!-- On Leave -->
+<div class="glass-card p-6 rounded-3xl flex flex-col justify-between min-h-[160px]">
+<div class="flex justify-between items-start">
+<div class="p-2 bg-surface-container rounded-lg">
+<span class="material-symbols-outlined text-on-surface-variant">flight_takeoff</span>
+</div>
+</div>
+<div>
+<p class="text-body-md text-on-surface-variant">Staff on Leave</p>
+<div class="flex items-center gap-2">
+<h3 class="text-headline-lg font-headline-lg text-primary">12</h3>
+<span class="text-label-md text-on-surface-variant bg-surface-container px-2 py-0.5 rounded">6 Planned</span>
+</div>
+</div>
+</div>
+<!-- Active Shifts -->
+<div class="glass-card p-6 rounded-3xl flex flex-col justify-between min-h-[160px]">
+<div class="flex justify-between items-start">
+<div class="p-2 bg-on-primary-container/10 rounded-lg">
+<span class="material-symbols-outlined text-primary">schedule</span>
+</div>
+</div>
+<div>
+<p class="text-body-md text-on-surface-variant">Active Now</p>
+<h3 class="text-headline-lg font-headline-lg text-primary">156 <span class="text-body-md font-normal text-on-surface-variant">/ 180</span></h3>
+</div>
+</div>
+<!-- Reports Due -->
+<div class="glass-card p-6 rounded-3xl bg-primary-container text-on-primary flex flex-col justify-between min-h-[160px] relative overflow-hidden">
+
+<div class="relative z-10 flex justify-between items-start">
+<div class="p-2 bg-white/10 rounded-lg">
+<span class="material-symbols-outlined text-secondary-fixed">assignment_late</span>
+</div>
+</div>
+<div class="relative z-10">
+<p class="text-body-md text-on-primary-container">Action Items</p>
+<h3 class="text-headline-lg font-headline-lg text-white">4 Pending</h3>
+</div>
+</div>
+</section>
+<!-- Filters & Matrix -->
+<section class="flex flex-col gap-4">
+<div class="flex flex-wrap items-center justify-between gap-4">
+<h2 class="text-headline-md font-headline-md text-primary">Attendance Matrix</h2>
+<div class="flex items-center gap-2">
+<select class="glass-card border-none rounded-xl text-body-md px-4 py-2 focus:ring-secondary-container">
+<option>All Departments</option>
+<option>Science</option>
+<option>Humanities</option>
+<option>Administration</option>
+<option>Maintenance</option>
+</select>
+<select class="glass-card border-none rounded-xl text-body-md px-4 py-2 focus:ring-secondary-container">
+<option>All Roles</option>
+<option>Teaching</option>
+<option>Support Staff</option>
+<option>Contractors</option>
+</select>
+<button class="material-symbols-outlined glass-card p-2 rounded-xl text-on-surface-variant">filter_list</button>
+</div>
+</div>
+<!-- Matrix Visualization -->
+<div class="glass-card rounded-3xl overflow-hidden inner-glow">
+<div class="overflow-x-auto custom-scrollbar">
+<div class="min-w-[1200px]">
+<!-- Matrix Header -->
+<div class="staff-matrix-grid bg-surface-container/50 border-b border-outline-variant/30">
+<div class="p-4 text-label-md font-bold text-on-surface-variant">STAFF MEMBER</div>
+<!-- Dates 1-14 -->
+<div class="p-4 text-center text-label-md text-on-surface-variant border-l border-outline-variant/20">01 Oct</div>
+<div class="p-4 text-center text-label-md text-on-surface-variant border-l border-outline-variant/20">02 Oct</div>
+<div class="p-4 text-center text-label-md text-on-surface-variant border-l border-outline-variant/20">03 Oct</div>
+<div class="p-4 text-center text-label-md text-on-surface-variant border-l border-outline-variant/20">04 Oct</div>
+<div class="p-4 text-center text-label-md text-on-surface-variant border-l border-outline-variant/20 bg-surface-container-high font-bold">Today</div>
+<div class="p-4 text-center text-label-md text-on-surface-variant border-l border-outline-variant/20">06 Oct</div>
+<div class="p-4 text-center text-label-md text-on-surface-variant border-l border-outline-variant/20">07 Oct</div>
+<div class="p-4 text-center text-label-md text-on-surface-variant border-l border-outline-variant/20">08 Oct</div>
+<div class="p-4 text-center text-label-md text-on-surface-variant border-l border-outline-variant/20">09 Oct</div>
+<div class="p-4 text-center text-label-md text-on-surface-variant border-l border-outline-variant/20">10 Oct</div>
+<div class="p-4 text-center text-label-md text-on-surface-variant border-l border-outline-variant/20">11 Oct</div>
+<div class="p-4 text-center text-label-md text-on-surface-variant border-l border-outline-variant/20">12 Oct</div>
+<div class="p-4 text-center text-label-md text-on-surface-variant border-l border-outline-variant/20">13 Oct</div>
+<div class="p-4 text-center text-label-md text-on-surface-variant border-l border-outline-variant/20">14 Oct</div>
+</div>
+<!-- Matrix Row 1 -->
+<div class="staff-matrix-grid border-b border-outline-variant/10 hover:bg-white/40 transition-colors">
+<div class="p-4 flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-secondary-fixed-dim/30 flex items-center justify-center text-secondary font-bold text-xs">EO</div>
+<div>
+<p class="text-body-md font-semibold text-primary">Elizabeth Okafor</p>
+<p class="text-[10px] text-on-surface-variant uppercase tracking-wider">HOD Science</p>
+</div>
+</div>
+<div class="p-4 flex justify-center items-center border-l border-outline-variant/10 text-emerald-600"><span class="material-symbols-outlined scale-75" style="font-variation-settings: 'FILL' 1;">check_circle</span></div>
+<div class="p-4 flex justify-center items-center border-l border-outline-variant/10 text-emerald-600"><span class="material-symbols-outlined scale-75" style="font-variation-settings: 'FILL' 1;">check_circle</span></div>
+<div class="p-4 flex justify-center items-center border-l border-outline-variant/10 text-emerald-600"><span class="material-symbols-outlined scale-75" style="font-variation-settings: 'FILL' 1;">check_circle</span></div>
+<div class="p-4 flex justify-center items-center border-l border-outline-variant/10 text-emerald-600"><span class="material-symbols-outlined scale-75" style="font-variation-settings: 'FILL' 1;">check_circle</span></div>
+<div class="p-4 flex justify-center items-center border-l border-outline-variant/10 bg-secondary-container/10"><span class="material-symbols-outlined text-secondary animate-pulse">radio_button_checked</span></div>
+<div class="p-4 flex justify-center items-center border-l border-outline-variant/10">—</div>
+<div class="p-4 flex justify-center items-center border-l border-outline-variant/10">—</div>
+<div class="p-4 flex justify-center items-center border-l border-outline-variant/10">—</div>
+<div class="p-4 flex justify-center items-center border-l border-outline-variant/10">—</div>
+<div class="p-4 flex justify-center items-center border-l border-outline-variant/10">—</div>
+<div class="p-4 flex justify-center items-center border-l border-outline-variant/10">—</div>
+<div class="p-4 flex justify-center items-center border-l border-outline-variant/10">—</div>
+<div class="p-4 flex justify-center items-center border-l border-outline-variant/10">—</div>
+<div class="p-4 flex justify-center items-center border-l border-outline-variant/10">—</div>
+</div>
+<!-- Matrix Row 2 (Leave State) -->
+<div class="staff-matrix-grid border-b border-outline-variant/10 hover:bg-white/40 transition-colors">
+<div class="p-4 flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-primary-fixed/30 flex items-center justify-center text-primary font-bold text-xs">KM</div>
+<div>
+<p class="text-body-md font-semibold text-primary">Kwame Mensah</p>
+<p class="text-[10px] text-on-surface-variant uppercase tracking-wider">Physics Lead</p>
+</div>
+</div>
+<div class="p-4 flex justify-center items-center border-l border-outline-variant/10 text-emerald-600"><span class="material-symbols-outlined scale-75" style="font-variation-settings: 'FILL' 1;">check_circle</span></div>
+<div class="p-4 flex justify-center items-center border-l border-outline-variant/10 text-emerald-600"><span class="material-symbols-outlined scale-75" style="font-variation-settings: 'FILL' 1;">check_circle</span></div>
+<div class="p-4 flex justify-center items-center border-l border-outline-variant/10 text-emerald-600"><span class="material-symbols-outlined scale-75" style="font-variation-settings: 'FILL' 1;">check_circle</span></div>
+<div class="p-4 flex justify-center items-center border-l border-outline-variant/10 text-emerald-600"><span class="material-symbols-outlined scale-75" style="font-variation-settings: 'FILL' 1;">check_circle</span></div>
+<div class="p-4 flex justify-center items-center border-l border-outline-variant/10 bg-tertiary-container/10 text-on-tertiary-container"><span class="material-symbols-outlined scale-75">sick</span></div>
+<div class="p-4 flex justify-center items-center border-l border-outline-variant/10 bg-tertiary-container/10 text-on-tertiary-container"><span class="material-symbols-outlined scale-75">sick</span></div>
+<div class="p-4 flex justify-center items-center border-l border-outline-variant/10">—</div>
+<div class="p-4 flex justify-center items-center border-l border-outline-variant/10">—</div>
+<div class="p-4 flex justify-center items-center border-l border-outline-variant/10">—</div>
+<div class="p-4 flex justify-center items-center border-l border-outline-variant/10">—</div>
+<div class="p-4 flex justify-center items-center border-l border-outline-variant/10">—</div>
+<div class="p-4 flex justify-center items-center border-l border-outline-variant/10">—</div>
+<div class="p-4 flex justify-center items-center border-l border-outline-variant/10">—</div>
+<div class="p-4 flex justify-center items-center border-l border-outline-variant/10">—</div>
+</div>
+<!-- Row 3 (Admin) -->
+<div class="staff-matrix-grid border-b border-outline-variant/10 hover:bg-white/40 transition-colors">
+<div class="p-4 flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center text-on-surface-variant font-bold text-xs">AJ</div>
+<div>
+<p class="text-body-md font-semibold text-primary">Amara Jagne</p>
+<p class="text-[10px] text-on-surface-variant uppercase tracking-wider">Office Admin</p>
+</div>
+</div>
+<div class="p-4 flex justify-center items-center border-l border-outline-variant/10 text-emerald-600"><span class="material-symbols-outlined scale-75" style="font-variation-settings: 'FILL' 1;">check_circle</span></div>
+<div class="p-4 flex justify-center items-center border-l border-outline-variant/10 text-emerald-600"><span class="material-symbols-outlined scale-75" style="font-variation-settings: 'FILL' 1;">check_circle</span></div>
+<div class="p-4 flex justify-center items-center border-l border-outline-variant/10 text-error"><span class="material-symbols-outlined scale-75">cancel</span></div>
+<div class="p-4 flex justify-center items-center border-l border-outline-variant/10 text-emerald-600"><span class="material-symbols-outlined scale-75" style="font-variation-settings: 'FILL' 1;">check_circle</span></div>
+<div class="p-4 flex justify-center items-center border-l border-outline-variant/10 bg-secondary-container/10"><span class="material-symbols-outlined text-secondary">radio_button_checked</span></div>
+<div class="p-4 flex justify-center items-center border-l border-outline-variant/10">—</div>
+<div class="p-4 flex justify-center items-center border-l border-outline-variant/10">—</div>
+<div class="p-4 flex justify-center items-center border-l border-outline-variant/10">—</div>
+<div class="p-4 flex justify-center items-center border-l border-outline-variant/10">—</div>
+<div class="p-4 flex justify-center items-center border-l border-outline-variant/10">—</div>
+<div class="p-4 flex justify-center items-center border-l border-outline-variant/10">—</div>
+<div class="p-4 flex justify-center items-center border-l border-outline-variant/10">—</div>
+<div class="p-4 flex justify-center items-center border-l border-outline-variant/10">—</div>
+<div class="p-4 flex justify-center items-center border-l border-outline-variant/10">—</div>
+</div>
+</div>
+</div>
+<div class="p-4 bg-surface-container/30 flex justify-between items-center text-label-md">
+<div class="flex gap-4">
+<span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-600"></span> Present</span>
+<span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-secondary"></span> On Shift</span>
+<span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-tertiary-container"></span> Sick/Leave</span>
+<span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-error"></span> Absent</span>
+</div>
+<button class="text-primary font-bold hover:underline">View Detailed Monthly Report</button>
+</div>
+</div>
+</section>
+<!-- Leave & Shifts Split -->
+<section class="grid grid-cols-1 lg:grid-cols-2 gap-section-margin">
+<!-- Detailed Leave Management -->
+<div class="flex flex-col gap-4">
+<div class="flex items-center justify-between">
+<h2 class="text-headline-md font-headline-md text-primary">Leave Summaries</h2>
+<button class="text-label-md font-label-md text-primary hover:bg-primary/10 px-3 py-1 rounded-lg transition-colors">Manage Requests</button>
+</div>
+<div class="glass-card rounded-3xl p-6 flex flex-col gap-4">
+<div class="space-y-4">
+<!-- Leave Item 1 -->
+<div class="flex items-center justify-between p-4 bg-surface-container/40 rounded-2xl border border-white/50">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-cover bg-center border-2 border-white" data-alt="Close-up of a diverse, professional woman's portrait for a user profile avatar. Clean lighting, soft depth of field, high-end corporate style." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAYUdiqEekARHgylKgLZxOrobYA9MXsqz0qt-hhS2WBOICy1ntKCWsaAwYx0mI5yP8sGAym1ZrUz3UM6X6nwzbfbcOmoXAnabSwnusTFuD26w4ODlUKSZMwSbT1Iock9wkDWoAaKz7xqeO4nEiyf-k8zYg7Z9XW5tsKi7F1dp9oo3V6O4bBCm4VIulKC54JQhfLAS32GbhWmAURv-6QB5azZR9CCxuf9p2Hmlnvybc3HhQoSlQ4OenowBqmvrJ61q7WJFChTcqSXuxb')"></div>
+<div>
+<p class="text-body-lg font-semibold text-primary">Dr. Sarah Boateng</p>
+<p class="text-label-md text-on-surface-variant">Annual Leave • Ends in 4 days</p>
+</div>
+</div>
+<div class="text-right">
+<div class="w-24 bg-surface-container-highest h-2 rounded-full overflow-hidden mb-1">
+<div class="bg-secondary-container h-full w-[70%]"></div>
+</div>
+<p class="text-[10px] text-on-surface-variant font-bold">14/20 DAYS USED</p>
+</div>
+</div>
+<!-- Leave Item 2 -->
+<div class="flex items-center justify-between p-4 bg-surface-container/40 rounded-2xl border border-white/50">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-cover bg-center border-2 border-white" data-alt="Portrait of a young male teacher with a friendly expression, modern office lighting, cinematic blur, African descent, sharp details." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDvRmjIf2wB5y9BUVC9yJ1eij6GwoJnHVMibvi7pcijLdTUqVWyn4CNVdqB6WLG8CW73Yc8uF2nfH4F-ryuLmBQyzAf8nj6EruBkLIoHqxvADLU-JJ8lgj1gPt_8Hi1mQBEmKJIOhc0CUVn1VfwLxzky1-ntVKqT5Gr1cYmxK9hhrM4J77O-f2H5NyMNVtZOG71Z2fNPEJ9ZK5EKnbsQAJHOGwCFg_8PFGqakF3wL9sXbVT1fdGsIyTO3x34PxhLU59eHHPfVfFEkP1')"></div>
+<div>
+<p class="text-body-lg font-semibold text-primary">Chidi Okoro</p>
+<p class="text-label-md text-on-surface-variant">Sick Leave • Till Oct 06</p>
+</div>
+</div>
+<div class="text-right">
+<span class="bg-tertiary-container/10 text-on-tertiary-container text-[10px] font-black px-2 py-1 rounded uppercase">Medical Doc Verified</span>
+</div>
+</div>
+<!-- Leave Item 3 -->
+<div class="flex items-center justify-between p-4 bg-surface-container/40 rounded-2xl border border-white/50 opacity-60">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-surface-container-highest flex items-center justify-center">
+<span class="material-symbols-outlined text-outline">upcoming</span>
+</div>
+<div>
+<p class="text-body-lg font-semibold text-primary">Upcoming: David Walsh</p>
+<p class="text-label-md text-on-surface-variant">Paternity Leave • Starts Oct 15</p>
+</div>
+</div>
+<span class="text-label-md font-bold text-on-surface-variant">IN 10 DAYS</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Active Shift Logs -->
+<div class="flex flex-col gap-4">
+<div class="flex items-center justify-between">
+<h2 class="text-headline-md font-headline-md text-primary">Active Shift Logs</h2>
+<span class="bg-emerald-100 text-emerald-800 text-[10px] font-black px-2 py-1 rounded-full animate-pulse">LIVE TRACKING</span>
+</div>
+<div class="glass-card rounded-3xl p-6">
+<div class="space-y-6 relative before:absolute before:left-[19px] before:top-2 before:bottom-2 before:w-px before:bg-outline-variant/30">
+<!-- Log 1 -->
+<div class="relative pl-12">
+<div class="absolute left-0 top-1 w-10 h-10 bg-secondary-container rounded-full border-4 border-white flex items-center justify-center shadow-md">
+<span class="material-symbols-outlined text-white text-lg">login</span>
+</div>
+<div class="flex justify-between items-start">
+<div>
+<p class="text-body-md font-bold text-primary">Main Gate Entry: Samuel Peters (Security)</p>
+<p class="text-label-md text-on-surface-variant">Shift Start: Morning Guard (06:00 - 14:00)</p>
+</div>
+<span class="text-label-md text-on-surface-variant font-mono">05:58 AM</span>
+</div>
+</div>
+<!-- Log 2 -->
+<div class="relative pl-12">
+<div class="absolute left-0 top-1 w-10 h-10 bg-primary rounded-full border-4 border-white flex items-center justify-center shadow-md">
+<span class="material-symbols-outlined text-white text-lg">school</span>
+</div>
+<div class="flex justify-between items-start">
+<div>
+<p class="text-body-md font-bold text-primary">Classroom 4B: Mrs. Ifeanyi (Teaching)</p>
+<p class="text-label-md text-on-surface-variant">Smart Attendance Logged: 32 Students Present</p>
+</div>
+<span class="text-label-md text-on-surface-variant font-mono">08:15 AM</span>
+</div>
+</div>
+<!-- Log 3 -->
+<div class="relative pl-12">
+<div class="absolute left-0 top-1 w-10 h-10 bg-tertiary-container rounded-full border-4 border-white flex items-center justify-center shadow-md">
+<span class="material-symbols-outlined text-white text-lg">assignment_late</span>
+</div>
+<div class="flex justify-between items-start">
+<div>
+<p class="text-body-md font-bold text-tertiary">Late Entry Alert: John Doe (Maintenance)</p>
+<p class="text-label-md text-on-tertiary-container">Clock-in: 08:45 AM (Expected: 08:00 AM)</p>
+</div>
+<span class="text-label-md text-error font-mono font-bold">45m Late</span>
+</div>
+</div>
+<!-- Log 4 -->
+<div class="relative pl-12 opacity-50">
+<div class="absolute left-0 top-1 w-10 h-10 bg-surface-container rounded-full border-4 border-white flex items-center justify-center shadow-md">
+<span class="material-symbols-outlined text-on-surface-variant text-lg">logout</span>
+</div>
+<div class="flex justify-between items-start">
+<div>
+<p class="text-body-md font-bold text-primary">Upcoming Shift End</p>
+<p class="text-label-md text-on-surface-variant">Kitchen Staff Group A (13:30)</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Floating Action Button (FAB) -->
+<button class="fixed bottom-8 right-8 w-14 h-14 bg-primary text-on-primary rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-40 group">
+<span class="material-symbols-outlined text-2xl group-hover:rotate-90 transition-transform">edit_calendar</span>
+</button>
+<script>
+        // Micro-interactions for hover effects on matrix cells
+        document.querySelectorAll('.staff-matrix-grid div').forEach(cell => {
+            cell.addEventListener('mouseenter', () => {
+                if(cell.innerText !== '—' && cell.children.length > 0) {
+                    cell.style.backgroundColor = 'rgba(254, 183, 0, 0.1)';
+                }
+            });
+            cell.addEventListener('mouseleave', () => {
+                cell.style.backgroundColor = '';
+            });
+        });
+
+        // Simple tab switching logic for the Daily/Weekly/Monthly toggle
+        const toggleButtons = document.querySelectorAll('.glass-card button');
+        toggleButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                toggleButtons.forEach(b => {
+                    b.classList.remove('bg-primary', 'text-on-primary');
+                    b.classList.add('text-on-surface-variant');
+                });
+                btn.classList.add('bg-primary', 'text-on-primary');
+                btn.classList.remove('text-on-surface-variant');
+            });
+        });
+    </script>
+</body></html>

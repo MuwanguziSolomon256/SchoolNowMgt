@@ -1,264 +1,313 @@
-{% extends "teacher/base.html" %}
+{% extends "teacher/app_base.html" %}
 {% load static %}
 
 {% block title %}Department Dashboard{% endblock %}
 
-{% block content %}
+{% block extra_css %}
 <style>
-  .admin-nav {
-    background: linear-gradient(135deg, #080b3a 0%, #1a1e4f 100%);
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 100;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  }
-  .admin-nav-container {
-    max-width: 1400px;
+  .dept-dashboard {
+    padding: 2rem 1rem 3rem;
+    max-width: 1320px;
     margin: 0 auto;
-    padding: 0 20px;
+  }
+
+  .dept-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: 1.5rem;
+    align-items: stretch;
+  }
+
+  .dept-summary-card {
+    padding: 1.75rem;
+    border-radius: 1.5rem;
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    box-shadow: 0 24px 70px rgba(15, 23, 42, 0.08);
+  }
+
+  .stats-grid,
+  .quick-actions-grid,
+  .subjects-grid,
+  .activities-list {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+
+  .stat-card,
+  .action-card,
+  .subject-card,
+  .activity-card {
+    border-radius: 1.25rem;
+    background: white;
+    padding: 1.5rem;
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.05);
+    border: 1px solid rgba(226, 232, 240, 0.9);
+  }
+
+  .stat-card {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 1rem;
+    align-items: center;
+  }
+
+  .stat-icon,
+  .action-icon,
+  .activity-icon {
+    display: inline-flex;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 1rem;
+    align-items: center;
+    justify-content: center;
+    background: #f8fafc;
+    font-size: 1.5rem;
+  }
+
+  .action-card {
+    padding: 1.25rem;
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+  }
+
+  .action-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+  }
+
+  .actions-grid {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  }
+
+  .subject-card h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1.05rem;
+  }
+
+  .subject-card .code {
+    margin: 0;
+    color: #64748b;
+    font-size: 0.95rem;
+  }
+
+  .btn-view {
+    display: inline-flex;
+    margin-top: 1rem;
+    padding: 0.75rem 1rem;
+    border-radius: 999px;
+    background: #0f172a;
+    color: white;
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .btn-view:hover {
+    background: #111827;
+  }
+
+  .subjects-grid {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+
+  .activity-card {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 1rem;
+  }
+
+  .activity-card p {
+    margin: 0;
+  }
+
+  .activity-meta {
+    color: #64748b;
+    font-size: 0.92rem;
+  }
+
+  .section-heading {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    height: 70px;
-  }
-  .admin-nav-brand {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex: 1;
-  }
-  .admin-nav-icon {
-    width: 40px;
-    height: 40px;
-    background-color: #7c5800;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
-    color: white;
-  }
-  .admin-nav-text h2 {
-    color: white;
-    font-size: 16px;
-    font-weight: 600;
-    margin: 0;
-  }
-  .admin-nav-text p {
-    color: #d4a574;
-    font-size: 12px;
-    margin: 2px 0 0 0;
-  }
-  .admin-nav-actions {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-  }
-  .nav-user-info {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: white;
-    font-size: 14px;
-  }
-  .nav-btn {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    background: transparent;
-    border: none;
-    color: white;
-    cursor: pointer;
-    padding: 8px 12px;
-    border-radius: 6px;
-    font-size: 14px;
-    transition: all 0.3s ease;
-  }
-  .nav-btn:hover {
-    background-color: rgba(212, 165, 116, 0.15);
-    color: #d4a574;
-  }
-  .dashboard-content {
-    padding-top: 90px;
+    gap: 1rem;
+    margin-bottom: 1rem;
   }
 </style>
+{% endblock %}
 
-<div class="admin-nav">
-  <div class="admin-nav-container">
-    <div class="admin-nav-brand">
-      <div class="admin-nav-icon">📚</div>
-      <div class="admin-nav-text">
-        <h2>Department Head</h2>
-        <p>{{ request.user.school.name|default:"School Management" }}</p>
+{% block content %}
+<main class="dept-dashboard">
+  <section class="dept-hero">
+    <div class="space-y-6">
+      <div class="bg-white rounded-[1.5rem] p-8 shadow-lg border border-slate-200">
+        <div class="flex flex-col gap-4">
+          <div class="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <p class="text-sm font-semibold uppercase tracking-[0.24em] text-secondary">Department Head</p>
+              <h1 class="mt-3 text-3xl font-semibold text-primary">Welcome back, {{ request.user.get_full_name }}</h1>
+            </div>
+            <div class="rounded-3xl bg-secondary-container/15 px-4 py-3 text-secondary font-semibold">
+              {{ today|date:"F j, Y" }}
+            </div>
+          </div>
+
+          <p class="max-w-2xl text-sm leading-7 text-slate-600">Your department summary gives you quick insight into teachers, subjects, classes, and recent performance across your academic department.</p>
+        </div>
+      </div>
+
+      <div class="section-heading">
+        <div>
+          <p class="text-sm text-secondary">Department snapshot</p>
+          <h2 class="text-2xl font-semibold text-primary">Your department</h2>
+        </div>
+      </div>
+
+      <div class="dept-summary-card">
+        <div class="grid gap-4">
+          <div>
+            <p class="text-sm uppercase tracking-[0.2em] text-secondary">Department</p>
+            <h3 class="mt-3 text-xl font-semibold text-primary">{% if department %}{{ department.name }}{% else %}Unassigned{% endif %}</h3>
+          </div>
+          <div class="grid grid-cols-2 gap-4 text-sm text-slate-700">
+            <div class="rounded-3xl bg-slate-50 p-4">
+              <p class="text-xs uppercase tracking-[0.2em] text-slate-500">Head of Department</p>
+              <p class="mt-2 font-semibold">{% if department and department.head_of_department %}{{ department.head_of_department.user.get_full_name }}{% else %}{{ request.user.get_full_name }}{% endif %}</p>
+            </div>
+            <div class="rounded-3xl bg-slate-50 p-4">
+              <p class="text-xs uppercase tracking-[0.2em] text-slate-500">Active subjects</p>
+              <p class="mt-2 font-semibold">{{ total_subjects }}</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-    
-    <div class="admin-nav-actions">
-      <div class="nav-user-info">
-        <span>👤</span>
-        <span>{{ request.user.get_full_name|default:request.user.username }}</span>
+
+    <div class="space-y-6">
+      <div class="rounded-[1.5rem] bg-white p-6 shadow-lg border border-slate-200">
+        <div class="flex flex-col gap-4">
+          <div class="flex items-center gap-3 pb-4 border-b border-slate-200">
+            <div class="w-12 h-12 rounded-full bg-secondary-container/20 flex items-center justify-center text-lg">👤</div>
+            <div>
+              <p class="text-xs uppercase tracking-[0.18em] text-slate-500">Your profile</p>
+              <p class="font-semibold text-primary">{{ request.user.get_full_name }}</p>
+            </div>
+          </div>
+          <div class="space-y-3">
+            <div class="text-sm">
+              <p class="text-slate-500">Employee ID</p>
+              <p class="font-semibold text-slate-900">{{ staff_profile.employee_id }}</p>
+            </div>
+            <div class="text-sm">
+              <p class="text-slate-500">Position</p>
+              <p class="font-semibold text-slate-900">{{ staff_profile.position }}</p>
+            </div>
+            {% if staff_profile.user.phone %}
+            <div class="text-sm">
+              <p class="text-slate-500">Phone</p>
+              <p class="font-semibold text-slate-900">{{ staff_profile.user.phone }}</p>
+            </div>
+            {% endif %}
+          </div>
+          <a href="/teacher/department/profile/" class="rounded-2xl bg-secondary-container/15 px-4 py-2 text-center text-sm font-semibold text-secondary hover:bg-secondary-container/25">Edit Profile</a>
+        </div>
       </div>
-      
-      <form method="post" action="{% url 'teacher:logout' %}" style="margin: 0;">
-        {% csrf_token %}
-        <button type="submit" class="nav-btn" title="Logout to Auth Login">
-          <span>🚪</span>
-          <span>Logout</span>
-        </button>
-      </form>
+
+      <div class="stats-grid">
+        <article class="stat-card">
+          <span class="stat-icon">📚</span>
+          <div>
+            <p class="text-sm font-semibold text-slate-500">Subjects</p>
+            <p class="mt-2 text-3xl font-semibold text-primary">{{ total_subjects }}</p>
+          </div>
+        </article>
+        <article class="stat-card">
+          <span class="stat-icon">👩‍🏫</span>
+          <div>
+            <p class="text-sm font-semibold text-slate-500">Teachers</p>
+            <p class="mt-2 text-3xl font-semibold text-primary">{{ total_teachers }}</p>
+          </div>
+        </article>
+        <article class="stat-card">
+          <span class="stat-icon">🏫</span>
+          <div>
+            <p class="text-sm font-semibold text-slate-500">Classes</p>
+            <p class="mt-2 text-3xl font-semibold text-primary">{{ total_classes }}</p>
+          </div>
+        </article>
+        <article class="stat-card">
+          <span class="stat-icon">📈</span>
+          <div>
+            <p class="text-sm font-semibold text-slate-500">Avg Performance</p>
+            <p class="mt-2 text-3xl font-semibold text-primary">{{ avg_performance|floatformat:1 }}%</p>
+          </div>
+        </article>
+      </div>
+
+      {# Quick actions moved to top navigation per design — removed from dashboard content #}
     </div>
-  </div>
-</div>
+  </section>
 
-<div class="department-dashboard dashboard-content">
-    <div class="page-header">
-        <h1>Subject Department Overview</h1>
+  {% if subjects %}
+  <section class="mt-10">
+    <div class="section-heading">
+      <div>
+        <p class="text-sm text-secondary">Core subjects</p>
+        <h2 class="text-2xl font-semibold text-primary">Department subjects</h2>
+      </div>
+      <a href="/teacher/department/subjects/" class="text-sm font-semibold text-secondary hover:text-primary">View all subjects →</a>
     </div>
-
-    <!-- Statistics Cards -->
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-icon">📚</div>
-            <div class="stat-content">
-                <p class="stat-label">Subjects</p>
-                <p class="stat-value">{{ total_subjects }}</p>
-            </div>
+    <div class="subjects-grid">
+      {% for subject in subjects %}
+      <article class="subject-card">
+        <div class="flex items-center justify-between gap-4">
+          <div>
+            <p class="text-sm text-slate-500 uppercase tracking-[0.18em]">Subject</p>
+            <h3 class="mt-2 text-lg font-semibold text-primary">{{ subject.name }}</h3>
+          </div>
+          <span class="rounded-2xl bg-secondary-container/20 px-3 py-1 text-sm font-semibold text-secondary">{{ subject.code }}</span>
         </div>
-
-        <div class="stat-card">
-            <div class="stat-icon">👨‍🏫</div>
-            <div class="stat-content">
-                <p class="stat-label">Teachers</p>
-                <p class="stat-value">{{ total_teachers }}</p>
-            </div>
-        </div>
-
-        <div class="stat-card">
-            <div class="stat-icon">🎓</div>
-            <div class="stat-content">
-                <p class="stat-label">Classes</p>
-                <p class="stat-value">{{ total_classes }}</p>
-            </div>
-        </div>
-
-        <div class="stat-card">
-            <div class="stat-icon">📊</div>
-            <div class="stat-content">
-                <p class="stat-label">Avg Performance</p>
-                <p class="stat-value">{{ avg_performance|floatformat:1 }}</p>
-            </div>
-        </div>
+        <a href="/teacher/department/subjects/{{ subject.id }}/" class="btn-view">View Details</a>
+      </article>
+      {% endfor %}
     </div>
+  </section>
+  {% endif %}
 
-    <!-- Quick Actions -->
-    <div class="actions-section">
-        <h2>Quick Actions</h2>
-        <div class="actions-grid">
-            <a href="/teacher/department/teachers/" class="action-card">
-                <span class="action-icon">👥</span>
-                <span class="action-text">Manage Teachers</span>
-            </a>
-
-            <a href="/teacher/department/subjects/" class="action-card">
-                <span class="action-icon">📖</span>
-                <span class="action-text">View Subjects</span>
-            </a>
-
-            <a href="/teacher/department/classes/" class="action-card">
-                <span class="action-icon">🏫</span>
-                <span class="action-text">Manage Classes</span>
-            </a>
-
-            <a href="/teacher/department/timetable/" class="action-card">
-                <span class="action-icon">🕐</span>
-                <span class="action-text">View Timetable</span>
-            </a>
-
-            <a href="/teacher/department/performance/" class="action-card">
-                <span class="action-icon">📈</span>
-                <span class="action-text">Performance Report</span>
-            </a>
-        </div>
+  {% if recent_activities %}
+  <section class="mt-10">
+    <div class="section-heading">
+      <div>
+        <p class="text-sm text-secondary">Activity feed</p>
+        <h2 class="text-2xl font-semibold text-primary">Recent department activities</h2>
+      </div>
+      <span class="text-sm text-slate-500">Showing latest updates from your department.</span>
     </div>
 
-    <!-- Subjects Overview -->
-    {% if subjects %}
-    <div class="subjects-section">
-        <h2>Department Subjects</h2>
-        <div class="subjects-grid">
-            {% for subject in subjects %}
-            <div class="subject-card">
-                <h3>{{ subject.subject_name }}</h3>
-                <p class="code">{{ subject.subject_code }}</p>
-                <a href="/teacher/department/subjects/{{ subject.id }}/" class="btn-view">View Details</a>
-            </div>
-            {% endfor %}
+    <div class="activities-list">
+      {% for activity in recent_activities %}
+      <article class="activity-card">
+        <span class="activity-icon">{{ activity.icon_name }}</span>
+        <div>
+          <p class="font-semibold text-primary">{{ activity.description }}</p>
+          <p class="activity-meta">{{ activity.created_at|timesince }} ago</p>
         </div>
+      </article>
+      {% endfor %}
     </div>
-    {% endif %}
-
-    <!-- Recent Activities -->
-    {% if recent_activities %}
-    <div class="activities-section">
-        <h2>Recent Activities</h2>
-        <div class="activities-list">
-            {% for activity in recent_activities %}
-            <div class="activity-item">
-                <div class="activity-icon">{{ activity.icon_name }}</div>
-                <div class="activity-content">
-                    <p class="activity-description">{{ activity.description }}</p>
-                    <p class="activity-time">{{ activity.created_at|timesince }} ago</p>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-    {% endif %}
-</div>
+  </section>
+  {% endif %}
+</main>
+{% endblock %}
 
 <style>
-.department-dashboard {
-    padding: 20px;
-    max-width: 1200px;
-    margin: 0 auto;
-}
-
-.page-header {
-    margin-bottom: 30px;
-}
-
-.page-header h1 {
-    margin: 0;
-    font-size: 28px;
-}
-
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 15px;
-    margin-bottom: 30px;
-}
-
-.stat-card {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    display: flex;
-    gap: 15px;
-    align-items: center;
-}
-
-.stat-icon {
-    font-size: 32px;
-}
-
-.stat-content {
-    flex: 1;
-}
-
 .stat-label {
     margin: 0;
     font-size: 12px;
@@ -397,4 +446,3 @@
     color: #999;
 }
 </style>
-{% endblock %}

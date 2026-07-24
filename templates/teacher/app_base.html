@@ -186,6 +186,64 @@
         
         <!-- Navigation Links - Desktop -->
         <div class="hidden lg:flex items-center gap-1 flex-grow justify-center">
+            {% if request.user.is_authenticated and request.user.role == 'department_head' %}
+            <a class="text-on-primary/70 px-3 py-2 flex items-center gap-2 hover:bg-white/10 transition-all text-sm rounded-lg" href="/teacher/department/">
+                <span class="material-symbols-outlined text-base">account_tree</span>
+                <span>Dept Dashboard</span>
+            </a>
+            
+            {% comment %} Quick Actions for department users {% endcomment %}
+            <div class="flex items-center gap-1 ml-2">
+                <a href="/teacher/department/teachers/" class="text-on-primary/70 px-3 py-2 hover:bg-white/10 rounded-lg flex items-center gap-2 text-sm">
+                    <span class="material-symbols-outlined">groups</span>
+                    <span>Teachers</span>
+                </a>
+                <a href="/teacher/department/subjects/" class="text-on-primary/70 px-3 py-2 hover:bg-white/10 rounded-lg flex items-center gap-2 text-sm">
+                    <span class="material-symbols-outlined">menu_book</span>
+                    <span>Subjects</span>
+                </a>
+                <a href="/teacher/department/classes/" class="text-on-primary/70 px-3 py-2 hover:bg-white/10 rounded-lg flex items-center gap-2 text-sm">
+                    <span class="material-symbols-outlined">apartment</span>
+                    <span>Classes</span>
+                </a>
+                <a href="/teacher/department/timetable/" class="text-on-primary/70 px-3 py-2 hover:bg-white/10 rounded-lg flex items-center gap-2 text-sm">
+                    <span class="material-symbols-outlined">schedule</span>
+                    <span>Timetable</span>
+                </a>
+                <a href="/teacher/department/performance/" class="text-on-primary/70 px-3 py-2 hover:bg-white/10 rounded-lg flex items-center gap-2 text-sm">
+                    <span class="material-symbols-outlined">insights</span>
+                    <span>Performance</span>
+                </a>
+            </div>
+            {% elif request.user.is_authenticated and '/teacher/department/' in request.path %}
+            <a class="text-on-primary/70 px-3 py-2 flex items-center gap-2 hover:bg-white/10 transition-all text-sm rounded-lg" href="/teacher/department/">
+                <span class="material-symbols-outlined text-base">account_tree</span>
+                <span>Dept Dashboard</span>
+            </a>
+            <div class="flex items-center gap-1 ml-2">
+                <a href="/teacher/department/teachers/" class="text-on-primary/70 px-3 py-2 hover:bg-white/10 rounded-lg flex items-center gap-2 text-sm">
+                    <span class="material-symbols-outlined">groups</span>
+                    <span>Teachers</span>
+                </a>
+                <a href="/teacher/department/subjects/" class="text-on-primary/70 px-3 py-2 hover:bg-white/10 rounded-lg flex items-center gap-2 text-sm">
+                    <span class="material-symbols-outlined">menu_book</span>
+                    <span>Subjects</span>
+                </a>
+                <a href="/teacher/department/classes/" class="text-on-primary/70 px-3 py-2 hover:bg-white/10 rounded-lg flex items-center gap-2 text-sm">
+                    <span class="material-symbols-outlined">apartment</span>
+                    <span>Classes</span>
+                </a>
+                <a href="/teacher/department/timetable/" class="text-on-primary/70 px-3 py-2 hover:bg-white/10 rounded-lg flex items-center gap-2 text-sm">
+                    <span class="material-symbols-outlined">schedule</span>
+                    <span>Timetable</span>
+                </a>
+                <a href="/teacher/department/performance/" class="text-on-primary/70 px-3 py-2 hover:bg-white/10 rounded-lg flex items-center gap-2 text-sm">
+                    <span class="material-symbols-outlined">insights</span>
+                    <span>Performance</span>
+                </a>
+            </div>
+            {% endif %}
+            {% if '/teacher/department/' not in request.path %}
             {% with current_page=request.resolver_match.url_name %}
             <a class="{% if current_page == 'dashboard' %}bg-secondary-container/20 text-secondary{% else %}text-on-primary/70 hover:text-white{% endif %} px-3 py-2 flex items-center gap-2 hover:bg-white/10 transition-all text-sm rounded-lg" href="{% url 'teacher:dashboard' %}">
                 <span class="material-symbols-outlined text-base">dashboard</span>
@@ -216,6 +274,7 @@
                 <span>Gradebook</span>
             </a>
             {% endwith %}
+            {% endif %}
         </div>
         
         <!-- Right Side Actions -->
@@ -233,6 +292,32 @@
     <!-- Mobile Navigation Menu -->
     <div id="teacherMobileMenu" class="fixed top-16 sm:top-20 left-0 right-0 bg-primary text-on-primary z-40 max-h-0 overflow-hidden transition-all duration-300 ease-in-out shadow-lg lg:hidden">
         <div class="p-4 space-y-2">
+            {% if request.user.is_authenticated and request.user.role == 'department_head' %}
+            <a class="text-on-primary/80 px-4 py-3 flex items-center gap-3 hover:bg-white/10 transition-all text-sm rounded-lg block w-full text-left" href="/teacher/department/">
+                <span class="material-symbols-outlined">account_tree</span>
+                <span>Dept Dashboard</span>
+            </a>
+            <div class="mt-2 space-y-2">
+                <a class="text-on-primary/80 px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-white/10 text-sm w-full" href="/teacher/department/teachers/">👥 Teachers</a>
+                <a class="text-on-primary/80 px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-white/10 text-sm w-full" href="/teacher/department/subjects/">📖 Subjects</a>
+                <a class="text-on-primary/80 px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-white/10 text-sm w-full" href="/teacher/department/classes/">🏫 Classes</a>
+                <a class="text-on-primary/80 px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-white/10 text-sm w-full" href="/teacher/department/timetable/">🕒 Timetable</a>
+                <a class="text-on-primary/80 px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-white/10 text-sm w-full" href="/teacher/department/performance/">📊 Performance</a>
+            </div>
+            {% elif request.user.is_authenticated and '/teacher/department/' in request.path %}
+            <a class="text-on-primary/80 px-4 py-3 flex items-center gap-3 hover:bg-white/10 transition-all text-sm rounded-lg block w-full text-left" href="/teacher/department/">
+                <span class="material-symbols-outlined">account_tree</span>
+                <span>Dept Dashboard</span>
+            </a>
+            <div class="mt-2 space-y-2">
+                <a class="text-on-primary/80 px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-white/10 text-sm w-full" href="/teacher/department/teachers/">👥 Teachers</a>
+                <a class="text-on-primary/80 px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-white/10 text-sm w-full" href="/teacher/department/subjects/">📖 Subjects</a>
+                <a class="text-on-primary/80 px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-white/10 text-sm w-full" href="/teacher/department/classes/">🏫 Classes</a>
+                <a class="text-on-primary/80 px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-white/10 text-sm w-full" href="/teacher/department/timetable/">🕒 Timetable</a>
+                <a class="text-on-primary/80 px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-white/10 text-sm w-full" href="/teacher/department/performance/">📊 Performance</a>
+            </div>
+            {% endif %}
+            {% if '/teacher/department/' not in request.path %}
             {% with current_page=request.resolver_match.url_name %}
             <a class="{% if current_page == 'dashboard' %}bg-secondary-container/20 text-secondary{% else %}text-on-primary/80 hover:text-white{% endif %} px-4 py-3 flex items-center gap-3 hover:bg-white/10 transition-all text-sm rounded-lg block w-full text-left" href="{% url 'teacher:dashboard' %}">
                 <span class="material-symbols-outlined">dashboard</span>
@@ -263,6 +348,7 @@
                 <span>Gradebook</span>
             </a>
             {% endwith %}
+            {% endif %}
         </div>
     </div>
 

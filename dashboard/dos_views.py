@@ -300,6 +300,73 @@ def timetable_create(request):
 
 
 @require_dos
+def schemes_of_work(request):
+    school = get_user_school(request)
+    staff = get_object_or_404(StaffProfile, user=request.user)
+
+    departments = TeacherDepartment.objects.filter(school=school, is_active=True)
+    department_cards = []
+    for department in departments:
+        teachers_in_department = StaffProfile.objects.filter(
+            teacher_department=department,
+            user__school=school,
+            user__role='teacher'
+        ).count()
+        department_cards.append({
+            'name': department.name,
+            'type': department.get_department_type_display(),
+            'teachers': teachers_in_department,
+            'head_assigned': bool(department.head_of_department),
+            'budget': department.annual_budget,
+        })
+
+    subject_count = Subject.objects.count()
+    timetable_entries = Timetable.objects.filter(class_grade__school=school).count()
+    classes = ClassGrade.objects.filter(school=school).count()
+    assigned_teachers = StaffProfile.objects.filter(
+        user__school=school,
+        user__role='teacher'
+    ).count()
+
+    context = {
+        'school': school,
+        'staff_profile': staff,
+        'section': 'schemes_of_work',
+        'department_cards': department_cards,
+        'subject_count': subject_count,
+        'timetable_entries': timetable_entries,
+        'classes': classes,
+        'assigned_teachers': assigned_teachers,
+    }
+
+    return render(request, 'dos/schemes_of_work.html', context)
+
+
+@require_dos
+def pastoral_care(request):
+    school = get_user_school(request)
+    staff = get_object_or_404(StaffProfile, user=request.user)
+
+    total_students = Student.objects.filter(class_grade__school=school, status='active').count()
+    students_at_risk = Student.objects.filter(class_grade__school=school, status='suspended').count()
+    wellbeing_alerts = ActivityLog.objects.filter(
+        teacher__user__school=school,
+        activity_type__in=['counseling_session', 'wellbeing_check']
+    ).order_by('-created_at')[:5]
+
+    context = {
+        'school': school,
+        'staff_profile': staff,
+        'section': 'pastoral_care',
+        'total_students': total_students,
+        'students_at_risk': students_at_risk,
+        'wellbeing_alerts': wellbeing_alerts,
+    }
+
+    return render(request, 'dos/pastoral_care.html', context)
+
+
+@require_dos
 @require_http_methods(['GET', 'POST'])
 def timetable_edit(request, timetable_id):
     """
@@ -831,7 +898,7 @@ def academic_reports(request):
         teacher_data = []
         for teacher in teachers:
             grades = Grade.objects.filter(
-                created_by=teacher,
+                recorded_by=teacher.user,
                 student__class_grade__school=school
             )
             

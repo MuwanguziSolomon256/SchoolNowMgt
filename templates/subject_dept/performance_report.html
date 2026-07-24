@@ -1,92 +1,106 @@
-{% extends "teacher/base.html" %}
+{% extends "teacher/app_base.html" %}
 {% load static %}
 
 {% block title %}Performance Report - Department{% endblock %}
 
 {% block content %}
-<div class="performance-report">
-    <div class="page-header">
-        <h1>Department Performance Report</h1>
+<main class="px-4 py-24 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-8">
+  <section class="rounded-[1.5rem] bg-white p-8 shadow-lg border border-slate-200">
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <p class="text-sm uppercase tracking-[0.24em] text-secondary">Performance report</p>
+        <h1 class="mt-3 text-3xl font-semibold text-primary">Department performance</h1>
+      </div>
+      <a href="/teacher/department/" class="rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white hover:bg-slate-800">Back to dashboard</a>
+    </div>
+  </section>
+
+  <section class="rounded-[1.5rem] bg-white p-8 shadow-lg border border-slate-200 overflow-x-auto">
+    <div class="flex items-center justify-between gap-4 mb-6">
+      <div>
+        <p class="text-sm uppercase tracking-[0.24em] text-secondary">Subject performance</p>
+        <h2 class="mt-3 text-2xl font-semibold text-primary">Recent scores</h2>
+      </div>
+      <p class="text-sm text-slate-500">{{ subject_performance|length }} subjects</p>
+    </div>
+    <table class="w-full min-w-[640px] border-collapse text-sm text-left">
+      <thead class="bg-slate-50 text-slate-600">
+        <tr>
+          <th class="px-6 py-4 font-semibold">Subject</th>
+          <th class="px-6 py-4 font-semibold">Average Score</th>
+          <th class="px-6 py-4 font-semibold">Grades Entered</th>
+          <th class="px-6 py-4 font-semibold">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in subject_performance %}
+        <tr class="border-b border-slate-200 hover:bg-slate-50">
+          <td class="px-6 py-4 font-medium text-slate-900">{{ item.subject.name }}</td>
+          <td class="px-6 py-4 text-slate-600">{{ item.avg_score|floatformat:1 }}%</td>
+          <td class="px-6 py-4 text-slate-600">{{ item.grades_count }}</td>
+          <td class="px-6 py-4">
+            {% if item.avg_score >= 75 %}
+            <span class="badge badge-high">Excellent</span>
+            {% elif item.avg_score >= 60 %}
+            <span class="badge badge-medium">Good</span>
+            {% else %}
+            <span class="badge badge-low">Needs Improvement</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="4" class="px-6 py-8 text-center text-slate-500">No performance data available.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  {% if class_performance %}
+  <section class="rounded-[1.5rem] bg-white p-8 shadow-lg border border-slate-200">
+    <div class="flex items-center justify-between gap-4 mb-6">
+      <div>
+        <p class="text-sm uppercase tracking-[0.24em] text-secondary">Class performance</p>
+        <h2 class="mt-3 text-2xl font-semibold text-primary">Class averages</h2>
+      </div>
+      <p class="text-sm text-slate-500">{{ class_performance|length }} classes</p>
     </div>
 
-    <!-- Subject Performance -->
-    <div class="report-section">
-        <h2>Subject Performance</h2>
-        <div class="table-section">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Subject</th>
-                        <th>Average Score</th>
-                        <th>Grades Entered</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for item in subject_performance %}
-                    <tr>
-                        <td><strong>{{ item.subject.subject_name }}</strong></td>
-                        <td>{{ item.avg_score|floatformat:1 }}</td>
-                        <td>{{ item.grades_count }}</td>
-                        <td>
-                            {% if item.avg_score >= 75 %}
-                            <span class="badge badge-high">Excellent</span>
-                            {% elif item.avg_score >= 60 %}
-                            <span class="badge badge-medium">Good</span>
-                            {% else %}
-                            <span class="badge badge-low">Needs Improvement</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {% for item in class_performance %}
+      <div class="performance-card rounded-3xl bg-slate-50 p-6">
+      <h4 class="font-semibold text-slate-900">{{ item.class.name }} - {{ item.class.level }}</h4>
+        <div class="performance-bar mt-4">
+          <div class="performance-fill" style="width: {{ item.avg_score|floatformat:0 }}%"></div>
         </div>
+        <p class="performance-score mt-3 text-lg font-semibold text-primary">{{ item.avg_score|floatformat:1 }}%</p>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  <section class="rounded-[1.5rem] bg-white p-8 shadow-lg border border-slate-200">
+    <div class="flex items-center justify-between gap-4 mb-6">
+      <div>
+        <p class="text-sm uppercase tracking-[0.24em] text-secondary">Summary statistics</p>
+        <h2 class="mt-3 text-2xl font-semibold text-primary">Department snapshot</h2>
+      </div>
     </div>
 
-    <!-- Class Performance -->
-    {% if class_performance %}
-    <div class="report-section">
-        <h2>Class Performance</h2>
-        <div class="performance-grid">
-            {% for item in class_performance %}
-            <div class="performance-card">
-                <h4>{{ item.class.class_grade_level.level_name }} - {{ item.class.class_stream.stream_name }}</h4>
-                <div class="performance-bar">
-                    <div class="performance-fill" style="width: {{ item.avg_score|floatformat:0 }}%"></div>
-                </div>
-                <p class="performance-score">{{ item.avg_score|floatformat:1 }}%</p>
-            </div>
-            {% endfor %}
-        </div>
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div class="summary-item rounded-3xl bg-slate-50 p-6 text-center">
+        <p class="label">Total Students</p>
+        <p class="value">{{ total_students }}</p>
+      </div>
+      <div class="summary-item rounded-3xl bg-slate-50 p-6 text-center">
+        <p class="label">Average Department Performance</p>
+        <p class="value">{{ department_avg|floatformat:1 }}%</p>
+      </div>
     </div>
-    {% endif %}
-
-    <!-- Summary Stats -->
-    <div class="summary-section">
-        <h2>Summary Statistics</h2>
-        <div class="summary-grid">
-            <div class="summary-item">
-                <p class="label">Total Students</p>
-                <p class="value">{{ total_students }}</p>
-            </div>
-            
-            <div class="summary-item">
-                <p class="label">Average Department Performance</p>
-                <p class="value">
-                    {% if subject_performance %}
-                    {% widthratio subject_performance|length 1 100 as count %}
-                    {% endif %}
-                    —
-                </p>
-            </div>
-        </div>
-    </div>
-
-    <div class="actions">
-        <a href="{% url 'subject_dept:dashboard' %}" class="btn btn-secondary">Back to Dashboard</a>
-    </div>
-</div>
+  </section>
+</main>
 
 <style>
 .performance-report {

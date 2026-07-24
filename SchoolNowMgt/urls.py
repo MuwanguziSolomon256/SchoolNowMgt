@@ -119,7 +119,7 @@ urlpatterns = [
     path('teacher/admin/dos/', include('dashboard.dos_urls', namespace='dos')),
     
     # ===== DEPUTY HEADMASTER DASHBOARD =====
-    path('teacher/admin/deputy/', include('dashboard.deputy_hm_urls', namespace='deputy')),
+    path('teacher/admin/deputy/', include('dashboard.deputy_hm_urls', namespace='deputy_hm')),
     
     # ===== MATRON & HOSTEL DASHBOARD =====
     path('teacher/matron/', include('dashboard.matron_urls', namespace='matron')),

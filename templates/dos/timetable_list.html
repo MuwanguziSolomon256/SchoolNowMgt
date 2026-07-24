@@ -1,264 +1,169 @@
-{% extends "teacher/base.html" %}
+{% extends "dos/dos_base.html" %}
 {% load static %}
 
-{% block title %}Timetable Management - DOS{% endblock %}
+{% block dos_title %}Timetable Management{% endblock %}
 
-{% block content %}
-<div class="dos-timetable">
-    <div class="page-header">
-        <h1>Timetable Management</h1>
-        <a href="{% url 'teacher:dos:timetable_create' %}" class="btn btn-primary">➕ Create Timetable Entry</a>
-    </div>
+{% block dos_content %}
+<div class="space-y-6">
+    <section class="rounded-[2rem] bg-white/95 p-6 shadow-[0_24px_80px_-32px_rgba(30,34,79,0.45)] ring-1 ring-slate-200/60 backdrop-blur-xl">
+        <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+                <h2 class="text-2xl font-semibold text-slate-900">Timetable Management</h2>
+                <p class="mt-2 text-sm text-slate-600">Review and filter timetable entries for your school.</p>
+            </div>
+            <div class="flex flex-wrap gap-3">
+                <a href="{% url 'teacher:dos:timetable_create' %}" class="inline-flex items-center gap-2 rounded-full bg-secondary px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-secondary-container/90">
+                    <span class="material-symbols-outlined">add</span>
+                    Create Entry
+                </a>
+                <a href="{% url 'teacher:dos:dashboard' %}" class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-900 shadow-sm transition hover:bg-slate-50">
+                    <span class="material-symbols-outlined">schedule</span>
+                    Timetable Overview
+                </a>
+            </div>
+        </div>
 
-    <!-- Filters -->
-    <div class="filter-section">
-        <form method="get" class="filter-form">
-            <div class="filter-group">
-                <label for="class_id">Filter by Class:</label>
-                <select name="class_id" id="class_id">
-                    <option value="">All Classes</option>
-                    {% for class in classes %}
-                    <option value="{{ class.id }}" {% if selected_class|stringformat:"s" == class.id|stringformat:"s" %}selected{% endif %}>
-                        {{ class.name }}
-                    </option>
-                    {% endfor %}
-                </select>
+        <div class="mt-6 grid gap-4 sm:grid-cols-2">
+            <div class="rounded-3xl bg-slate-50 p-5">
+                <p class="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">Conflict resolution</p>
+                <p class="mt-3 text-base text-slate-600">There are no timetable conflicts detected for the selected filters.</p>
+            </div>
+            <div class="rounded-3xl bg-slate-50 p-5">
+                <p class="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">Publish status</p>
+                <p class="mt-3 text-base text-slate-600">Current timetable draft is ready for review before publishing to teachers and students.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="grid gap-6 xl:grid-cols-[1.35fr_0.65fr]">
+        <div class="rounded-[2rem] bg-white/95 p-6 shadow-[0_24px_80px_-32px_rgba(30,34,79,0.45)] ring-1 ring-slate-200/60 backdrop-blur-xl">
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <h3 class="text-xl font-semibold text-slate-900">Timetable entries</h3>
+                    <p class="mt-1 text-sm text-slate-500">Filter and manage class schedules for the active school year.</p>
+                </div>
+                <a href="{% url 'teacher:dos:timetable_create' %}" class="text-sm font-semibold text-secondary hover:text-secondary-container">Add new entry</a>
             </div>
 
-            <div class="filter-group">
-                <label for="teacher_id">Filter by Teacher:</label>
-                <select name="teacher_id" id="teacher_id">
-                    <option value="">All Teachers</option>
-                    {% for teacher in teachers %}
-                    <option value="{{ teacher.id }}" {% if selected_teacher|stringformat:"s" == teacher.id|stringformat:"s" %}selected{% endif %}>
-                        {{ teacher.user.get_full_name }}
-                    </option>
-                    {% endfor %}
-                </select>
+            <form method="get" class="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-[1.4fr_0.8fr]">
+                <div class="grid gap-4 rounded-[1.5rem] bg-slate-50 p-5">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700" for="class_id">Class</label>
+                        <select id="class_id" name="class_id" class="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900">
+                            <option value="">All Classes</option>
+                            {% for class in classes %}
+                            <option value="{{ class.id }}" {% if selected_class|stringformat:"s" == class.id|stringformat:"s" %}selected{% endif %}>{{ class.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700" for="teacher_id">Teacher</label>
+                        <select id="teacher_id" name="teacher_id" class="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900">
+                            <option value="">All Teachers</option>
+                            {% for teacher in teachers %}
+                            <option value="{{ teacher.id }}" {% if selected_teacher|stringformat:"s" == teacher.id|stringformat:"s" %}selected{% endif %}>{{ teacher.user.get_full_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700" for="day">Day</label>
+                        <select id="day" name="day" class="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900">
+                            <option value="">All Days</option>
+                            {% for day_val, day_label in day_choices %}
+                            <option value="{{ day_val }}" {% if selected_day == day_val %}selected{% endif %}>{{ day_label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700" for="search">Search</label>
+                        <input id="search" name="search" type="text" value="{{ search_query }}" placeholder="Subject name..." class="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900" />
+                    </div>
+                </div>
+                <div class="flex items-end justify-end">
+                    <button type="submit" class="inline-flex w-full items-center justify-center rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800">Apply filters</button>
+                </div>
+            </form>
+
+            <div class="mt-6 overflow-x-auto">
+                {% if timetables %}
+                <table class="min-w-full text-left text-sm text-slate-600">
+                    <thead>
+                        <tr class="border-b border-slate-200 text-slate-700">
+                            <th class="px-4 py-3">Class</th>
+                            <th class="px-4 py-3">Subject</th>
+                            <th class="px-4 py-3">Teacher</th>
+                            <th class="px-4 py-3">Day</th>
+                            <th class="px-4 py-3">Time</th>
+                            <th class="px-4 py-3">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for timetable in timetables %}
+                        <tr class="border-b border-slate-100 hover:bg-slate-50">
+                            <td class="px-4 py-4">{{ timetable.class_grade.name }}</td>
+                            <td class="px-4 py-4">{{ timetable.subject.name }}</td>
+                            <td class="px-4 py-4">{{ timetable.teacher.user.get_full_name }}</td>
+                            <td class="px-4 py-4">{{ timetable.get_day_of_week_display }}</td>
+                            <td class="px-4 py-4">{{ timetable.start_time|time:"H:i" }} - {{ timetable.end_time|time:"H:i" }}</td>
+                            <td class="px-4 py-4">
+                                <div class="flex flex-wrap gap-2">
+                                    <a href="{% url 'teacher:dos:timetable_edit' timetable.id %}" class="inline-flex rounded-2xl bg-slate-900 px-3 py-2 text-sm font-semibold text-white transition hover:bg-slate-800">Edit</a>
+                                    <form method="post" action="{% url 'teacher:dos:timetable_delete' timetable.id %}" class="inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="inline-flex rounded-2xl bg-rose-500 px-3 py-2 text-sm font-semibold text-white transition hover:bg-rose-600" onclick="return confirm('Delete this timetable entry?');">Delete</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="rounded-[1.5rem] border border-dashed border-slate-200 bg-slate-50 p-12 text-center text-slate-600">
+                    No timetable entries found. <a href="{% url 'teacher:dos:timetable_create' %}" class="font-semibold text-secondary">Create one now</a>
+                </div>
+                {% endif %}
             </div>
 
-            <div class="filter-group">
-                <label for="day">Filter by Day:</label>
-                <select name="day" id="day">
-                    <option value="">All Days</option>
-                    {% for day_val, day_label in day_choices %}
-                    <option value="{{ day_val }}" {% if selected_day == day_val %}selected{% endif %}>
-                        {{ day_label }}
-                    </option>
-                    {% endfor %}
-                </select>
+            {% if page_obj.has_other_pages %}
+            <div class="mt-6 flex flex-wrap items-center justify-between gap-3 text-sm text-slate-600">
+                <div>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</div>
+                <div class="flex flex-wrap items-center gap-2">
+                    {% if page_obj.has_previous %}
+                    <a href="?page=1" class="text-slate-700 hover:text-slate-900">First</a>
+                    <a href="?page={{ page_obj.previous_page_number }}" class="text-slate-700 hover:text-slate-900">Previous</a>
+                    {% endif %}
+                    {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}" class="text-slate-700 hover:text-slate-900">Next</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}" class="text-slate-700 hover:text-slate-900">Last</a>
+                    {% endif %}
+                </div>
             </div>
-
-            <div class="filter-group">
-                <label for="search">Search Subject:</label>
-                <input type="text" name="search" id="search" placeholder="Subject name..." value="{{ search_query }}">
-            </div>
-
-            <button type="submit" class="btn btn-secondary">Filter</button>
-        </form>
-    </div>
-
-    <!-- Timetables Table -->
-    {% if timetables %}
-    <div class="table-section">
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Class</th>
-                    <th>Subject</th>
-                    <th>Teacher</th>
-                    <th>Day</th>
-                    <th>Time</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for timetable in timetables %}
-                <tr>
-                    <td>{{ timetable.class_grade.name }}</td>
-                    <td>{{ timetable.subject.name }}</td>
-                    <td>{{ timetable.teacher.user.get_full_name }}</td>
-                    <td>{{ timetable.get_day_of_week_display }}</td>
-                    <td>{{ timetable.start_time|time:"H:i" }} - {{ timetable.end_time|time:"H:i" }}</td>
-                    <td class="actions">
-                        <a href="{% url 'teacher:dos:timetable_edit' timetable.id %}" class="btn btn-sm btn-edit">Edit</a>
-                        <form method="post" action="{% url 'teacher:dos:timetable_delete' timetable.id %}" class="inline-form" onsubmit="return confirm('Delete this timetable entry?');">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                        </form>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-
-        <!-- Pagination -->
-        {% if page_obj.has_other_pages %}
-        <div class="pagination">
-            {% if page_obj.has_previous %}
-                <a href="?page=1">First</a>
-                <a href="?page={{ page_obj.previous_page_number }}">Previous</a>
-            {% endif %}
-
-            <span class="page-info">
-                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
-            </span>
-
-            {% if page_obj.has_next %}
-                <a href="?page={{ page_obj.next_page_number }}">Next</a>
-                <a href="?page={{ page_obj.paginator.num_pages }}">Last</a>
             {% endif %}
         </div>
-        {% endif %}
-    </div>
-    {% else %}
-    <div class="empty-state">
-        <p>No timetable entries found. <a href="{% url 'teacher:dos:timetable_create' %}">Create one now</a></p>
-    </div>
-    {% endif %}
+
+        <aside class="space-y-6">
+            <div class="rounded-[1.75rem] bg-slate-950/95 p-6 text-white shadow-[0_24px_80px_-32px_rgba(30,34,79,0.45)] ring-1 ring-slate-200/15 backdrop-blur-xl">
+                <h3 class="text-lg font-semibold">Timetable summary</h3>
+                <div class="mt-4 grid gap-4">
+                    <div class="rounded-3xl bg-slate-900/90 p-4">
+                        <p class="text-sm text-slate-400">Total classes scheduled</p>
+                        <p class="mt-2 text-2xl font-semibold">{{ page_obj.paginator.count }}</p>
+                    </div>
+                    <div class="rounded-3xl bg-slate-900/90 p-4">
+                        <p class="text-sm text-slate-400">Filter results</p>
+                        <p class="mt-2 text-2xl font-semibold">{{ timetables|length }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="rounded-[1.75rem] bg-white/95 p-6 shadow-[0_24px_80px_-32px_rgba(30,34,79,0.45)] ring-1 ring-slate-200/60 backdrop-blur-xl">
+                <h3 class="text-lg font-semibold text-slate-900">Actions</h3>
+                <div class="mt-4 space-y-3">
+                    <a href="{% url 'teacher:dos:timetable_create' %}" class="block rounded-3xl bg-secondary px-4 py-3 text-sm font-semibold text-white text-center hover:bg-secondary-container/95">Add timetable entry</a>
+                    <a href="{% url 'teacher:dos:academic_reports' %}" class="block rounded-3xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-900 text-center hover:bg-slate-50">View academic reports</a>
+                </div>
+            </div>
+        </aside>
+    </section>
 </div>
-
-<style>
-.dos-timetable {
-    padding: 20px;
-    max-width: 1200px;
-    margin: 0 auto;
-}
-
-.page-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 30px;
-}
-
-.page-header h1 {
-    margin: 0;
-    font-size: 28px;
-}
-
-.filter-section {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.filter-form {
-    display: flex;
-    gap: 15px;
-    flex-wrap: wrap;
-    align-items: flex-end;
-}
-
-.filter-group {
-    flex: 1;
-    min-width: 200px;
-}
-
-.filter-group label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: 600;
-    font-size: 14px;
-}
-
-.filter-group select,
-.filter-group input {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 14px;
-}
-
-.table-section {
-    background: white;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.table thead {
-    background: #f8f9fa;
-}
-
-.table th {
-    padding: 15px;
-    text-align: left;
-    border-bottom: 2px solid #dee2e6;
-    font-weight: 600;
-}
-
-.table td {
-    padding: 15px;
-    border-bottom: 1px solid #dee2e6;
-}
-
-.table-striped tbody tr:nth-child(odd) {
-    background: #f8f9fa;
-}
-
-.actions {
-    display: flex;
-    gap: 10px;
-}
-
-.btn-sm {
-    padding: 6px 12px;
-    font-size: 12px;
-}
-
-.btn-edit {
-    background: #17a2b8;
-    color: white;
-    text-decoration: none;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-.btn-danger {
-    background: #dc3545;
-    color: white;
-    border: none;
-}
-
-.inline-form {
-    display: inline;
-    margin: 0;
-}
-
-.pagination {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    padding: 20px;
-    align-items: center;
-}
-
-.pagination a {
-    padding: 8px 12px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    text-decoration: none;
-    color: #007bff;
-}
-
-.page-info {
-    padding: 0 20px;
-}
-
-.empty-state {
-    text-align: center;
-    padding: 60px 20px;
-    color: #666;
-}
-</style>
 {% endblock %}

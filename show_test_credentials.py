@@ -40,6 +40,62 @@ TEST_CREDENTIALS = [
         'password': 'password123',
         'redirect': '/',
     },
+    {
+        'role': 'Director of Studies',
+        'username': 'dos_test',
+        'email': 'dos@test.com',
+        'password': 'password123',
+        'redirect': '/teacher/admin/dos/',
+    },
+    {
+        'role': 'Deputy Headmaster',
+        'username': 'deputy_hm_test',
+        'email': 'deputyhm@test.com',
+        'password': 'password123',
+        'redirect': '/teacher/admin/deputy/',
+    },
+    {
+        'role': 'Subject Department Head',
+        'username': 'dept_head_test',
+        'email': 'depthead@test.com',
+        'password': 'password123',
+        'redirect': '/teacher/department/',
+    },
+    {
+        'role': 'Head Teacher',
+        'username': 'head_teacher_test',
+        'email': 'headteacher@test.com',
+        'password': 'password123',
+        'redirect': '/teacher/admin/head-teacher/',
+    },
+    {
+        'role': 'Class Teacher',
+        'username': 'class_teacher_test',
+        'email': 'classteacher@test.com',
+        'password': 'password123',
+        'redirect': '/teacher/class/',
+    },
+    {
+        'role': 'Matron / Welfare Coordinator',
+        'username': 'matron_test',
+        'email': 'matron@test.com',
+        'password': 'password123',
+        'redirect': '/teacher/matron/',
+    },
+    {
+        'role': 'Shift Supervisor',
+        'username': 'supervisor_test',
+        'email': 'supervisor@test.com',
+        'password': 'password123',
+        'redirect': '/teacher/support/',
+    },
+    {
+        'role': 'Support Department Head',
+        'username': 'support_dept_head_test',
+        'email': 'supporthead@test.com',
+        'password': 'password123',
+        'redirect': '/teacher/support/',
+    },
 ]
 
 

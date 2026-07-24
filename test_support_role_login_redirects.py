@@ -36,7 +36,11 @@ class SupportRoleLoginRedirectTests(TestCase):
         )
         StaffProfile.objects.create(
             user=self.supervisor_user,
-            teacher_admin_role='shift_supervisor',
+            employee_id='EMP-SUPERVISOR',
+            position='Shift Supervisor',
+            salary=0,
+            date_joined='2024-01-01',
+            support_staff_role='supervisor',
         )
 
     def test_matron_login_redirects_to_matron_dashboard(self):
@@ -58,3 +62,12 @@ class SupportRoleLoginRedirectTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Shift Supervisor')
+
+    def test_shift_supervisor_dashboard_renders_new_ui(self):
+        self.client.force_login(self.supervisor_user)
+        response = self.client.get('/teacher/support/shift-supervisor/')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Operations Command Center')
+        self.assertContains(response, 'Staff Roster')
+        self.assertContains(response, 'Supply Requests')

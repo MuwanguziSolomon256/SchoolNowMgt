@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SchoolNow | Institutional Pulse</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Hanken+Grotesk:wght@600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary-container": "#500d00",
+                    "inverse-on-surface": "#f0f1f4",
+                    "surface-container": "#edeef1",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-container-low": "#f2f3f6",
+                    "on-error-container": "#93000a",
+                    "surface-variant": "#e1e2e5",
+                    "primary-fixed-dim": "#bfc2fa",
+                    "inverse-surface": "#2e3133",
+                    "on-tertiary": "#ffffff",
+                    "secondary-fixed": "#ffdea8",
+                    "on-tertiary-fixed": "#3c0800",
+                    "on-secondary": "#ffffff",
+                    "error-container": "#ffdad6",
+                    "background": "#f8f9fc",
+                    "on-primary": "#ffffff",
+                    "on-primary-fixed": "#121643",
+                    "surface-container-high": "#e7e8eb",
+                    "on-secondary-fixed-variant": "#5e4200",
+                    "inverse-primary": "#bfc2fa",
+                    "surface": "#f8f9fc",
+                    "secondary-container": "#feb700",
+                    "outline-variant": "#c7c5d0",
+                    "surface-container-highest": "#e1e2e5",
+                    "secondary-fixed-dim": "#ffba20",
+                    "secondary": "#7c5800",
+                    "on-secondary-container": "#6b4b00",
+                    "on-secondary-fixed": "#271900",
+                    "on-background": "#191c1e",
+                    "on-tertiary-fixed-variant": "#881f01",
+                    "on-error": "#ffffff",
+                    "on-primary-container": "#868abd",
+                    "tertiary-fixed": "#ffdbd2",
+                    "primary-fixed": "#e0e0ff",
+                    "error": "#ba1a1a",
+                    "primary": "#080b3a",
+                    "tertiary-fixed-dim": "#ffb4a2",
+                    "on-surface-variant": "#46464f",
+                    "surface-tint": "#565a8b",
+                    "on-tertiary-container": "#e96442",
+                    "on-surface": "#191c1e",
+                    "primary-container": "#1e224f",
+                    "on-primary-fixed-variant": "#3f4371",
+                    "tertiary": "#2b0400",
+                    "surface-bright": "#f8f9fc",
+                    "outline": "#777680",
+                    "surface-dim": "#d9dadd"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "container-padding": "20px",
+                    "base": "8px",
+                    "section-margin": "32px",
+                    "gutter": "16px",
+                    "card-gap": "12px"
+            },
+            "fontFamily": {
+                    "headline-lg-mobile": ["Hanken Grotesk"],
+                    "body-md": ["Inter"],
+                    "label-md": ["Inter"],
+                    "display-lg": ["Hanken Grotesk"],
+                    "headline-md": ["Hanken Grotesk"],
+                    "headline-lg": ["Hanken Grotesk"],
+                    "body-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "display-lg": ["36px", {"lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-md": ["22px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "headline-lg": ["28px", {"lineHeight": "36px", "fontWeight": "600"}],
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+      .glass-card {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        box-shadow: 0 10px 30px rgba(30, 34, 79, 0.04);
+      }
+      .glass-card:hover {
+        border-color: rgba(255, 255, 255, 0.6);
+        box-shadow: 0 15px 40px rgba(30, 34, 79, 0.08);
+      }
+      .glass-edge {
+        border-top: 1px solid rgba(255, 255, 255, 0.8);
+        border-left: 1px solid rgba(255, 255, 255, 0.8);
+      }
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: rgba(8, 11, 58, 0.1);
+        border-radius: 10px;
+      }
+      .chart-gradient {
+        background: linear-gradient(180deg, rgba(254, 183, 0, 0.15) 0%, rgba(254, 183, 0, 0) 100%);
+      }
+    </style>
+</head>
+<body class="bg-background font-body-md text-on-background min-h-screen overflow-x-hidden selection:bg-secondary-container/30">
+<!-- Integrated Top Navigation -->
+<header class="fixed top-0 left-0 right-0 h-20 bg-white/70 backdrop-blur-[20px] shadow-[0_10px_30px_rgba(30,34,79,0.08)] flex items-center px-8 z-50 border-b border-white/20">
+<!-- Branding -->
+<div class="flex items-center gap-3 mr-12 shrink-0">
+<div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg">
+<span class="material-symbols-outlined text-white text-2xl">school</span>
+</div>
+<div class="hidden lg:block">
+<h1 class="font-headline-md text-lg font-bold text-primary leading-tight">SchoolNow</h1>
+<p class="text-[10px] uppercase tracking-widest text-on-surface-variant/60 font-bold">Ethos Management</p>
+</div>
+</div>
+<!-- Role-specific Navigation Tabs -->
+<nav class="flex items-center gap-1 h-full">
+<a class="flex items-center gap-2 px-4 h-full border-b-2 border-secondary-container text-primary font-bold transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]">dashboard</span>
+<span class="text-sm">Dashboard</span>
+</a>
+<a class="flex items-center gap-2 px-4 h-full border-b-2 border-transparent text-on-surface-variant/70 hover:text-primary hover:border-primary/20 transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]">payments</span>
+<span class="text-sm">Financials</span>
+</a>
+<a class="flex items-center gap-2 px-4 h-full border-b-2 border-transparent text-on-surface-variant/70 hover:text-primary hover:border-primary/20 transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]">group</span>
+<span class="text-sm">Enrollment</span>
+</a>
+<a class="flex items-center gap-2 px-4 h-full border-b-2 border-transparent text-on-surface-variant/70 hover:text-primary hover:border-primary/20 transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]">calendar_month</span>
+<span class="text-sm">Term Calendar</span>
+</a>
+</nav>
+<!-- Search, Utils & Profile -->
+<div class="ml-auto flex items-center gap-6">
+<div class="hidden xl:flex items-center gap-3 bg-surface-container-low/50 px-4 py-2 rounded-full border border-white/50 w-64 focus-within:w-80 transition-all">
+<span class="material-symbols-outlined text-on-surface-variant/60 text-xl">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-xs w-full placeholder:text-on-surface-variant/40" placeholder="Search records..." type="text"/>
+</div>
+<div class="flex items-center gap-2">
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-primary/5 transition-colors relative">
+<span class="material-symbols-outlined text-primary">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-secondary-container rounded-full border-2 border-white"></span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-primary/5 transition-colors">
+<span class="material-symbols-outlined text-primary">settings</span>
+</button>
+</div>
+<div class="h-8 w-[1px] bg-outline-variant/30"></div>
+<div class="flex items-center gap-3 group cursor-pointer">
+<div class="text-right hidden sm:block">
+<p class="text-xs font-bold text-primary">Dr. Alistair Vance</p>
+<p class="text-[10px] text-on-surface-variant/60 font-medium">Headmaster</p>
+</div>
+<div class="w-10 h-10 rounded-full border-2 border-secondary-container/30 overflow-hidden group-hover:border-secondary-container transition-all">
+<img class="w-full h-full object-cover" data-alt="A professional portrait of a senior male academic leader in his late 50s, wearing a charcoal grey suit with a subtle pattern." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDGb5Ynb9f-nEGSkEbd_Ew9yzBpRdRN3UrPiY7hAhwT10a111oQEhYpgMDsfp3bSC_W8R4nZUfibO_FV8T4mf4GGWrwc-vJYSWXew99ziMWSlzCe0OtqfvB2RaZpJYz5J7AyIQ1772Ml7Gb0U6NFeqRKCCNx6aw06ctmCL8x-yYltovGvuY3RVOoFAow76v0aSCnuKe-Czb2UMOH8PubN9Rp0rw7IEuGf_YLlT797YCq5jtrnynT4fjeyGcJEAz_oDKR7iEWdRQz60E"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="min-h-screen relative">
+<!-- Canvas -->
+<div class="pt-28 px-8 pb-12 max-w-7xl mx-auto">
+<!-- Institutional Pulse Header -->
+<div class="flex items-end justify-between mb-8">
+<div>
+<h2 class="font-display-lg text-display-lg text-primary tracking-tight">Institutional Pulse</h2>
+<p class="text-on-surface-variant flex items-center gap-2 mt-1">
+<span class="material-symbols-outlined text-sm">calendar_today</span>
+                        Michaelmas Term · Academic Year 2024/25
+                    </p>
+</div>
+<div class="flex gap-3">
+<button class="flex items-center gap-2 px-5 py-2.5 bg-white border border-outline-variant/30 text-primary font-bold rounded-xl hover:bg-surface-container-low transition-all shadow-sm">
+<span class="material-symbols-outlined text-lg">download</span>
+                        Export Report
+                    </button>
+<button class="flex items-center gap-2 px-6 py-2.5 bg-primary text-white font-bold rounded-xl hover:shadow-[0_4px_15px_rgba(8,11,58,0.3)] transition-all glass-edge">
+<span class="material-symbols-outlined text-lg">add</span>
+                        New Event
+                    </button>
+</div>
+</div>
+<!-- Bento Grid - KPIs & Charts -->
+<div class="grid grid-cols-12 gap-6 mb-8">
+<!-- Financial Health Card (Wide) -->
+<div class="col-span-12 lg:col-span-8 glass-card rounded-[24px] p-8 relative overflow-hidden">
+<div class="absolute top-0 right-0 w-64 h-64 bg-secondary-container/5 rounded-full blur-3xl -mr-20 -mt-20"></div>
+<div class="flex items-start justify-between relative z-10">
+<div>
+<h3 class="font-headline-md text-headline-md text-primary mb-1">Financial Health</h3>
+<p class="text-on-surface-variant text-sm">Current Term Revenue &amp; Collections</p>
+</div>
+<div class="flex items-center gap-2 bg-primary/5 px-3 py-1.5 rounded-full">
+<span class="w-2 h-2 bg-secondary-container rounded-full animate-pulse"></span>
+<span class="text-xs font-bold text-primary">Live Updates</span>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8 mt-10 relative z-10">
+<div class="space-y-1">
+<p class="text-xs font-bold text-on-surface-variant/60 uppercase tracking-widest">Total Revenue</p>
+<div class="flex items-baseline gap-2">
+<p class="text-3xl font-bold text-primary tracking-tight">£2.48M</p>
+<span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded flex items-center">
+<span class="material-symbols-outlined text-[10px]">trending_up</span> 12%
+                                </span>
+</div>
+<div class="w-full h-1.5 bg-surface-container rounded-full mt-3 overflow-hidden">
+<div class="h-full bg-primary w-[85%] rounded-full"></div>
+</div>
+</div>
+<div class="space-y-1">
+<p class="text-xs font-bold text-on-surface-variant/60 uppercase tracking-widest">Collections</p>
+<p class="text-3xl font-bold text-primary tracking-tight">£2.12M</p>
+<p class="text-xs text-on-surface-variant font-medium mt-1">85.4% Target Met</p>
+<div class="w-full h-1.5 bg-surface-container rounded-full mt-3 overflow-hidden">
+<div class="h-full bg-secondary-container w-[72%] rounded-full"></div>
+</div>
+</div>
+<div class="space-y-1">
+<p class="text-xs font-bold text-on-surface-variant/60 uppercase tracking-widest">Outstanding</p>
+<p class="text-3xl font-bold text-on-tertiary-container tracking-tight">£364k</p>
+<p class="text-xs text-error font-medium mt-1">14.6% Arrears</p>
+<div class="w-full h-1.5 bg-error-container/30 rounded-full mt-3 overflow-hidden">
+<div class="h-full bg-error w-[14%] rounded-full"></div>
+</div>
+</div>
+</div>
+<!-- Mini Sparkline Placeholder -->
+<div class="mt-10 h-32 w-full relative">
+<div class="absolute inset-x-0 bottom-0 h-16 chart-gradient rounded-b-xl opacity-40"></div>
+<svg class="w-full h-full preserve-3d" preserveaspectratio="none" viewbox="0 0 1000 100">
+<path d="M0,80 Q50,60 100,75 T200,40 T300,55 T400,20 T500,45 T600,15 T700,40 T800,10 T900,30 T1000,15" fill="none" stroke="#feb700" stroke-linecap="round" stroke-width="3"></path>
+</svg>
+</div>
+</div>
+<!-- Enrollment Trends Card -->
+<div class="col-span-12 lg:col-span-4 glass-card rounded-[24px] p-8 flex flex-col">
+<h3 class="font-headline-md text-headline-md text-primary mb-6">Enrollment Mix</h3>
+<div class="flex-1 flex flex-col justify-center gap-10">
+<div class="flex items-center gap-6">
+<div class="relative w-24 h-24 flex items-center justify-center">
+<svg class="w-full h-full -rotate-90">
+<circle cx="48" cy="48" fill="transparent" r="40" stroke="#edeef1" stroke-width="8"></circle>
+<circle cx="48" cy="48" fill="transparent" r="40" stroke="#080b3a" stroke-dasharray="251.2" stroke-dashoffset="85" stroke-width="8"></circle>
+</svg>
+<span class="absolute text-sm font-bold text-primary">64%</span>
+</div>
+<div>
+<p class="text-sm font-bold text-primary">Day Scholars</p>
+<p class="text-2xl font-bold text-primary">542 <span class="text-sm font-medium text-on-surface-variant/60">Students</span></p>
+<p class="text-xs text-emerald-600 font-medium">+8% from last term</p>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="relative w-24 h-24 flex items-center justify-center">
+<svg class="w-full h-full -rotate-90">
+<circle cx="48" cy="48" fill="transparent" r="40" stroke="#edeef1" stroke-width="8"></circle>
+<circle cx="48" cy="48" fill="transparent" r="40" stroke="#feb700" stroke-dasharray="251.2" stroke-dashoffset="160" stroke-width="8"></circle>
+</svg>
+<span class="absolute text-sm font-bold text-primary">36%</span>
+</div>
+<div>
+<p class="text-sm font-bold text-primary">Boarding</p>
+<p class="text-2xl font-bold text-primary">312 <span class="text-sm font-medium text-on-surface-variant/60">Students</span></p>
+<p class="text-xs text-on-surface-variant font-medium">Steady state</p>
+</div>
+</div>
+</div>
+<button class="w-full py-3 mt-6 bg-white border border-outline-variant/30 text-primary font-bold text-sm rounded-xl hover:bg-surface-container-low transition-all">
+                        Detailed Demographics
+                    </button>
+</div>
+<!-- Expansive Calendar Section -->
+<div class="col-span-12 glass-card rounded-[24px] overflow-hidden">
+<div class="p-8 border-b border-white/20 flex items-center justify-between">
+<div>
+<h3 class="font-headline-md text-headline-md text-primary">Term Calendar</h3>
+<p class="text-on-surface-variant text-sm">Upcoming major events and milestones</p>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex bg-surface-container-low p-1 rounded-xl">
+<button class="px-4 py-1.5 bg-white text-primary font-bold text-xs rounded-lg shadow-sm">Monthly</button>
+<button class="px-4 py-1.5 text-on-surface-variant/60 font-bold text-xs rounded-lg">Weekly</button>
+<button class="px-4 py-1.5 text-on-surface-variant/60 font-bold text-xs rounded-lg">Agenda</button>
+</div>
+<div class="flex gap-2">
+<button class="w-10 h-10 flex items-center justify-center rounded-xl border border-outline-variant/30 hover:bg-white transition-colors">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-xl border border-outline-variant/30 hover:bg-white transition-colors">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-7 border-b border-white/20">
+<div class="py-4 text-center text-xs font-bold text-on-surface-variant/40 uppercase tracking-widest">Mon</div>
+<div class="py-4 text-center text-xs font-bold text-on-surface-variant/40 uppercase tracking-widest">Tue</div>
+<div class="py-4 text-center text-xs font-bold text-on-surface-variant/40 uppercase tracking-widest">Wed</div>
+<div class="py-4 text-center text-xs font-bold text-on-surface-variant/40 uppercase tracking-widest">Thu</div>
+<div class="py-4 text-center text-xs font-bold text-on-surface-variant/40 uppercase tracking-widest">Fri</div>
+<div class="py-4 text-center text-xs font-bold text-on-surface-variant/40 uppercase tracking-widest">Sat</div>
+<div class="py-4 text-center text-xs font-bold text-on-surface-variant/40 uppercase tracking-widest">Sun</div>
+</div>
+<div class="grid grid-cols-7 auto-rows-[160px]">
+<!-- Calendar Cells (Simulated) -->
+<div class="p-4 border-r border-b border-white/10 opacity-40">28</div>
+<div class="p-4 border-r border-b border-white/10 opacity-40">29</div>
+<div class="p-4 border-r border-b border-white/10 opacity-40">30</div>
+<div class="p-4 border-r border-b border-white/10 bg-surface-container-lowest/40 group">
+<span class="text-sm font-bold text-primary">1</span>
+<div class="mt-2 space-y-1">
+<div class="px-2 py-1 bg-primary/10 border-l-4 border-primary rounded text-[10px] font-bold text-primary truncate">Staff Inset Day</div>
+</div>
+</div>
+<div class="p-4 border-r border-b border-white/10 bg-surface-container-lowest/40">
+<span class="text-sm font-bold text-primary">2</span>
+</div>
+<div class="p-4 border-r border-b border-white/10 bg-surface-container-lowest/40">
+<span class="text-sm font-bold text-primary">3</span>
+</div>
+<div class="p-4 border-b border-white/10 bg-surface-container-lowest/40">
+<span class="text-sm font-bold text-primary">4</span>
+</div>
+<!-- Row 2 -->
+<div class="p-4 border-r border-b border-white/10 bg-surface-container-lowest/40">
+<span class="text-sm font-bold text-primary">5</span>
+</div>
+<div class="p-4 border-r border-b border-white/10 bg-surface-container-lowest/40">
+<span class="text-sm font-bold text-primary">6</span>
+<div class="mt-2 space-y-1">
+<div class="px-2 py-1 bg-secondary-container/20 border-l-4 border-secondary-container rounded text-[10px] font-bold text-on-secondary-container truncate">Governors Meeting</div>
+</div>
+</div>
+<div class="p-4 border-r border-b border-white/10 bg-primary/5">
+<span class="text-sm font-bold text-primary">7</span>
+<p class="text-[10px] text-primary/60 font-bold mt-1">TODAY</p>
+</div>
+<div class="p-4 border-r border-b border-white/10 bg-surface-container-lowest/40">
+<span class="text-sm font-bold text-primary">8</span>
+<div class="mt-2 space-y-1">
+<div class="px-2 py-1 bg-tertiary-container/10 border-l-4 border-on-tertiary-container rounded text-[10px] font-bold text-on-tertiary-container truncate">Alumni Dinner</div>
+</div>
+</div>
+<div class="p-4 border-r border-b border-white/10 bg-surface-container-lowest/40">
+<span class="text-sm font-bold text-primary">9</span>
+</div>
+<div class="p-4 border-r border-b border-white/10 bg-surface-container-lowest/40">
+<span class="text-sm font-bold text-primary">10</span>
+</div>
+<div class="p-4 border-b border-white/10 bg-surface-container-lowest/40">
+<span class="text-sm font-bold text-primary">11</span>
+</div>
+<!-- Row 3 with active/hover focus -->
+<div class="p-4 border-r border-b border-white/10 bg-surface-container-lowest/40">
+<span class="text-sm font-bold text-primary">12</span>
+</div>
+<div class="p-4 border-r border-b border-white/10 bg-surface-container-lowest/40">
+<span class="text-sm font-bold text-primary">13</span>
+</div>
+<div class="p-4 border-r border-b border-white/10 bg-surface-container-lowest/40">
+<span class="text-sm font-bold text-primary">14</span>
+<div class="mt-2 space-y-1">
+<div class="px-2 py-1 bg-emerald-100 border-l-4 border-emerald-500 rounded text-[10px] font-bold text-emerald-800 truncate">Science Fair 2024</div>
+<div class="px-2 py-1 bg-primary/10 border-l-4 border-primary rounded text-[10px] font-bold text-primary truncate">Guest Lecture: AI</div>
+</div>
+</div>
+<div class="p-4 border-r border-b border-white/10 bg-surface-container-lowest/40">
+<span class="text-sm font-bold text-primary">15</span>
+</div>
+<div class="p-4 border-r border-b border-white/10 bg-surface-container-lowest/40">
+<span class="text-sm font-bold text-primary">16</span>
+</div>
+<div class="p-4 border-r border-b border-white/10 bg-surface-container-lowest/40">
+<span class="text-sm font-bold text-primary">17</span>
+</div>
+<div class="p-4 border-b border-white/10 bg-surface-container-lowest/40">
+<span class="text-sm font-bold text-primary">18</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom Quick Actions / System Status -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="glass-card rounded-[20px] p-6 flex items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-secondary-container/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary text-2xl">account_tree</span>
+</div>
+<div>
+<p class="text-sm font-bold text-primary">LMS Integration</p>
+<p class="text-xs text-on-surface-variant">Sync successful 4m ago</p>
+</div>
+<div class="ml-auto">
+<div class="w-3 h-3 bg-emerald-500 rounded-full"></div>
+</div>
+</div>
+<div class="glass-card rounded-[20px] p-6 flex items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-2xl">shield</span>
+</div>
+<div>
+<p class="text-sm font-bold text-primary">Campus Security</p>
+<p class="text-xs text-on-surface-variant">All perimeters secured</p>
+</div>
+<div class="ml-auto">
+<div class="w-3 h-3 bg-emerald-500 rounded-full"></div>
+</div>
+</div>
+<div class="glass-card rounded-[20px] p-6 flex items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-tertiary-container/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-on-tertiary-container text-2xl">mail</span>
+</div>
+<div>
+<p class="text-sm font-bold text-primary">Parent Portal</p>
+<p class="text-xs text-on-surface-variant">24 pending notifications</p>
+</div>
+<div class="ml-auto bg-primary text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                        NEW
+                    </div>
+</div>
+</div>
+</div>
+</main>
+<script>
+        document.querySelectorAll('.glass-card').forEach(card => {
+            card.addEventListener('mousedown', () => {
+                card.style.transform = 'scale(0.98)';
+                card.style.transition = 'transform 0.1s ease';
+            });
+            card.addEventListener('mouseup', () => {
+                card.style.transform = 'scale(1)';
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'scale(1)';
+            });
+        });
+    </script>
+</body></html>

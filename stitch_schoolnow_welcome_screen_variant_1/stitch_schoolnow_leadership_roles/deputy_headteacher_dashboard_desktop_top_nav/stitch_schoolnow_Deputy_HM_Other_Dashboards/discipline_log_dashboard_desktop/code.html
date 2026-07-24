@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Discipline Log | SchoolNow Admin</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700;800;900&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 8px 32px 0 rgba(30, 34, 79, 0.04);
+        }
+        .glass-card:hover {
+            border-color: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 12px 40px 0 rgba(30, 34, 79, 0.08);
+        }
+        .inner-glow {
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.8);
+        }
+        .severe-incident-border {
+            border-left: 4px solid #ba1a1a;
+        }
+        body {
+            background-color: #f8f9fc;
+            color: #191c1e;
+            overflow-x: hidden;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .active-dot {
+            width: 6px;
+            height: 6px;
+            background-color: #feb700;
+            border-radius: 50%;
+            display: inline-block;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-fixed-variant": "#3f4371",
+                        "inverse-primary": "#bfc2fa",
+                        "primary-container": "#1e224f",
+                        "secondary": "#7c5800",
+                        "surface-container-low": "#f2f3f6",
+                        "surface-tint": "#565a8b",
+                        "primary-fixed-dim": "#bfc2fa",
+                        "on-secondary-fixed": "#271900",
+                        "background": "#f8f9fc",
+                        "surface-container": "#edeef1",
+                        "on-primary-fixed": "#121643",
+                        "surface-container-highest": "#e1e2e5",
+                        "surface-bright": "#f8f9fc",
+                        "primary-fixed": "#e0e0ff",
+                        "on-tertiary-fixed": "#3c0800",
+                        "inverse-on-surface": "#f0f1f4",
+                        "surface-variant": "#e1e2e5",
+                        "on-error-container": "#93000a",
+                        "tertiary-fixed": "#ffdbd2",
+                        "outline": "#777680",
+                        "on-background": "#191c1e",
+                        "on-secondary": "#ffffff",
+                        "outline-variant": "#c7c5d0",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-fixed-dim": "#ffb4a2",
+                        "secondary-fixed-dim": "#ffba20",
+                        "on-surface-variant": "#46464f",
+                        "error": "#ba1a1a",
+                        "on-error": "#ffffff",
+                        "surface-container-high": "#e7e8eb",
+                        "secondary-container": "#feb700",
+                        "on-tertiary-fixed-variant": "#881f01",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary-fixed-variant": "#5e4200",
+                        "primary": "#080b3a",
+                        "surface": "#f8f9fc",
+                        "error-container": "#ffdad6",
+                        "tertiary-container": "#500d00",
+                        "on-tertiary-container": "#e96442",
+                        "on-surface": "#191c1e",
+                        "on-secondary-container": "#6b4b00",
+                        "surface-dim": "#d9dadd",
+                        "inverse-surface": "#2e3133",
+                        "tertiary": "#2b0400",
+                        "secondary-fixed": "#ffdea8",
+                        "on-primary-container": "#868abd",
+                        "on-primary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "container-padding": "20px",
+                        "card-gap": "12px",
+                        "gutter": "16px",
+                        "section-margin": "32px",
+                        "base": "8px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Hanken Grotesk"],
+                        "body-lg": ["Inter"],
+                        "headline-lg": ["Hanken Grotesk"],
+                        "label-md": ["Inter"],
+                        "headline-md": ["Hanken Grotesk"],
+                        "headline-lg-mobile": ["Hanken Grotesk"],
+                        "body-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["36px", {"lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-lg": ["28px", {"lineHeight": "36px", "fontWeight": "600"}],
+                        "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "headline-md": ["22px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background">
+<!-- TopNavBar (Ethos Glass implementation) -->
+<nav class="bg-surface/70 backdrop-blur-xl border-b border-white/20 shadow-sm flex justify-between items-center w-full px-container-padding py-4 sticky top-0 z-50">
+<div class="flex items-center gap-8">
+<span class="text-headline-md font-headline-md font-bold text-primary">SchoolNow</span>
+<div class="hidden md:flex items-center gap-6">
+<a class="text-primary font-bold border-b-2 border-secondary-container py-1 text-label-md font-label-md" href="#">Dashboard</a>
+<a class="text-on-surface-variant hover:bg-white/10 transition-colors py-1 text-label-md font-label-md" href="#">Students</a>
+<a class="text-on-surface-variant hover:bg-white/10 transition-colors py-1 text-label-md font-label-md" href="#">Staff</a>
+<a class="text-on-surface-variant hover:bg-white/10 transition-colors py-1 text-label-md font-label-md" href="#">Reports</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative hidden sm:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="bg-surface-container-low border-none rounded-full pl-10 pr-4 py-2 text-label-md focus:ring-2 focus:ring-primary w-64" placeholder="Search logs..." type="text"/>
+</div>
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors text-primary">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors text-primary">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+<div class="h-10 w-10 rounded-full overflow-hidden border-2 border-secondary-container">
+<img class="w-full h-full object-cover" data-alt="A professional portrait of a school deputy headteacher, a middle-aged woman with a kind but firm expression. She is wearing professional attire, a navy blazer, and standing in a modern, brightly lit school office with soft glass reflections and educational charts in the blurred background. The image has a clean, high-fidelity aesthetic with natural light." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCV1unEWz4oSpMLALzIgfvs9tHYTaLcjaSzZWaxRbtbxHN8gTFOgeiAF-FT49ahhWflNus6qKqGjFWNmEsblqRByGjlFlIX7IWkC4gKhXS9XWaRBbbEBQL0L304-bJfa8yYD2D14B36MXTM4Rb3-WoPjV9SP8REmn4XXU2ccPGva6g88IOKLkCH6Lag0lpIImMjgIXuZt-PT3N5ZF7fiqR58PaLGkiSKTFx8PwivJtV0rwc58NNNQhae38PBqqo0VkjTAEPFIQXWCLW"/>
+</div>
+</div>
+</nav>
+<main class="max-w-7xl mx-auto px-container-padding py-section-margin">
+<!-- Header Section -->
+<header class="mb-section-margin flex flex-col md:flex-row md:items-end justify-between gap-4">
+<div>
+<h1 class="font-headline-lg text-headline-lg text-primary">Discipline Log</h1>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">Deputy Headteacher's Administrative Oversight</p>
+</div>
+<div class="flex gap-3">
+<button class="flex items-center gap-2 px-6 py-3 bg-primary text-on-primary rounded-xl font-semibold hover:shadow-lg transition-all active:scale-95">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+<span>Log New Incident</span>
+</button>
+<button class="flex items-center gap-2 px-6 py-3 bg-white text-primary border border-outline-variant rounded-xl font-semibold hover:bg-surface-container transition-all">
+<span class="material-symbols-outlined" data-icon="file_download">file_download</span>
+<span>Export Data</span>
+</button>
+</div>
+</header>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-gutter">
+<!-- Trending Analytics Column -->
+<div class="md:col-span-4 space-y-gutter">
+<!-- Trend Summary -->
+<div class="glass-card p-6 rounded-2xl">
+<div class="flex items-center justify-between mb-4">
+<h3 class="font-headline-md text-headline-md text-primary">Incident Trends</h3>
+<span class="text-label-md text-on-error-container bg-error-container px-2 py-1 rounded-full">-12% vs LW</span>
+</div>
+<div class="h-48 relative overflow-hidden rounded-lg bg-surface-container-low/50">
+<!-- Custom CSS-only Line Chart Visualization -->
+<div class="absolute inset-0 flex items-end justify-between px-4 pb-4">
+<div class="w-2 bg-primary/20 rounded-t-full h-[60%]"></div>
+<div class="w-2 bg-primary/20 rounded-t-full h-[45%]"></div>
+<div class="w-2 bg-primary/20 rounded-t-full h-[75%]"></div>
+<div class="w-2 bg-primary/20 rounded-t-full h-[30%]"></div>
+<div class="w-2 bg-secondary-container rounded-t-full h-[20%]"></div>
+<div class="w-2 bg-primary/20 rounded-t-full h-[55%]"></div>
+<div class="w-2 bg-primary/20 rounded-t-full h-[40%]"></div>
+</div>
+<div class="absolute top-4 left-4">
+<p class="text-label-md text-on-surface-variant">Daily Frequency</p>
+</div>
+</div>
+<div class="mt-4 grid grid-cols-2 gap-4">
+<div class="p-3 bg-surface-container rounded-xl">
+<p class="text-label-md text-outline">Total This Week</p>
+<p class="text-headline-md font-bold text-primary">42</p>
+</div>
+<div class="p-3 bg-surface-container rounded-xl">
+<p class="text-label-md text-outline">Avg Resolution</p>
+<p class="text-headline-md font-bold text-primary">4h</p>
+</div>
+</div>
+</div>
+<!-- Common Infractions List -->
+<div class="glass-card p-6 rounded-2xl">
+<h3 class="font-headline-md text-headline-md text-primary mb-4">Common Infractions</h3>
+<div class="space-y-4">
+<div class="flex items-center gap-3">
+<div class="w-full bg-surface-container h-2 rounded-full overflow-hidden">
+<div class="bg-secondary-container h-full w-[85%]"></div>
+</div>
+<span class="text-label-md text-primary font-bold min-w-[80px]">Uniform (85)</span>
+</div>
+<div class="flex items-center gap-3">
+<div class="w-full bg-surface-container h-2 rounded-full overflow-hidden">
+<div class="bg-primary-container h-full w-[60%]"></div>
+</div>
+<span class="text-label-md text-primary font-bold min-w-[80px]">Lateness (60)</span>
+</div>
+<div class="flex items-center gap-3">
+<div class="w-full bg-surface-container h-2 rounded-full overflow-hidden">
+<div class="bg-primary-container h-full w-[45%]"></div>
+</div>
+<span class="text-label-md text-primary font-bold min-w-[80px]">Disruptive (45)</span>
+</div>
+<div class="flex items-center gap-3">
+<div class="w-full bg-surface-container h-2 rounded-full overflow-hidden">
+<div class="bg-primary-container h-full w-[15%]"></div>
+</div>
+<span class="text-label-md text-primary font-bold min-w-[80px]">Bullying (15)</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Main Log & Critical Incidents -->
+<div class="md:col-span-8 space-y-gutter">
+<!-- Critical Alerts (High Impact Cards) -->
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+<div class="glass-card p-5 rounded-2xl severe-incident-border relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-[64px]" data-icon="report">report</span>
+</div>
+<div class="flex justify-between items-start mb-3">
+<span class="bg-error text-on-error text-label-md px-2 py-0.5 rounded-md">SEVERE</span>
+<span class="text-label-md text-outline">10:45 AM Today</span>
+</div>
+<h4 class="font-headline-md text-primary mb-1">Physical Altercation</h4>
+<p class="text-body-md text-on-surface-variant line-clamp-2">Reported in Cafeteria involving Grade 11 students. Emergency staff intervention required.</p>
+<div class="mt-4 flex items-center justify-between">
+<div class="flex -space-x-2">
+<div class="w-8 h-8 rounded-full border-2 border-white overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A portrait of a male teenage student with a frustrated expression, wearing a rumpled school uniform, with realistic textures and soft lighting in a modern school setting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDiQ-b3I9VoV_YnNYS-7aMkKjWLCgOjvn7y389PXGhEl1L-_co_Ujyps-jORzICWp-F2hoUoyWkVdxmhtxkc2K0-l8xwsh96INkX-c67liwyvqJXITT_1Q7Ef6dF9KC6dPyIB4B255NQmYQPgdaTpiqpxjj3aFxpDKt1sCtBACxthw63imG_xT6a8ZaVwGdVDFTKFIqz7JVS72HFzQMAwA-aVO1mVZ3dAUwRifZbpo6ilqCUwSFPvhnu6IqC-Z0t2JIBeEwigHarRv6"/>
+</div>
+<div class="w-8 h-8 rounded-full border-2 border-white overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A portrait of a second male teenage student, looking away, in a matching school uniform. The lighting is dramatic and moody, reflecting the tension of a disciplinary event in a high-end school environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB_yRQlFfeHsAa5IGfzOBg-HAu_jcJIk08O2bg4Oa6MX8Z8OysKhk3ozRWXUem4uzdGeZCdtJQXUNwpZnCkI4cvYKNfiBtP1GUWWGFqyPdtijYa9Ok-tfOK1KrhvZXLH5mZEANTrZ58psTBZ67xYmJ9nO4gJ1vc3PFICk-QgUzuvN5w3FcDeGhyXkKY4d24OjWUTRbysIpuWVTDE4qcDf7xx5VK8Nl4SWj_wmVLvZfm9kiM9nfxNww8FVIW_1YsO3UJxiyyNP9qFFyA"/>
+</div>
+</div>
+<button class="text-label-md font-bold text-error flex items-center gap-1 hover:underline">
+                                Action Needed <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+</div>
+<div class="glass-card p-5 rounded-2xl border-left-4 border-secondary-container relative overflow-hidden group" style="border-left: 4px solid #feb700;">
+<div class="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-[64px]" data-icon="policy">policy</span>
+</div>
+<div class="flex justify-between items-start mb-3">
+<span class="bg-secondary-container text-on-secondary-container text-label-md px-2 py-0.5 rounded-md">ESCALATED</span>
+<span class="text-label-md text-outline">Yesterday</span>
+</div>
+<h4 class="font-headline-md text-primary mb-1">Repeated Truancy</h4>
+<p class="text-body-md text-on-surface-variant line-clamp-2">Student Johnson (Grade 9) missed 4 consecutive lessons. Parent conference requested.</p>
+<div class="mt-4 flex items-center justify-between">
+<div class="flex -space-x-2">
+<div class="w-8 h-8 rounded-full border-2 border-white overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A high-quality studio portrait of a high school student with a defiant look, styled in a professional, cinematic lighting that highlights deep earth tones and rich textures consistent with an African-inspired premium aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDwuGMtgKNnLXhD1dVtm9I_PFqsClRJLGeaKx55NmORnQS54ydF7Lmpvqe_DlmyG4TRLtgCnFaYnp8yQDSgmDRiKqN6HxYYawrI714T8gF9BDExVc0sZCJ62Pa5Sh0OnYleRBhAggR8nEz7gr8dMB4L5a6xjWXT4ChqnPzKjMTrsiQynQGVyExj0kIhxcVcpkS0acldY07RRJXkItm3Cg0UZNm5FCLhZnbUvjU5WOJSiF6NBe9TYErm9ysFSkbJRmlappBBQPcu8S9y"/>
+</div>
+</div>
+<button class="text-label-md font-bold text-secondary flex items-center gap-1 hover:underline">
+                                Review File <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Searchable Log Table -->
+<div class="glass-card rounded-2xl overflow-hidden">
+<div class="p-6 border-b border-outline-variant flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+<h3 class="font-headline-md text-headline-md text-primary">Incident Log</h3>
+<div class="flex gap-2">
+<select class="bg-surface-container-low border-none rounded-lg text-label-md px-3 py-2 focus:ring-1 focus:ring-primary">
+<option>All Status</option>
+<option>Pending</option>
+<option>Resolved</option>
+</select>
+<select class="bg-surface-container-low border-none rounded-lg text-label-md px-3 py-2 focus:ring-1 focus:ring-primary">
+<option>This Week</option>
+<option>Last Week</option>
+<option>This Month</option>
+</select>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead class="bg-surface-container-highest/30">
+<tr>
+<th class="px-6 py-4 text-label-md text-outline font-semibold">Incident &amp; Date</th>
+<th class="px-6 py-4 text-label-md text-outline font-semibold">Student/Staff</th>
+<th class="px-6 py-4 text-label-md text-outline font-semibold">Category</th>
+<th class="px-6 py-4 text-label-md text-outline font-semibold">Status</th>
+<th class="px-6 py-4 text-label-md text-outline font-semibold text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/30">
+<tr class="hover:bg-primary/5 transition-colors group">
+<td class="px-6 py-4">
+<p class="text-body-md font-semibold text-primary">Disrespectful Conduct</p>
+<p class="text-label-md text-outline">Oct 24, 09:15 AM</p>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-primary font-bold text-[10px]">SM</div>
+<span class="text-body-md">Sarah Mensah</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="text-label-md bg-surface-container-highest px-2 py-1 rounded">Classroom</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="active-dot"></span>
+<span class="text-label-md font-semibold">Pending Action</span>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="p-2 hover:bg-primary/10 rounded-full text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</td>
+</tr>
+<tr class="hover:bg-primary/5 transition-colors group">
+<td class="px-6 py-4">
+<p class="text-body-md font-semibold text-primary">Late Arrival (Staff)</p>
+<p class="text-label-md text-outline">Oct 24, 08:30 AM</p>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-primary-fixed flex items-center justify-center text-primary font-bold text-[10px]">JW</div>
+<span class="text-body-md">Mr. James Wyatt</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="text-label-md bg-surface-container-highest px-2 py-1 rounded">Attendance</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-outline"></span>
+<span class="text-label-md text-outline">Resolved</span>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="p-2 hover:bg-primary/10 rounded-full text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</td>
+</tr>
+<tr class="hover:bg-primary/5 transition-colors group">
+<td class="px-6 py-4">
+<p class="text-body-md font-semibold text-primary">Property Damage</p>
+<p class="text-label-md text-outline">Oct 23, 03:45 PM</p>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-secondary-fixed flex items-center justify-center text-secondary font-bold text-[10px]">TO</div>
+<span class="text-body-md">Timothy Okafor</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="text-label-md bg-surface-container-highest px-2 py-1 rounded">Campus</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="active-dot"></span>
+<span class="text-label-md font-semibold text-secondary">In Review</span>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="p-2 hover:bg-primary/10 rounded-full text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="p-4 bg-surface-container/20 flex items-center justify-between">
+<span class="text-label-md text-outline">Showing 1-10 of 124 entries</span>
+<div class="flex gap-2">
+<button class="w-8 h-8 rounded bg-white border border-outline-variant flex items-center justify-center text-primary disabled:opacity-50">
+<span class="material-symbols-outlined text-sm">chevron_left</span>
+</button>
+<button class="w-8 h-8 rounded bg-primary text-on-primary flex items-center justify-center text-label-md font-bold">1</button>
+<button class="w-8 h-8 rounded bg-white border border-outline-variant flex items-center justify-center text-label-md text-primary">2</button>
+<button class="w-8 h-8 rounded bg-white border border-outline-variant flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Pending Disciplinary Actions Queue (Overlay/Sidebar pattern for desk, horizontal list for mob) -->
+<section class="mt-section-margin">
+<h3 class="font-headline-lg text-headline-lg text-primary mb-6">Action Queue</h3>
+<div class="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
+<div class="min-w-[300px] glass-card p-4 rounded-xl flex items-start gap-4">
+<div class="w-12 h-12 bg-secondary-container/20 text-secondary rounded-lg flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined" data-icon="gavel">gavel</span>
+</div>
+<div>
+<p class="text-label-md font-bold text-primary">Detention Assignment</p>
+<p class="text-body-md text-on-surface-variant">L. Thompson - Repeated Lateness</p>
+<button class="mt-3 text-label-md font-bold text-primary px-3 py-1 bg-secondary-container/30 rounded-full hover:bg-secondary-container transition-colors">Assign Session</button>
+</div>
+</div>
+<div class="min-w-[300px] glass-card p-4 rounded-xl flex items-start gap-4">
+<div class="w-12 h-12 bg-primary-container/10 text-primary rounded-lg flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined" data-icon="call">call</span>
+</div>
+<div>
+<p class="text-label-md font-bold text-primary">Parental Contact</p>
+<p class="text-body-md text-on-surface-variant">M. Rodriguez - Bullying Incident</p>
+<button class="mt-3 text-label-md font-bold text-primary px-3 py-1 bg-secondary-container/30 rounded-full hover:bg-secondary-container transition-colors">Call Now</button>
+</div>
+</div>
+<div class="min-w-[300px] glass-card p-4 rounded-xl flex items-start gap-4">
+<div class="w-12 h-12 bg-error-container/20 text-error rounded-lg flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined" data-icon="warning">warning</span>
+</div>
+<div>
+<p class="text-label-md font-bold text-primary">Exclusion Review</p>
+<p class="text-body-md text-on-surface-variant">D. Blake - Severe Altercation</p>
+<button class="mt-3 text-label-md font-bold text-error px-3 py-1 bg-error-container/30 rounded-full hover:bg-error-container transition-colors">Open Hearing</button>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Mobile Navigation (Floating Glass Island) -->
+<div class="fixed bottom-6 left-1/2 -translate-x-1/2 md:hidden z-50">
+<div class="bg-surface/80 backdrop-blur-2xl border border-white/40 shadow-2xl rounded-full px-6 py-3 flex items-center gap-8">
+<button class="flex flex-col items-center gap-1 text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+<span class="text-[10px] font-bold">Log</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined">analytics</span>
+<span class="text-[10px] font-medium">Trends</span>
+</button>
+<div class="bg-primary p-3 rounded-full -mt-10 shadow-lg shadow-primary/30">
+<span class="material-symbols-outlined text-on-primary">add</span>
+</div>
+<button class="flex flex-col items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined">person_search</span>
+<span class="text-[10px] font-medium">Search</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined">task</span>
+<span class="text-[10px] font-medium">Queue</span>
+</button>
+</div>
+</div>
+<script>
+        // Micro-interactions for table rows and buttons
+        document.querySelectorAll('tr').forEach(row => {
+            row.addEventListener('mousedown', () => {
+                row.classList.add('scale-[0.99]', 'duration-150');
+            });
+            row.addEventListener('mouseup', () => {
+                row.classList.remove('scale-[0.99]');
+            });
+        });
+
+        // Simple Tab active state logic simulation
+        const navLinks = document.querySelectorAll('nav a');
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                navLinks.forEach(l => {
+                    l.classList.remove('text-primary', 'font-bold', 'border-b-2', 'border-secondary-container');
+                    l.classList.add('text-on-surface-variant');
+                });
+                link.classList.add('text-primary', 'font-bold', 'border-b-2', 'border-secondary-container');
+                link.classList.remove('text-on-surface-variant');
+            });
+        });
+    </script>
+</body></html>

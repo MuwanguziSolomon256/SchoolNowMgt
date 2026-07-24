@@ -10,7 +10,7 @@
             <h1>Hostel Management</h1>
             <p class="subtitle">Manage school hostels, matrons, and resident assignments</p>
         </div>
-        <a href="{% url 'teacher:deputy:hostel_create' %}" class="btn btn-primary">+ Create Hostel</a>
+        <a href="{% url 'SchoolNowMgt:deputy_hm:hostel_create' %}" class="btn btn-primary">+ Create Hostel</a>
     </div>
 
     <!-- Statistics Cards -->
@@ -95,9 +95,9 @@
                     </td>
                     <td>
                         <div class="action-buttons">
-                            <a href="{% url 'teacher:deputy:hostel_detail' item.hostel.id %}" class="btn-small btn-info">View</a>
-                            <a href="{% url 'teacher:deputy:hostel_edit' item.hostel.id %}" class="btn-small btn-edit">Edit</a>
-                            <form method="post" action="{% url 'teacher:deputy:hostel_delete' item.hostel.id %}" style="display: inline;" onclick="return confirm('Are you sure?');">
+                            <a href="{% url 'SchoolNowMgt:deputy_hm:hostel_detail' item.hostel.id %}" class="btn-small btn-info">View</a>
+                            <a href="{% url 'SchoolNowMgt:deputy_hm:hostel_edit' item.hostel.id %}" class="btn-small btn-edit">Edit</a>
+                            <form method="post" action="{% url 'SchoolNowMgt:deputy_hm:hostel_delete' item.hostel.id %}" style="display: inline;" onclick="return confirm('Are you sure?');">
                                 {% csrf_token %}
                                 <button type="submit" class="btn-small btn-delete">Delete</button>
                             </form>
@@ -131,7 +131,7 @@
     {% else %}
     <div class="empty-state">
         <p>No hostels found.</p>
-        <a href="{% url 'teacher:deputy:hostel_create' %}" class="btn btn-primary">Create First Hostel</a>
+        <a href="{% url 'SchoolNowMgt:deputy_hm:hostel_create' %}" class="btn btn-primary">Create First Hostel</a>
     </div>
     {% endif %}
 </div>

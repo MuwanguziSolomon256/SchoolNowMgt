@@ -1,0 +1,51 @@
+{% extends 'teacher/teacher_no_sidebar_base.html' %}
+{% load static %}
+
+{% block extra_css %}{% endblock %}
+
+{% block content %}
+<nav class="sticky top-0 w-full z-50 glass-panel border-b border-white/20 px-6 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+  <div class="flex items-center gap-4 flex-wrap">
+    <div class="flex flex-col">
+      <h1 class="font-headline-md text-[20px] font-bold text-primary leading-tight">SchoolNow</h1>
+      <p class="text-[10px] text-on-primary-container/60 uppercase tracking-widest font-bold">Ethos Management</p>
+    </div>
+    <div class="hidden md:flex items-center gap-2">
+      <a class="px-5 py-2.5 rounded-full font-label-md flex items-center gap-2 transition-all {% if section == 'matron_dashboard' %}bg-primary text-white{% else %}text-on-surface-variant hover:bg-white/40{% endif %}" href="{% url 'teacher:matron:dashboard' %}">
+        <span class="material-symbols-outlined text-[20px]">dashboard</span>
+        Dashboard
+      </a>
+      <a class="px-5 py-2.5 rounded-full font-label-md flex items-center gap-2 transition-all {% if section == 'roll_call' %}bg-primary text-white{% else %}text-on-surface-variant hover:bg-white/40{% endif %}" href="{% url 'teacher:matron:roll_call' %}">
+        <span class="material-symbols-outlined text-[20px]">checklist_rtl</span>
+        Dormitory Roll Call
+      </a>
+      <a class="px-5 py-2.5 rounded-full font-label-md flex items-center gap-2 transition-all {% if section == 'infirmary' %}bg-primary text-white{% else %}text-on-surface-variant hover:bg-white/40{% endif %}" href="{% url 'teacher:matron:infirmary' %}">
+        <span class="material-symbols-outlined text-[20px]">medical_services</span>
+        Infirmary Log
+      </a>
+      <a class="px-5 py-2.5 rounded-full font-label-md flex items-center gap-2 transition-all {% if section == 'maintenance' %}bg-primary text-white{% else %}text-on-surface-variant hover:bg-white/40{% endif %}" href="{% url 'teacher:matron:maintenance' %}">
+        <span class="material-symbols-outlined text-[20px]">engineering</span>
+        Maintenance
+      </a>
+    </div>
+  </div>
+  <div class="flex items-center gap-4">
+    <div class="hidden lg:flex glass-panel items-center px-4 py-2 rounded-full border border-white/20 bg-white/30">
+      <span class="material-symbols-outlined text-primary mr-2 text-[20px]">search</span>
+      <input class="bg-transparent border-none focus:ring-0 text-body-md w-40 placeholder:text-on-surface-variant/50" placeholder="Search..." type="text" />
+    </div>
+    <button class="w-10 h-10 rounded-full glass-panel flex items-center justify-center relative hover:bg-white/50 transition-colors">
+      <span class="material-symbols-outlined text-primary">notifications</span>
+      <span class="absolute top-2 right-2 w-2 h-2 bg-secondary rounded-full"></span>
+    </button>
+    <div class="flex items-center gap-3 glass-panel pl-2 pr-4 py-1.5 rounded-full bg-white/40">
+      <img class="w-8 h-8 rounded-full border border-white/40 object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBc1l_0zZzxe2s7n03uZc9sHWnO_FSAAIzVcdeKNrKaE_NKlq0DnAC28E3Zf6eCS_Mye5quOxd-fXcxHvpjGPGmLxsgdDMw5mzPsyzQX07bEguZhygX3cYG6p3_-1jzAtU6hTT9dw7hCduCFRGv0xGFQ2041WwKq71AnrjSdgOKKSLJuRG6lCVxbU0ZKwJY3Ds5uwzDt1d9-5Iefd_wDvyPJJ42EFRVNX3FBx9iNyQMrA7Ug2pRSr-5AgecYRe_ArSTPGLch13EzcAj" alt="Matron profile" />
+      <span class="font-label-md text-primary hidden sm:inline">Matron {{ staff_profile.user.get_full_name|default:request.user.username }}</span>
+    </div>
+  </div>
+</nav>
+
+<div class="min-h-screen p-6 lg:p-8 max-w-[1440px] mx-auto">
+  {% block matron_content %}{% endblock %}
+</div>
+{% endblock %}
