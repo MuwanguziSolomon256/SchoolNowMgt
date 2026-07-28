@@ -2,18 +2,18 @@
 <!DOCTYPE html>
 <html class="light" lang="en">
 <head>
-    <meta charset="utf-8"/>
-    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title>Edit Profile - EduVision</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Hanken+Grotesk:wght@600;700;900&display=swap" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Hanken+Grotesk:wght@600;700;900&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
     <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
             theme: {
                 extend: {
-                    "colors": {
+                    colors: {
                         "error-container": "#ffdad6",
                         "surface-dim": "#d9dadd",
                         "on-primary-fixed": "#121643",
@@ -35,7 +35,7 @@
                         "surface-container-lowest": "#ffffff",
                         "on-surface-variant": "#46464f",
                         "on-secondary-fixed-variant": "#5e4200",
-                        "outline": "#777680",
+                        "outline": "#c7c5d0",
                         "primary-container": "#1e224f",
                         "error": "#ba1a1a",
                         "background": "#f8f9fc",
@@ -45,8 +45,8 @@
                         "on-tertiary-fixed-variant": "#881f01",
                         "on-primary": "#ffffff",
                         "secondary-fixed": "#ffdea8",
-                        "surface-tint": "#565a8b",
-                        "on-surface": "#191c1e",
+                        "surface-tint": "#5b6478",
+                        "on-surface": "#080b3a",
                         "on-tertiary-container": "#e96442",
                         "surface-container": "#edeef1",
                         "on-secondary-container": "#6b4b00",
@@ -54,39 +54,39 @@
                         "tertiary-container": "#500d00",
                         "secondary": "#7c5800",
                         "on-error-container": "#93000a",
-                        "surface-variant": "#e1e2e5",
+                        "surface-variant": "#edf0f7",
                         "on-tertiary": "#ffffff",
                         "inverse-surface": "#2e3133",
-                        "surface-container-high": "#e7e8eb",
+                        "surface-container-high": "#edf0f7",
                         "on-tertiary-fixed": "#3c0800",
                         "primary-fixed": "#e0e0ff",
                         "tertiary-fixed": "#ffdbd2"
                     },
-                    "spacing": {
+                    spacing: {
                         "gutter": "16px",
                         "card-gap": "12px",
                         "base": "8px",
                         "section-margin": "32px",
                         "container-padding": "20px"
                     },
-                    "fontFamily": {
+                    fontFamily: {
                         "label-md": ["Inter"],
                         "body-lg": ["Inter"],
                         "headline-md": ["Hanken Grotesk"],
                         "headline-lg": ["Hanken Grotesk"],
                         "display-lg": ["Hanken Grotesk"],
-                        "body-md": ["Inter"],
+                        "body-md": ["Inter"]
                     },
-                    "fontSize": {
-                        "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
-                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
-                        "headline-md": ["22px", {"lineHeight": "28px", "fontWeight": "600"}],
-                        "headline-lg": ["28px", {"lineHeight": "36px", "fontWeight": "600"}],
-                        "display-lg": ["36px", {"lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
-                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    fontSize: {
+                        "label-md": ["12px", {lineHeight: "16px", letterSpacing: "0.05em", fontWeight: "600"}],
+                        "body-lg": ["16px", {lineHeight: "24px", fontWeight: "400"}],
+                        "headline-md": ["22px", {lineHeight: "28px", fontWeight: "600"}],
+                        "headline-lg": ["28px", {lineHeight: "36px", fontWeight: "600"}],
+                        "display-lg": ["36px", {lineHeight: "44px", letterSpacing: "-0.02em", fontWeight: "700"}],
+                        "body-md": ["14px", {lineHeight: "20px", fontWeight: "400"}]
                     }
-                },
-            },
+                }
+            }
         }
     </script>
     <style>
@@ -96,197 +96,168 @@
             border: 1px solid rgba(255, 255, 255, 0.4);
             box-shadow: 0 8px 32px 0 rgba(30, 34, 79, 0.08);
         }
-        .sidebar-gradient {
-            background: linear-gradient(180deg, #080b3a 0%, #1e224f 100%);
+        :root {
+            --color-surface: #f8f9fc;
+            --color-primary: #080b3a;
+            --color-secondary-container: #feb700;
+            --color-border: #d6d9e6;
         }
         body {
-            background-color: #f8f9fc;
+            background-color: var(--color-surface);
             background-image: radial-gradient(at 0% 0%, rgba(254, 183, 0, 0.05) 0px, transparent 50%),
                               radial-gradient(at 100% 100%, rgba(8, 11, 58, 0.03) 0px, transparent 50%);
+            overflow-x: hidden;
+        }
+        .logout-link {
+            color: #ff3636;
+        }
+        .logout-link:hover {
+            color: #ff1a1a;
+        }
+        .input-field {
+            background: #ffffff;
+            border-color: var(--color-border);
+        }
+        .input-field:focus {
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 4px rgba(8, 11, 58, 0.08);
         }
     </style>
 </head>
 <body class="font-body-md text-on-surface min-h-screen">
 
-<!-- Top Navigation Bar (matching dashboard) -->
-<nav class="flex items-center justify-between bg-primary text-on-primary px-3 sm:px-6 py-3 sm:py-4 sticky top-0 z-50 shadow-lg gap-2 sm:gap-4">
-    <!-- Logo Section -->
-    <div class="flex items-center flex-shrink-0">
-        <div class="w-8 sm:w-10 h-8 sm:h-10 rounded-lg sm:rounded-xl bg-secondary-container flex items-center justify-center text-primary">
-            <span class="material-symbols-outlined text-lg sm:text-xl" style="font-variation-settings: 'FILL' 1;">school</span>
+<nav class="app-header bg-primary flex items-center justify-between px-3 sm:px-6 py-3 sm:py-4 sticky top-0 z-50 shadow-[0_10px_30px_rgba(7,19,47,0.25)] gap-2 sm:gap-4">
+    <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-2xl bg-secondary-container flex items-center justify-center text-primary shadow-sm shadow-primary/15">
+            <span class="material-symbols-outlined text-xl" style="font-variation-settings: 'FILL' 1;">school</span>
+        </div>
+        <div class="hidden sm:block">
+            <p class="text-xs uppercase tracking-[0.3em] text-white/60">DOS Portal</p>
+            <p class="font-semibold text-sm text-white">Director of Studies</p>
         </div>
     </div>
-    
-    <!-- Navigation Links - Hidden on mobile -->
-    <div class="hidden md:flex items-center gap-1 lg:gap-2 flex-1 ml-4">
-        <a class="text-on-primary/70 hover:text-white rounded-lg font-semibold px-2 lg:px-4 py-2 flex items-center gap-2 transition-all text-xs lg:text-label-md" href="{% url 'teacher:dashboard' %}">
+    <div class="hidden md:flex items-center gap-2 ml-4 flex-1">
+        <a class="text-white/80 hover:text-white rounded-xl font-semibold px-4 py-3 flex items-center gap-2 transition-all text-sm" href="{% url 'teacher:dashboard' %}">
             <span class="material-symbols-outlined text-base lg:text-lg">dashboard</span>
             <span class="hidden lg:inline">Dashboard</span>
         </a>
-        <a class="bg-secondary-container text-on-secondary-container rounded-lg font-semibold px-2 lg:px-4 py-2 flex items-center gap-2 transition-all text-xs lg:text-label-md" href="{% url 'teacher:profile' %}">
+        <a class="rounded-xl bg-secondary-container text-primary font-semibold px-4 py-3 flex items-center gap-2 transition-all text-sm hover:bg-secondary-container/90" href="{% url 'teacher:profile' %}">
             <span class="material-symbols-outlined text-base lg:text-lg">person</span>
             <span class="hidden lg:inline">Profile</span>
         </a>
     </div>
-
-    <!-- Mobile Menu Button -->
-    <button class="md:hidden text-on-primary/70 hover:text-white p-2 rounded-lg transition-colors" id="mobile-menu-btn">
-        <span class="material-symbols-outlined">menu</span>
-    </button>
-    
-    <!-- Right Section: Logout -->
-    <div class="flex items-center gap-2 ml-auto flex-shrink-0">
-        <form method="post" action="{% url 'teacher:logout' %}" style="display: inline;">
-            {% csrf_token %}
-            <button type="submit" class="text-on-primary/70 hover:text-error transition-colors flex items-center gap-2 text-xs sm:text-label-md p-1 sm:p-0" onclick="return confirm('Are you sure you want to logout?');">
-                <span class="material-symbols-outlined text-base sm:text-lg">logout</span>
-                <span class="hidden sm:inline">Log out</span>
-            </button>
-        </form>
-    </div>
+    <form method="post" action="{% url 'teacher:logout' %}" class="flex items-center gap-2 ml-auto flex-shrink-0">
+        {% csrf_token %}
+        <button type="submit" class="logout-link text-sm font-semibold flex items-center gap-2 p-1 sm:p-0" onclick="return confirm('Are you sure you want to logout?');">
+            <span class="material-symbols-outlined text-base sm:text-lg">logout</span>
+            <span class="hidden sm:inline">Log out</span>
+        </button>
+    </form>
 </nav>
 
-<!-- Main Content -->
 <main class="min-h-screen pb-12">
-    <!-- Page Header -->
     <div class="px-4 md:px-container-padding pt-6 md:pt-section-margin pb-4 md:pb-6">
-        <h1 class="font-display-lg text-2xl md:text-4xl text-primary font-black mb-1 md:mb-2">Edit Profile</h1>
-        <p class="text-body-md text-sm md:text-base text-on-surface-variant">Update your personal information and profile picture.</p>
+        <h1 class="font-display-lg text-2xl md:text-4xl text-primary font-black mb-2">Edit Profile</h1>
+        <p class="text-body-md text-sm md:text-base text-on-surface-variant max-w-2xl">Update your personal details, contact info, and profile photo. Save your changes when ready.</p>
     </div>
 
-    <!-- Success Message -->
-    <div class="px-4 md:px-container-padding pb-6 md:pb-6">
+    <div class="px-4 md:px-container-padding pb-6 md:pb-8">
         {% if messages %}
-            {% for message in messages %}
-                {% if message.tags == 'success' %}
-                    <div class="glass-card rounded-2xl md:rounded-3xl p-4 md:p-6 border-l-4 border-l-green-500 flex items-start gap-4">
-                        <div class="flex-shrink-0 text-green-500 text-2xl">✓</div>
-                        <div class="flex-1">
-                            <p class="font-headline-md text-sm md:text-base text-on-surface">{{ message }}</p>
-                        </div>
+            <div class="space-y-4">
+                {% for message in messages %}
+                    <div class="glass-card rounded-3xl p-4 md:p-5 border-l-4 {% if message.tags == 'success' %}border-emerald-500 bg-emerald-50 text-emerald-900{% elif message.tags == 'error' or message.tags == 'warning' %}border-amber-500 bg-amber-50 text-amber-900{% else %}border-slate-300 bg-slate-50 text-slate-800{% endif %}">
+                        <p class="text-sm md:text-base">{{ message }}</p>
                     </div>
-                {% endif %}
-            {% endfor %}
-        {% else %}
-            <div class="glass-card rounded-2xl md:rounded-3xl p-4 md:p-6 border-l-4 border-l-green-500 flex items-start gap-4">
-                <div class="flex-shrink-0 text-green-500 text-2xl">✓</div>
-                <div class="flex-1">
-                    <p class="font-headline-md text-sm md:text-base text-on-surface">Welcome My! Your account has been created.</p>
-                </div>
+                {% endfor %}
             </div>
         {% endif %}
     </div>
 
-    <!-- Profile Edit Form -->
     <div class="px-4 md:px-container-padding pb-6 md:pb-section-margin">
-        <div class="glass-card rounded-2xl md:rounded-3xl p-6 md:p-8">
-            <h2 class="font-headline-lg text-lg md:text-2xl text-primary font-bold mb-6 md:mb-8">My Profile</h2>
+        <div class="glass-card rounded-[2rem] p-6 md:p-8">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-8">
+                <div>
+                    <p class="text-xs uppercase tracking-[0.24em] text-on-surface-variant mb-2">Profile settings</p>
+                    <h2 class="text-2xl md:text-3xl font-bold text-primary">Personal information</h2>
+                </div>
+                <div class="rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm text-white/90 backdrop-blur-xl">
+                    Last edited: {{ request.user.last_login|date:'M d, Y H:i' }}
+                </div>
+            </div>
 
-            <form method="post" enctype="multipart/form-data" class="space-y-6 md:space-y-8">
+            <form method="post" enctype="multipart/form-data" class="space-y-8">
                 {% csrf_token %}
-                
-                <!-- Profile Picture Section -->
-                <div class="pb-6 md:pb-8 border-b border-surface-variant">
-                    <h3 class="font-headline-md text-base md:text-lg text-on-surface font-bold mb-4 md:mb-6">Change Profile Picture</h3>
-                    
-                    <div class="flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-8">
-                        <!-- Picture Preview -->
-                        <div class="flex-shrink-0">
+
+                <div class="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
+                    <section class="rounded-[1.75rem] border border-slate-200 bg-slate-50 p-6">
+                        <div class="flex flex-col items-center text-center gap-4">
                             {% if request.user.profile_picture %}
-                                <img src="{{ request.user.profile_picture.url }}" 
-                                     alt="Profile" 
-                                     class="w-24 md:w-28 h-24 md:h-28 rounded-2xl md:rounded-3xl object-cover border-4 border-secondary-container shadow-lg">
+                                <img src="{{ request.user.profile_picture.url }}" alt="Profile picture" class="h-28 w-28 rounded-[1.75rem] object-cover shadow-lg" />
                             {% else %}
-                                <div class="w-24 md:w-28 h-24 md:h-28 rounded-2xl md:rounded-3xl bg-gradient-to-br from-secondary-container/20 to-secondary-container/10 flex items-center justify-center font-headline-lg text-4xl md:text-5xl font-bold text-secondary-container border-4 border-secondary-container shadow-lg">
-                                    {{ request.user.first_name|first|upper }}{{ request.user.last_name|first|upper }}
+                                <div class="grid h-28 w-28 place-items-center rounded-[1.75rem] bg-secondary-container text-primary text-4xl font-black shadow-inner">
+                                    {{ request.user.first_name|default:'U'|first|upper }}{{ request.user.last_name|default:'U'|first|upper }}
                                 </div>
                             {% endif %}
-                        </div>
-                        
-                        <!-- Upload Area -->
-                        <div class="flex-1 w-full md:w-auto">
-                            <div class="flex gap-3 items-center mb-3">
-                                <button type="button" id="upload-btn" class="px-4 md:px-6 py-2 md:py-3 bg-primary text-on-primary rounded-full font-bold hover:bg-primary/90 transition-all text-xs md:text-sm flex items-center gap-2">
-                                    <span class="material-symbols-outlined text-lg">upload_file</span>
-                                    <span>Choose File</span>
+                            <div class="w-full">
+                                <label class="block text-sm font-semibold text-slate-700 mb-3">Profile photo</label>
+                                <button type="button" id="upload-btn" class="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-primary/90 transition-all">
+                                    <span class="material-symbols-outlined">upload_file</span>
+                                    Choose photo
                                 </button>
-                                <span id="file-name" class="text-outline text-xs md:text-sm">No file chosen</span>
+                                <p id="file-name" class="mt-3 text-sm text-slate-500">No file chosen</p>
+                                <input type="file" name="profile_picture" id="{{ profile_form.profile_picture.id_for_label }}" accept="image/jpeg,image/png" class="hidden" />
+                                {% if profile_form.profile_picture.errors %}
+                                    <p class="text-error text-xs mt-2">{{ profile_form.profile_picture.errors.0 }}</p>
+                                {% endif %}
                             </div>
-                            <p class="text-on-surface-variant text-xs md:text-sm mb-3">
-                                Accepted formats: JPG, JPEG, PNG. Max size: 2 MB.
-                            </p>
-                            <!-- Hidden file input -->
-                            <input type="file" name="profile_picture" id="{{ profile_form.profile_picture.id_for_label }}" 
-                                   accept="image/jpeg,image/png" class="hidden">
-                            {% if profile_form.profile_picture.errors %}
-                                <div class="text-error text-xs md:text-sm">
-                                    {{ profile_form.profile_picture.errors.0 }}
-                                </div>
-                            {% endif %}
                         </div>
-                    </div>
+                    </section>
+
+                    <section class="space-y-6">
+                        <div class="grid gap-6 sm:grid-cols-2">
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-2">First name</label>
+                                <input type="text" name="first_name" value="{{ profile_form.first_name.value }}" class="w-full rounded-3xl border border-surface-variant bg-white px-4 py-3 text-sm text-slate-900 shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10 transition" />
+                                {% if profile_form.first_name.errors %}
+                                    <p class="text-error text-xs mt-2">{{ profile_form.first_name.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-2">Last name</label>
+                                <input type="text" name="last_name" value="{{ profile_form.last_name.value }}" class="w-full rounded-3xl border border-surface-variant bg-white px-4 py-3 text-sm text-slate-900 shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10 transition" />
+                                {% if profile_form.last_name.errors %}
+                                    <p class="text-error text-xs mt-2">{{ profile_form.last_name.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="grid gap-6 sm:grid-cols-2">
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-2">Email address</label>
+                                <input type="email" name="email" value="{{ profile_form.email.value }}" class="w-full rounded-3xl border border-surface-variant bg-white px-4 py-3 text-sm text-slate-900 shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10 transition" />
+                                {% if profile_form.email.errors %}
+                                    <p class="text-error text-xs mt-2">{{ profile_form.email.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-2">Phone number</label>
+                                <input type="tel" name="phone" value="{{ profile_form.phone.value|default:'' }}" class="w-full rounded-3xl border border-surface-variant bg-white px-4 py-3 text-sm text-slate-900 shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10 transition" />
+                                {% if profile_form.phone.errors %}
+                                    <p class="text-error text-xs mt-2">{{ profile_form.phone.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </section>
                 </div>
 
-                <!-- Form Fields Grid -->
-                <div class="space-y-6 md:space-y-0 md:grid md:grid-cols-2 md:gap-6">
-                    <!-- First Name -->
-                    <div>
-                        <label class="block font-headline-md text-on-surface text-sm md:text-base mb-2 md:mb-3">
-                            First Name
-                        </label>
-                        <input type="text" name="first_name" value="{{ profile_form.first_name.value }}" 
-                               class="w-full px-4 md:px-5 py-2 md:py-3 rounded-lg md:rounded-xl border border-outline-variant bg-surface-container-lowest text-on-surface placeholder-on-surface-variant focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm md:text-base">
-                        {% if profile_form.first_name.errors %}
-                            <p class="text-error text-xs md:text-sm mt-2">{{ profile_form.first_name.errors.0 }}</p>
-                        {% endif %}
-                    </div>
-
-                    <!-- Last Name -->
-                    <div>
-                        <label class="block font-headline-md text-on-surface text-sm md:text-base mb-2 md:mb-3">
-                            Last Name
-                        </label>
-                        <input type="text" name="last_name" value="{{ profile_form.last_name.value }}" 
-                               class="w-full px-4 md:px-5 py-2 md:py-3 rounded-lg md:rounded-xl border border-outline-variant bg-surface-container-lowest text-on-surface placeholder-on-surface-variant focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm md:text-base">
-                        {% if profile_form.last_name.errors %}
-                            <p class="text-error text-xs md:text-sm mt-2">{{ profile_form.last_name.errors.0 }}</p>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <!-- Email Address -->
-                <div>
-                    <label class="block font-headline-md text-on-surface text-sm md:text-base mb-2 md:mb-3">
-                        Email Address
-                    </label>
-                    <input type="email" name="email" value="{{ profile_form.email.value }}" 
-                           class="w-full px-4 md:px-5 py-2 md:py-3 rounded-lg md:rounded-xl border border-outline-variant bg-surface-container-lowest text-on-surface placeholder-on-surface-variant focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm md:text-base">
-                    {% if profile_form.email.errors %}
-                        <p class="text-error text-xs md:text-sm mt-2">{{ profile_form.email.errors.0 }}</p>
-                    {% endif %}
-                </div>
-
-                <!-- Phone Number -->
-                <div>
-                    <label class="block font-headline-md text-on-surface text-sm md:text-base mb-2 md:mb-3">
-                        Phone Number
-                    </label>
-                    <input type="tel" name="phone" value="{{ profile_form.phone.value|default:'' }}" 
-                           class="w-full px-4 md:px-5 py-2 md:py-3 rounded-lg md:rounded-xl border border-outline-variant bg-surface-container-lowest text-on-surface placeholder-on-surface-variant focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm md:text-base">
-                    {% if profile_form.phone.errors %}
-                        <p class="text-error text-xs md:text-sm mt-2">{{ profile_form.phone.errors.0 }}</p>
-                    {% endif %}
-                </div>
-
-                <!-- Action Buttons -->
-                <div class="flex flex-col md:flex-row gap-3 md:gap-4 justify-end pt-6 md:pt-8 border-t border-surface-variant">
-                    <a href="{% url 'teacher:dashboard' %}" class="px-6 md:px-8 py-3 bg-surface text-primary rounded-full font-bold hover:bg-surface-container-high transition-all text-xs md:text-sm text-center flex items-center justify-center gap-2">
+                <div class="flex flex-col gap-3 sm:flex-row sm:justify-end sm:items-center border-t border-surface-variant pt-6">
+                    <a href="{% url 'teacher:dashboard' %}" class="inline-flex items-center justify-center gap-2 rounded-full border border-surface-variant bg-white px-5 py-3 text-sm font-semibold text-primary transition hover:bg-surface-container-lowest">
                         <span class="material-symbols-outlined">close</span>
-                        <span>Cancel</span>
+                        Cancel
                     </a>
-                    <button type="submit" class="px-6 md:px-8 py-3 bg-primary text-on-primary rounded-full font-bold hover:bg-primary/90 transition-all text-xs md:text-sm flex items-center justify-center gap-2">
+                    <button type="submit" class="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-semibold text-white transition hover:bg-primary/90">
                         <span class="material-symbols-outlined">save</span>
-                        <span>Save Changes</span>
+                        Save Changes
                     </button>
                 </div>
             </form>
@@ -295,18 +266,18 @@
 </main>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         const uploadBtn = document.getElementById('upload-btn');
         const fileInput = document.getElementById('{{ profile_form.profile_picture.id_for_label }}');
         const fileName = document.getElementById('file-name');
-        
+
         if (uploadBtn && fileInput) {
-            uploadBtn.addEventListener('click', function(e) {
-                e.preventDefault();
+            uploadBtn.addEventListener('click', function (event) {
+                event.preventDefault();
                 fileInput.click();
             });
-            
-            fileInput.addEventListener('change', function() {
+
+            fileInput.addEventListener('change', function () {
                 if (this.files && this.files[0]) {
                     fileName.textContent = this.files[0].name;
                 }

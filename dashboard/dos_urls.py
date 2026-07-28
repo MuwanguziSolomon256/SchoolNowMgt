@@ -8,6 +8,7 @@ Base path: /teacher/admin/dos/
 from django.urls import path
 from dashboard.dos_views import (
     dos_dashboard,
+    dos_profile,
     timetable_list, timetable_create, timetable_edit, timetable_delete,
     class_teacher_assignments_list,
     class_teacher_assignment_create, class_teacher_assignment_edit,
@@ -93,6 +94,11 @@ urlpatterns = [
     path('departments-overview/',
          departments_overview,
          name='departments_overview'),
+
+    # ===== DOS PROFILE =====
+    path('profile/',
+         dos_profile,
+         name='profile'),
 
     # ===== NEW DOS PAGES =====
     path('schemes-of-work/',

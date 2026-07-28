@@ -205,7 +205,7 @@ def department_create(request):
                 request,
                 f'Department "{dept.name}" created successfully'
             )
-            return redirect('dos:departments_list')
+            return redirect('teacher:dos:departments_list')
     
     # Get available teachers for department head assignment
     available_teachers = StaffProfile.objects.filter(
@@ -314,7 +314,7 @@ def department_edit(request, dept_id):
                 request,
                 f'Department "{department.name}" updated successfully'
             )
-            return redirect('dos:departments_list')
+            return redirect('teacher:dos:departments_list')
     
     # Get available teachers for department head assignment
     available_teachers = StaffProfile.objects.filter(
@@ -449,7 +449,7 @@ def department_delete(request, dept_id):
             f'Department "{dept_name}" has been deactivated'
         )
     
-    return redirect('dos:departments_list')
+    return redirect('teacher:dos:departments_list')
 
 
 # ============================================================================

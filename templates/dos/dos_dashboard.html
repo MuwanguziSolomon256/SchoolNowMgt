@@ -6,21 +6,92 @@
 {% block dos_content %}
 <div class="space-y-6">
     <section class="rounded-[2rem] bg-white/95 p-6 shadow-[0_24px_80px_-32px_rgba(30,34,79,0.45)] ring-1 ring-slate-200/60 backdrop-blur-xl">
-        <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-                <p class="text-sm font-semibold uppercase tracking-[0.24em] text-secondary">Welcome back, Director</p>
-                <h2 class="mt-2 text-3xl font-semibold tracking-tight text-slate-900">Your academic leadership snapshot</h2>
-                <p class="mt-2 text-sm text-slate-600">A quick view of timetable health, department status, and leadership activity across the school.</p>
+        <div>
+            <p class="text-sm font-semibold uppercase tracking-[0.24em] text-secondary-container">Good Afternoon, {{ request.user.first_name|default:"John" }}!</p>
+            <div class="mt-2 flex flex-wrap items-center gap-3">
+                <span class="text-sm text-slate-500"><span id="dashboardCurrentDate">Loading...</span> · <span id="dashboardCurrentTime">Loading...</span></span>
             </div>
-            <div class="flex flex-wrap items-center gap-3">
-                <a href="{% url 'teacher:dos:timetable_list' %}" class="inline-flex items-center gap-2 rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800">
-                    <span class="material-symbols-outlined">schedule</span>
-                    Manage Timetable
+        </div>
+    </section>
+
+    <section class="grid gap-4">
+        <div class="rounded-[2rem] bg-primary text-white p-6 shadow-[0_24px_80px_-32px_rgba(30,34,79,0.45)] ring-1 ring-white/10 backdrop-blur-xl relative overflow-hidden">
+            <div class="absolute -top-16 right-10 h-40 w-40 rounded-full bg-secondary-container/20 blur-3xl"></div>
+            <div class="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between relative z-10">
+                <div class="flex items-center gap-4">
+                    <div class="h-14 w-14 rounded-3xl p-0 flex items-center justify-center">
+                        <div class="h-10 w-10 rounded-2xl bg-secondary-container flex items-center justify-center shadow-lg">
+                            <span class="material-symbols-outlined text-lg text-primary">schedule</span>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="text-xs uppercase tracking-[0.32em] text-white">SHIFT STATUS</p>
+                        <h2 id="shiftTimeText" class="mt-2 text-2xl font-bold text-white">Not on Duty</h2>
+                        <p id="shiftStatusSubtitle" class="mt-1 text-sm text-white">OFF DUTY - {{ today_label }}</p>
+                        <p id="shiftDetailsText" class="mt-3 text-sm text-white/80">Clock in to start your shift and enable break controls.</p>
+                    </div>
+                </div>
+                <div class="grid gap-3 sm:grid-cols-2 lg:flex lg:items-center lg:gap-3">
+                    <button id="clockInOutBtn" data-action="clock-in" class="flex items-center justify-center gap-2 rounded-full bg-secondary-container px-5 py-3 text-sm font-semibold text-primary transition hover:bg-secondary-container/90 shadow-lg shadow-secondary-container/20">
+                        <span class="material-symbols-outlined">login</span>
+                        <span>Clock In</span>
+                    </button>
+                    <button id="breakBtn" data-action="break-start" disabled class="flex items-center justify-center gap-2 rounded-full bg-white/10 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-white/10">
+                        <span class="material-symbols-outlined">coffee</span>
+                        <span>Break</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div>
+            <h2 class="text-3xl font-semibold tracking-tight text-slate-900">Dashboard</h2>
+            <p class="text-sm text-slate-500">Welcome back. Here's your dashboard overview.</p>
+        </div>
+        <div class="flex flex-wrap items-center gap-3">
+            <a href="{% url 'teacher:export_schedule' %}" class="inline-flex items-center gap-2 rounded-full bg-secondary-container px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-secondary-container/20 transition hover:bg-secondary-container/90">
+                <span class="material-symbols-outlined">download</span>
+                Export Schedule
+            </a>
+            <a href="{% url 'teacher:export_attendance' %}" class="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-primary/20 transition hover:bg-primary/90">
+                <span class="material-symbols-outlined">download</span>
+                Export Attendance
+            </a>
+        </div>
+    </section>
+
+    <section class="grid gap-4 sm:grid-cols-1 md:grid-cols-3">
+        <div class="glass-card rounded-[2rem] p-6">
+            <div class="flex items-center justify-between gap-4">
+                <div>
+                    <p class="text-sm uppercase tracking-[0.24em] text-slate-500">My Profile</p>
+                    <p class="mt-3 text-3xl font-semibold text-slate-900">{{ request.user.get_full_name }}</p>
+                </div>
+                <a href="{% url 'teacher:dos:profile' %}" class="inline-flex items-center gap-2 rounded-full bg-secondary-container px-4 py-2 text-sm font-semibold text-white transition hover:bg-secondary-container/90">
+                    <span class="material-symbols-outlined">settings</span>
+                    Edit Profile
                 </a>
-                <a href="{% url 'teacher:dos:schemes_of_work' %}" class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-900 transition hover:bg-slate-50">
-                    <span class="material-symbols-outlined">menu_book</span>
-                    Schemes of Work
-                </a>
+            </div>
+            <p class="mt-4 text-sm text-slate-600">Update your profile details and profile picture from the profile page.</p>
+        </div>
+        <div class="glass-card rounded-[2rem] p-6">
+            <div class="flex items-center justify-between gap-4">
+                <div>
+                    <p class="text-sm uppercase tracking-[0.24em] text-slate-500">My Students</p>
+                    <p class="mt-3 text-3xl font-semibold text-slate-900">{{ statistics.total_students }}</p>
+                </div>
+                <span class="material-symbols-outlined text-4xl text-secondary-container">school</span>
+            </div>
+        </div>
+        <div class="glass-card rounded-[2rem] p-6">
+            <div class="flex items-center justify-between gap-4">
+                <div>
+                    <p class="text-sm uppercase tracking-[0.24em] text-slate-500">My Classes</p>
+                    <p class="mt-3 text-3xl font-semibold text-slate-900">{{ statistics.total_classes }}</p>
+                </div>
+                <span class="material-symbols-outlined text-4xl text-secondary-container">menu_book</span>
             </div>
         </div>
     </section>
@@ -32,7 +103,7 @@
                     <p class="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">Teachers</p>
                     <p class="mt-3 text-3xl font-semibold text-slate-900">{{ statistics.total_teachers }}</p>
                 </div>
-                <span class="material-symbols-outlined text-4xl text-secondary">groups</span>
+                <span class="material-symbols-outlined text-4xl text-secondary-container">groups</span>
             </div>
             <p class="mt-4 text-sm text-slate-600">Active teaching staff across the school.</p>
         </article>
@@ -66,7 +137,7 @@
                         <h3 class="text-xl font-semibold text-slate-900">Recent class teacher assignments</h3>
                         <p class="mt-1 text-sm text-slate-500">Latest changes and coverage for your school.</p>
                     </div>
-                    <a href="{% url 'teacher:dos:class_teacher_assignments_list' %}" class="text-sm font-semibold text-secondary hover:text-secondary-container">View all</a>
+                    <a href="{% url 'teacher:dos:class_teacher_assignments_list' %}" class="text-sm font-semibold text-secondary-container hover:text-secondary-container/90">View all</a>
                 </div>
                 <div class="mt-5 overflow-x-auto">
                     <table class="min-w-full text-left text-sm text-slate-600">
@@ -105,7 +176,7 @@
                         <p class="text-sm uppercase tracking-[0.24em] text-slate-400">Focus area</p>
                         <h3 class="mt-3 text-2xl font-semibold">Coverage Alerts</h3>
                     </div>
-                    <span class="material-symbols-outlined text-4xl text-secondary">priority_high</span>
+                    <span class="material-symbols-outlined text-4xl text-secondary-container">priority_high</span>
                 </div>
                 <div class="mt-6 space-y-4">
                     <div class="rounded-3xl bg-slate-900/80 p-4">
@@ -129,11 +200,11 @@
                     </div>
                 </div>
                 <div class="mt-5 grid gap-3 sm:grid-cols-2">
-                    <a href="{% url 'teacher:dos:timetable_create' %}" class="inline-flex items-center justify-between rounded-3xl bg-secondary px-4 py-4 text-sm font-semibold text-white shadow-sm hover:bg-secondary-container/95">
+                    <a href="{% url 'teacher:dos:timetable_create' %}" class="inline-flex items-center justify-between rounded-3xl bg-secondary-container px-4 py-4 text-sm font-semibold text-white shadow-sm hover:bg-secondary-container/95">
                         <span>Create new timetable</span>
                         <span class="material-symbols-outlined">add</span>
                     </a>
-                    <a href="{% url 'teacher:dos:class_teacher_assignment_create' %}" class="inline-flex items-center justify-between rounded-3xl bg-slate-900 px-4 py-4 text-sm font-semibold text-white shadow-sm hover:bg-slate-800">
+                    <a href="{% url 'teacher:dos:class_teacher_assignment_create' %}" class="inline-flex items-center justify-between rounded-3xl bg-secondary-container px-4 py-4 text-sm font-semibold text-white shadow-sm hover:bg-secondary-container/95">
                         <span>Assign class teacher</span>
                         <span class="material-symbols-outlined">person_add</span>
                     </a>
@@ -175,4 +246,174 @@
         </div>
     </section>
 </div>
+
+<script>
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    function padNumber(value) {
+        return value.toString().padStart(2, '0');
+    }
+
+    function formatDuration(totalMinutes) {
+        const hours = Math.floor(totalMinutes / 60);
+        const minutes = totalMinutes % 60;
+        return `${hours}h ${padNumber(minutes)}m`;
+    }
+
+    function formatTimeLabel(hhmm) {
+        if (!hhmm) {
+            return hhmm;
+        }
+
+        const [hourString, minuteString] = hhmm.split(':');
+        if (!hourString || !minuteString) {
+            return hhmm;
+        }
+
+        const date = new Date();
+        date.setHours(parseInt(hourString, 10), parseInt(minuteString, 10), 0, 0);
+
+        return date.toLocaleTimeString(undefined, {
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true,
+        });
+    }
+
+    function updateDashboardDateTime() {
+        const dateEl = document.getElementById('dashboardCurrentDate');
+        const timeEl = document.getElementById('dashboardCurrentTime');
+        if (!dateEl || !timeEl) return;
+
+        const now = new Date();
+        const formattedDate = now.toLocaleDateString(undefined, {
+            weekday: 'long',
+            month: 'long',
+            day: 'numeric',
+            year: 'numeric'
+        });
+        const formattedTime = now.toLocaleTimeString(undefined, {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true
+        });
+
+        dateEl.textContent = formattedDate;
+        timeEl.textContent = formattedTime;
+    }
+
+    async function updateShiftUI(data) {
+        const timeText = document.getElementById('shiftTimeText');
+        const statusSubtitle = document.getElementById('shiftStatusSubtitle');
+        const detailsText = document.getElementById('shiftDetailsText');
+        const clockBtn = document.getElementById('clockInOutBtn');
+        const breakBtn = document.getElementById('breakBtn');
+
+        if (!timeText || !statusSubtitle || !detailsText || !clockBtn || !breakBtn) return;
+
+        if (data.is_on_duty) {
+            if (data.is_on_break) {
+                timeText.textContent = data.break_start_time ? `On break since ${formatTimeLabel(data.break_start_time)}` : 'On Break';
+                statusSubtitle.textContent = `ON BREAK - {{ today_label }}`;
+                detailsText.textContent = data.break_elapsed_minutes !== undefined ? `Break time ${formatDuration(data.break_elapsed_minutes)}` : 'You are currently on break.';
+            } else {
+                timeText.textContent = data.shift_start_time ? `Active since ${formatTimeLabel(data.shift_start_time)}` : 'On Duty';
+                statusSubtitle.textContent = `ON DUTY - {{ today_label }}`;
+                detailsText.textContent = data.shift_elapsed_minutes !== undefined ? `Active for ${formatDuration(data.shift_elapsed_minutes)}` : 'Your shift is in progress.';
+            }
+
+            clockBtn.dataset.action = 'clock-out';
+            clockBtn.innerHTML = '<span class="material-symbols-outlined">logout</span><span>Clock Out</span>';
+            breakBtn.disabled = false;
+            breakBtn.classList.remove('bg-white/10', 'text-white', 'bg-secondary-container', 'text-primary', 'bg-amber-500');
+            breakBtn.classList.add('bg-white', 'text-blue-900');
+        } else {
+            timeText.textContent = 'Not on Duty';
+            statusSubtitle.textContent = `OFF DUTY - {{ today_label }}`;
+            detailsText.textContent = 'Clock in to start your shift and enable break controls.';
+            clockBtn.dataset.action = 'clock-in';
+            clockBtn.innerHTML = '<span class="material-symbols-outlined">login</span><span>Clock In</span>';
+            breakBtn.disabled = true;
+            breakBtn.dataset.action = 'break-start';
+            breakBtn.innerHTML = '<span class="material-symbols-outlined">coffee</span><span>Break</span>';
+            breakBtn.classList.remove('bg-amber-500', 'text-white', 'bg-secondary-container', 'text-primary', 'text-blue-900');
+            breakBtn.classList.add('bg-white/10', 'text-white');
+        }
+
+        if (data.is_on_break) {
+            breakBtn.dataset.action = 'break-end';
+            breakBtn.innerHTML = '<span class="material-symbols-outlined">stop_circle</span><span>End Break</span>';
+            breakBtn.classList.remove('bg-amber-500', 'text-white', 'bg-secondary-container', 'text-primary');
+            breakBtn.classList.add('bg-white', 'text-blue-900');
+        }
+    }
+
+    async function fetchShiftStatus() {
+        try {
+            const response = await fetch('/teacher/api/shift/status/', { method: 'GET', headers: { 'Content-Type': 'application/json' } });
+            const data = await response.json();
+            if (data.success) {
+                await updateShiftUI(data);
+            }
+        } catch (error) {
+            console.error('Shift status error:', error);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        updateDashboardDateTime();
+        setInterval(updateDashboardDateTime, 1000);
+        document.getElementById('clockInOutBtn')?.addEventListener('click', handleShiftAction);
+        document.getElementById('breakBtn')?.addEventListener('click', handleShiftAction);
+        fetchShiftStatus();
+        setInterval(fetchShiftStatus, 30000);
+    });
+
+    async function handleShiftAction(event) {
+        event.preventDefault();
+        const btn = event.currentTarget;
+        const action = btn.dataset.action;
+        if (!action) return;
+
+        const endpoint = action === 'clock-in' ? '/teacher/api/shift/clock-in/' : action === 'clock-out' ? '/teacher/api/shift/clock-out/' : action === 'break-start' ? '/teacher/api/shift/break-start/' : '/teacher/api/shift/break-end/';
+        btn.disabled = true;
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = '<span class="material-symbols-outlined animate-spin">hourglass_empty</span><span>Processing</span>';
+
+        try {
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken'),
+                },
+            });
+            const data = await response.json();
+            if (data.success) {
+                await fetchShiftStatus();
+            } else {
+                alert(data.error || 'Unable to complete action.');
+            }
+        } catch (error) {
+            console.error('Shift action failed:', error);
+            alert('An error occurred while processing your request.');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = originalHtml;
+        }
+    }
+</script>
 {% endblock %}

@@ -28,6 +28,7 @@ from SchoolNowMgt.models import (
 )
 from SchoolNowMgt.decorators import require_dos, get_user_school
 from SchoolNowMgt.utils import get_dos_scope_data
+from user_profile.forms import TeacherProfileForm
 
 
 # ============================================================================
@@ -91,6 +92,9 @@ def dos_dashboard(request):
     # Get pending class teacher assignments (classes without active teacher)
     classes_without_teacher = classes.filter(class_teacher__isnull=True).count()
     
+    # Current day label for dashboard display
+    today_label = timezone.now().strftime('%A')
+    
     # Get recent activity logs (filter through teacher__user__school since Activity Log doesn't have direct school field)
     recent_activities = ActivityLog.objects.filter(
         teacher__user__school=school,
@@ -108,6 +112,7 @@ def dos_dashboard(request):
         'classes_without_teacher': classes_without_teacher,
         'recent_activities': recent_activities,
         'departments_without_head': departments_without_head,
+        'today_label': today_label,
         'section': 'dos_dashboard',
     }
     
@@ -121,6 +126,33 @@ def dos_dashboard(request):
     )
     
     return render(request, 'dos/dos_dashboard.html', context)
+
+
+@require_dos
+def dos_profile(request):
+    """View and edit the DOS profile under the DOS dashboard."""
+    school = get_user_school(request)
+    staff_profile = get_object_or_404(StaffProfile, user=request.user)
+
+    if request.method == 'POST':
+        profile_form = TeacherProfileForm(
+            request.POST,
+            request.FILES,
+            instance=request.user
+        )
+        if profile_form.is_valid():
+            profile_form.save()
+            messages.success(request, 'Profile updated successfully!')
+            return redirect('teacher:dos:profile')
+    else:
+        profile_form = TeacherProfileForm(instance=request.user)
+
+    context = {
+        'profile_form': profile_form,
+        'staff_profile': staff_profile,
+        'section': 'profile',
+    }
+    return render(request, 'dos/dos_profile.html', context)
 
 
 # ============================================================================
@@ -229,7 +261,7 @@ def timetable_create(request):
             # Validate that all required fields are present
             if not all([class_id, subject_id, teacher_id, day_of_week, start_time, end_time]):
                 messages.error(request, 'All fields are required')
-                return redirect('dos:timetable_create')
+                return redirect('teacher:dos:timetable_create')
             
             # Get objects with school filtering
             class_grade = get_object_or_404(ClassGrade, id=class_id, school=school)
@@ -267,14 +299,14 @@ def timetable_create(request):
             )
             
             messages.success(request, 'Timetable entry created successfully')
-            return redirect('dos:timetable_list')
+            return redirect('teacher:dos:timetable_list')
         
         except ValidationError as e:
             messages.error(request, f'Validation error: {str(e)}')
-            return redirect('dos:timetable_create')
+            return redirect('teacher:dos:timetable_create')
         except Exception as e:
             messages.error(request, f'Error creating timetable: {str(e)}')
-            return redirect('dos:timetable_create')
+            return redirect('teacher:dos:timetable_create')
     
     # GET request - show form with school-filtered options
     classes = ClassGrade.objects.filter(school=school).order_by('name')
@@ -414,7 +446,7 @@ def timetable_edit(request, timetable_id):
             )
             
             messages.success(request, 'Timetable entry updated successfully')
-            return redirect('dos:timetable_list')
+            return redirect('teacher:dos:timetable_list')
         
         except ValidationError as e:
             messages.error(request, f'Validation error: {str(e)}')
@@ -475,7 +507,7 @@ def timetable_delete(request, timetable_id):
     )
     
     messages.success(request, 'Timetable entry deleted successfully')
-    return redirect('dos:timetable_list')
+    return redirect('teacher:dos:timetable_list')
 
 
 # ============================================================================
@@ -590,7 +622,7 @@ def class_teacher_assignment_create(request):
             
             if not all([class_id, teacher_id, academic_year, start_date]):
                 messages.error(request, 'Class, Teacher, Academic Year, and Start Date are required')
-                return redirect('dos:class_teacher_assignment_create')
+                return redirect('teacher:dos:class_teacher_assignment_create')
             
             # Verify school ownership
             class_grade = get_object_or_404(ClassGrade, id=class_id, school=school)
@@ -614,7 +646,7 @@ def class_teacher_assignment_create(request):
                     request,
                     f'Class {class_grade.name} already has an active teacher for {academic_year}'
                 )
-                return redirect('dos:class_teacher_assignment_create')
+                return redirect('teacher:dos:class_teacher_assignment_create')
             
             # Create assignment
             assignment = ClassTeacherAssignment(
@@ -645,7 +677,7 @@ def class_teacher_assignment_create(request):
             )
             
             messages.success(request, 'Class teacher assignment created successfully')
-            return redirect('dos:class_teacher_assignments_list')
+            return redirect('teacher:dos:class_teacher_assignments_list')
         
         except ValidationError as e:
             messages.error(request, f'Validation error: {str(e)}')
@@ -719,7 +751,7 @@ def class_teacher_assignment_edit(request, assignment_id):
             )
             
             messages.success(request, 'Assignment updated successfully')
-            return redirect('dos:class_teacher_assignments_list')
+            return redirect('teacher:dos:class_teacher_assignments_list')
         
         except ValidationError as e:
             messages.error(request, f'Validation error: {str(e)}')
@@ -773,7 +805,7 @@ def class_teacher_assignment_delete(request, assignment_id):
     )
     
     messages.success(request, 'Assignment deactivated successfully')
-    return redirect('dos:class_teacher_assignments_list')
+    return redirect('teacher:dos:class_teacher_assignments_list')
 
 
 # ============================================================================

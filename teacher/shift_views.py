@@ -423,8 +423,9 @@ def shift_status(request):
                 'is_on_break': False,
             })
         
-        # Calculate shift elapsed time
-        current_time = timezone.now().time()
+        # Calculate shift elapsed time using local timezone for consistency with time stamp storage
+        from django.utils.timezone import localtime
+        current_time = localtime(timezone.now()).time()
         current_datetime = datetime.combine(today, current_time)
         shift_start = datetime.combine(today, attendance.time_in)
         shift_elapsed = int((current_datetime - shift_start).total_seconds() / 60)
