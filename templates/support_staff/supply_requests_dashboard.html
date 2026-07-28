@@ -1,0 +1,30 @@
+{% extends 'support_staff/dashboard_ethos.html' %}
+{% block title %}Supply Requests{% endblock %}
+
+{% block content %}
+<div class="p-8 space-y-8">
+    {% include 'includes/support_staff_topbar.html' %}
+    {% include 'includes/support_staff_shift_supervisor_navbar.html' %}
+    <div class="glass-card rounded-[32px] p-8 shadow-lg">
+        <div class="flex items-center justify-between mb-8">
+            <div>
+                <h2 class="font-headline-lg text-headline-lg text-primary">Supply Requests</h2>
+                <p class="text-body-md text-on-surface-variant">Review pending supply requests and approvals.</p>
+            </div>
+        </div>
+        <div class="space-y-4">
+            {% for request in requests %}
+            <div class="flex items-center justify-between rounded-2xl border border-outline/10 p-4 bg-surface-container-low">
+                <div>
+                    <p class="font-semibold text-primary">{{ request.title }}</p>
+                    <p class="text-sm text-on-surface-variant">{{ request.reference }} • {{ request.status }}</p>
+                </div>
+                <p class="font-semibold text-primary">{{ request.amount }}</p>
+            </div>
+            {% empty %}
+            <p class="text-sm text-on-surface-variant">No requests available.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

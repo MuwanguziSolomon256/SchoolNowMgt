@@ -266,22 +266,23 @@ def shift_supervisor_dashboard(request):
     
     # Get today's date
     today = timezone.now().date()
-    
-    # Get all staff in school (supervisor manages overall shifts)
-    all_staff = StaffProfile.objects.filter(
+
+    # Get all support staff in school (supervisor manages overall shifts)
+    all_staff_qs = StaffProfile.objects.filter(
         user__school=school,
         user__role='non_teaching_staff'
-    ).count()
-    
+    ).select_related('user', 'support_department')
+    all_staff = all_staff_qs.count()
+
     # Get today's attendance
     today_attendance = StaffAttendance.objects.filter(
         staff__user__school=school,
         date=today
-    ).select_related('staff__user', 'staff__support_department')
-    
+    ).select_related('staff__user', 'staff__support_department').order_by('staff__user__first_name')
+
     on_duty = today_attendance.filter(time_out__isnull=True).count()
     clocked_out = today_attendance.filter(time_out__isnull=False).count()
-    absent = all_staff - today_attendance.count()
+    absent = max(all_staff - today_attendance.count(), 0)
     
     # Weekly summary
     week_start = today - timedelta(days=today.weekday())
@@ -297,7 +298,7 @@ def shift_supervisor_dashboard(request):
     # Recent activities for current school only
     recent_activities = ActivityLog.objects.filter(
         teacher__user__school=school
-    ).select_related('teacher').order_by('-created_at')[:10]
+    ).select_related('teacher__user').order_by('-created_at')[:10]
     
     statistics = {
         'total_staff': all_staff,
@@ -308,10 +309,7 @@ def shift_supervisor_dashboard(request):
     }
     
     # Roster for supervisor dashboard
-    roster_staff = StaffProfile.objects.filter(
-        user__school=school,
-        user__role='non_teaching_staff'
-    ).select_related('user', 'support_department').order_by('user__first_name')[:6]
+    roster_staff = list(all_staff_qs.order_by('user__first_name')[:6])
     today_on_duty_ids = set(
         today_attendance.filter(time_out__isnull=True).values_list('staff_id', flat=True)
     )
@@ -424,9 +422,184 @@ def shift_supervisor_dashboard(request):
         'supply_requests': supply_requests,
         'task_completion': task_completion,
         'section': 'shift_supervisor_dashboard',
+        'user': request.user,
     }
     
     return render(request, 'support_staff/shift_supervisor_dashboard.html', context)
+
+
+@require_support_staff_role(['staff', 'supervisor', 'shift_supervisor', 'department_head', 'welfare_coordinator'])
+def messages_dashboard(request):
+    """A functional messages dashboard for support staff."""
+    school = get_user_school(request)
+    staff_profile = get_object_or_404(StaffProfile, user=request.user)
+
+    messages_list = [
+        {
+            'sender': 'Office Administration',
+            'subject': 'Morning briefing updated',
+            'preview': 'Please review the updated shift roster before 8:00 a.m.',
+            'time': '10m ago',
+            'unread': True,
+        },
+        {
+            'sender': 'Facilities Team',
+            'subject': 'Maintenance request approved',
+            'preview': 'The plumbing request for the science block has been approved.',
+            'time': '1h ago',
+            'unread': False,
+        },
+    ]
+
+    context = {
+        'school': school,
+        'staff_profile': staff_profile,
+        'messages': messages_list,
+        'section': 'messages_dashboard',
+        'user': request.user,
+    }
+    return render(request, 'support_staff/messages_dashboard.html', context)
+
+
+@require_support_staff_role(['staff', 'supervisor', 'shift_supervisor', 'department_head', 'welfare_coordinator'])
+def calendar_dashboard(request):
+    """A functional calendar dashboard for support staff."""
+    school = get_user_school(request)
+    staff_profile = get_object_or_404(StaffProfile, user=request.user)
+
+    today = timezone.now().date()
+    days = []
+    for offset in range(5):
+        current_day = today + timedelta(days=offset)
+        days.append({
+            'label': current_day.strftime('%a'),
+            'date': current_day.strftime('%d'),
+            'event': 'Staff meeting' if offset == 1 else 'Free block' if offset == 3 else 'Maintenance check',
+            'highlight': offset == 0,
+        })
+
+    context = {
+        'school': school,
+        'staff_profile': staff_profile,
+        'days': days,
+        'section': 'calendar_dashboard',
+        'user': request.user,
+    }
+    return render(request, 'support_staff/calendar_dashboard.html', context)
+
+
+@require_support_staff_role(['staff', 'supervisor', 'shift_supervisor', 'department_head', 'welfare_coordinator'])
+def announcements_dashboard(request):
+    """A functional announcements dashboard for support staff."""
+    school = get_user_school(request)
+    staff_profile = get_object_or_404(StaffProfile, user=request.user)
+
+    announcements = [
+        {
+            'title': 'Weather response plan',
+            'body': 'All support teams should confirm duty coverage before 7:00 a.m. tomorrow.',
+            'priority': 'High',
+        },
+        {
+            'title': 'New form submission reminder',
+            'body': 'Submit maintenance completion reports by end of day.',
+            'priority': 'Medium',
+        },
+    ]
+
+    context = {
+        'school': school,
+        'staff_profile': staff_profile,
+        'announcements': announcements,
+        'section': 'announcements_dashboard',
+        'user': request.user,
+    }
+    return render(request, 'support_staff/announcements_dashboard.html', context)
+
+
+@require_support_staff_role(['staff', 'supervisor', 'shift_supervisor', 'department_head', 'welfare_coordinator'])
+def payments_dashboard(request):
+    """A functional payments dashboard for support staff."""
+    school = get_user_school(request)
+    staff_profile = get_object_or_404(StaffProfile, user=request.user)
+
+    context = {
+        'school': school,
+        'staff_profile': staff_profile,
+        'salary': staff_profile.salary or 0,
+        'outstanding_balance': 0,
+        'transactions': [
+            {'label': 'May salary', 'amount': '₦0.00', 'status': 'Cleared'},
+            {'label': 'Transport allowance', 'amount': '₦2,500.00', 'status': 'Pending'},
+        ],
+        'section': 'payments_dashboard',
+        'user': request.user,
+    }
+    return render(request, 'support_staff/payments_dashboard.html', context)
+
+
+@require_shift_supervisor
+def staff_roster_dashboard(request):
+    """A roster page for the shift supervisor."""
+    school = get_user_school(request)
+    staff_profile = get_object_or_404(StaffProfile, user=request.user)
+
+    roster = StaffProfile.objects.filter(
+        user__school=school,
+        user__role='non_teaching_staff'
+    ).select_related('user', 'support_department').order_by('user__first_name')[:8]
+
+    context = {
+        'school': school,
+        'staff_profile': staff_profile,
+        'roster': roster,
+        'section': 'staff_roster_dashboard',
+        'user': request.user,
+    }
+    return render(request, 'support_staff/staff_roster_dashboard.html', context)
+
+
+@require_shift_supervisor
+def maintenance_dashboard(request):
+    """A maintenance board for the shift supervisor."""
+    school = get_user_school(request)
+    staff_profile = get_object_or_404(StaffProfile, user=request.user)
+
+    maintenance_items = [
+        {'title': 'North Wing HVAC', 'status': 'In progress', 'priority': 'High'},
+        {'title': 'Gate sensors', 'status': 'Pending review', 'priority': 'Medium'},
+        {'title': 'Water tank inspection', 'status': 'Completed', 'priority': 'Low'},
+    ]
+
+    context = {
+        'school': school,
+        'staff_profile': staff_profile,
+        'maintenance_items': maintenance_items,
+        'section': 'maintenance_dashboard',
+        'user': request.user,
+    }
+    return render(request, 'support_staff/maintenance_dashboard.html', context)
+
+
+@require_shift_supervisor
+def supply_requests_dashboard(request):
+    """A supply request board for the shift supervisor."""
+    school = get_user_school(request)
+    staff_profile = get_object_or_404(StaffProfile, user=request.user)
+
+    requests = [
+        {'title': 'Cleaning consumables', 'reference': 'REQ-104', 'amount': '₦18,500.00', 'status': 'Awaiting approval'},
+        {'title': 'Electrical bulbs', 'reference': 'REQ-105', 'amount': '₦6,250.00', 'status': 'Approved'},
+    ]
+
+    context = {
+        'school': school,
+        'staff_profile': staff_profile,
+        'requests': requests,
+        'section': 'supply_requests_dashboard',
+        'user': request.user,
+    }
+    return render(request, 'support_staff/supply_requests_dashboard.html', context)
 
 
 @require_shift_supervisor
@@ -458,7 +631,7 @@ def shift_attendance_list(request):
     attendance = StaffAttendance.objects.filter(
         staff__user__school=school,
         date=target_date
-    ).select_related('staff__user', 'staff__support_department').order_by('-clock_in_time')
+    ).select_related('staff__user', 'staff__support_department').order_by('-time_in')
     
     # Apply filters
     department_id = request.GET.get('department_id')

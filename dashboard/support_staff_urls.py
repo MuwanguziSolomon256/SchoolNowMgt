@@ -20,6 +20,15 @@ from dashboard.support_staff_views import (
     # Shift Supervisor Views
     shift_supervisor_dashboard,
     shift_attendance_list,
+    staff_roster_dashboard,
+    maintenance_dashboard,
+    supply_requests_dashboard,
+    
+    # Support staff sub-dashboards
+    messages_dashboard,
+    calendar_dashboard,
+    announcements_dashboard,
+    payments_dashboard,
     
     # Welfare Coordinator Views
     welfare_coordinator_dashboard,
@@ -56,6 +65,24 @@ urlpatterns = [
     path('shift-supervisor/attendance/',
          shift_attendance_list,
          name='shift_attendance_list'),
+
+    path('shift-supervisor/roster/',
+         staff_roster_dashboard,
+         name='staff_roster_dashboard'),
+
+    path('shift-supervisor/maintenance/',
+         maintenance_dashboard,
+         name='maintenance_dashboard'),
+
+    path('shift-supervisor/supply-requests/',
+         supply_requests_dashboard,
+         name='supply_requests_dashboard'),
+    
+    # ===== SUPPORT STAFF NAVIGATION ROUTES =====
+    path('messages/', messages_dashboard, name='messages_dashboard'),
+    path('calendar/', calendar_dashboard, name='calendar_dashboard'),
+    path('announcements/', announcements_dashboard, name='announcements_dashboard'),
+    path('payments/', payments_dashboard, name='payments_dashboard'),
     
     # ===== WELFARE COORDINATOR ROUTES =====
     path('welfare/',

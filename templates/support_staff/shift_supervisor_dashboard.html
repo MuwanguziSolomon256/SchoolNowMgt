@@ -37,12 +37,7 @@
                 <p class="text-[11px] uppercase tracking-[0.25em] text-on-surface-variant">Ethos Management</p>
             </div>
         </div>
-        <nav class="flex flex-wrap items-center gap-2">
-            <a href="#" class="px-4 py-2 rounded-full bg-secondary-container/20 border border-secondary-container/40 text-secondary text-sm font-semibold">Dashboard</a>
-            <a href="#" class="px-4 py-2 rounded-full text-on-surface-variant hover:text-primary hover:bg-white/70 transition-all text-sm">Staff Roster</a>
-            <a href="#" class="px-4 py-2 rounded-full text-on-surface-variant hover:text-primary hover:bg-white/70 transition-all text-sm">Maintenance</a>
-            <a href="#" class="px-4 py-2 rounded-full text-on-surface-variant hover:text-primary hover:bg-white/70 transition-all text-sm">Supply Requests</a>
-        </nav>
+        {% include 'includes/support_staff_shift_supervisor_navbar.html' %}
         <div class="flex items-center gap-3">
             <div class="flex items-center gap-2 rounded-full bg-surface-container-low px-3 py-2 border border-white/50 shadow-sm">
                 <span class="material-symbols-outlined text-base text-outline">search</span>
@@ -141,7 +136,7 @@
             <div class="col-span-12 xl:col-span-5 glass-card p-6 flex flex-col gap-6 dashboard-shadow">
                 <div class="flex items-center justify-between">
                     <h3 class="font-headline-md text-xl font-semibold text-primary">Staff Roster</h3>
-                    <a href="#" class="text-secondary text-xs font-bold flex items-center gap-1 hover:underline">
+                    <a href="{% url 'teacher:support_staff:staff_roster_dashboard' %}" class="text-secondary text-xs font-bold flex items-center gap-1 hover:underline">
                         MANAGE
                         <span class="material-symbols-outlined text-sm">chevron_right</span>
                     </a>

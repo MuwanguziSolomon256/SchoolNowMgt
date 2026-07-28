@@ -1,0 +1,28 @@
+<nav class="flex flex-wrap items-center gap-2">
+    {% with current_page=request.resolver_match.url_name %}
+    <a class="{% if current_page == 'shift_supervisor_dashboard' %}bg-secondary-container/20 text-secondary{% else %}text-on-surface-variant hover:text-primary hover:bg-white/70{% endif %} px-4 py-2 rounded-full text-sm font-semibold transition-all" href="{% url 'teacher:support_staff:shift_supervisor_dashboard' %}">
+        Dashboard
+    </a>
+    <a class="{% if current_page == 'staff_roster_dashboard' %}bg-secondary-container/20 text-secondary{% else %}text-on-surface-variant hover:text-primary hover:bg-white/70{% endif %} px-4 py-2 rounded-full text-sm font-semibold transition-all" href="{% url 'teacher:support_staff:staff_roster_dashboard' %}">
+        Staff Roster
+    </a>
+    <a class="{% if current_page == 'maintenance_dashboard' %}bg-secondary-container/20 text-secondary{% else %}text-on-surface-variant hover:text-primary hover:bg-white/70{% endif %} px-4 py-2 rounded-full text-sm font-semibold transition-all" href="{% url 'teacher:support_staff:maintenance_dashboard' %}">
+        Maintenance
+    </a>
+    <a class="{% if current_page == 'supply_requests_dashboard' %}bg-secondary-container/20 text-secondary{% else %}text-on-surface-variant hover:text-primary hover:bg-white/70{% endif %} px-4 py-2 rounded-full text-sm font-semibold transition-all" href="{% url 'teacher:support_staff:supply_requests_dashboard' %}">
+        Supply Requests
+    </a>
+    <a class="{% if current_page == 'messages_dashboard' %}bg-secondary-container/20 text-secondary{% else %}text-on-surface-variant hover:text-primary hover:bg-white/70{% endif %} px-4 py-2 rounded-full text-sm font-semibold transition-all" href="{% url 'teacher:support_staff:messages_dashboard' %}">
+        Messages
+    </a>
+    <a class="{% if current_page == 'calendar_dashboard' %}bg-secondary-container/20 text-secondary{% else %}text-on-surface-variant hover:text-primary hover:bg-white/70{% endif %} px-4 py-2 rounded-full text-sm font-semibold transition-all" href="{% url 'teacher:support_staff:calendar_dashboard' %}">
+        Calendar
+    </a>
+    <a class="{% if current_page == 'announcements_dashboard' %}bg-secondary-container/20 text-secondary{% else %}text-on-surface-variant hover:text-primary hover:bg-white/70{% endif %} px-4 py-2 rounded-full text-sm font-semibold transition-all" href="{% url 'teacher:support_staff:announcements_dashboard' %}">
+        Announcements
+    </a>
+    <a class="{% if current_page == 'payments_dashboard' %}bg-secondary-container/20 text-secondary{% else %}text-on-surface-variant hover:text-primary hover:bg-white/70{% endif %} px-4 py-2 rounded-full text-sm font-semibold transition-all" href="{% url 'teacher:support_staff:payments_dashboard' %}">
+        Payments
+    </a>
+    {% endwith %}
+</nav>

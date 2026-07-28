@@ -1,0 +1,26 @@
+{% extends 'support_staff/dashboard_ethos.html' %}
+{% block title %}Calendar Overview{% endblock %}
+
+{% block content %}
+<div class="p-8 space-y-8">
+    {% include 'includes/support_staff_topbar.html' %}
+    {% include 'includes/support_staff_shift_supervisor_navbar.html' %}
+    <div class="glass-card rounded-[32px] p-8 shadow-lg">
+        <div class="flex items-center justify-between mb-8">
+            <div>
+                <h2 class="font-headline-lg text-headline-lg text-primary">Calendar Overview</h2>
+                <p class="text-body-md text-on-surface-variant">Upcoming events for the support team.</p>
+            </div>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+            {% for day in days %}
+            <div class="rounded-2xl border border-outline/10 p-4 {% if day.highlight %}bg-primary text-white{% else %}bg-surface-container-low{% endif %}">
+                <p class="text-sm font-semibold">{{ day.label }}</p>
+                <p class="text-2xl font-bold">{{ day.date }}</p>
+                <p class="mt-3 text-sm {% if day.highlight %}text-white/80{% else %}text-on-surface-variant{% endif %}">{{ day.event }}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

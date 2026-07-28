@@ -4,11 +4,14 @@
 {% block title %}Shift Attendance - {{ target_date|date:"M d, Y" }}{% endblock %}
 
 {% block content %}
-<div class="shift-attendance-list">
-    <div class="page-header">
-        <h1>Shift Attendance</h1>
-        <p class="date">{{ target_date|date:"l, F j, Y" }}</p>
-    </div>
+<div class="p-8 space-y-8">
+    {% include 'includes/support_staff_topbar.html' %}
+    {% include 'includes/support_staff_shift_supervisor_navbar.html' %}
+    <div class="shift-attendance-list">
+        <div class="page-header">
+            <h1>Shift Attendance</h1>
+            <p class="date">{{ target_date|date:"l, F j, Y" }}</p>
+        </div>
 
     <!-- Filters -->
     <div class="filters-section">
@@ -63,11 +66,19 @@
                 <tr>
                     <td><strong>{{ att.staff.user.get_full_name }}</strong></td>
                     <td>{% if att.staff.support_department %}{{ att.staff.support_department.name }}{% else %}-{% endif %}</td>
-                    <td>{{ att.clock_in_time|time:"H:i" }}</td>
-                    <td>{% if att.clock_out_time %}{{ att.clock_out_time|time:"H:i" }}{% else %}-{% endif %}</td>
-                    <td>{% if att.clock_out_time %}~{% endif %}</td>
+                    <td>{{ att.time_in|time:"H:i"|default:"-" }}</td>
+                    <td>{{ att.time_out|time:"H:i"|default:"-" }}</td>
                     <td>
-                        {% if att.clock_out_time %}
+                        {% if att.time_in and att.time_out %}
+                            {% with duration=att.time_out|timeuntil:att.time_in %}
+                                {{ duration }}
+                            {% endwith %}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if att.time_out %}
                         <span class="badge badge-clocked-out">Clocked Out</span>
                         {% else %}
                         <span class="badge badge-on-duty">On Duty</span>

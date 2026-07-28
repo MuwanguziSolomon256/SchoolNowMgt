@@ -1,0 +1,40 @@
+{% extends 'support_staff/dashboard_ethos.html' %}
+{% block title %}Payments Overview{% endblock %}
+
+{% block content %}
+<div class="p-8 space-y-8">
+    {% include 'includes/support_staff_topbar.html' %}
+    {% include 'includes/support_staff_shift_supervisor_navbar.html' %}
+    <div class="glass-card rounded-[32px] p-8 shadow-lg">
+        <div class="flex items-center justify-between mb-8">
+            <div>
+                <h2 class="font-headline-lg text-headline-lg text-primary">Payments Overview</h2>
+                <p class="text-body-md text-on-surface-variant">Your payroll and allowance summary.</p>
+            </div>
+        </div>
+        <div class="grid md:grid-cols-2 gap-6">
+            <div class="rounded-2xl bg-primary p-6 text-white">
+                <p class="text-sm uppercase tracking-wide">Salary</p>
+                <p class="mt-3 text-3xl font-bold">₦{{ salary|floatformat:2 }}</p>
+            </div>
+            <div class="rounded-2xl border border-outline/10 p-6 bg-surface-container-low">
+                <p class="text-sm uppercase tracking-wide text-on-surface-variant">Outstanding balance</p>
+                <p class="mt-3 text-3xl font-bold text-primary">₦{{ outstanding_balance|floatformat:2 }}</p>
+            </div>
+        </div>
+        <div class="mt-8 space-y-4">
+            {% for transaction in transactions %}
+            <div class="flex items-center justify-between rounded-2xl border border-outline/10 p-4 bg-surface-container-low">
+                <div>
+                    <p class="font-semibold text-primary">{{ transaction.label }}</p>
+                    <p class="text-sm text-on-surface-variant">{{ transaction.status }}</p>
+                </div>
+                <p class="font-semibold text-primary">{{ transaction.amount }}</p>
+            </div>
+            {% empty %}
+            <p class="text-sm text-on-surface-variant">No financial activity available.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
