@@ -210,6 +210,27 @@ def build_headmaster_context(request, active_section):
         }
     }
 
+    # ===== HEAD TEACHER SHIFT STATUS =====
+    teacher_attendance_today = TeacherAttendance.objects.filter(
+        staff=staff_profile,
+        date=today
+    ).first()
+
+    is_on_duty = False
+    shift_start_time = timezone.now()
+
+    if teacher_attendance_today and teacher_attendance_today.status == 'present' and teacher_attendance_today.time_out is None:
+        is_on_duty = True
+        if teacher_attendance_today.time_in:
+            naive_dt = datetime.combine(today, teacher_attendance_today.time_in)
+            shift_start_time = timezone.make_aware(naive_dt)
+        else:
+            shift_start_time = timezone.now()
+
+    # ===== SCHOOL OVERVIEW NUMBERS =====
+    school_student_count = Student.objects.filter(class_grade__school=school, status='active').count()
+    school_class_count = ClassGrade.objects.filter(school=school).count()
+
     return {
         'school': school,
         'staff_profile': staff_profile,
@@ -227,91 +248,12 @@ def build_headmaster_context(request, active_section):
         'breadcrumbs': [
             {'label': 'Home', 'url': '/teacher/'},
             {'label': 'Headmaster Dashboard', 'url': None},
-        ]
+        ],
+        'is_on_duty': is_on_duty,
+        'shift_start_time': shift_start_time,
+        'school_student_count': school_student_count,
+        'school_class_count': school_class_count,
     }
-    
-    return context
-
-    # ===== STAFF ATTENDANCE STATUS =====
-    today_staff_attendance = StaffAttendance.objects.filter(
-        staff__user__school=school,
-        date=today
-    )
-    
-    staff_present = today_staff_attendance.filter(status='present').count()
-    staff_absent = today_staff_attendance.filter(status='absent').count()
-    staff_late = today_staff_attendance.filter(status='late').count()
-    
-    # Teacher attendance
-    today_teacher_attendance = TeacherAttendance.objects.filter(
-        staff__user__school=school,
-        date=today
-    )
-    
-    teachers_present = today_teacher_attendance.filter(status='present').count()
-    
-    # Student attendance today
-    today_student_attendance = StudentAttendance.objects.filter(
-        student__class_grade__school=school,
-        date=today
-    )
-    
-    students_present = today_student_attendance.filter(status='present').count()
-    students_absent = today_student_attendance.filter(status='absent').count()
-    students_late = today_student_attendance.filter(status='late').count()
-    
-    attendance_data = {
-        'staff_present': staff_present,
-        'staff_absent': staff_absent,
-        'staff_late': staff_late,
-        'teachers_present': teachers_present,
-        'students_present': students_present,
-        'students_absent': students_absent,
-        'students_late': students_late,
-        'total_staff_attendance': today_staff_attendance.count(),
-        'total_student_attendance': today_student_attendance.count(),
-    }
-    
-    # ===== SYSTEM STATUS =====
-    system_status = {
-        'lms_integration': {
-            'status': 'connected',
-            'message': 'Sync successful 4m ago',
-            'icon': 'account_tree',
-            'color': 'secondary-container'
-        },
-        'campus_security': {
-            'status': 'secured',
-            'message': 'All perimeters secured',
-            'icon': 'shield',
-            'color': 'primary'
-        },
-        'parent_portal': {
-            'status': 'active',
-            'message': '24 pending notifications',
-            'icon': 'mail',
-            'color': 'tertiary-container'
-        }
-    }
-    
-    context = {
-        'school': school,
-        'staff_profile': staff_profile,
-        'today': today,
-        'financial_data': financial_data,
-        'enrollment_data': enrollment_data,
-        'attendance_data': attendance_data,
-        'upcoming_events': upcoming_events,
-        'calendar_events': calendar_events,
-        'system_status': system_status,
-        'page_title': 'Institutional Pulse - Headmaster Dashboard',
-        'breadcrumbs': [
-            {'label': 'Home', 'url': '/teacher/'},
-            {'label': 'Headmaster Dashboard', 'url': None},
-        ]
-    }
-    
-    return context
 
 
 @login_required

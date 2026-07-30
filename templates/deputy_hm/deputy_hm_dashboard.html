@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html class="light" lang="en">
 <head>
@@ -55,15 +56,20 @@
 <body class="bg-background text-on-surface font-body-md ethos-gradient min-h-screen overflow-x-hidden">
   {% include 'deputy_hm/includes/top_navbar.html' with active_nav='dashboard' %}
 
-  <main class="pt-8 px-8 pb-12 max-w-[1440px] mx-auto">
+  <div class="pt-0">
+    {% include 'deputy_hm/includes/greeting_section.html' %}
+    {% include 'deputy_hm/includes/shift_status_card.html' %}
+  </div>
+
+  <main class="pt-6 px-8 pb-12 max-w-[1440px] mx-auto">
     <div class="flex justify-between items-end mb-8">
       <div>
-        <h2 class="font-headline-lg text-headline-lg text-primary mb-1">Administrative Hub</h2>
-        <p class="text-on-surface-variant">Overseeing institutional efficiency, staff welfare, and conduct standards.</p>
+        <h1 class="font-display-md text-xl md:text-3xl text-primary font-black mb-1">Dashboard</h1>
+        <p class="text-body-md text-sm md:text-base text-on-surface-variant">Welcome back. Here's your dashboard overview.</p>
       </div>
       <div class="flex gap-3">
-        <a href="{% url 'SchoolNowMgt:deputy_hm:export_reports' %}" class="flex items-center gap-2 px-5 py-2.5 glass-card text-primary font-bold rounded-xl">Export Reports</a>
-        <a href="{% url 'SchoolNowMgt:deputy_hm:discipline_log' %}" class="flex items-center gap-2 px-6 py-2.5 bg-primary text-white font-bold rounded-xl shadow-lg">Log New Incident</a>
+        <a href="{% url 'SchoolNowMgt:deputy_hm:export_reports' %}" class="snm-btn-ghost flex items-center gap-2 px-5 py-2.5 font-bold rounded-xl">Export Reports</a>
+        <a href="{% url 'SchoolNowMgt:deputy_hm:discipline_log' %}" class="snm-cta flex items-center gap-2 px-6 py-2.5 font-bold rounded-xl">Log New Incident</a>
       </div>
     </div>
 
@@ -186,6 +192,7 @@
       </div>
 
       <div class="col-span-12 lg:col-span-4 space-y-8">
+        {% include 'deputy_hm/includes/deputy_profile_card.html' %}
         <section class="glass-card rounded-3xl p-6">
           <h3 class="font-headline-md text-headline-md text-primary mb-4">Department Overview</h3>
           <div class="space-y-4">
@@ -215,5 +222,6 @@
       </div>
     </div>
   </main>
+  <script src="{% static 'js/shift_status.js' %}" defer></script>
 </body>
 </html>

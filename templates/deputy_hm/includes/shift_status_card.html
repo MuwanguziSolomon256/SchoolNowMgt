@@ -1,0 +1,35 @@
+{% load static %}
+
+<div class="px-container-padding pb-6">
+    <div class="rounded-[2rem] bg-primary px-5 py-6 md:px-8 md:py-7 shadow-[0_24px_48px_rgba(8,11,58,0.18)] border border-white/10 w-full">
+        <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-5">
+            <div class="flex items-start gap-4">
+                <div class="w-16 h-16 rounded-[1.5rem] bg-secondary-container/10 flex items-center justify-center text-secondary-container">
+                    <span class="material-symbols-outlined text-3xl">schedule</span>
+                </div>
+                <div>
+                    <p class="text-[10px] tracking-[0.3em] uppercase text-secondary-container/80 mb-3">Shift status</p>
+                    {% if is_on_duty %}
+                        <h2 class="text-3xl md:text-4xl font-black text-white leading-tight">Active since {{ shift_start_time|time:"h:i A" }}</h2>
+                    {% else %}
+                        <h2 class="text-3xl md:text-4xl font-black text-white leading-tight">Off Duty</h2>
+                    {% endif %}
+                    <div class="mt-3 flex flex-wrap items-center gap-2 text-sm text-white/70">
+                        <span class="inline-flex h-2.5 w-2.5 rounded-full bg-rose-500"></span>
+                        <span class="uppercase tracking-[0.18em] font-semibold">{% if is_on_duty %}On Duty{% else %}Off Duty{% endif %} - {{ today|date:"l" }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="flex flex-wrap gap-3">
+                <button type="button" class="inline-flex items-center gap-2 rounded-full bg-[#FFC300] text-primary font-semibold px-5 py-3 shadow-[0_12px_24px_rgba(255,195,0,0.22)] hover:bg-[#ffb600] transition"> 
+                    <span class="material-symbols-outlined text-lg">login</span>
+                    Clock In
+                </button>
+                <button type="button" class="inline-flex items-center gap-2 rounded-full bg-white text-primary font-semibold px-5 py-3 shadow-[0_8px_16px_rgba(255,255,255,0.28)] hover:bg-slate-100 transition">
+                    <span class="material-symbols-outlined text-lg">free_breakfast</span>
+                    Break
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

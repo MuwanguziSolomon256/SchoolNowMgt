@@ -135,6 +135,36 @@ def deputy_hm_dashboard(request):
         'late_arrivals': late_arrivals,
         'section': 'deputy_hm_dashboard',
     }
+
+    # ===== SHIFT / ATTENDANCE CONTEXT (for greeting + shift card) =====
+    try:
+        today = timezone.localdate()
+        current_time = timezone.now()
+        # Try to get or create a TeacherAttendance record for this staff (Deputy has staff profile)
+        teacher_attendance_today, created = TeacherAttendance.objects.get_or_create(
+            staff=staff,
+            date=today,
+            defaults={'status': 'absent'}
+        )
+        is_on_duty = teacher_attendance_today.status == 'present' and teacher_attendance_today.time_out is None
+        # Determine shift start time
+        if teacher_attendance_today.time_in:
+            naive_dt = datetime.combine(today, teacher_attendance_today.time_in)
+            shift_start_time = timezone.make_aware(naive_dt)
+        else:
+            shift_start_time = current_time
+
+        # Merge shift context into existing context
+        context.update({
+            'today': today,
+            'current_time': current_time,
+            'is_on_duty': is_on_duty,
+            'shift_start_time': shift_start_time,
+            'teacher_attendance_today': teacher_attendance_today,
+        })
+    except Exception:
+        # If any issue, continue without shift data
+        pass
     
     # Log activity
     ActivityLog.objects.create(
