@@ -21,7 +21,7 @@
                 {% else %}
                     <h2 class="font-headline-lg text-headline-lg text-primary">Good Evening, <span class="text-secondary-container">{{ user.first_name }}</span>!</h2>
                 {% endif %}
-                <p class="text-on-surface-variant text-sm mt-1">{{ current_time|date:"l, F j, Y" }} • {{ current_time|time:"H:i A" }}</p>
+                <p class="text-on-surface-variant text-sm mt-1">{{ current_time|date:"l, F j, Y" }} • {{ current_time|time:"g:i A" }}</p>
             </div>
         </div>
     </div>

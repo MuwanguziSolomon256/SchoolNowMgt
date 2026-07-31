@@ -107,31 +107,63 @@ async function handleBreakButton(event) {
     btn.disabled = false;
 }
 
+function getInitialDutyStatus() {
+    if (document.body.classList.contains('on-duty')) {
+        return true;
+    }
+    const main = document.querySelector('main[data-is-on-duty]');
+    return main?.dataset?.isOnDuty === 'true';
+}
+
 async function refreshShiftStatus() {
     try {
         const response = await fetch('/teacher/api/shift/status/', { method: 'GET', headers: { 'Content-Type': 'application/json' } });
         const data = await response.json();
         if (data.success) {
             const shiftCard = document.getElementById('shiftCard');
+            const clockBtn = document.getElementById('clockInOutBtn');
+            const breakBtn = document.getElementById('breakBtn');
+            const shiftStatusText = document.getElementById('shiftStatusText');
+            const shiftStatusSubtitle = document.getElementById('shiftStatusSubtitle');
+            const shiftStatusDot = document.getElementById('shiftStatusDot');
+
             if (data.is_on_duty) {
                 document.body.classList.add('on-duty');
-                if (shiftCard) {
-                    shiftCard.classList.add('on-duty');
-                }
+                if (shiftCard) shiftCard.classList.add('on-duty');
             } else {
                 document.body.classList.remove('on-duty');
-                if (shiftCard) {
-                    shiftCard.classList.remove('on-duty');
+                if (shiftCard) shiftCard.classList.remove('on-duty');
+            }
+
+            if (shiftStatusText) {
+                if (data.is_on_duty && data.shift_elapsed_minutes !== undefined) {
+                    const hours = Math.floor(data.shift_elapsed_minutes / 60);
+                    const minutes = data.shift_elapsed_minutes % 60;
+                    shiftStatusText.textContent = `Active for ${hours}h ${minutes}m`;
+                } else {
+                    shiftStatusText.textContent = 'Not on duty';
                 }
             }
-            if (shiftCard && data.is_on_duty && data.shift_elapsed_minutes !== undefined) {
-                const hours = Math.floor(data.shift_elapsed_minutes / 60);
-                const minutes = data.shift_elapsed_minutes % 60;
-                const elapsedText = `Active for ${hours}h ${minutes}m`;
-                const h2 = shiftCard.querySelector('h2');
-                if (h2) h2.textContent = elapsedText;
+
+            if (shiftStatusSubtitle) {
+                if (data.is_on_duty) {
+                    shiftStatusSubtitle.textContent = `ON DUTY - ${new Date().toLocaleDateString(undefined, { weekday: 'long' })}`;
+                } else {
+                    shiftStatusSubtitle.textContent = 'Clock in to start your shift';
+                }
             }
-            const breakBtn = document.getElementById('breakBtn');
+
+            if (shiftStatusDot) {
+                shiftStatusDot.classList.toggle('bg-emerald-400', data.is_on_duty);
+                shiftStatusDot.classList.toggle('bg-red-400', !data.is_on_duty);
+            }
+
+            if (clockBtn) {
+                clockBtn.innerHTML = data.is_on_duty
+                    ? '<span class="material-symbols-outlined text-base">logout</span><span>Clock Out</span>'
+                    : '<span class="material-symbols-outlined text-base">login</span><span>Clock In</span>';
+            }
+
             if (breakBtn) {
                 if (data.is_on_break) {
                     breakBtn.classList.add('break-active', 'bg-orange-500', 'text-white');
@@ -147,7 +179,10 @@ async function refreshShiftStatus() {
     }
 }
 
-function initShiftStatusTimer() {
+async function initShiftStatusTimer() {
+    if (getInitialDutyStatus()) {
+        document.body.classList.add('on-duty');
+    }
     refreshShiftStatus();
     setInterval(refreshShiftStatus, 30000);
 }

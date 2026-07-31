@@ -9,12 +9,13 @@ from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.db.models import Count, Q, Avg
 from django.utils import timezone
 from django.contrib import messages
+from datetime import datetime as dt
 
 from SchoolNowMgt.decorators import require_teacher_role, get_user_school
 from SchoolNowMgt.models import (
     CustomUser, StaffProfile, Subject, ClassGrade, Timetable,
     Grade, StudentAttendance, ActivityLog, School, Department,
-    TeacherDepartment
+    TeacherDepartment, TeacherAttendance, BreakSession
 )
 
 
@@ -82,13 +83,36 @@ def dept_dashboard(request):
         activity_type__in=['grade_entered', 'assignment_created', 'lesson_created']
     ).order_by('-created_at')[:5] if department else ActivityLog.objects.none()
 
-    today = timezone.now().date()
+    now = timezone.localtime(timezone.now())
+    today = now.date()
+
+    attendance = TeacherAttendance.objects.filter(staff=staff_profile, date=today).first()
+    is_on_duty = bool(attendance and attendance.status == 'present' and attendance.time_out is None)
+    active_break = BreakSession.objects.filter(
+        teacher_attendance=attendance,
+        break_out_time__isnull=True
+    ).first() if attendance else None
+    is_on_break = bool(active_break)
+
+    if attendance and attendance.time_in:
+        shift_start_time = dt.combine(today, attendance.time_in)
+        if timezone.is_naive(shift_start_time):
+            shift_start_time = timezone.make_aware(shift_start_time, timezone.get_current_timezone())
+    else:
+        shift_start_time = now
+
+    shift_status_label = 'ON DUTY' if is_on_duty else 'OFF DUTY'
 
     if not department:
         messages.warning(request, 'Your department is not assigned. Please contact the school administrator.')
 
     context = {
         'today': today,
+        'now': now,
+        'shift_start_time': shift_start_time,
+        'is_on_duty': is_on_duty,
+        'is_on_break': is_on_break,
+        'shift_status_label': shift_status_label,
         'school': school,
         'staff_profile': staff_profile,
         'department': department,

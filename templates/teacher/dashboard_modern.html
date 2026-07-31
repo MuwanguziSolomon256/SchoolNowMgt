@@ -245,12 +245,11 @@
                 </div>
                 <!-- Content -->
                 <div class="flex-1 min-w-0">
-                    <p class="text-on-primary/70 font-label-md text-xs md:text-sm uppercase tracking-widest mb-0.5 md:mb-1">Shift Status</p>
+                    <p class="text-on-primary/70 font-label-md text-xs md:text-sm uppercase tracking-widest mb-0.5 md:mb-1">SHIFT STATUS</p>
                     <h2 class="font-display-md text-base md:text-2xl text-on-primary font-black mb-1 md:mb-2 break-words">Active since {{ shift_start_time|date:"h:i A" }}</h2>
                     <p class="text-on-primary/90 font-body-md text-xs md:text-sm flex items-center gap-2">
-                        <span class="w-2 h-2 flex-shrink-0 {% if is_on_duty %}bg-green-400{% else %}bg-red-400{% endif %} rounded-full {% if is_on_duty %}animate-pulse{% endif %}"></span>
-                        <span class="truncate">{% if is_on_duty %}ON DUTY{% else %}OFF DUTY{% endif %}</span>
-                        <span class="hidden sm:inline">- {{ today|date:"l" }}</span>
+                        <span class="w-2 h-2 flex-shrink-0 rounded-full {% if is_on_duty %}bg-green-400 animate-pulse{% else %}bg-red-400{% endif %}"></span>
+                        <span class="truncate">{% if is_on_duty %}ON DUTY{% else %}OFF DUTY{% endif %} - {{ today|date:"l" }}</span>
                     </p>
                 </div>
             </div>
