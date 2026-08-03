@@ -1,205 +1,168 @@
-{% extends "teacher/base.html" %}
 {% load static %}
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>Shift Overview - Deputy HM</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Hanken+Grotesk:wght@600;700;800;900&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            primary: "#080b3a",
+            secondary: "#7c5800",
+            background: "#f8f9fc",
+            surface: "#f8f9fc",
+            "on-surface": "#191c1e",
+            "on-surface-variant": "#46464f",
+            "primary-container": "#1e224f",
+            "primary-fixed": "#e0e0ff",
+            "secondary-fixed": "#ffdea8",
+            "surface-container": "#edeef1",
+            "surface-container-low": "#f2f3f6"
+          },
+          fontFamily: {
+            "headline-lg": ["Hanken Grotesk"],
+            "headline-md": ["Hanken Grotesk"],
+            "display-lg": ["Hanken Grotesk"],
+            "body-md": ["Inter"],
+            "label-md": ["Inter"]
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      vertical-align: middle;
+    }
+    .glass-card {
+      background: rgba(255, 255, 255, 0.72);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.45);
+      box-shadow: 0 10px 30px rgba(30, 34, 79, 0.06);
+    }
+    .ethos-gradient {
+      background: radial-gradient(circle at top left, #f8f9fc 0%, #e0e0ff 100%);
+    }
+  </style>
+</head>
+<body class="bg-background text-on-surface font-body-md ethos-gradient min-h-screen overflow-x-hidden">
+  {% include 'deputy_hm/includes/top_navbar.html' with active_nav='shifts' %}
 
-{% block title %}Shift Overview - Deputy HM{% endblock %}
-
-{% block content %}
-<div class="deputy-hm-shifts">
-    <div class="page-header">
-        <h1>Shift & Attendance Overview</h1>
-        <p class="date">{{ today|date:"l, F j, Y" }}</p>
+  <main class="pt-16 px-8 pb-12 max-w-[1440px] mx-auto">
+    <div class="flex flex-col lg:flex-row justify-between items-start gap-6 mb-8">
+      <div>
+        <h1 class="font-headline-lg text-headline-lg text-primary mb-2">Shift & Attendance Overview</h1>
+        <p class="text-body-md text-sm md:text-base text-on-surface-variant">View today's duty summary and attendance status for your support staff.</p>
+      </div>
+      <div class="flex flex-wrap gap-3">
+        <a href="{% url 'SchoolNowMgt:deputy_hm:dashboard' %}" class="snm-btn-ghost inline-flex items-center gap-2 px-5 py-2.5 font-bold rounded-xl">Back to Dashboard</a>
+        <a href="{% url 'SchoolNowMgt:deputy_hm:support_staff_list' %}" class="snm-cta inline-flex items-center gap-2 px-5 py-2.5 font-bold rounded-xl">Staff Tracking</a>
+      </div>
     </div>
 
-    <!-- Statistics Cards -->
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-icon">👥</div>
-            <div class="stat-content">
-                <h3>Total Staff</h3>
-                <p class="stat-value">{{ statistics.total_staff }}</p>
-            </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+      <div class="glass-card rounded-3xl p-6">
+        <div class="flex items-center gap-4">
+          <div class="w-14 h-14 rounded-full bg-primary-fixed flex items-center justify-center text-primary">
+            <span class="material-symbols-outlined text-3xl">group</span>
+          </div>
+          <div>
+            <p class="text-xs font-label-md text-on-surface-variant uppercase tracking-wider">Total Staff</p>
+            <p class="text-3xl font-black text-primary">{{ statistics.total_staff }}</p>
+          </div>
         </div>
-        
-        <div class="stat-card">
-            <div class="stat-icon">✅</div>
-            <div class="stat-content">
-                <h3>On Duty Today</h3>
-                <p class="stat-value">{{ statistics.on_duty_today }}</p>
-            </div>
+      </div>
+      <div class="glass-card rounded-3xl p-6">
+        <div class="flex items-center gap-4">
+          <div class="w-14 h-14 rounded-full bg-secondary-fixed flex items-center justify-center text-on-secondary-fixed">
+            <span class="material-symbols-outlined text-3xl">check_circle</span>
+          </div>
+          <div>
+            <p class="text-xs font-label-md text-on-surface-variant uppercase tracking-wider">On Duty Today</p>
+            <p class="text-3xl font-black text-primary">{{ statistics.on_duty_today }}</p>
+          </div>
         </div>
-        
-        <div class="stat-card">
-            <div class="stat-icon">❌</div>
-            <div class="stat-content">
-                <h3>Absent Today</h3>
-                <p class="stat-value">{{ statistics.absent_today }}</p>
-            </div>
+      </div>
+      <div class="glass-card rounded-3xl p-6">
+        <div class="flex items-center gap-4">
+          <div class="w-14 h-14 rounded-full bg-surface-container flex items-center justify-center text-primary">
+            <span class="material-symbols-outlined text-3xl">highlight_off</span>
+          </div>
+          <div>
+            <p class="text-xs font-label-md text-on-surface-variant uppercase tracking-wider">Absent Today</p>
+            <p class="text-3xl font-black text-primary">{{ statistics.absent_today }}</p>
+          </div>
         </div>
+      </div>
     </div>
 
-    <!-- Today's Attendance -->
-    {% if today_attendance %}
-    <div class="attendance-section">
-        <h2>Today's Attendance</h2>
-        <div class="table-section">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Staff Name</th>
-                        <th>Department</th>
-                        <th>Clock In</th>
-                        <th>Clock Out</th>
-                        <th>Duration</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for att in today_attendance %}
-                    <tr>
-                        <td>{{ att.staff.user.get_full_name }}</td>
-                        <td>{% if att.staff.support_department %}{{ att.staff.support_department.name }}{% else %}-{% endif %}</td>
-                        <td>{{ att.clock_in_time|time:"H:i" }}</td>
-                        <td>{% if att.clock_out_time %}{{ att.clock_out_time|time:"H:i" }}{% else %}<em>On duty</em>{% endif %}</td>
-                        <td>
-                            {% if att.clock_out_time %}
-                                {{ att.clock_out_time|time:"H:i" }} - {{ att.clock_in_time|time:"H:i" }}
-                            {% else %}
-                                <em>Still working</em>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+    <div class="glass-card rounded-3xl p-6 mb-8">
+      <div class="flex items-center justify-between gap-4 mb-6">
+        <div>
+          <h2 class="font-headline-md text-headline-md text-primary">Today's Attendance</h2>
+          <p class="text-sm text-on-surface-variant">Live staff attendance details for the current day.</p>
         </div>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left min-w-[720px] border-separate border-spacing-y-3">
+          <thead>
+            <tr class="text-sm uppercase tracking-[0.18em] text-on-surface-variant">
+              <th class="pb-3">Staff Name</th>
+              <th class="pb-3">Department</th>
+              <th class="pb-3">Clock In</th>
+              <th class="pb-3">Clock Out</th>
+              <th class="pb-3">Duration</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for att in today_attendance %}
+            <tr class="bg-white/80 rounded-3xl shadow-sm">
+              <td class="px-4 py-4 text-sm text-on-surface font-semibold">{{ att.staff.user.get_full_name }}</td>
+              <td class="px-4 py-4 text-sm text-on-surface-variant">{% if att.staff.support_department %}{{ att.staff.support_department.name }}{% else %}-{% endif %}</td>
+              <td class="px-4 py-4 text-sm text-on-surface-variant">{{ att.clock_in_time|time:"H:i" }}</td>
+              <td class="px-4 py-4 text-sm text-on-surface-variant">{% if att.clock_out_time %}{{ att.clock_out_time|time:"H:i" }}{% else %}<span class="text-primary font-semibold">On duty</span>{% endif %}</td>
+              <td class="px-4 py-4 text-sm text-on-surface-variant">{% if att.clock_out_time %}{{ att.clock_out_time|time:"H:i" }} - {{ att.clock_in_time|time:"H:i" }}{% else %}<em>Still working</em>{% endif %}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
     </div>
-    {% endif %}
 
-    <!-- Weekly Summary -->
     {% if week_attendance %}
-    <div class="weekly-section">
-        <h2>This Week's Attendance Summary</h2>
-        <div class="table-section">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Staff On Duty</th>
-                        <th>Absent</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% regroup week_attendance by date as attendance_by_date %}
-                    {% for date, records in attendance_by_date %}
-                    <tr>
-                        <td>{{ date|date:"M d, Y" }}</td>
-                        <td>{{ records|length }}</td>
-                        <td>{{ statistics.total_staff|add:"-"|add:records|length }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+    <div class="glass-card rounded-3xl p-6">
+      <h2 class="font-headline-md text-headline-md text-primary mb-4">This Week's Attendance Summary</h2>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left min-w-[560px] border-separate border-spacing-y-3">
+          <thead>
+            <tr class="text-sm uppercase tracking-[0.18em] text-on-surface-variant">
+              <th class="pb-3">Date</th>
+              <th class="pb-3">Staff On Duty</th>
+              <th class="pb-3">Absent</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% regroup week_attendance by date as attendance_by_date %}
+            {% for date, records in attendance_by_date %}
+            <tr class="bg-white/80 rounded-3xl shadow-sm">
+              <td class="px-4 py-4 text-sm text-on-surface">{{ date|date:"M d, Y" }}</td>
+              <td class="px-4 py-4 text-sm text-on-surface">{{ records|length }}</td>
+              <td class="px-4 py-4 text-sm text-on-surface">{{ statistics.total_staff|add:"-"|add:records|length }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
     </div>
     {% endif %}
-</div>
-
-<style>
-.deputy-hm-shifts {
-    padding: 20px;
-    max-width: 1200px;
-    margin: 0 auto;
-}
-
-.page-header {
-    margin-bottom: 30px;
-}
-
-.page-header h1 {
-    margin: 0;
-    font-size: 28px;
-}
-
-.page-header .date {
-    color: #666;
-    margin: 5px 0 0 0;
-}
-
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
-    margin-bottom: 30px;
-}
-
-.stat-card {
-    display: flex;
-    align-items: center;
-    padding: 20px;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.stat-icon {
-    font-size: 32px;
-    margin-right: 15px;
-}
-
-.stat-content h3 {
-    margin: 0;
-    font-size: 14px;
-    color: #666;
-}
-
-.stat-value {
-    margin: 5px 0 0 0;
-    font-size: 24px;
-    font-weight: bold;
-    color: #333;
-}
-
-.attendance-section,
-.weekly-section {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    margin-bottom: 30px;
-}
-
-.attendance-section h2,
-.weekly-section h2 {
-    margin-top: 0;
-    font-size: 18px;
-}
-
-.table-section {
-    overflow-x: auto;
-}
-
-.table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.table thead {
-    background: #f8f9fa;
-}
-
-.table th {
-    padding: 15px;
-    text-align: left;
-    border-bottom: 2px solid #dee2e6;
-    font-weight: 600;
-}
-
-.table td {
-    padding: 15px;
-    border-bottom: 1px solid #dee2e6;
-}
-
-.table tbody tr:nth-child(odd) {
-    background: #f8f9fa;
-}
-</style>
-{% endblock %}
+  </main>
+</body>
+</html>

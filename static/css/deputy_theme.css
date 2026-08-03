@@ -61,6 +61,7 @@ nav.snm-navbar a.active .material-symbols-outlined, nav.snm-navbar a[aria-curren
 
 /* Cards */
 .snm-card{ background: rgba(255,255,255,0.72); backdrop-filter: blur(20px); border-radius:12px; padding:22px; box-shadow: 0 8px 32px rgba(30,34,79,0.08); border:1px solid rgba(255,255,255,0.4); }
+.deputy-status-card{ background: linear-gradient(180deg, #080b3a 0%, #060a3a 40%, #1e224f 100%) !important; border: 1px solid rgba(255,255,255,0.12); }
 
 /* Buttons */
 .snm-cta{ background:var(--accent-gold); color:var(--heading); padding:10px 16px; border-radius:10px; font-weight:700; box-shadow:var(--sun-gold-glow); }

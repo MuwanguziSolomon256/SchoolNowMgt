@@ -6,8 +6,14 @@
 {% block extra_css %}
 <style>
   .dept-dashboard {
-    padding: 2rem 1rem 3rem;
-    max-width: 1320px;
+    padding: 2rem 2.5rem 3rem;
+    max-width: 1080px;
+    margin: 0 auto;
+    box-sizing: border-box;
+  }
+
+  .dept-dashboard > section {
+    max-width: 980px;
     margin: 0 auto;
   }
 
@@ -18,8 +24,18 @@
     align-items: stretch;
   }
 
+  .dept-summary-card,
+  .stats-grid,
+  .subjects-grid,
+  .activities-list,
+  .section-heading,
+  .dashboard-panel {
+    max-width: 980px;
+    margin: 0 auto;
+  }
+
   .dept-summary-card {
-    padding: 1.75rem;
+    padding: 1.5rem;
     border-radius: 1.5rem;
     background: rgba(255, 255, 255, 0.85);
     border: 1px solid rgba(226, 232, 240, 0.9);
@@ -44,7 +60,7 @@
   .activity-card {
     border-radius: 1.25rem;
     background: white;
-    padding: 1.5rem;
+    padding: 1.25rem;
     box-shadow: 0 18px 40px rgba(15, 23, 42, 0.05);
     border: 1px solid rgba(226, 232, 240, 0.9);
   }
@@ -146,7 +162,7 @@
 {% block content %}
 <main class="dept-dashboard" data-is-on-duty="{{ is_on_duty|yesno:'true,false' }}" data-is-on-break="{{ is_on_break|yesno:'true,false' }}">
   <section class="space-y-6">
-    <div class="bg-white rounded-[1.5rem] p-8 shadow-lg border border-slate-200">
+    <div class="bg-white rounded-[1.5rem] p-6 shadow-lg border border-slate-200">
       <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
         <div class="flex items-start gap-4">
           <span class="material-symbols-outlined text-4xl text-secondary-container">light_mode</span>
@@ -156,15 +172,15 @@
             <p class="mt-2 text-sm text-slate-500">{{ now|date:"l, F j, Y" }} • {{ now|time:"g:i A" }}</p>
           </div>
         </div>
-        <div class="rounded-3xl bg-secondary-container/15 px-4 py-3 text-secondary font-semibold">{{ today|date:"F j, Y" }}</div>
+        <div class="rounded-3xl bg-secondary-container/15 px-4 py-2 text-secondary font-semibold">{{ today|date:"F j, Y" }}</div>
       </div>
     </div>
 
-    <div id="shiftCard" class="bg-slate-950 rounded-[1.5rem] p-6 shadow-xl border border-white/10">
-      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+    <div id="shiftCard" class="rounded-[1.5rem] p-5 shadow-xl border border-white/10" style="background: linear-gradient(180deg, #080b3a 0%, #060a3a 40%, #1e224f 100%);">
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
         <div class="flex items-center gap-4">
-          <div class="min-w-[56px] min-h-[56px] rounded-3xl bg-slate-900/90 flex items-center justify-center text-2xl text-amber-400 shadow-lg shadow-amber-500/20">
-            <span class="material-symbols-outlined">schedule</span>
+          <div class="min-w-[56px] min-h-[56px] rounded-3xl bg-[#050729] flex items-center justify-center text-2xl text-amber-400 shadow-lg shadow-black/30">
+            <span class="material-symbols-outlined">access_time</span>
           </div>
           <div>
             <p class="text-xs uppercase tracking-[0.24em] text-slate-400">SHIFT STATUS</p>
@@ -188,11 +204,11 @@
           </div>
         </div>
         <div class="flex flex-wrap gap-3">
-          <button id="clockInOutBtn" class="rounded-full bg-amber-400 text-slate-950 px-6 py-3 font-semibold shadow-md hover:bg-amber-300 inline-flex items-center gap-2">
+          <button id="clockInOutBtn" class="rounded-full bg-amber-400 text-slate-950 px-5 py-2 font-semibold shadow-md hover:bg-amber-300 inline-flex items-center gap-2">
             <span class="material-symbols-outlined text-base">{% if is_on_duty %}logout{% else %}login{% endif %}</span>
             <span>{% if is_on_duty %}Clock Out{% else %}Clock In{% endif %}</span>
           </button>
-          <button id="breakBtn" class="rounded-full bg-white text-slate-950 px-6 py-3 font-semibold shadow-md hover:bg-slate-100 inline-flex items-center gap-2 {% if is_on_break %}break-active{% endif %}">
+          <button id="breakBtn" class="rounded-full bg-white text-slate-950 px-5 py-2 font-semibold shadow-md hover:bg-slate-100 inline-flex items-center gap-2 {% if is_on_break %}break-active{% endif %}">
             <span id="breakBtnIcon" class="material-symbols-outlined text-base">{% if is_on_break %}stop_circle{% else %}coffee{% endif %}</span>
             <span id="breakBtnLabel">{% if is_on_break %}End Break{% else %}Break{% endif %}</span>
           </button>
@@ -207,28 +223,26 @@
       </div>
     </div>
 
-      <div class="dept-summary-card">
-        <div class="grid gap-4">
-          <div>
-            <p class="text-sm uppercase tracking-[0.2em] text-secondary">Department</p>
-            <h3 class="mt-3 text-xl font-semibold text-primary">{% if department %}{{ department.name }}{% else %}Unassigned{% endif %}</h3>
+    <div class="dept-summary-card">
+      <div class="grid gap-4">
+        <div>
+          <p class="text-sm uppercase tracking-[0.2em] text-secondary">Department</p>
+          <h3 class="mt-3 text-xl font-semibold text-primary">{% if department %}{{ department.name }}{% else %}Unassigned{% endif %}</h3>
+        </div>
+        <div class="grid grid-cols-2 gap-4 text-sm text-slate-700">
+          <div class="rounded-3xl bg-slate-50 p-4">
+            <p class="text-xs uppercase tracking-[0.2em] text-slate-500">Head of Department</p>
+            <p class="mt-2 font-semibold">{% if department and department.head_of_department %}{{ department.head_of_department.user.get_full_name }}{% else %}{{ request.user.get_full_name }}{% endif %}</p>
           </div>
-          <div class="grid grid-cols-2 gap-4 text-sm text-slate-700">
-            <div class="rounded-3xl bg-slate-50 p-4">
-              <p class="text-xs uppercase tracking-[0.2em] text-slate-500">Head of Department</p>
-              <p class="mt-2 font-semibold">{% if department and department.head_of_department %}{{ department.head_of_department.user.get_full_name }}{% else %}{{ request.user.get_full_name }}{% endif %}</p>
-            </div>
-            <div class="rounded-3xl bg-slate-50 p-4">
-              <p class="text-xs uppercase tracking-[0.2em] text-slate-500">Active subjects</p>
-              <p class="mt-2 font-semibold">{{ total_subjects }}</p>
-            </div>
+          <div class="rounded-3xl bg-slate-50 p-4">
+            <p class="text-xs uppercase tracking-[0.2em] text-slate-500">Active subjects</p>
+            <p class="mt-2 font-semibold">{{ total_subjects }}</p>
           </div>
         </div>
-      </div>
+        </div>
     </div>
-
-    <div class="space-y-6">
-      <div class="rounded-[1.5rem] bg-white p-6 shadow-lg border border-slate-200">
+    <div class="space-y-6 dashboard-panel">
+      <div class="rounded-[1.5rem] bg-white p-5 shadow-lg border border-slate-200">
         <div class="flex flex-col gap-4">
           <div class="flex items-center gap-3 pb-4 border-b border-slate-200">
             <div class="w-12 h-12 rounded-full bg-secondary-container/20 flex items-center justify-center text-lg">👤</div>
