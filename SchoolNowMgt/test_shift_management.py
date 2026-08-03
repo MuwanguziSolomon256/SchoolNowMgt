@@ -221,6 +221,23 @@ class ShiftAPIEndpointTests(TestCase):
         self.assertTrue(data['success'])
         self.assertIn('time_out', data)
         self.assertIn('total_hours_worked', data)
+
+    def test_clock_in_after_clock_out_same_day(self):
+        """Test that a new shift can be started after a prior clock-out on the same day."""
+        self.client.post('/teacher/api/shift/clock-in/')
+        self.client.post('/teacher/api/shift/clock-out/')
+
+        response = self.client.post('/teacher/api/shift/clock-in/')
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertTrue(data['success'])
+        attendance = TeacherAttendance.objects.get(
+            staff=self.staff,
+            date=timezone.now().date()
+        )
+        self.assertIsNotNone(attendance.time_in)
+        self.assertIsNone(attendance.time_out)
     
     def test_clock_out_without_clock_in(self):
         """Test that clock out without clock in fails."""

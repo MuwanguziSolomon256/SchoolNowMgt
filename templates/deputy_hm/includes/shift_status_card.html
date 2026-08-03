@@ -1,33 +1,29 @@
 {% load static %}
 
 <div class="px-container-padding pb-6">
-    <div class="rounded-[2rem] bg-primary px-5 py-6 md:px-8 md:py-7 shadow-[0_24px_48px_rgba(8,11,58,0.18)] border border-white/10 w-full">
-        <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-5">
-            <div class="flex items-start gap-4">
-                <div class="w-16 h-16 rounded-[1.5rem] bg-secondary-container/10 flex items-center justify-center text-secondary-container">
-                    <span class="material-symbols-outlined text-3xl">schedule</span>
+    <div id="shiftCard" class="rounded-[2rem] bg-[#060a3a] px-6 py-6 md:px-8 md:py-7 shadow-[0_24px_80px_-40px_rgba(8,11,58,0.5)] border border-white/10 w-full">
+        <div class="flex flex-col md:flex-row items-center justify-between gap-5">
+            <div class="flex items-center gap-3 min-w-0">
+                <div class="flex h-16 w-16 items-center justify-center rounded-[1.75rem] bg-[#050729] shadow-xl shadow-black/30">
+                    <span class="material-symbols-outlined text-3xl text-[#FFC300]">schedule</span>
                 </div>
-                <div>
-                    <p class="text-[10px] tracking-[0.3em] uppercase text-secondary-container/80 mb-3">Shift status</p>
-                    {% if is_on_duty %}
-                        <h2 class="text-3xl md:text-4xl font-black text-white leading-tight">Active since {{ shift_start_time|time:"h:i A" }}</h2>
-                    {% else %}
-                        <h2 class="text-3xl md:text-4xl font-black text-white leading-tight">Off Duty</h2>
-                    {% endif %}
-                    <div class="mt-3 flex flex-wrap items-center gap-2 text-sm text-white/70">
-                        <span class="inline-flex h-2.5 w-2.5 rounded-full bg-rose-500"></span>
-                        <span class="uppercase tracking-[0.18em] font-semibold">{% if is_on_duty %}On Duty{% else %}Off Duty{% endif %} - {{ today|date:"l" }}</span>
+                <div class="min-w-0">
+                    <p class="text-xs uppercase tracking-[0.32em] text-slate-400 mb-2">Shift Status</p>
+                    <h2 id="shiftStatusText" class="text-2xl md:text-3xl font-black text-white leading-tight truncate">{% if is_on_duty %}Active since {{ shift_start_time|time:"h:i A" }}{% else %}Not on Duty{% endif %}</h2>
+                    <div class="mt-3 flex items-center gap-3 text-sm text-slate-300">
+                        <span id="shiftStatusDot" class="inline-flex h-2.5 w-2.5 rounded-full {% if is_on_duty %}bg-emerald-400{% else %}bg-rose-500{% endif %}"></span>
+                        <span id="shiftStatusSubtitle" class="uppercase tracking-[0.18em] font-semibold text-slate-200">{% if is_on_duty %}ON DUTY{% else %}OFF DUTY{% endif %} - {{ today|date:"l" }}</span>
                     </div>
                 </div>
             </div>
-            <div class="flex flex-wrap gap-3">
-                <button type="button" class="inline-flex items-center gap-2 rounded-full bg-[#FFC300] text-primary font-semibold px-5 py-3 shadow-[0_12px_24px_rgba(255,195,0,0.22)] hover:bg-[#ffb600] transition"> 
-                    <span class="material-symbols-outlined text-lg">login</span>
-                    Clock In
+            <div class="flex flex-wrap items-center gap-3 mt-4 md:mt-0 justify-end">
+                <button id="clockInOutBtn" type="button" data-action="{% if is_on_duty %}clock-out{% else %}clock-in{% endif %}" class="inline-flex items-center gap-2 rounded-full bg-[#FFC300] px-6 py-3 text-sm font-semibold text-[#080b3a] transition hover:bg-[#ffb600] shadow-lg shadow-[#ffb600]/20">
+                    <span class="material-symbols-outlined">{% if is_on_duty %}logout{% else %}login{% endif %}</span>
+                    <span>{% if is_on_duty %}Clock Out{% else %}Clock In{% endif %}</span>
                 </button>
-                <button type="button" class="inline-flex items-center gap-2 rounded-full bg-white text-primary font-semibold px-5 py-3 shadow-[0_8px_16px_rgba(255,255,255,0.28)] hover:bg-slate-100 transition">
-                    <span class="material-symbols-outlined text-lg">free_breakfast</span>
-                    Break
+                <button id="breakBtn" type="button" data-action="{% if is_on_break %}break-end{% else %}break-start{% endif %}" {% if not is_on_duty %}disabled{% endif %} class="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-[#080b3a] transition hover:bg-slate-100 shadow-lg shadow-black/10 {% if is_on_break %}break-active{% endif %}">
+                    <span class="material-symbols-outlined">{% if is_on_break %}stop_circle{% else %}coffee{% endif %}</span>
+                    <span>{% if is_on_break %}End Break{% else %}Break{% endif %}</span>
                 </button>
             </div>
         </div>

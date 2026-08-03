@@ -24,12 +24,9 @@
   box-sizing:border-box;
   min-height:72px;
   padding:0 24px;
-  display:flex;
   align-items:center;
   gap:18px;
   z-index:60;
-  border-bottom-left-radius:18px;
-  border-bottom-right-radius:18px;
 }
 .snm-navbar .snm-brand-icon{ display:none; } /* brand icon replaced in template with teacher-style filled icon */
 .snm-navbar .brand{
@@ -80,7 +77,7 @@ nav.snm-navbar a.active .material-symbols-outlined, nav.snm-navbar a[aria-curren
 }
 
 /* Mobile navbar panel and menu */
-.snm-navbar-mobile{ background: linear-gradient(180deg,var(--nav-start) 0%, var(--nav-end) 100%); color:var(--nav-text); box-shadow: 0 8px 28px rgba(11,21,51,0.18); position:fixed; top:0; left:0; right:0; z-index:70; display:flex; align-items:center; justify-content:space-between; padding:10px 16px; }
+.snm-navbar-mobile{ background: linear-gradient(180deg,var(--nav-start) 0%, var(--nav-end) 100%); color:var(--nav-text); box-shadow: 0 8px 28px rgba(11,21,51,0.18); position:fixed; top:0; left:0; right:0; z-index:70; align-items:center; justify-content:space-between; padding:10px 16px; }
 .snm-mobile-toggle{ background:transparent; border:1px solid rgba(255,255,255,0.06); padding:8px; border-radius:10px; color:var(--nav-text); }
 .snm-mobile-menu{ position:absolute; left:0; right:0; top:64px; background: linear-gradient(180deg,var(--nav-start) 0%, var(--nav-end) 100%); padding:12px 12px; display:flex; flex-direction:column; gap:8px; transform-origin: top center; transform: translateY(-8px) scaleY(0.98); opacity:0; pointer-events:none; transition: all 180ms ease-in-out; }
 .snm-mobile-menu.open{ transform: translateY(0) scaleY(1); opacity:1; pointer-events:auto; }

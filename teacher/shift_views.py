@@ -94,25 +94,24 @@ def clock_in(request):
     if error:
         return error
     
-    # Validate: prevent double clock-in
+    # Validate: prevent double clock-in while a shift is already active
     if attendance.time_in is not None and attendance.time_out is None:
         return JsonResponse({
             'success': False,
             'error': 'Already clocked in. Please clock out first.',
         }, status=400)
     
-    # If clocked out today, don't allow clock in again (same shift day)
-    if attendance.time_out is not None:
-        return JsonResponse({
-            'success': False,
-            'error': 'Already clocked out today. New shift can only start tomorrow.',
-        }, status=400)
-    
     try:
         with transaction.atomic():
-            # Set clock-in time - using the correct local timezone
+            # Reset any previous completed shift for the same day so a fresh shift can start.
             current_time = get_current_time_in_timezone()
+            if attendance.time_in is not None and attendance.time_out is not None:
+                BreakSession.objects.filter(teacher_attendance=attendance).delete()
+                attendance.break_count = 0
+                attendance.total_break_duration = 0
+
             attendance.time_in = current_time
+            attendance.time_out = None
             attendance.status = 'present'
             attendance.synced = False  # Mark for offline sync
             attendance.save()

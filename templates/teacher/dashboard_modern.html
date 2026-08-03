@@ -128,7 +128,7 @@
         .activity-dot-info { background-color: #777680; }
     </style>
 </head>
-<body class="font-body-md text-on-surface min-h-screen">
+<body class="font-body-md text-on-surface min-h-screen {% if is_on_duty %}on-duty{% endif %}">
 
 <!-- Teacher Navigation Bar (Fixed Top) -->
 <nav class="fixed top-0 left-0 right-0 bg-primary text-on-primary px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between z-50 shadow-lg gap-2 sm:gap-4">
@@ -872,6 +872,21 @@ function showNotification(message, type = 'info') {
 // SHIFT MANAGEMENT HANDLERS
 // ============================================================================
 
+function updateClockButtonState(isOnDuty) {
+    const clockBtn = document.getElementById('clockInOutBtn');
+    if (!clockBtn) return;
+
+    if (isOnDuty) {
+        document.body.classList.add('on-duty');
+        clockBtn.dataset.action = 'clock-out';
+        clockBtn.innerHTML = '<span class="material-symbols-outlined text-lg md:text-base">logout</span><span class="hidden sm:inline">Clock Out</span><span class="sm:hidden">Out</span>';
+    } else {
+        document.body.classList.remove('on-duty');
+        clockBtn.dataset.action = 'clock-in';
+        clockBtn.innerHTML = '<span class="material-symbols-outlined text-lg md:text-base">login</span><span class="hidden sm:inline">Clock In</span><span class="sm:hidden">In</span>';
+    }
+}
+
 /**
  * Handle clock in/out button click
  */
@@ -900,10 +915,8 @@ async function handleClockInOut(event) {
         
         if (data.success) {
             showNotification(data.message, 'success');
-            // Refresh page to update shift status
-            setTimeout(() => {
-                window.location.reload();
-            }, 1000);
+            updateClockButtonState(!isOnDuty);
+            await refreshShiftStatus();
         } else {
             showNotification(data.error || 'Operation failed', 'error');
             btn.disabled = false;
@@ -1010,6 +1023,8 @@ async function refreshShiftStatus() {
             } else {
                 document.body.classList.remove('on-duty');
             }
+
+            updateClockButtonState(data.is_on_duty);
             
             // Update elapsed time display
             if (data.is_on_duty && data.shift_elapsed_minutes !== undefined) {

@@ -25,7 +25,7 @@ from django.db import transaction
 
 from SchoolNowMgt.models import (
     StaffProfile, CustomUser, School, Department, ActivityLog,
-    StudentAttendance, StaffAttendance, TeacherAttendance
+    StudentAttendance, StaffAttendance, TeacherAttendance, BreakSession
 )
 from SchoolNowMgt.decorators import require_deputy_hm, get_user_school
 from user_profile.forms import TeacherProfileForm
@@ -147,6 +147,11 @@ def deputy_hm_dashboard(request):
             defaults={'status': 'absent'}
         )
         is_on_duty = teacher_attendance_today.status == 'present' and teacher_attendance_today.time_out is None
+        active_break = BreakSession.objects.filter(
+            teacher_attendance=teacher_attendance_today,
+            break_out_time__isnull=True
+        ).first()
+        is_on_break = bool(active_break)
         # Determine shift start time
         if teacher_attendance_today.time_in:
             naive_dt = datetime.combine(today, teacher_attendance_today.time_in)
@@ -159,6 +164,7 @@ def deputy_hm_dashboard(request):
             'today': today,
             'current_time': current_time,
             'is_on_duty': is_on_duty,
+            'is_on_break': is_on_break,
             'shift_start_time': shift_start_time,
             'teacher_attendance_today': teacher_attendance_today,
         })

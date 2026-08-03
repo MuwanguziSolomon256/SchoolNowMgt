@@ -27,54 +27,31 @@ function showNotification(message, type = 'info') {
     }, 3000);
 }
 
-async function handleClockInOut(event) {
+async function handleShiftAction(event) {
     event.preventDefault();
     const btn = event.target.closest('button');
     if (!btn) return;
-    btn.disabled = true;
-    const originalText = btn.innerHTML;
-    btn.innerHTML = '<span class="material-symbols-outlined animate-spin">hourglass_empty</span><span class="hidden sm:inline">Processing...</span>';
-    try {
-        const isOnDuty = document.body.classList.contains('on-duty');
-        const endpoint = isOnDuty ? '/teacher/api/shift/clock-out/' : '/teacher/api/shift/clock-in/';
-        const response = await fetch(endpoint, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken'),
-                'Content-Type': 'application/json'
-            }
-        });
-        const data = await response.json();
-        if (data.success) {
-            showNotification(data.message, 'success');
-            setTimeout(() => { window.location.reload(); }, 800);
-        } else {
-            showNotification(data.error || 'Operation failed', 'error');
-            btn.disabled = false;
-            btn.innerHTML = originalText;
-        }
-    } catch (error) {
-        console.error('Error:', error);
-        showNotification('An error occurred', 'error');
-        btn.disabled = false;
-        btn.innerHTML = originalText;
-    }
-}
 
-async function handleBreakButton(event) {
-    event.preventDefault();
-    const btn = event.target.closest('button');
-    if (!btn) return;
-    if (!document.body.classList.contains('on-duty')) {
-        showNotification('Please clock in first', 'error');
-        return;
-    }
+    const action = btn.dataset.action;
+    if (!action) return;
+
+    const endpoint = action === 'clock-in'
+        ? '/teacher/api/shift/clock-in/'
+        : action === 'clock-out'
+            ? '/teacher/api/shift/clock-out/'
+            : action === 'break-start'
+                ? '/teacher/api/shift/break-start/'
+                : action === 'break-end'
+                    ? '/teacher/api/shift/break-end/'
+                    : null;
+
+    if (!endpoint) return;
+
     btn.disabled = true;
-    const originalText = btn.innerHTML;
-    btn.innerHTML = '<span class="material-symbols-outlined animate-spin">hourglass_empty</span>';
+    const originalHtml = btn.innerHTML;
+    btn.innerHTML = '<span class="material-symbols-outlined animate-spin">hourglass_empty</span><span class="hidden sm:inline">Processing...</span>';
+
     try {
-        const isOnBreak = btn.classList.contains('break-active');
-        const endpoint = isOnBreak ? '/teacher/api/shift/break-end/' : '/teacher/api/shift/break-start/';
         const response = await fetch(endpoint, {
             method: 'POST',
             headers: {
@@ -85,26 +62,30 @@ async function handleBreakButton(event) {
         const data = await response.json();
         if (data.success) {
             showNotification(data.message, 'success');
-            if (isOnBreak) {
-                btn.classList.remove('break-active');
-                btn.innerHTML = '<span class="material-symbols-outlined text-lg md:text-base">coffee</span><span class="hidden sm:inline">Break</span>';
-            } else {
-                btn.classList.add('break-active');
-                btn.innerHTML = '<span class="material-symbols-outlined text-lg md:text-base">stop_circle</span><span class="hidden sm:inline">End Break</span>';
-            }
             await refreshShiftStatus();
         } else {
             showNotification(data.error || 'Operation failed', 'error');
             btn.disabled = false;
-            btn.innerHTML = originalText;
+            btn.innerHTML = originalHtml;
         }
     } catch (error) {
         console.error('Error:', error);
         showNotification('An error occurred', 'error');
         btn.disabled = false;
-        btn.innerHTML = originalText;
+        btn.innerHTML = originalHtml;
     }
-    btn.disabled = false;
+}
+
+function attachShiftHandlers() {
+    const clockBtn = document.getElementById('clockInOutBtn');
+    const breakBtn = document.getElementById('breakBtn');
+
+    if (clockBtn) {
+        clockBtn.addEventListener('click', handleShiftAction);
+    }
+    if (breakBtn) {
+        breakBtn.addEventListener('click', handleShiftAction);
+    }
 }
 
 function getInitialDutyStatus() {
@@ -159,12 +140,15 @@ async function refreshShiftStatus() {
             }
 
             if (clockBtn) {
+                clockBtn.dataset.action = data.is_on_duty ? 'clock-out' : 'clock-in';
                 clockBtn.innerHTML = data.is_on_duty
-                    ? '<span class="material-symbols-outlined text-base">logout</span><span>Clock Out</span>'
-                    : '<span class="material-symbols-outlined text-base">login</span><span>Clock In</span>';
+                    ? '<span class="material-symbols-outlined">logout</span><span>Clock Out</span>'
+                    : '<span class="material-symbols-outlined">login</span><span>Clock In</span>';
             }
 
             if (breakBtn) {
+                breakBtn.disabled = !data.is_on_duty;
+                breakBtn.dataset.action = data.is_on_break ? 'break-end' : 'break-start';
                 if (data.is_on_break) {
                     breakBtn.classList.add('break-active', 'bg-orange-500', 'text-white');
                     breakBtn.innerHTML = '<span class="material-symbols-outlined">stop_circle</span><span class="hidden sm:inline">End Break</span>';
@@ -185,18 +169,6 @@ async function initShiftStatusTimer() {
     }
     refreshShiftStatus();
     setInterval(refreshShiftStatus, 30000);
-}
-
-function attachShiftHandlers() {
-    const clockBtn = document.getElementById('clockInOutBtn');
-    const breakBtn = document.getElementById('breakBtn');
-
-    if (clockBtn) {
-        clockBtn.addEventListener('click', handleClockInOut);
-    }
-    if (breakBtn) {
-        breakBtn.addEventListener('click', handleBreakButton);
-    }
 }
 
 document.addEventListener('DOMContentLoaded', function() {

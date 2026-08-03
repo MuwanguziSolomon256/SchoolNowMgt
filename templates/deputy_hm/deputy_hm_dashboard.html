@@ -53,15 +53,21 @@
     }
   </style>
 </head>
-<body class="bg-background text-on-surface font-body-md ethos-gradient min-h-screen overflow-x-hidden">
+<body class="bg-background text-on-surface font-body-md ethos-gradient min-h-screen overflow-x-hidden {% if is_on_duty %}on-duty{% endif %}">
   {% include 'deputy_hm/includes/top_navbar.html' with active_nav='dashboard' %}
 
   <div class="pt-0">
-    {% include 'deputy_hm/includes/greeting_section.html' %}
-    {% include 'deputy_hm/includes/shift_status_card.html' %}
+    <div class="mx-auto max-w-[1440px] px-8 md:px-container-padding pt-8 pb-4">
+      <div class="mx-auto w-full max-w-[1080px]">
+        {% include 'deputy_hm/includes/greeting_section.html' %}
+      </div>
+    </div>
+    <div class="mx-auto max-w-[1440px] px-8 md:px-container-padding pb-8">
+      {% include 'deputy_hm/includes/shift_status_card.html' %}
+    </div>
   </div>
 
-  <main class="pt-6 px-8 pb-12 max-w-[1440px] mx-auto">
+  <main class="pt-6 px-8 pb-12 max-w-[1440px] mx-auto" data-is-on-duty="{{ is_on_duty|yesno:'true,false' }}">
     <div class="flex justify-between items-end mb-8">
       <div>
         <h1 class="font-display-md text-xl md:text-3xl text-primary font-black mb-1">Dashboard</h1>
