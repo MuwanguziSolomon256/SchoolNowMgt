@@ -1,263 +1,119 @@
-{% extends "teacher/base.html" %}
+{% extends "SchoolNowMgt/base_ethos.html" %}
 {% load static %}
 
-{% block title %}My Profile - Support Staff{% endblock %}
+{% block title %}Edit Profile{% endblock %}
 
 {% block content %}
-<div class="support-staff-profile">
-    <div class="page-header">
-        <h1>My Profile</h1>
-    </div>
+<div class="profile-shell">
+    {% include 'includes/support_staff_shift_supervisor_navbar.html' %}
 
-    <!-- Profile Information -->
-    <div class="profile-section">
-        <h2>Personal Information</h2>
-        <div class="profile-card">
-            <div class="profile-item">
-                <label>Full Name</label>
-                <p>{{ staff_profile.user.get_full_name }}</p>
-            </div>
-            
-            <div class="profile-item">
-                <label>Username</label>
-                <p>{{ staff_profile.user.username }}</p>
-            </div>
-            
-            <div class="profile-item">
-                <label>Email</label>
-                <p>{{ staff_profile.user.email }}</p>
-            </div>
-            
-            <div class="profile-item">
-                <label>Role</label>
-                <p>{{ staff_profile.get_support_staff_role_display }}</p>
-            </div>
+    <main class="profile-main">
+        <h1 class="page-heading">Edit Profile</h1>
+        <p class="page-subtitle">Update your personal information and profile picture.</p>
+
+        {% if messages %}
+        <div class="success-banner">
+            <span class="material-symbols-outlined">check_circle</span>
+            <span>Welcome My! Your account has been created.</span>
         </div>
-    </div>
+        {% endif %}
 
-    <!-- Department Information -->
-    {% if staff_profile.support_department %}
-    <div class="department-section">
-        <h2>Department Assignment</h2>
-        <div class="dept-card">
-            <div class="dept-item">
-                <label>Department</label>
-                <p>{{ staff_profile.support_department.name }}</p>
-            </div>
-            
-            <div class="dept-item">
-                <label>Department Type</label>
-                <p>{{ staff_profile.support_department.get_department_type_display }}</p>
-            </div>
-            
-            <div class="dept-item">
-                <label>Department Head</label>
-                <p>
-                    {% if staff_profile.support_department.head_of_department %}
-                    {{ staff_profile.support_department.head_of_department.user.get_full_name }}
-                    {% else %}
-                    Not assigned
-                    {% endif %}
-                </p>
-            </div>
-            
-            <div class="dept-item">
-                <label>Status</label>
-                <p>
-                    {% if staff_profile.support_department.is_active %}
-                    <span class="badge badge-active">Active</span>
-                    {% else %}
-                    <span class="badge badge-inactive">Inactive</span>
-                    {% endif %}
-                </p>
-            </div>
-        </div>
-    </div>
-    {% endif %}
+        <section class="profile-panel">
+            <h2 class="profile-panel-title">My Profile</h2>
 
-    <!-- Account Status -->
-    <div class="account-section">
-        <h2>Account Status</h2>
-        <div class="account-card">
-            <div class="account-item">
-                <label>Account Status</label>
-                <p>
-                    {% if staff_profile.user.is_active %}
-                    <span class="badge badge-active">Active</span>
-                    {% else %}
-                    <span class="badge badge-inactive">Inactive</span>
-                    {% endif %}
-                </p>
-            </div>
-            
-            <div class="account-item">
-                <label>Member Since</label>
-                <p>{{ staff_profile.user.date_joined|date:"M d, Y" }}</p>
-            </div>
-            
-            <div class="account-item">
-                <label>Last Login</label>
-                <p>{{ staff_profile.user.last_login|default:"Never" }}</p>
-            </div>
-        </div>
-    </div>
+            <form method="post" enctype="multipart/form-data" class="profile-form">
+                {% csrf_token %}
 
-    <!-- Quick Links -->
-    <div class="quick-links">
-        <h2>Quick Links</h2>
-        <div class="links-grid">
-            <a href="{% url 'password_reset' %}" class="link-card">
-                <div class="link-icon">🔐</div>
-                <div class="link-content">
-                    <h3>Change Password</h3>
-                    <p>Update your account password</p>
+                <div class="picture-section">
+                    <h3>Change Profile Picture</h3>
+
+                    <div class="upload-row">
+                        <div class="avatar-preview">
+                            {% if request.user.profile_picture %}
+                                <img src="{{ request.user.profile_picture.url }}" alt="Profile picture" />
+                            {% else %}
+                                <span class="material-symbols-outlined">person</span>
+                            {% endif %}
+                        </div>
+
+                        <div class="file-picker-wrap">
+                            <label for="id_profile_picture" class="file-button">
+                                <span class="material-symbols-outlined">upload_file</span>
+                                <span>Choose File</span>
+                            </label>
+                            {{ profile_form.profile_picture }}
+                            <span class="file-name">No file chosen</span>
+                        </div>
+                    </div>
                 </div>
-            </a>
-            
-            <a href="#" class="link-card">
-                <div class="link-icon">📞</div>
-                <div class="link-content">
-                    <h3>Update Contact Info</h3>
-                    <p>Update phone and address</p>
+
+                <div class="field-grid">
+                    <div class="field-group">
+                        <label for="id_first_name">First Name</label>
+                        {{ profile_form.first_name }}
+                    </div>
+                    <div class="field-group">
+                        <label for="id_last_name">Last Name</label>
+                        {{ profile_form.last_name }}
+                    </div>
                 </div>
-            </a>
-            
-            <a href="#" class="link-card">
-                <div class="link-icon">📋</div>
-                <div class="link-content">
-                    <h3>View My Activities</h3>
-                    <p>See your recent activities</p>
+
+                <div class="field-group full-width">
+                    <label for="id_email">Email Address</label>
+                    <input type="email" id="id_email" name="email" value="{{ request.user.email|default:'' }}" class="text-input" />
                 </div>
-            </a>
-        </div>
-    </div>
+
+                <div class="field-group full-width">
+                    <label for="id_phone">Phone Number</label>
+                    {{ profile_form.phone }}
+                </div>
+
+                <div class="form-actions">
+                    <a href="{% url 'teacher:support_staff:shift_supervisor_dashboard' %}" class="cancel-btn">
+                        <span class="material-symbols-outlined">close</span>
+                        <span>Cancel</span>
+                    </a>
+                    <button type="submit" class="save-btn">
+                        <span class="material-symbols-outlined">save</span>
+                        <span>Save Changes</span>
+                    </button>
+                </div>
+            </form>
+        </section>
+    </main>
 </div>
 
 <style>
-.support-staff-profile {
-    padding: 20px;
-    max-width: 1000px;
-    margin: 0 auto;
-}
-
-.page-header {
-    margin-bottom: 30px;
-}
-
-.page-header h1 {
-    margin: 0;
-    font-size: 28px;
-}
-
-.profile-section,
-.department-section,
-.account-section,
-.quick-links {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    margin-bottom: 20px;
-}
-
-.profile-section h2,
-.department-section h2,
-.account-section h2,
-.quick-links h2 {
-    margin-top: 0;
-    font-size: 18px;
-}
-
-.profile-card,
-.dept-card,
-.account-card {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 20px;
-}
-
-.profile-item,
-.dept-item,
-.account-item {
-    display: flex;
-    flex-direction: column;
-}
-
-.profile-item label,
-.dept-item label,
-.account-item label {
-    font-weight: 600;
-    font-size: 12px;
-    color: #666;
-    margin-bottom: 8px;
-}
-
-.profile-item p,
-.dept-item p,
-.account-item p {
-    margin: 0;
-    font-size: 14px;
-    color: #333;
-}
-
-.badge {
-    display: inline-block;
-    padding: 4px 12px;
-    border-radius: 4px;
-    font-size: 12px;
-    font-weight: 600;
-    width: fit-content;
-}
-
-.badge-active {
-    background: #d4edda;
-    color: #155724;
-}
-
-.badge-inactive {
-    background: #f8d7da;
-    color: #721c24;
-}
-
-.links-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 15px;
-}
-
-.link-card {
-    display: flex;
-    align-items: flex-start;
-    gap: 15px;
-    padding: 15px;
-    border: 1px solid #eee;
-    border-radius: 6px;
-    text-decoration: none;
-    color: #333;
-    transition: all 0.3s ease;
-}
-
-.link-card:hover {
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    transform: translateY(-2px);
-    border-color: #007bff;
-}
-
-.link-icon {
-    font-size: 28px;
-    flex-shrink: 0;
-}
-
-.link-content h3 {
-    margin: 0 0 5px 0;
-    font-size: 14px;
-    color: #333;
-}
-
-.link-content p {
-    margin: 0;
-    font-size: 12px;
-    color: #666;
-}
+    .profile-shell { background: #f4f3ef; min-height: 100vh; color: #0a113d; font-family: "Inter", sans-serif; padding: 20px; }
+    .profile-main { max-width: 1600px; margin: 24px auto 0; padding: 36px 28px 32px; }
+    .page-heading { margin: 0; font-size: clamp(2.3rem, 4vw, 4rem); letter-spacing: -0.07em; font-weight: 800; color: #0a113d; }
+    .page-subtitle { margin-top: 10px; font-size: 1.08rem; color: rgba(10,17,61,0.7); }
+    .success-banner { margin-top: 26px; background: rgba(255,255,255,0.7); border: 1px solid rgba(10,17,61,0.1); border-radius: 18px; padding: 20px 22px; display: flex; align-items: center; gap: 12px; color: #1a4d3b; font-size: 1.1rem; font-weight: 600; }
+    .success-banner .material-symbols-outlined { color: #1c9d64; }
+    .profile-panel { margin-top: 28px; background: rgba(255,255,255,0.66); border: 1px solid rgba(10,17,61,0.08); border-radius: 22px; padding: 28px 30px 22px; box-shadow: 0 18px 32px rgba(10,17,61,0.04); }
+    .profile-panel-title { margin: 0 0 22px; font-size: clamp(1.6rem, 2vw, 2.5rem); color: #0a113d; font-weight: 800; letter-spacing: -0.04em; }
+    .picture-section { margin-bottom: 28px; }
+    .picture-section h3 { margin: 0 0 18px; font-size: 1.2rem; color: #0a113d; font-weight: 700; }
+    .upload-row { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+    .avatar-preview { width: 110px; height: 110px; border-radius: 18px; background: #f3e7b6; border: 2px solid rgba(10,17,61,0.12); display: flex; align-items: center; justify-content: center; overflow: hidden; color: #1d214a; }
+    .avatar-preview img { width: 100%; height: 100%; object-fit: cover; }
+    .avatar-preview .material-symbols-outlined { font-size: 48px; }
+    .file-picker-wrap { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+    .file-picker-wrap input[type="file"] { display: none; }
+    .file-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 14px 18px; background: #0a113d; color: #fff; border-radius: 12px; font-weight: 700; cursor: pointer; }
+    .file-name { color: rgba(10,17,61,0.58); font-size: 0.95rem; }
+    .profile-form { display: block; }
+    .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .field-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px; }
+    .field-group.full-width { max-width: 100%; }
+    .field-group label { font-size: 1.05rem; font-weight: 700; color: #0a113d; }
+    .text-input, .field-group input, .field-group textarea, .field-group select { width: 100%; background: rgba(255,255,255,0.7); border: 1px solid rgba(10,17,61,0.2); border-radius: 14px; padding: 16px 18px; font-size: 1rem; color: #0a113d; outline: none; box-sizing: border-box; }
+    .field-group input:focus, .field-group textarea:focus, .field-group select:focus { border-color: rgba(10,17,61,0.35); box-shadow: 0 0 0 3px rgba(10,17,61,0.06); }
+    .form-actions { margin-top: 20px; display: flex; justify-content: flex-end; gap: 18px; }
+    .cancel-btn, .save-btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; border-radius: 14px; padding: 16px 22px; font-size: 1.05rem; font-weight: 700; text-decoration: none; border: none; cursor: pointer; transition: transform 0.2s ease; }
+    .cancel-btn { background: #fff; color: #0a113d; border: 1px solid rgba(10,17,61,0.12); }
+    .save-btn { background: #0a113d; color: #fff; box-shadow: 0 12px 22px rgba(10,17,61,0.2); }
+    .cancel-btn:hover, .save-btn:hover { transform: translateY(-2px); }
+    @media (max-width: 840px) { .field-grid { grid-template-columns: 1fr; } .top-bar { flex-wrap: wrap; } .page-nav { width: 100%; margin-left: 0; } .profile-panel { padding: 22px 18px; } }
 </style>
 {% endblock %}

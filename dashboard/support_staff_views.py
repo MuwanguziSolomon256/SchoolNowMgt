@@ -20,7 +20,8 @@ from django.db.models import Q, Count, Avg, Sum
 from django.utils import timezone
 from django.core.paginator import Paginator
 from django.db import transaction
-from django.views.decorators.http import require_http_methods
+from django.views.decorators.http import require_http_methods, require_POST, require_GET
+from django.http import JsonResponse
 
 from SchoolNowMgt.models import (
     StaffProfile, CustomUser, School, Department, ActivityLog,
@@ -29,6 +30,7 @@ from SchoolNowMgt.models import (
 from SchoolNowMgt.decorators import (
     require_support_staff_role, require_shift_supervisor, get_user_school
 )
+from user_profile.forms import SupportStaffProfileForm
 
 
 @require_support_staff_role(['staff', 'supervisor', 'shift_supervisor', 'department_head', 'welfare_coordinator'])
@@ -384,7 +386,12 @@ def shift_supervisor_dashboard(request):
         valid_count = 0
         for record in clocked_out_records:
             if record.time_in and record.time_out:
-                total_seconds += (record.time_out - record.time_in).total_seconds()
+                # Convert TimeField to datetime on the attendance date to allow subtraction
+                time_in_dt = datetime.combine(record.date, record.time_in)
+                time_out_dt = datetime.combine(record.date, record.time_out)
+                if time_out_dt < time_in_dt:
+                    time_out_dt += timedelta(days=1)
+                total_seconds += (time_out_dt - time_in_dt).total_seconds()
                 valid_count += 1
         if valid_count:
             avg_tat = max(1, int(total_seconds / valid_count / 3600))
@@ -394,6 +401,36 @@ def shift_supervisor_dashboard(request):
         'open_tasks': absent,
         'avg_tat': f"{avg_tat}h",
     }
+
+    # Greeting and current shift status for supervisor
+    current_time = timezone.localtime()
+    hour = current_time.hour
+    if hour < 12:
+        greeting_prefix = 'Good Morning'
+    elif hour < 18:
+        greeting_prefix = 'Good Afternoon'
+    else:
+        greeting_prefix = 'Good Evening'
+
+    greeting_name = request.user.first_name or request.user.get_full_name() or request.user.username
+    greeting_text = f"{greeting_prefix}, {greeting_name}!"
+    greeting_subtitle = current_time.strftime('%A, %B %d, %Y • %I:%M %p')
+
+    supervisor_attendance = StaffAttendance.objects.filter(
+        staff__user=request.user,
+        date=today
+    ).order_by('-created_at').first()
+
+    if supervisor_attendance and supervisor_attendance.time_in and supervisor_attendance.time_out is None:
+        shift_status_title = f"Active since {supervisor_attendance.time_in.strftime('%I:%M %p')}"
+        shift_status_label = 'ON DUTY'
+        shift_status_summary = today.strftime('%A')
+        shift_status_dot = 'bg-green-400'
+    else:
+        shift_status_title = 'Off duty'
+        shift_status_label = 'OFF DUTY'
+        shift_status_summary = today.strftime('%A')
+        shift_status_dot = 'bg-red-400'
 
     week_summary = []
     week_records = list(week_attendance)
@@ -421,6 +458,14 @@ def shift_supervisor_dashboard(request):
         'maintenance_alerts': maintenance_alerts,
         'supply_requests': supply_requests,
         'task_completion': task_completion,
+        'greeting_text': greeting_text,
+        'greeting_name': greeting_name,
+        'greeting_prefix': greeting_prefix,
+        'greeting_subtitle': greeting_subtitle,
+        'shift_status_title': shift_status_title,
+        'shift_status_label': shift_status_label,
+        'shift_status_summary': shift_status_summary,
+        'shift_status_dot': shift_status_dot,
         'section': 'shift_supervisor_dashboard',
         'user': request.user,
     }
@@ -678,6 +723,121 @@ def shift_attendance_list(request):
     return render(request, 'support_staff/shift_attendance_list.html', context)
 
 
+# -------------------------
+# Shift API for support staff
+# -------------------------
+
+
+def _get_current_time():
+    from django.utils import timezone as _tz
+    from django.utils.timezone import localtime as _localtime
+    return _localtime(_tz.now()).time()
+
+
+def _get_staff_profile_for_api(user):
+    try:
+        return StaffProfile.objects.get(user=user, user__role='non_teaching_staff')
+    except StaffProfile.DoesNotExist:
+        return None
+
+
+@require_POST
+@require_support_staff_role(['staff','supervisor','shift_supervisor'])
+def api_clock_in(request):
+    staff_profile = _get_staff_profile_for_api(request.user)
+    if not staff_profile:
+        return JsonResponse({'success': False, 'error': 'Staff profile not found'}, status=400)
+
+    today = timezone.now().date()
+    attendance, created = StaffAttendance.objects.get_or_create(
+        staff=staff_profile,
+        date=today,
+        defaults={'status': 'present'}
+    )
+
+    if attendance.time_in is not None and attendance.time_out is None:
+        return JsonResponse({'success': False, 'error': 'Already clocked in'}, status=400)
+
+    try:
+        current_time = _get_current_time()
+        attendance.time_in = current_time
+        attendance.time_out = None
+        attendance.status = 'present'
+        attendance.synced = False
+        attendance.save()
+        return JsonResponse({'success': True, 'message': f'Clocked in at {current_time.strftime("%H:%M")}', 'time_in': current_time.strftime('%H:%M'), 'shift_id': attendance.id})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': f'Failed to clock in: {str(e)}'}, status=500)
+
+
+@require_POST
+@require_support_staff_role(['staff','supervisor','shift_supervisor'])
+def api_clock_out(request):
+    staff_profile = _get_staff_profile_for_api(request.user)
+    if not staff_profile:
+        return JsonResponse({'success': False, 'error': 'Staff profile not found'}, status=400)
+
+    today = timezone.now().date()
+    attendance = StaffAttendance.objects.filter(staff=staff_profile, date=today).first()
+    if not attendance or attendance.time_in is None:
+        return JsonResponse({'success': False, 'error': 'Not clocked in'}, status=400)
+    if attendance.time_out is not None:
+        return JsonResponse({'success': False, 'error': 'Already clocked out'}, status=400)
+
+    try:
+        current_time = _get_current_time()
+        attendance.time_out = current_time
+        attendance.synced = False
+        attendance.save()
+
+        # compute minutes worked
+        from datetime import datetime, timedelta
+        start_dt = datetime.combine(attendance.date, attendance.time_in)
+        end_dt = datetime.combine(attendance.date, attendance.time_out)
+        if end_dt < start_dt:
+            end_dt += timedelta(days=1)
+        duration_minutes = int((end_dt - start_dt).total_seconds() / 60)
+        hours = duration_minutes // 60
+        minutes = duration_minutes % 60
+        return JsonResponse({'success': True, 'message': f'Clocked out at {current_time.strftime("%H:%M")}', 'time_out': current_time.strftime('%H:%M'), 'total_hours_worked': f"{hours}h {minutes}m"})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': f'Failed to clock out: {str(e)}'}, status=500)
+
+
+@require_POST
+@require_support_staff_role(['staff','supervisor','shift_supervisor'])
+def api_break_start(request):
+    # Breaks are not supported for support staff in the current data model
+    return JsonResponse({'success': False, 'error': 'Breaks not supported for support staff'}, status=400)
+
+
+@require_POST
+@require_support_staff_role(['staff','supervisor','shift_supervisor'])
+def api_break_end(request):
+    return JsonResponse({'success': False, 'error': 'Breaks not supported for support staff'}, status=400)
+
+
+@require_GET
+@require_support_staff_role(['staff','supervisor','shift_supervisor'])
+def api_shift_status(request):
+    staff_profile = _get_staff_profile_for_api(request.user)
+    if not staff_profile:
+        return JsonResponse({'success': False, 'error': 'Staff profile not found'}, status=400)
+
+    today = timezone.now().date()
+    attendance = StaffAttendance.objects.filter(staff=staff_profile, date=today).first()
+    if not attendance or not attendance.time_in:
+        return JsonResponse({'success': True, 'is_on_duty': False, 'is_on_break': False})
+
+    from django.utils.timezone import localtime as _localtime
+    from datetime import datetime
+    current_time = _localtime(timezone.now()).time()
+    current_datetime = datetime.combine(today, current_time)
+    shift_start = datetime.combine(today, attendance.time_in)
+    shift_elapsed = int((current_datetime - shift_start).total_seconds() / 60)
+    return JsonResponse({'success': True, 'is_on_duty': True, 'is_on_break': False, 'shift_start_time': attendance.time_in.strftime('%H:%M'), 'shift_elapsed_minutes': shift_elapsed})
+
+
 # ============================================================================
 # WELFARE COORDINATOR DASHBOARD
 # ============================================================================
@@ -733,28 +893,34 @@ def welfare_coordinator_dashboard(request):
 # COMMON VIEWS FOR ALL SUPPORT STAFF
 # ============================================================================
 
-@require_support_staff_role(['staff', 'supervisor', 'department_head', 'welfare_coordinator'])
+@require_support_staff_role(['staff', 'supervisor', 'shift_supervisor', 'department_head', 'welfare_coordinator'])
 def support_staff_profile(request):
     """
-    View and edit own profile (available to all support staff)
-    
-    School Filtering: Only own staff profile
+    View and edit own profile (available to all support staff).
+    Stores the same fields used throughout the application for support staff:
+    first name, last name, phone, and profile picture.
     """
     school = get_user_school(request)
     staff_profile = get_object_or_404(StaffProfile, user=request.user)
-    
+
     if staff_profile.user.school != school:
         raise PermissionDenied("Profile not in your school")
-    
+
     if request.method == 'POST':
-        # Update profile (phone, address, etc.)
-        # Implementation depends on StaffProfile fields
-        pass
-    
+        form = SupportStaffProfileForm(request.POST, request.FILES, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Your profile has been updated successfully.')
+            return redirect('teacher:support_staff:support_staff_profile')
+    else:
+        form = SupportStaffProfileForm(instance=request.user)
+
     context = {
         'school': school,
         'staff_profile': staff_profile,
+        'profile_form': form,
         'section': 'support_staff_profile',
+        'user': request.user,
     }
-    
+
     return render(request, 'support_staff/support_staff_profile.html', context)

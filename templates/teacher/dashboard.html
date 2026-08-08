@@ -228,6 +228,13 @@
             .overlay.active {
                 display: block;
             }
+            /* Hide the left sidebar and show top navigation on small screens */
+            .sidebar-gradient, .sidebar-main, aside.sidebar-gradient {
+                display: none !important;
+            }
+            main::before {
+                left: 0 !important;
+            }
         }
     </style>
 </head>
@@ -449,21 +456,23 @@
 
     <!-- Interactive script for mobile menu and interactions -->
     <script>
-        // Mobile Menu Toggle
-        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-        const sidebar = document.querySelector('.sidebar-main');
+        // Mobile Menu Toggle - support both IDs used across templates
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn') || document.getElementById('teacherMobileMenuToggle');
+        const sidebar = document.querySelector('.sidebar-main') || document.querySelector('.sidebar-gradient');
         const overlay = document.getElementById('mobileOverlay');
 
         if (mobileMenuBtn) {
             mobileMenuBtn.addEventListener('click', () => {
-                sidebar.classList.toggle('active');
-                overlay.classList.toggle('active');
+                if (sidebar) sidebar.classList.toggle('active');
+                if (overlay) overlay.classList.toggle('active');
             });
 
-            overlay.addEventListener('click', () => {
-                sidebar.classList.remove('active');
-                overlay.classList.remove('active');
-            });
+            if (overlay) {
+                overlay.addEventListener('click', () => {
+                    if (sidebar) sidebar.classList.remove('active');
+                    overlay.classList.remove('active');
+                });
+            }
         }
 
         // Scale effect on group hover

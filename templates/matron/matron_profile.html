@@ -1,0 +1,119 @@
+{% extends 'matron/matron_base.html' %}
+{% load static %}
+
+{% block title %}Matron Profile | SchoolNow{% endblock %}
+
+{% block matron_content %}
+<div class="space-y-8">
+    {% if messages %}
+    <div class="space-y-4">
+        {% for message in messages %}
+        <div class="rounded-3xl px-4 py-3 {% if message.tags == 'success' %}bg-emerald-50 text-emerald-900 border border-emerald-200{% elif message.tags == 'error' or message.tags == 'warning' %}bg-amber-50 text-amber-900 border border-amber-200{% else %}bg-slate-50 text-slate-800 border border-slate-200{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    <div class="flex flex-col lg:flex-row items-start lg:items-end justify-between gap-6">
+        <div>
+            <p class="text-xs uppercase tracking-[0.28em] text-on-surface-variant mb-2">Matron Profile</p>
+            <h1 class="font-display-lg text-display-lg text-primary">{{ staff_profile.user.get_full_name|default:request.user.username }}</h1>
+            <p class="text-body-md text-on-surface-variant mt-2 max-w-2xl">Manage your profile details, emergency contact, and account settings for hostel oversight.</p>
+        </div>
+        <div class="flex flex-wrap gap-3">
+            <a href="{% url 'teacher:matron:profile_edit' %}" class="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-semibold text-white shadow-lg hover:bg-primary/90 transition-all">
+                <span class="material-symbols-outlined">edit</span>
+                Edit Profile
+            </a>
+            <form method="post" action="{% url 'teacher:logout' %}" class="inline" onsubmit="return confirm('Are you sure you want to logout?');">
+                {% csrf_token %}
+                <button type="submit" class="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-5 py-3 text-sm font-semibold text-error hover:bg-white/20 transition-all">
+                    <span class="material-symbols-outlined">logout</span>
+                    Log Out
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 xl:grid-cols-[1.2fr_0.8fr] gap-6">
+        <section class="glass-panel rounded-[32px] p-8">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+                <div>
+                    <h2 class="font-headline-lg text-headline-lg text-primary">Personal Information</h2>
+                    <p class="text-body-md text-on-surface-variant">Your main account and contact details.</p>
+                </div>
+                <span class="inline-flex items-center gap-2 rounded-full bg-secondary-container/15 px-4 py-2 text-sm font-semibold text-secondary uppercase tracking-[0.18em]">Matron</span>
+            </div>
+
+            <div class="grid gap-6 md:grid-cols-2">
+                <div class="space-y-3">
+                    <p class="text-xs uppercase tracking-[0.22em] text-on-surface-variant">Full Name</p>
+                    <p class="text-body-lg text-primary">{{ staff_profile.user.first_name }} {{ staff_profile.user.last_name }}</p>
+                </div>
+                <div class="space-y-3">
+                    <p class="text-xs uppercase tracking-[0.22em] text-on-surface-variant">Email</p>
+                    <p class="text-body-lg text-primary">{{ staff_profile.user.email|default:'Not provided' }}</p>
+                </div>
+                <div class="space-y-3">
+                    <p class="text-xs uppercase tracking-[0.22em] text-on-surface-variant">Phone</p>
+                    <p class="text-body-lg text-primary">{{ staff_profile.user.phone|default:'Not provided' }}</p>
+                </div>
+                <div class="space-y-3">
+                    <p class="text-xs uppercase tracking-[0.22em] text-on-surface-variant">Hostel supervision</p>
+                    <p class="text-body-lg text-primary">{% if staff_profile.support_department %}{{ staff_profile.support_department.name }}{% else %}Assigned hostel unavailable{% endif %}</p>
+                </div>
+            </div>
+        </section>
+
+        <aside class="glass-panel rounded-[32px] p-8">
+            <div class="flex flex-col items-center gap-5 text-center">
+                {% if staff_profile.user.profile_picture %}
+                    <img src="{{ staff_profile.user.profile_picture.url }}" alt="{{ staff_profile.user.get_full_name }}" class="h-32 w-32 rounded-[2rem] object-cover shadow-lg" />
+                {% else %}
+                    <div class="grid h-32 w-32 place-items-center rounded-[2rem] bg-primary/10 text-primary text-4xl font-black shadow-inner">{{ staff_profile.user.first_name|default:'M'|first|upper }}{{ staff_profile.user.last_name|default:'G'|first|upper }}</div>
+                {% endif %}
+                <p class="text-sm uppercase tracking-[0.28em] text-on-surface-variant">Profile status</p>
+                <span class="inline-flex items-center gap-2 rounded-full bg-emerald-100 px-4 py-2 text-sm font-semibold text-emerald-700">Active</span>
+            </div>
+        </aside>
+    </div>
+
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <section class="glass-panel rounded-[32px] p-8">
+            <h3 class="font-headline-md text-headline-md text-primary mb-6">Emergency Contact</h3>
+            <div class="grid gap-6">
+                <div class="space-y-2">
+                    <p class="text-xs uppercase tracking-[0.18em] text-on-surface-variant">Contact Name</p>
+                    <p class="text-body-lg text-primary">{{ staff_profile.emergency_contact_name|default:'Not provided' }}</p>
+                </div>
+                <div class="space-y-2">
+                    <p class="text-xs uppercase tracking-[0.18em] text-on-surface-variant">Contact Phone</p>
+                    <p class="text-body-lg text-primary">{{ staff_profile.emergency_contact_phone|default:'Not provided' }}</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="glass-panel rounded-[32px] p-8">
+            <h3 class="font-headline-md text-headline-md text-primary mb-6">Bank Details</h3>
+            {% if staff_profile.bank_account_number %}
+            <div class="grid gap-6">
+                <div class="space-y-2">
+                    <p class="text-xs uppercase tracking-[0.18em] text-on-surface-variant">Bank Name</p>
+                    <p class="text-body-lg text-primary">{{ staff_profile.bank_name|default:'Not provided' }}</p>
+                </div>
+                <div class="space-y-2">
+                    <p class="text-xs uppercase tracking-[0.18em] text-on-surface-variant">Account Number</p>
+                    <p class="text-body-lg text-primary font-mono">****{{ staff_profile.bank_account_number|slice:'-4:' }}</p>
+                </div>
+                <div class="space-y-2">
+                    <p class="text-xs uppercase tracking-[0.18em] text-on-surface-variant">Account Holder</p>
+                    <p class="text-body-lg text-primary">{{ staff_profile.account_holder_name|default:'Not provided' }}</p>
+                </div>
+            </div>
+            {% else %}
+            <p class="text-body-md text-on-surface-variant">No bank account details are stored yet. Update your profile to add payment information.</p>
+            {% endif %}
+        </section>
+    </div>
+</div>
+{% endblock %}

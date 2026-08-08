@@ -1,17 +1,28 @@
 ﻿{% extends "teacher/teacher_no_sidebar_base.html" %}
 {% load static %}
 
-{% block title %}Shift Supervisor Dashboard{% endblock %}
+{% block title %}Dashboard{% endblock %}
 
 {% block extra_css %}
 <style>
+    body {
+        background: #f4f4f1 !important;
+    }
     .dashboard-shadow {
         box-shadow: 0 4px 30px rgba(30, 34, 79, 0.08);
     }
+    .dashboard-shell {
+        min-height: 100vh;
+        background: #f4f4f1;
+        padding: 0;
+    }
     .dashboard-header {
-        backdrop-filter: blur(20px);
-        background: rgba(255, 255, 255, 0.88);
-        border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+        background: #fffdf8;
+        border: 1px solid rgba(8, 11, 58, 0.06);
+        border-radius: 24px;
+        box-shadow: 0 12px 30px rgba(8, 11, 58, 0.06);
+        padding: 18px 24px;
+        margin-bottom: 20px;
     }
     .avatar-fallback {
         display: inline-flex;
@@ -26,53 +37,63 @@
 {% endblock %}
 
 {% block content %}
-<header class="dashboard-header fixed top-0 left-0 right-0 z-50 px-6 py-4">
-    <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 max-w-[1600px] mx-auto">
-        <div class="flex items-center gap-4">
-            <div class="w-11 h-11 rounded-2xl bg-secondary flex items-center justify-center text-white text-lg shadow-lg">
-                <span class="material-symbols-outlined">dashboard</span>
-            </div>
-            <div>
-                <h1 class="text-lg font-semibold text-primary">SchoolNow</h1>
-                <p class="text-[11px] uppercase tracking-[0.25em] text-on-surface-variant">Ethos Management</p>
-            </div>
-        </div>
-        {% include 'includes/support_staff_shift_supervisor_navbar.html' %}
-        <div class="flex items-center gap-3">
-            <div class="flex items-center gap-2 rounded-full bg-surface-container-low px-3 py-2 border border-white/50 shadow-sm">
-                <span class="material-symbols-outlined text-base text-outline">search</span>
-                <input type="text" placeholder="Search operations..." class="bg-transparent border-none focus:ring-0 text-sm text-primary placeholder:text-on-surface-variant w-52" />
-            </div>
-            <button class="relative text-on-surface-variant hover:text-primary transition-colors">
-                <span class="material-symbols-outlined">notifications</span>
-                <span class="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-secondary border border-white"></span>
-            </button>
-            <div class="flex items-center gap-3 border-l border-primary/10 pl-4">
-                <div class="text-right hidden sm:block">
-                    <p class="text-xs font-semibold text-primary">{{ request.user.get_full_name|default:request.user.username }}</p>
-                    <p class="text-[10px] uppercase tracking-[0.2em] text-on-surface-variant">{{ school.name|default:'School' }}</p>
+<div class="dashboard-shell">
+    {% include 'includes/support_staff_shift_supervisor_navbar.html' %}
+
+    <div class="px-2 sm:px-4 lg:px-6 mt-4">
+        <div class="space-y-4 mb-6">
+            <div class="rounded-none bg-white border border-surface-container-highest shadow-sm min-h-[170px] flex items-center px-6 py-4 -mt-4 -mx-2 sm:-mx-4 lg:-mx-6">
+                <div class="flex items-center gap-4 w-full">
+                    <span class="material-symbols-outlined text-4xl text-amber-400">wb_sunny</span>
+                    <div class="min-w-0">
+                        <p class="text-sm font-semibold uppercase tracking-[0.28em] text-white/80">Greeting</p>
+                        <h1 class="mt-2 text-3xl font-bold text-primary leading-tight">
+                            {{ greeting_prefix }}, <span class="text-amber-400">{{ greeting_name }}</span>!
+                        </h1>
+                        <p class="mt-3 text-sm text-on-surface-variant">{{ greeting_subtitle }}</p>
+                    </div>
                 </div>
-                <div class="w-10 h-10 rounded-full border-2 border-secondary-container overflow-hidden">
-                    {% if request.user.profile_picture %}
-                        <img src="{{ request.user.profile_picture.url }}" alt="Supervisor avatar" class="w-full h-full object-cover" />
-                    {% else %}
-                        <div class="w-full h-full bg-secondary flex items-center justify-center text-white font-bold">{{ request.user.get_full_name|default:request.user.username|slice:"0:1" }}</div>
-                    {% endif %}
+            </div>
+            <div class="rounded-[24px] bg-primary px-6 py-6 text-white shadow-lg border border-primary/20">
+                <div class="flex items-center justify-between gap-6">
+                    <div class="flex items-center gap-4 flex-1">
+                        <div class="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center text-amber-400 shadow-sm">
+                            <span class="material-symbols-outlined text-2xl">schedule</span>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-[11px] font-semibold uppercase tracking-[0.3em] text-white">Shift status</p>
+                            <p class="mt-3 text-3xl font-bold leading-tight text-white">{{ shift_status_title }}</p>
+                            <div class="mt-3 flex items-center gap-3">
+                                <div class="flex items-center gap-3 text-sm">
+                                    <span class="inline-flex h-2.5 w-2.5 rounded-full {{ shift_status_dot }}"></span>
+                                    <span class="uppercase tracking-[0.2em] text-white">{{ shift_status_label }}</span>
+                                    <span class="text-white/70">•</span>
+                                    <span class="text-white/70">{{ shift_status_summary }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-3 flex-shrink-0">
+                        <button id="clockInOutBtn" type="button" class="inline-flex items-center gap-2 rounded-full bg-amber-400 px-5 py-3 text-sm font-semibold text-slate-950 shadow-lg hover:bg-amber-300 transition">
+                            <span class="material-symbols-outlined">login</span>
+                            Clock In
+                        </button>
+                        <button id="breakBtn" type="button" class="inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-primary shadow-sm">
+                            <span class="material-symbols-outlined text-primary">coffee</span>
+                            <span class="text-primary">Break</span>
+                        </button>
+                    </div>
                 </div>
-                <a href="{% url 'SchoolNowMgt:custom_logout' %}" class="inline-flex items-center gap-2 rounded-full bg-primary px-3 py-2 text-xs font-semibold text-white shadow-sm hover:bg-primary/90 transition-all">
-                    <span class="material-symbols-outlined text-sm">logout</span>
-                    <span class="hidden sm:inline">Logout</span>
-                </a>
             </div>
         </div>
     </div>
-</header>
 
-<div class="pt-32 pb-12 px-4 sm:px-6 lg:px-8 bg-background min-h-screen">
+    <div class="pb-2 px-2 sm:px-4 lg:px-6">
     <div class="max-w-[1600px] mx-auto space-y-8">
         <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
-                <h2 class="font-display-lg text-3xl lg:text-4xl font-bold text-primary">Operations Command Center</h2>
+                <h2 class="font-display-lg text-3xl lg:text-4xl font-bold text-primary">Dashboard</h2>
                 <p class="mt-2 text-sm text-on-surface-variant max-w-2xl">Real-time oversight and administrative logistics</p>
             </div>
             <div class="flex flex-wrap gap-3">
@@ -305,6 +326,7 @@
         </div>
     </div>
 </div>
+    <script src="{% static 'js/shift_status.js' %}?v=2" defer></script>
 {% endblock %}
 
 {% block extra_js %}
@@ -322,4 +344,5 @@
         });
     });
 </script>
+<script src="{% static 'js/shift_status.js' %}" defer></script>
 {% endblock %}

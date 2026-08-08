@@ -1,243 +1,93 @@
-{% extends "teacher/base.html" %}
+{% extends "matron/matron_base.html" %}
 {% load static %}
 
 {% block title %}Hostels - Matron{% endblock %}
 
-{% block content %}
-<div class="hostels-list">
-    <div class="page-header">
-        <h1>Hostels Management</h1>
+{% block matron_content %}
+<div class="space-y-6">
+  <header class="glass-panel inner-glow rounded-[32px] overflow-hidden p-6 lg:p-8 flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6">
+    <div>
+      <h2 class="font-display-lg text-display-lg text-primary">Hostels Management</h2>
+      <p class="text-on-surface-variant mt-1 font-body-lg">Manage hostel records, status, and matron assignments.</p>
+    </div>
+  </header>
+
+  <section class="glass-panel inner-glow rounded-[32px] overflow-hidden p-6 lg:p-8">
+    <form method="get" class="flex flex-col md:flex-row gap-4 items-start md:items-center">
+      <div class="w-full md:flex-1">
+        <input type="text" name="search" placeholder="Search hostels..." value="{{ request.GET.search }}" class="w-full rounded-[20px] border border-white/60 bg-white/70 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20">
+      </div>
+
+      <div class="w-full md:w-48">
+        <select name="status" class="w-full rounded-[20px] border border-white/60 bg-white/70 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20">
+          <option value="">All Statuses</option>
+          <option value="active" {% if request.GET.status == 'active' %}selected{% endif %}>Active</option>
+          <option value="inactive" {% if request.GET.status == 'inactive' %}selected{% endif %}>Inactive</option>
+        </select>
+      </div>
+
+      <button type="submit" class="rounded-[20px] bg-primary px-5 py-3 text-sm font-semibold text-white hover:bg-primary/90 transition-colors">Filter</button>
+    </form>
+  </section>
+
+  {% if page_obj %}
+  <section class="glass-panel inner-glow rounded-[32px] overflow-hidden p-6 lg:p-8">
+    <div class="overflow-x-auto">
+      <table class="min-w-full text-sm">
+        <thead>
+          <tr class="border-b border-white/50 text-left text-on-surface-variant">
+            <th class="px-4 py-3 font-semibold">Hostel Name</th>
+            <th class="px-4 py-3 font-semibold">Head</th>
+            <th class="px-4 py-3 font-semibold">Status</th>
+            <th class="px-4 py-3 font-semibold">Budget</th>
+            <th class="px-4 py-3 font-semibold">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for hostel in page_obj %}
+          <tr class="border-b border-white/40 hover:bg-white/40 transition-colors">
+            <td class="px-4 py-4 font-semibold text-primary">{{ hostel.name }}</td>
+            <td class="px-4 py-4 text-on-surface-variant">{% if hostel.head_of_department %}{{ hostel.head_of_department.user.get_full_name }}{% else %}-{% endif %}</td>
+            <td class="px-4 py-4">
+              {% if hostel.is_active %}
+              <span class="rounded-full bg-green-100 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-green-700">Active</span>
+              {% else %}
+              <span class="rounded-full bg-red-100 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-red-700">Inactive</span>
+              {% endif %}
+            </td>
+            <td class="px-4 py-4 text-on-surface-variant">{{ hostel.monthly_budget|default:"-" }}</td>
+            <td class="px-4 py-4">
+              <div class="flex flex-wrap gap-2">
+                <a href="{% url 'teacher:matron:hostel_detail' hostel.id %}" class="rounded-full border border-primary/20 px-3 py-1.5 text-xs font-semibold text-primary hover:bg-primary/5">View</a>
+                <a href="{% url 'teacher:matron:hostel_edit' hostel.id %}" class="rounded-full border border-primary/20 px-3 py-1.5 text-xs font-semibold text-primary hover:bg-primary/5">Edit</a>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
 
-    <!-- Filters -->
-    <div class="filters-section">
-        <form method="get" class="filters-form">
-            <div class="filter-group">
-                <input type="text" name="search" placeholder="Search hostels..." value="{{ request.GET.search }}">
-            </div>
-            
-            <div class="filter-group">
-                <select name="status">
-                    <option value="">All Statuses</option>
-                    <option value="active" {% if request.GET.status == 'active' %}selected{% endif %}>Active</option>
-                    <option value="inactive" {% if request.GET.status == 'inactive' %}selected{% endif %}>Inactive</option>
-                </select>
-            </div>
-            
-            <button type="submit" class="btn btn-primary">Filter</button>
-        </form>
-    </div>
-
-    <!-- Hostels Table -->
-    {% if page_obj %}
-    <div class="table-section">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Hostel Name</th>
-                    <th>Head</th>
-                    <th>Status</th>
-                    <th>Budget</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for hostel in page_obj %}
-                <tr>
-                    <td><strong>{{ hostel.name }}</strong></td>
-                    <td>{% if hostel.head_of_department %}{{ hostel.head_of_department.user.get_full_name }}{% else %}-{% endif %}</td>
-                    <td>
-                        {% if hostel.is_active %}
-                        <span class="badge badge-active">Active</span>
-                        {% else %}
-                        <span class="badge badge-inactive">Inactive</span>
-                        {% endif %}
-                    </td>
-                    <td>{{ hostel.monthly_budget|default:"-" }}</td>
-                    <td>
-                        <a href="{% url 'teacher:matron:hostel_detail' hostel.id %}" class="btn-action">View</a>
-                        <a href="{% url 'teacher:matron:hostel_edit' hostel.id %}" class="btn-action">Edit</a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-
-    <!-- Pagination -->
     {% if page_obj.has_other_pages %}
-    <div class="pagination">
-        {% if page_obj.has_previous %}
-        <a href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" class="page-link">« First</a>
-        <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" class="page-link">‹ Previous</a>
-        {% endif %}
-        
-        <span class="page-info">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
-        
-        {% if page_obj.has_next %}
-        <a href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" class="page-link">Next ›</a>
-        <a href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" class="page-link">Last »</a>
-        {% endif %}
+    <div class="mt-6 flex flex-wrap items-center justify-center gap-2">
+      {% if page_obj.has_previous %}
+      <a href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" class="rounded-full border border-white/60 bg-white/60 px-3 py-2 text-sm text-primary hover:bg-white/80">« First</a>
+      <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" class="rounded-full border border-white/60 bg-white/60 px-3 py-2 text-sm text-primary hover:bg-white/80">‹ Previous</a>
+      {% endif %}
+
+      <span class="px-3 py-2 text-sm text-on-surface-variant">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+
+      {% if page_obj.has_next %}
+      <a href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" class="rounded-full border border-white/60 bg-white/60 px-3 py-2 text-sm text-primary hover:bg-white/80">Next ›</a>
+      <a href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" class="rounded-full border border-white/60 bg-white/60 px-3 py-2 text-sm text-primary hover:bg-white/80">Last »</a>
+      {% endif %}
     </div>
     {% endif %}
-    {% else %}
-    <div class="no-results">
-        <p>No hostels found.</p>
-    </div>
-    {% endif %}
+  </section>
+  {% else %}
+  <section class="glass-panel inner-glow rounded-[32px] overflow-hidden p-10 text-center text-on-surface-variant">
+    <p>No hostels found.</p>
+  </section>
+  {% endif %}
 </div>
-
-<style>
-.hostels-list {
-    padding: 20px;
-    max-width: 1200px;
-    margin: 0 auto;
-}
-
-.page-header {
-    margin-bottom: 30px;
-}
-
-.page-header h1 {
-    margin: 0;
-    font-size: 28px;
-}
-
-.filters-section {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    margin-bottom: 20px;
-}
-
-.filters-form {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    align-items: center;
-}
-
-.filter-group {
-    display: flex;
-    flex-direction: column;
-}
-
-.filter-group input,
-.filter-group select {
-    padding: 8px 12px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 14px;
-}
-
-.btn-primary {
-    background: #007bff;
-    color: white;
-    padding: 8px 20px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: 600;
-}
-
-.btn-primary:hover {
-    background: #0056b3;
-}
-
-.table-section {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    margin-bottom: 20px;
-    overflow-x: auto;
-}
-
-.table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.table thead {
-    background: #f8f9fa;
-}
-
-.table th {
-    padding: 15px;
-    text-align: left;
-    border-bottom: 2px solid #dee2e6;
-    font-weight: 600;
-}
-
-.table td {
-    padding: 15px;
-    border-bottom: 1px solid #dee2e6;
-}
-
-.table tbody tr:nth-child(odd) {
-    background: #f8f9fa;
-}
-
-.badge {
-    display: inline-block;
-    padding: 4px 8px;
-    border-radius: 3px;
-    font-size: 12px;
-    font-weight: 600;
-}
-
-.badge-active {
-    background: #d4edda;
-    color: #155724;
-}
-
-.badge-inactive {
-    background: #f8d7da;
-    color: #721c24;
-}
-
-.btn-action {
-    color: #007bff;
-    text-decoration: none;
-    font-weight: 600;
-    margin-right: 10px;
-}
-
-.btn-action:hover {
-    text-decoration: underline;
-}
-
-.pagination {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 8px;
-}
-
-.page-link {
-    padding: 8px 12px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    text-decoration: none;
-    color: #007bff;
-    cursor: pointer;
-}
-
-.page-link:hover {
-    background: #f8f9fa;
-}
-
-.page-info {
-    padding: 0 12px;
-}
-
-.no-results {
-    background: white;
-    padding: 40px;
-    border-radius: 8px;
-    text-align: center;
-    color: #666;
-}
-</style>
 {% endblock %}

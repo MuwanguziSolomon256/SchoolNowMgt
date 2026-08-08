@@ -4,7 +4,7 @@
 {% block title %}Maintenance | Matron{% endblock %}
 
 {% block matron_content %}
-<header class="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 mb-8">
+<header class="glass-panel inner-glow rounded-[32px] overflow-hidden p-6 lg:p-8 mb-8 flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6">
   <div>
     <h2 class="font-display-lg text-display-lg text-primary">Maintenance</h2>
     <p class="text-on-surface-variant mt-1 font-body-lg">Review current maintenance requests and prepare work orders.</p>
@@ -45,20 +45,60 @@
 </div>
 
 <section class="glass-panel inner-glow rounded-[32px] p-8">
-  <div class="flex justify-between items-center mb-6">
+  <div class="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4 mb-6">
     <div>
       <h3 class="font-headline-lg text-headline-lg text-primary">Current Maintenance Requests</h3>
       <p class="text-on-surface-variant">Latest issues requiring attention.</p>
     </div>
+    <button type="button" class="rounded-[20px] bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary/90 transition-colors" onclick="document.getElementById('maintenance-ticket-form').classList.toggle('hidden')">
+      + Create Ticket
+    </button>
   </div>
+
+  <form id="maintenance-ticket-form" method="post" class="hidden mb-6 rounded-[24px] border border-white/60 bg-white/40 p-4 md:p-5">
+    {% csrf_token %}
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <label class="mb-2 block text-sm font-semibold text-primary" for="ticket-title">Ticket Title</label>
+        <input id="ticket-title" name="title" type="text" required class="w-full rounded-[16px] border border-white/70 bg-white/80 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" placeholder="e.g. Water leak in dormitory">
+      </div>
+      <div>
+        <label class="mb-2 block text-sm font-semibold text-primary" for="ticket-status">Status</label>
+        <select id="ticket-status" name="status" class="w-full rounded-[16px] border border-white/70 bg-white/80 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20">
+          <option value="Pending">Pending</option>
+          <option value="Urgent">Urgent</option>
+          <option value="In Progress">In Progress</option>
+        </select>
+      </div>
+      <div>
+        <label class="mb-2 block text-sm font-semibold text-primary" for="ticket-location">Location</label>
+        <input id="ticket-location" name="location" type="text" class="w-full rounded-[16px] border border-white/70 bg-white/80 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" placeholder="e.g. Lion B Wing">
+      </div>
+      <div>
+        <label class="mb-2 block text-sm font-semibold text-primary" for="ticket-notes">Notes</label>
+        <input id="ticket-notes" name="notes" type="text" class="w-full rounded-[16px] border border-white/70 bg-white/80 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" placeholder="Add brief notes">
+      </div>
+    </div>
+    <div class="mt-4 flex flex-wrap gap-3">
+      <button type="submit" class="rounded-[16px] bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary/90 transition-colors">Save Ticket</button>
+      <button type="button" class="rounded-[16px] border border-primary/20 px-4 py-2 text-sm font-semibold text-primary hover:bg-white/50 transition-colors" onclick="document.getElementById('maintenance-ticket-form').classList.add('hidden')">Cancel</button>
+    </div>
+  </form>
+
   <div class="flex flex-col gap-3">
     {% for task in maintenance_tasks %}
-    <div class="flex justify-between items-center p-3 bg-white/30 rounded-xl">
+    <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-2 p-3 bg-white/30 rounded-[20px]">
       <div class="flex items-center gap-3">
         <span class="material-symbols-outlined">{{ task.icon }}</span>
-        <span class="text-sm font-medium text-primary">{{ task.title }}</span>
+        <div>
+          <div class="text-sm font-medium text-primary">{{ task.title }}</div>
+          {% if task.location %}<div class="text-xs text-on-surface-variant">{{ task.location }}</div>{% endif %}
+        </div>
       </div>
-      <span class="text-[10px] font-bold uppercase {% if task.badge_color == 'error' %}text-error{% else %}text-on-surface-variant{% endif %}">{{ task.status }}</span>
+      <div class="flex items-center gap-2">
+        {% if task.notes %}<span class="text-xs text-on-surface-variant">{{ task.notes }}</span>{% endif %}
+        <span class="text-[10px] font-bold uppercase {% if task.badge_color == 'error' %}text-error{% else %}text-on-surface-variant{% endif %}">{{ task.status }}</span>
+      </div>
     </div>
     {% endfor %}
   </div>

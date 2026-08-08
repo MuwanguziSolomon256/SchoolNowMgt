@@ -27,31 +27,18 @@ function showNotification(message, type = 'info') {
     }, 3000);
 }
 
-async function handleShiftAction(event) {
+async function handleClockInOut(event) {
     event.preventDefault();
     const btn = event.target.closest('button');
     if (!btn) return;
-
-    const action = btn.dataset.action;
-    if (!action) return;
-
-    const endpoint = action === 'clock-in'
-        ? '/teacher/api/shift/clock-in/'
-        : action === 'clock-out'
-            ? '/teacher/api/shift/clock-out/'
-            : action === 'break-start'
-                ? '/teacher/api/shift/break-start/'
-                : action === 'break-end'
-                    ? '/teacher/api/shift/break-end/'
-                    : null;
-
-    if (!endpoint) return;
-
     btn.disabled = true;
-    const originalHtml = btn.innerHTML;
+    const originalText = btn.innerHTML;
     btn.innerHTML = '<span class="material-symbols-outlined animate-spin">hourglass_empty</span><span class="hidden sm:inline">Processing...</span>';
-
     try {
+        const isOnDuty = document.body.classList.contains('on-duty');
+        // Choose API prefix depending on whether we're in support_staff area
+        const apiBase = window.location.pathname.startsWith('/teacher/support/shift-supervisor') ? '/teacher/support/shift-supervisor/api/shift/' : (window.location.pathname.startsWith('/teacher/support') ? '/teacher/support/api/shift/' : '/teacher/api/shift/');
+        const endpoint = isOnDuty ? `${apiBase}clock-out/` : `${apiBase}clock-in/`;
         const response = await fetch(endpoint, {
             method: 'POST',
             headers: {
@@ -62,93 +49,94 @@ async function handleShiftAction(event) {
         const data = await response.json();
         if (data.success) {
             showNotification(data.message, 'success');
-            await refreshShiftStatus();
+            setTimeout(() => { window.location.reload(); }, 800);
         } else {
             showNotification(data.error || 'Operation failed', 'error');
             btn.disabled = false;
-            btn.innerHTML = originalHtml;
+            btn.innerHTML = originalText;
         }
     } catch (error) {
         console.error('Error:', error);
         showNotification('An error occurred', 'error');
         btn.disabled = false;
-        btn.innerHTML = originalHtml;
+        btn.innerHTML = originalText;
     }
 }
 
-function attachShiftHandlers() {
-    const clockBtn = document.getElementById('clockInOutBtn');
-    const breakBtn = document.getElementById('breakBtn');
-
-    if (clockBtn) {
-        clockBtn.addEventListener('click', handleShiftAction);
+async function handleBreakButton(event) {
+    event.preventDefault();
+    const btn = event.target.closest('button');
+    if (!btn) return;
+    if (!document.body.classList.contains('on-duty')) {
+        showNotification('Please clock in first', 'error');
+        return;
     }
-    if (breakBtn) {
-        breakBtn.addEventListener('click', handleShiftAction);
+    btn.disabled = true;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<span class="material-symbols-outlined animate-spin">hourglass_empty</span>';
+    try {
+        const isOnBreak = btn.classList.contains('break-active');
+        const apiBase = window.location.pathname.startsWith('/teacher/support/shift-supervisor') ? '/teacher/support/shift-supervisor/api/shift/' : (window.location.pathname.startsWith('/teacher/support') ? '/teacher/support/api/shift/' : '/teacher/api/shift/');
+        const endpoint = isOnBreak ? `${apiBase}break-end/` : `${apiBase}break-start/`;
+        const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json'
+            }
+        });
+        const data = await response.json();
+        if (data.success) {
+            showNotification(data.message, 'success');
+            if (isOnBreak) {
+                btn.classList.remove('break-active');
+                btn.innerHTML = '<span class="material-symbols-outlined text-lg md:text-base">coffee</span><span class="hidden sm:inline">Break</span>';
+            } else {
+                btn.classList.add('break-active');
+                btn.innerHTML = '<span class="material-symbols-outlined text-lg md:text-base">stop_circle</span><span class="hidden sm:inline">End Break</span>';
+            }
+            await refreshShiftStatus();
+        } else {
+            showNotification(data.error || 'Operation failed', 'error');
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showNotification('An error occurred', 'error');
+        btn.disabled = false;
+        btn.innerHTML = originalText;
     }
-}
-
-function getInitialDutyStatus() {
-    if (document.body.classList.contains('on-duty')) {
-        return true;
-    }
-    const main = document.querySelector('main[data-is-on-duty]');
-    return main?.dataset?.isOnDuty === 'true';
+    btn.disabled = false;
 }
 
 async function refreshShiftStatus() {
     try {
-        const response = await fetch('/teacher/api/shift/status/', { method: 'GET', headers: { 'Content-Type': 'application/json' } });
+        const apiBase = window.location.pathname.startsWith('/teacher/support/shift-supervisor') ? '/teacher/support/shift-supervisor/api/shift/' : (window.location.pathname.startsWith('/teacher/support') ? '/teacher/support/api/shift/' : '/teacher/api/shift/');
+        const response = await fetch(`${apiBase}status/`, { method: 'GET', headers: { 'Content-Type': 'application/json' } });
         const data = await response.json();
         if (data.success) {
             const shiftCard = document.getElementById('shiftCard');
-            const clockBtn = document.getElementById('clockInOutBtn');
-            const breakBtn = document.getElementById('breakBtn');
-            const shiftStatusText = document.getElementById('shiftStatusText');
-            const shiftStatusSubtitle = document.getElementById('shiftStatusSubtitle');
-            const shiftStatusDot = document.getElementById('shiftStatusDot');
-
             if (data.is_on_duty) {
                 document.body.classList.add('on-duty');
-                if (shiftCard) shiftCard.classList.add('on-duty');
+                if (shiftCard) {
+                    shiftCard.classList.add('on-duty');
+                }
             } else {
                 document.body.classList.remove('on-duty');
-                if (shiftCard) shiftCard.classList.remove('on-duty');
-            }
-
-            if (shiftStatusText) {
-                if (data.is_on_duty && data.shift_elapsed_minutes !== undefined) {
-                    const hours = Math.floor(data.shift_elapsed_minutes / 60);
-                    const minutes = data.shift_elapsed_minutes % 60;
-                    shiftStatusText.textContent = `Active for ${hours}h ${minutes}m`;
-                } else {
-                    shiftStatusText.textContent = 'Not on duty';
+                if (shiftCard) {
+                    shiftCard.classList.remove('on-duty');
                 }
             }
-
-            if (shiftStatusSubtitle) {
-                if (data.is_on_duty) {
-                    shiftStatusSubtitle.textContent = `ON DUTY - ${new Date().toLocaleDateString(undefined, { weekday: 'long' })}`;
-                } else {
-                    shiftStatusSubtitle.textContent = 'Clock in to start your shift';
-                }
+            if (shiftCard && data.is_on_duty && data.shift_elapsed_minutes !== undefined) {
+                const hours = Math.floor(data.shift_elapsed_minutes / 60);
+                const minutes = data.shift_elapsed_minutes % 60;
+                const elapsedText = `Active for ${hours}h ${minutes}m`;
+                const h2 = shiftCard.querySelector('h2');
+                if (h2) h2.textContent = elapsedText;
             }
-
-            if (shiftStatusDot) {
-                shiftStatusDot.classList.toggle('bg-emerald-400', data.is_on_duty);
-                shiftStatusDot.classList.toggle('bg-red-400', !data.is_on_duty);
-            }
-
-            if (clockBtn) {
-                clockBtn.dataset.action = data.is_on_duty ? 'clock-out' : 'clock-in';
-                clockBtn.innerHTML = data.is_on_duty
-                    ? '<span class="material-symbols-outlined">logout</span><span>Clock Out</span>'
-                    : '<span class="material-symbols-outlined">login</span><span>Clock In</span>';
-            }
-
+            const breakBtn = document.getElementById('breakBtn');
             if (breakBtn) {
-                breakBtn.disabled = !data.is_on_duty;
-                breakBtn.dataset.action = data.is_on_break ? 'break-end' : 'break-start';
                 if (data.is_on_break) {
                     breakBtn.classList.add('break-active', 'bg-orange-500', 'text-white');
                     breakBtn.innerHTML = '<span class="material-symbols-outlined">stop_circle</span><span class="hidden sm:inline">End Break</span>';
@@ -163,15 +151,39 @@ async function refreshShiftStatus() {
     }
 }
 
-async function initShiftStatusTimer() {
-    if (getInitialDutyStatus()) {
-        document.body.classList.add('on-duty');
-    }
+function initShiftStatusTimer() {
     refreshShiftStatus();
     setInterval(refreshShiftStatus, 30000);
 }
 
-document.addEventListener('DOMContentLoaded', function() {
+function attachShiftHandlers() {
+    const clockBtn = document.getElementById('clockInOutBtn');
+    const breakBtn = document.getElementById('breakBtn');
+
+    // Fallbacks: if IDs are not present (older templates), try to find buttons by their text or icon
+    let resolvedClockBtn = clockBtn;
+    if (!resolvedClockBtn) {
+        resolvedClockBtn = Array.from(document.querySelectorAll('button')).find(b => /clock in|clock out|login/i.test(b.innerText));
+    }
+    let resolvedBreakBtn = breakBtn;
+    if (!resolvedBreakBtn) {
+        resolvedBreakBtn = Array.from(document.querySelectorAll('button')).find(b => /break|coffee|end break/i.test(b.innerText));
+    }
+
+    if (resolvedClockBtn) {
+        resolvedClockBtn.addEventListener('click', handleClockInOut);
+    }
+    if (resolvedBreakBtn) {
+        resolvedBreakBtn.addEventListener('click', handleBreakButton);
+    }
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+        attachShiftHandlers();
+        initShiftStatusTimer();
+    });
+} else {
     attachShiftHandlers();
     initShiftStatusTimer();
-});
+}

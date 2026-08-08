@@ -4,6 +4,7 @@
 {% block title %}Hostel Operations | Matron Dashboard{% endblock %}
 
 {% block extra_css %}
+{{ block.super }}
 <style>
   .glass-panel {
     background: rgba(255, 255, 255, 0.7);
@@ -61,28 +62,21 @@
 {% endblock %}
 
 {% block matron_content %}
-  <header class="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 mb-8">
+  <header class="glass-panel inner-glow rounded-[32px] overflow-hidden p-6 lg:p-8 mb-8 flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6">
     <div>
       <h2 class="font-display-lg text-display-lg text-primary">Hostel Operations</h2>
       <p class="text-on-surface-variant mt-1 font-body-lg">Welcome back, {{ staff_profile.user.get_full_name|default:request.user.username }}. {{ statistics.total_residents }} students in residence.</p>
     </div>
     <div class="flex items-center gap-4">
-      <button class="flex items-center gap-2 px-4 py-2 rounded-xl text-on-surface-variant hover:bg-white/40 transition-colors font-label-md">
-        <span class="material-symbols-outlined">settings</span>
-        Settings
-      </button>
-      <form method="post" action="{% url 'teacher:logout' %}" class="m-0">
-        {% csrf_token %}
-        <button type="submit" class="flex items-center gap-2 px-4 py-2 rounded-xl text-error hover:bg-error-container/10 transition-colors font-label-md">
-          <span class="material-symbols-outlined">logout</span>
-          Log Out
-        </button>
-      </form>
+      <a href="{% url 'teacher:matron:profile' %}" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-white shadow-lg shadow-primary/20 hover:bg-primary/90 transition-colors font-label-md">
+        <span class="material-symbols-outlined">person</span>
+        Profile
+      </a>
     </div>
   </header>
 
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
-    <div class="glass-card inner-glow p-6 rounded-[24px]">
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="glass-card inner-glow p-6 rounded-[32px] overflow-hidden shadow-[0_12px_35px_rgba(30,34,79,0.08)]">
       <div class="flex justify-between items-start mb-4">
         <div class="w-12 h-12 rounded-2xl bg-secondary-container/20 flex items-center justify-center">
           <span class="material-symbols-outlined text-secondary">checklist_rtl</span>
@@ -93,7 +87,7 @@
       <p class="text-body-md text-on-surface-variant">Check-ins completed</p>
     </div>
 
-    <div class="glass-card inner-glow p-6 rounded-[24px]">
+    <div class="glass-card inner-glow p-6 rounded-[28px] overflow-hidden">
       <div class="flex justify-between items-start mb-4">
         <div class="w-12 h-12 rounded-2xl bg-primary-container/10 flex items-center justify-center">
           <span class="material-symbols-outlined text-primary">home</span>
@@ -104,7 +98,7 @@
       <p class="text-body-md text-on-surface-variant">{{ statistics.occupancy_rate }} occupancy • {{ statistics.avg_residents_per_hostel }} avg / hostel</p>
     </div>
 
-    <div class="glass-card inner-glow p-6 rounded-[24px]">
+    <div class="glass-card inner-glow p-6 rounded-[28px] overflow-hidden">
       <div class="flex justify-between items-start mb-4">
         <div class="w-12 h-12 rounded-2xl bg-on-tertiary-container/10 flex items-center justify-center">
           <span class="material-symbols-outlined text-on-tertiary-container">medical_services</span>
@@ -115,18 +109,7 @@
       <p class="text-body-md text-on-surface-variant">Active infirmary logs</p>
     </div>
 
-    <div class="glass-card inner-glow p-6 rounded-[24px]">
-      <div class="flex justify-between items-start mb-4">
-        <div class="w-12 h-12 rounded-2xl bg-primary-container/10 flex items-center justify-center">
-          <span class="material-symbols-outlined text-primary">engineering</span>
-        </div>
-        <span class="text-xs font-bold text-primary uppercase tracking-wider">Maintenance</span>
-      </div>
-      <h3 class="text-display-lg font-display-lg text-primary">{{ maintenance_open_count }}</h3>
-      <p class="text-body-md text-on-surface-variant">Open work tickets</p>
-    </div>
-
-    <div class="glass-card inner-glow p-6 rounded-[24px]">
+    <div class="glass-card inner-glow p-6 rounded-[28px] overflow-hidden">
       <div class="flex justify-between items-start mb-4">
         <div class="w-12 h-12 rounded-2xl bg-outline-variant/20 flex items-center justify-center">
           <span class="material-symbols-outlined text-outline">inventory_2</span>
@@ -138,7 +121,7 @@
     </div>
   </div>
 
-  <section class="mb-8 glass-panel inner-glow rounded-[32px] p-8" id="hostel-overview">
+  <section class="mb-8 glass-panel inner-glow rounded-[32px] overflow-hidden p-8" id="hostel-overview">
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
       <div>
         <h3 class="font-headline-lg text-headline-lg text-primary">Hostel Overview</h3>
@@ -148,7 +131,7 @@
     </div>
     <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
       {% for hostel in hostels %}
-      <div class="glass-card p-6 rounded-[24px]">
+      <div class="glass-card p-6 rounded-[28px] overflow-hidden">
         <div class="flex justify-between items-start gap-4 mb-4">
           <div>
             <p class="text-sm font-bold text-primary">{{ hostel.name }}</p>
@@ -174,7 +157,7 @@
         </div>
       </div>
       {% empty %}
-      <div class="glass-card p-6 rounded-[24px] text-center text-on-surface-variant">
+      <div class="glass-card p-6 rounded-[28px] overflow-hidden text-center text-on-surface-variant">
         No hostels are configured for your school yet.
       </div>
       {% endfor %}
@@ -182,7 +165,7 @@
   </section>
 
   <div class="grid grid-cols-1 lg:grid-cols-12 gap-6" id="hostel-roll-call">
-    <section class="lg:col-span-8 glass-panel inner-glow rounded-[32px] p-8">
+    <section class="lg:col-span-8 glass-panel inner-glow rounded-[32px] overflow-hidden p-8">
       <div class="flex justify-between items-center mb-6">
         <div>
           <h3 class="font-headline-lg text-headline-lg text-primary">Dormitory Roll Call</h3>
@@ -195,7 +178,7 @@
       </div>
       <div class="space-y-4">
         {% for session in roll_call_sessions %}
-        <div class="flex items-center gap-6 p-4 rounded-2xl bg-white/40 border border-white/50 group hover:bg-white/60 transition-all">
+        <div class="flex items-center gap-6 p-4 rounded-[24px] overflow-hidden bg-white/40 border border-white/50 group hover:bg-white/60 transition-all">
           <div class="w-14 h-14 rounded-full bg-secondary-container/20 flex items-center justify-center">
             <span class="font-bold text-secondary text-xl">{{ session.code }}</span>
           </div>
@@ -227,7 +210,7 @@
         </h4>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {% for student in unaccounted_students %}
-          <div class="p-4 rounded-2xl border border-error/20 bg-error-container/10 flex items-center gap-3">
+          <div class="p-4 rounded-[24px] overflow-hidden border border-error/20 bg-error-container/10 flex items-center gap-3">
             <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center font-bold text-error">{{ student.initials }}</div>
             <div>
               <p class="text-sm font-bold text-primary">{{ student.name }}</p>
@@ -240,14 +223,14 @@
     </section>
 
     <section class="lg:col-span-4 flex flex-col gap-6">
-      <div class="glass-panel inner-glow rounded-[32px] p-6" id="infirmary-log">
+      <div class="glass-panel inner-glow rounded-[32px] overflow-hidden p-6" id="infirmary-log">
         <div class="flex justify-between items-center mb-6">
           <h3 class="font-headline-md text-headline-md text-primary">Infirmary Log</h3>
           <a class="text-primary text-xs font-bold underline" href="#">View All</a>
         </div>
         <div class="space-y-4">
           {% for log in health_logs %}
-          <div class="flex gap-4 p-3 rounded-xl hover:bg-white/50 transition-colors">
+          <div class="flex gap-4 p-3 rounded-[20px] overflow-hidden hover:bg-white/50 transition-colors">
             <div class="w-2 rounded-full {% if log.accent == 'secondary' %}bg-secondary{% elif log.accent == 'on-tertiary-container' %}bg-on-tertiary-container{% else %}bg-primary-container{% endif %}"></div>
             <div>
               <p class="text-sm font-bold text-primary">{{ log.student }}</p>
@@ -260,7 +243,7 @@
           </div>
           {% endfor %}
         </div>
-        <div class="mt-6 p-4 rounded-2xl bg-primary-container text-white">
+        <div class="mt-6 p-4 rounded-[24px] overflow-hidden bg-primary-container text-white">
           <div class="flex justify-between items-start mb-2">
             <span class="material-symbols-outlined">info</span>
             <span class="text-[10px] font-bold uppercase opacity-60">Status</span>
@@ -270,24 +253,6 @@
         </div>
       </div>
 
-      <div class="glass-panel inner-glow rounded-[32px] p-6" id="maintenance-panel">
-        <h3 class="font-headline-md text-headline-md text-primary mb-4">Maintenance</h3>
-        <div class="flex flex-col gap-3">
-          {% for task in maintenance_tasks %}
-          <div class="flex justify-between items-center p-3 bg-white/30 rounded-xl">
-            <div class="flex items-center gap-3">
-              <span class="material-symbols-outlined">{{ task.icon }}</span>
-              <span class="text-sm font-medium">{{ task.title }}</span>
-            </div>
-            <span class="text-[10px] font-bold uppercase {% if task.badge_color == 'error' %}text-error{% else %}text-on-surface-variant{% endif %}">{{ task.status }}</span>
-          </div>
-          {% endfor %}
-          <button class="w-full py-2 border border-dashed border-primary/20 rounded-xl text-primary text-sm font-bold hover:bg-white/40 transition-all">
-            + Create Ticket
-          </button>
-        </div>
-      </div>
-    </section>
   </div>
 
   <section class="mt-8 glass-panel inner-glow rounded-[32px] p-8">
@@ -320,7 +285,6 @@
       {% endfor %}
     </div>
   </section>
-</main>
 
 <button class="fixed bottom-10 right-10 w-16 h-16 rounded-full bg-primary text-white shadow-2xl flex items-center justify-center hover:scale-105 transition-transform group z-50">
   <span class="material-symbols-outlined text-3xl group-hover:rotate-90 transition-transform">add</span>

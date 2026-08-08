@@ -23,6 +23,12 @@ from dashboard.support_staff_views import (
     staff_roster_dashboard,
     maintenance_dashboard,
     supply_requests_dashboard,
+     # Shift API handlers
+     api_clock_in,
+     api_clock_out,
+     api_break_start,
+     api_break_end,
+     api_shift_status,
     
     # Support staff sub-dashboards
     messages_dashboard,
@@ -69,6 +75,13 @@ urlpatterns = [
     path('shift-supervisor/roster/',
          staff_roster_dashboard,
          name='staff_roster_dashboard'),
+
+     # ===== SHIFT MANAGEMENT API (support staff) =====
+     path('shift-supervisor/api/shift/clock-in/', api_clock_in, name='api_clock_in'),
+     path('shift-supervisor/api/shift/clock-out/', api_clock_out, name='api_clock_out'),
+     path('shift-supervisor/api/shift/break-start/', api_break_start, name='api_break_start'),
+     path('shift-supervisor/api/shift/break-end/', api_break_end, name='api_break_end'),
+     path('shift-supervisor/api/shift/status/', api_shift_status, name='api_shift_status'),
 
     path('shift-supervisor/maintenance/',
          maintenance_dashboard,

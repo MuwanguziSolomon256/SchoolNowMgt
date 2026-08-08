@@ -1,0 +1,161 @@
+{% extends 'matron/matron_base.html' %}
+{% load static %}
+
+{% block title %}Edit Matron Profile | SchoolNow{% endblock %}
+
+{% block matron_content %}
+<div class="space-y-8">
+    <div class="flex flex-col lg:flex-row items-start lg:items-end justify-between gap-6">
+        <div>
+            <p class="text-xs uppercase tracking-[0.28em] text-on-surface-variant mb-2">Edit Profile</p>
+            <h1 class="font-display-lg text-display-lg text-primary">Update your Matron profile</h1>
+            <p class="text-body-md text-on-surface-variant mt-2 max-w-2xl">Save changes to your contact information, emergency contact details, and payment information.</p>
+        </div>
+        <div class="flex gap-3">
+            <a href="{% url 'teacher:matron:profile' %}" class="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-5 py-3 text-sm font-semibold text-primary hover:bg-white/20 transition-all">
+                <span class="material-symbols-outlined">arrow_back</span>
+                Back to Profile
+            </a>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 xl:grid-cols-[0.9fr_0.6fr] gap-6">
+        <section class="glass-panel rounded-[32px] p-8">
+            <h2 class="font-headline-lg text-headline-lg text-primary mb-6">Personal details</h2>
+
+            {% if messages %}
+            <div class="space-y-4 mb-6">
+                {% for message in messages %}
+                <div class="rounded-3xl px-4 py-3 {% if message.tags == 'success' %}bg-emerald-50 text-emerald-900 border border-emerald-200{% elif message.tags == 'error' or message.tags == 'warning' %}bg-amber-50 text-amber-900 border border-amber-200{% else %}bg-slate-50 text-slate-800 border border-slate-200{% endif %}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <form method="post" enctype="multipart/form-data" class="space-y-8">
+                {% csrf_token %}
+                <div class="grid gap-6 md:grid-cols-2">
+                    <div class="space-y-3">
+                        <label class="text-xs uppercase tracking-[0.18em] text-on-surface-variant">First name</label>
+                        <input name="first_name" value="{{ profile_form.first_name.value }}" type="text" class="w-full rounded-[1.5rem] border border-surface-variant bg-white px-4 py-3 text-sm text-primary focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10" />
+                        {% if profile_form.first_name.errors %}
+                            <p class="text-error text-xs">{{ profile_form.first_name.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="space-y-3">
+                        <label class="text-xs uppercase tracking-[0.18em] text-on-surface-variant">Last name</label>
+                        <input name="last_name" value="{{ profile_form.last_name.value }}" type="text" class="w-full rounded-[1.5rem] border border-surface-variant bg-white px-4 py-3 text-sm text-primary focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10" />
+                        {% if profile_form.last_name.errors %}
+                            <p class="text-error text-xs">{{ profile_form.last_name.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="grid gap-6 md:grid-cols-2">
+                    <div class="space-y-3">
+                        <label class="text-xs uppercase tracking-[0.18em] text-on-surface-variant">Phone number</label>
+                        <input name="phone" value="{{ profile_form.phone.value|default:'' }}" type="tel" class="w-full rounded-[1.5rem] border border-surface-variant bg-white px-4 py-3 text-sm text-primary focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10" />
+                        {% if profile_form.phone.errors %}
+                            <p class="text-error text-xs">{{ profile_form.phone.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="space-y-3">
+                        <label class="text-xs uppercase tracking-[0.18em] text-on-surface-variant">Profile photo</label>
+                        <input type="file" name="profile_picture" accept="image/jpeg,image/png" class="w-full rounded-[1.5rem] border border-surface-variant bg-white px-4 py-3 text-sm text-primary focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10" />
+                        <p class="text-xs text-on-surface-variant">Allowed JPG, PNG. Max 2 MB.</p>
+                        {% if profile_form.profile_picture.errors %}
+                            <p class="text-error text-xs">{{ profile_form.profile_picture.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="rounded-[2rem] border border-surface-variant bg-surface-container-high p-6">
+                    <h3 class="font-headline-md text-headline-md text-primary mb-4">Emergency contact</h3>
+                    <div class="grid gap-6 md:grid-cols-2">
+                        <div class="space-y-3">
+                            <label class="text-xs uppercase tracking-[0.18em] text-on-surface-variant">Contact name</label>
+                            <input name="emergency_contact_name" value="{{ details_form.emergency_contact_name.value|default:'' }}" type="text" class="w-full rounded-[1.5rem] border border-surface-variant bg-white px-4 py-3 text-sm text-primary focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10" />
+                            {% if details_form.emergency_contact_name.errors %}
+                                <p class="text-error text-xs">{{ details_form.emergency_contact_name.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                        <div class="space-y-3">
+                            <label class="text-xs uppercase tracking-[0.18em] text-on-surface-variant">Contact phone</label>
+                            <input name="emergency_contact_phone" value="{{ details_form.emergency_contact_phone.value|default:'' }}" type="tel" class="w-full rounded-[1.5rem] border border-surface-variant bg-white px-4 py-3 text-sm text-primary focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10" />
+                            {% if details_form.emergency_contact_phone.errors %}
+                                <p class="text-error text-xs">{{ details_form.emergency_contact_phone.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="rounded-[2rem] border border-surface-variant bg-surface-container-high p-6">
+                    <h3 class="font-headline-md text-headline-md text-primary mb-4">Bank details</h3>
+                    <div class="grid gap-6 md:grid-cols-2">
+                        <div class="space-y-3">
+                            <label class="text-xs uppercase tracking-[0.18em] text-on-surface-variant">Bank name</label>
+                            <input name="bank_name" value="{{ details_form.bank_name.value|default:'' }}" type="text" class="w-full rounded-[1.5rem] border border-surface-variant bg-white px-4 py-3 text-sm text-primary focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10" />
+                            {% if details_form.bank_name.errors %}
+                                <p class="text-error text-xs">{{ details_form.bank_name.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                        <div class="space-y-3">
+                            <label class="text-xs uppercase tracking-[0.18em] text-on-surface-variant">Account number</label>
+                            <input name="bank_account_number" value="{{ details_form.bank_account_number.value|default:'' }}" type="text" class="w-full rounded-[1.5rem] border border-surface-variant bg-white px-4 py-3 text-sm text-primary focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10" />
+                            {% if details_form.bank_account_number.errors %}
+                                <p class="text-error text-xs">{{ details_form.bank_account_number.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="space-y-3 mt-6">
+                        <label class="text-xs uppercase tracking-[0.18em] text-on-surface-variant">Account holder name</label>
+                        <input name="account_holder_name" value="{{ details_form.account_holder_name.value|default:'' }}" type="text" class="w-full rounded-[1.5rem] border border-surface-variant bg-white px-4 py-3 text-sm text-primary focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10" />
+                        {% if details_form.account_holder_name.errors %}
+                            <p class="text-error text-xs">{{ details_form.account_holder_name.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row sm:justify-end gap-3">
+                    <a href="{% url 'teacher:matron:profile' %}" class="inline-flex items-center justify-center gap-2 rounded-full border border-surface-variant bg-white px-6 py-3 text-sm font-semibold text-primary hover:bg-surface-container-lowest transition-all">
+                        Cancel
+                    </a>
+                    <button type="submit" class="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-white hover:bg-primary/90 transition-all">
+                        Save Changes
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <aside class="space-y-6">
+            <div class="glass-panel rounded-[32px] p-8">
+                <h3 class="font-headline-md text-headline-md text-primary mb-4">Profile preview</h3>
+                <div class="space-y-4 text-body-md text-on-surface-variant">
+                    <p>All profile updates are instantly saved once you submit the form. Keep your emergency contact and bank details current for smooth matron operations.</p>
+                    <ul class="space-y-3 text-sm text-primary">
+                        <li class="flex items-center gap-2"><span class="material-symbols-outlined text-secondary">check_circle</span> Personal and contact details</li>
+                        <li class="flex items-center gap-2"><span class="material-symbols-outlined text-secondary">check_circle</span> Emergency contact details</li>
+                        <li class="flex items-center gap-2"><span class="material-symbols-outlined text-secondary">check_circle</span> Bank payment information</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="glass-panel rounded-[32px] p-8">
+                <h3 class="font-headline-md text-headline-md text-primary mb-4">Need help?</h3>
+                <p class="text-body-md text-on-surface-variant">Contact your administrator if you need access changes or if your assigned hostel details are missing.</p>
+                <div class="mt-6 space-y-3">
+                    <div class="rounded-3xl border border-surface-variant bg-white px-4 py-3">
+                        <p class="text-xs uppercase tracking-[0.18em] text-on-surface-variant">Support</p>
+                        <p class="text-body-lg text-primary">support@schoolnow.com</p>
+                    </div>
+                    <div class="rounded-3xl border border-surface-variant bg-white px-4 py-3">
+                        <p class="text-xs uppercase tracking-[0.18em] text-on-surface-variant">Phone</p>
+                        <p class="text-body-lg text-primary">+234 800 123 4567</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </div>
+</div>
+{% endblock %}

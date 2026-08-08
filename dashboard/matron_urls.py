@@ -13,6 +13,8 @@ Includes routes for:
 from django.urls import path
 from dashboard.matron_views import (
     matron_dashboard,
+    matron_profile,
+    matron_profile_edit,
     hostels_list,
     hostel_detail,
     hostel_edit,
@@ -55,6 +57,14 @@ urlpatterns = [
          name='resident_detail'),
     
     # ===== SUB-DASHBOARDS =====
+    path('profile/',
+         matron_profile,
+         name='profile'),
+
+    path('profile/edit/',
+         matron_profile_edit,
+         name='profile_edit'),
+
     path('roll-call/',
          roll_call_dashboard,
          name='roll_call'),

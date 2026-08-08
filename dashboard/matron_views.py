@@ -25,9 +25,11 @@ from django.db import transaction
 
 from SchoolNowMgt.models import (
     StaffProfile, CustomUser, School, Department, ActivityLog,
-    Student, StudentAttendance, Hostel, ResidentAssignment
+    Student, StudentAttendance, Hostel, ResidentAssignment,
+    RollCallSession
 )
 from SchoolNowMgt.decorators import require_support_staff_role, require_welfare_coordinator, get_user_school
+from user_profile.forms import SupportStaffProfileForm, SupportStaffDetailsForm
 
 
 # ============================================================================
@@ -209,6 +211,57 @@ def matron_dashboard(request):
     }
     
     return render(request, 'matron/matron_dashboard.html', context)
+
+
+@require_welfare_coordinator
+def matron_profile(request):
+    """Display the current Matron profile summary page."""
+    school = get_user_school(request)
+    staff_profile = get_object_or_404(StaffProfile, user=request.user)
+
+    context = {
+        'school': school,
+        'staff_profile': staff_profile,
+        'section': 'matron_profile',
+    }
+
+    return render(request, 'matron/matron_profile.html', context)
+
+
+@require_welfare_coordinator
+def matron_profile_edit(request):
+    """Display and save Matron profile updates."""
+    school = get_user_school(request)
+    staff_profile = get_object_or_404(StaffProfile, user=request.user)
+
+    if request.method == 'POST':
+        profile_form = SupportStaffProfileForm(
+            request.POST,
+            request.FILES,
+            instance=request.user
+        )
+        details_form = SupportStaffDetailsForm(
+            request.POST,
+            instance=staff_profile
+        )
+
+        if profile_form.is_valid() and details_form.is_valid():
+            profile_form.save()
+            details_form.save()
+            messages.success(request, 'Your profile has been updated successfully.')
+            return redirect('teacher:matron:profile')
+    else:
+        profile_form = SupportStaffProfileForm(instance=request.user)
+        details_form = SupportStaffDetailsForm(instance=staff_profile)
+
+    context = {
+        'school': school,
+        'staff_profile': staff_profile,
+        'profile_form': profile_form,
+        'details_form': details_form,
+        'section': 'matron_profile_edit',
+    }
+    return render(request, 'matron/matron_profile_edit.html', context)
 
 
 @require_welfare_coordinator
@@ -557,6 +610,18 @@ def roll_call_dashboard(request):
         is_active=True
     ).annotate(resident_count=Count('residents')).order_by('name')
 
+    if request.method == 'POST':
+        hostel_id = request.POST.get('hostel_id')
+        if hostel_id:
+            hostel = get_object_or_404(Hostel, id=hostel_id, school=school, is_active=True)
+            RollCallSession.objects.create(
+                hostel=hostel,
+                created_by=staff_profile,
+            )
+            messages.success(request, f"Roll call session started for {hostel.name}.")
+            return redirect('teacher:matron:roll_call')
+        messages.error(request, 'Please select a valid hostel to start a new roll call session.')
+
     total_residents = ResidentAssignment.objects.filter(
         hostel__school=school,
         is_active=True
@@ -565,12 +630,21 @@ def roll_call_dashboard(request):
     total_capacity = hostels.aggregate(total=Sum('capacity'))['total'] or 0
     occupancy_rate = f"{(total_residents / total_capacity * 100):.1f}%" if total_capacity > 0 else "0%"
 
+    sessions = RollCallSession.objects.filter(
+        hostel__school=school
+    ).select_related('hostel').order_by('-started_at')[:5]
+
     roll_call_sessions = []
-    for hostel in hostels[:5]:
-        capacity = hostel.capacity or 0
-        present = hostel.resident_count
-        percentage = int((present / capacity) * 100) if capacity > 0 else 0
-        if percentage >= 100:
+    for session in sessions:
+        active_residents = session.hostel.residents.filter(is_active=True).count()
+        capacity = session.hostel.capacity or 0
+        present = session.present_count or 0
+        percentage = int((present / active_residents) * 100) if active_residents > 0 else 0
+
+        if session.status == 'closed':
+            status_label = 'Closed'
+            status_color = 'slate'
+        elif percentage >= 100:
             status_label = 'Completed'
             status_color = 'green'
         elif percentage >= 70:
@@ -581,12 +655,34 @@ def roll_call_dashboard(request):
             status_color = 'gray'
 
         roll_call_sessions.append({
-            'code': hostel.name[:2].upper() if hostel.name else 'HS',
-            'name': hostel.name,
-            'count_text': f"{present}/{capacity if capacity > 0 else 0} Present",
+            'code': session.hostel.name[:2].upper() if session.hostel.name else 'HS',
+            'name': session.hostel.name,
+            'count_text': f"{present}/{active_residents if active_residents > 0 else 0} Present",
             'progress_width': min(100, percentage),
             'status_label': status_label,
             'status_color': status_color,
+        })
+
+    unaccounted_assignments = list(ResidentAssignment.objects.filter(
+        hostel__school=school,
+        is_active=True,
+        room_number__exact=''
+    ).select_related('student', 'hostel')[:3])
+
+    if not unaccounted_assignments:
+        unaccounted_assignments = list(ResidentAssignment.objects.filter(
+            hostel__school=school,
+            is_active=True
+        ).select_related('student', 'hostel')[:3])
+
+    unaccounted_students = []
+    for assignment in unaccounted_assignments:
+        student = assignment.student
+        hostel = assignment.hostel
+        unaccounted_students.append({
+            'initials': ''.join([student.first_name[:1], student.last_name[:1]]).upper(),
+            'name': student.full_name if hasattr(student, 'full_name') else f"{student.first_name} {student.last_name}",
+            'details': f"{hostel.name} - Room {assignment.room_number or 'TBD'}",
         })
 
     context = {
@@ -594,10 +690,13 @@ def roll_call_dashboard(request):
         'staff_profile': staff_profile,
         'statistics': {
             'total_residents': total_residents,
+            'total_capacity': total_capacity,
+            'occupancy_rate': occupancy_rate,
         },
+        'hostels': hostels,
         'roll_call_sessions': roll_call_sessions,
-        'roll_call_overall': roll_call_sessions[0]['progress_width'] if roll_call_sessions else 0,
-        'unaccounted_students': [],
+        'roll_call_overall': int(sum(item['progress_width'] for item in roll_call_sessions) / len(roll_call_sessions)) if roll_call_sessions else 0,
+        'unaccounted_students': unaccounted_students,
         'section': 'roll_call',
     }
 
@@ -645,20 +744,81 @@ def maintenance_dashboard(request):
     school = get_user_school(request)
     staff_profile = get_object_or_404(StaffProfile, user=request.user)
 
-    maintenance_tasks = [
-        {
-            'title': 'Pipe Leak - Lion B',
-            'status': 'Urgent',
-            'icon': 'plumbing',
-            'badge_color': 'error',
-        },
-        {
-            'title': 'Bulb Out - Dining',
-            'status': 'Pending',
-            'icon': 'lightbulb',
-            'badge_color': 'on-surface-variant',
-        },
-    ]
+    if request.method == 'POST':
+        title = (request.POST.get('title') or '').strip()
+        status = (request.POST.get('status') or 'Pending').strip()
+        location = (request.POST.get('location') or '').strip()
+        notes = (request.POST.get('notes') or '').strip()
+
+        if title:
+            maintenance_tasks = [
+                {
+                    'title': title,
+                    'status': status or 'Pending',
+                    'icon': 'build_circle',
+                    'badge_color': 'error' if status.lower() in {'urgent', 'high'} else 'on-surface-variant',
+                    'location': location or 'Hostel',
+                    'notes': notes,
+                },
+                *[
+                    {
+                        'title': 'Pipe Leak - Lion B',
+                        'status': 'Urgent',
+                        'icon': 'plumbing',
+                        'badge_color': 'error',
+                        'location': 'Lion B',
+                        'notes': 'Active leak reported during inspection.',
+                    },
+                    {
+                        'title': 'Bulb Out - Dining',
+                        'status': 'Pending',
+                        'icon': 'lightbulb',
+                        'badge_color': 'on-surface-variant',
+                        'location': 'Dining Hall',
+                        'notes': 'Lighting replacement pending.',
+                    },
+                ],
+            ]
+            messages.success(request, 'Maintenance ticket created successfully.')
+        else:
+            maintenance_tasks = [
+                {
+                    'title': 'Pipe Leak - Lion B',
+                    'status': 'Urgent',
+                    'icon': 'plumbing',
+                    'badge_color': 'error',
+                    'location': 'Lion B',
+                    'notes': 'Active leak reported during inspection.',
+                },
+                {
+                    'title': 'Bulb Out - Dining',
+                    'status': 'Pending',
+                    'icon': 'lightbulb',
+                    'badge_color': 'on-surface-variant',
+                    'location': 'Dining Hall',
+                    'notes': 'Lighting replacement pending.',
+                },
+            ]
+            messages.error(request, 'Please provide a ticket title.')
+    else:
+        maintenance_tasks = [
+            {
+                'title': 'Pipe Leak - Lion B',
+                'status': 'Urgent',
+                'icon': 'plumbing',
+                'badge_color': 'error',
+                'location': 'Lion B',
+                'notes': 'Active leak reported during inspection.',
+            },
+            {
+                'title': 'Bulb Out - Dining',
+                'status': 'Pending',
+                'icon': 'lightbulb',
+                'badge_color': 'on-surface-variant',
+                'location': 'Dining Hall',
+                'notes': 'Lighting replacement pending.',
+            },
+        ]
 
     inventory_items = [
         {'name': 'Liquid Detergent', 'current': 42, 'total': 50, 'percentage': 84, 'status': 'Sufficient Stock', 'status_color': 'secondary-container'},

@@ -428,9 +428,47 @@ class ResidentAssignment(models.Model):
         return f"{student_name} - {self.hostel.name}"
 
 
+class RollCallSession(models.Model):
+    """Dormitory roll call session started by a matron."""
+
+    STATUS_CHOICES = [
+        ('open', 'Open'),
+        ('closed', 'Closed'),
+    ]
+
+    hostel = models.ForeignKey(
+        Hostel,
+        on_delete=models.CASCADE,
+        related_name='roll_call_sessions'
+    )
+    created_by = models.ForeignKey(
+        'StaffProfile',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='created_roll_call_sessions'
+    )
+    started_at = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='open'
+    )
+    present_count = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['-started_at']
+        verbose_name = 'Roll Call Session'
+        verbose_name_plural = 'Roll Call Sessions'
+
+    def __str__(self):
+        return f"{self.hostel.name} — {self.started_at:%Y-%m-%d %H:%M}"
+
+
 class StudentParentRelationship(models.Model):
-    """Links parents to students they oversee (per school)"""
-    
+    """Links a parent to a student across one or more schools."""
+
     RELATIONSHIP_TYPES = [
         ('mother', 'Mother'),
         ('father', 'Father'),
@@ -440,7 +478,7 @@ class StudentParentRelationship(models.Model):
         ('grandparent', 'Grandparent'),
         ('other', 'Other'),
     ]
-    
+
     parent = models.ForeignKey(
         CustomUser,
         on_delete=models.CASCADE,
@@ -455,25 +493,25 @@ class StudentParentRelationship(models.Model):
     relationship_type = models.CharField(
         max_length=20,
         choices=RELATIONSHIP_TYPES,
-        default='parent'
+        default='other'
     )
     is_primary_guardian = models.BooleanField(default=False)
-    
+
     # Link to specific school for easy filtering
     school = models.ForeignKey(
         School,
         on_delete=models.CASCADE,
         help_text="School where this student is enrolled"
     )
-    
+
     # Status
     is_active = models.BooleanField(default=True)
     date_linked = models.DateTimeField(auto_now_add=True)
-    
+
     class Meta:
         unique_together = ('parent', 'student', 'school')
         verbose_name_plural = 'Student Parent Relationships'
-    
+
     def __str__(self):
         return f"{self.parent.get_full_name()} - {self.student.full_name} ({self.get_relationship_type_display()})"
 

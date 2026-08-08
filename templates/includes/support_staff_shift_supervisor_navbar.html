@@ -1,28 +1,354 @@
-<nav class="flex flex-wrap items-center gap-2">
-    {% with current_page=request.resolver_match.url_name %}
-    <a class="{% if current_page == 'shift_supervisor_dashboard' %}bg-secondary-container/20 text-secondary{% else %}text-on-surface-variant hover:text-primary hover:bg-white/70{% endif %} px-4 py-2 rounded-full text-sm font-semibold transition-all" href="{% url 'teacher:support_staff:shift_supervisor_dashboard' %}">
-        Dashboard
-    </a>
-    <a class="{% if current_page == 'staff_roster_dashboard' %}bg-secondary-container/20 text-secondary{% else %}text-on-surface-variant hover:text-primary hover:bg-white/70{% endif %} px-4 py-2 rounded-full text-sm font-semibold transition-all" href="{% url 'teacher:support_staff:staff_roster_dashboard' %}">
-        Staff Roster
-    </a>
-    <a class="{% if current_page == 'maintenance_dashboard' %}bg-secondary-container/20 text-secondary{% else %}text-on-surface-variant hover:text-primary hover:bg-white/70{% endif %} px-4 py-2 rounded-full text-sm font-semibold transition-all" href="{% url 'teacher:support_staff:maintenance_dashboard' %}">
-        Maintenance
-    </a>
-    <a class="{% if current_page == 'supply_requests_dashboard' %}bg-secondary-container/20 text-secondary{% else %}text-on-surface-variant hover:text-primary hover:bg-white/70{% endif %} px-4 py-2 rounded-full text-sm font-semibold transition-all" href="{% url 'teacher:support_staff:supply_requests_dashboard' %}">
-        Supply Requests
-    </a>
-    <a class="{% if current_page == 'messages_dashboard' %}bg-secondary-container/20 text-secondary{% else %}text-on-surface-variant hover:text-primary hover:bg-white/70{% endif %} px-4 py-2 rounded-full text-sm font-semibold transition-all" href="{% url 'teacher:support_staff:messages_dashboard' %}">
-        Messages
-    </a>
-    <a class="{% if current_page == 'calendar_dashboard' %}bg-secondary-container/20 text-secondary{% else %}text-on-surface-variant hover:text-primary hover:bg-white/70{% endif %} px-4 py-2 rounded-full text-sm font-semibold transition-all" href="{% url 'teacher:support_staff:calendar_dashboard' %}">
-        Calendar
-    </a>
-    <a class="{% if current_page == 'announcements_dashboard' %}bg-secondary-container/20 text-secondary{% else %}text-on-surface-variant hover:text-primary hover:bg-white/70{% endif %} px-4 py-2 rounded-full text-sm font-semibold transition-all" href="{% url 'teacher:support_staff:announcements_dashboard' %}">
-        Announcements
-    </a>
-    <a class="{% if current_page == 'payments_dashboard' %}bg-secondary-container/20 text-secondary{% else %}text-on-surface-variant hover:text-primary hover:bg-white/70{% endif %} px-4 py-2 rounded-full text-sm font-semibold transition-all" href="{% url 'teacher:support_staff:payments_dashboard' %}">
-        Payments
-    </a>
-    {% endwith %}
+﻿<!-- Replica of the support staff screenshot-style navbar -->
+<nav class="support-nav" aria-label="Shift supervisor navigation">
+    <div class="support-nav__inner">
+        <div class="support-nav__logo-group">
+            <a class="support-nav__brand" href="{% url 'teacher:support_staff:shift_supervisor_dashboard' %}" aria-label="SchoolNow dashboard">
+                <span class="material-symbols-outlined">school</span>
+            </a>
+        </div>
+        <!-- greeting and shift status removed from navbar; moved below navbar in page templates -->
+
+        <div class="support-nav__links" id="support-nav-links">
+            <a class="support-nav__link {% if request.resolver_match.url_name == 'shift_supervisor_dashboard' %}active{% endif %}" href="{% url 'teacher:support_staff:shift_supervisor_dashboard' %}">
+                <span class="material-symbols-outlined">dashboard</span>
+                <span>Dashboard</span>
+            </a>
+            <a class="support-nav__link {% if request.resolver_match.url_name == 'staff_roster_dashboard' %}active{% endif %}" href="{% url 'teacher:support_staff:staff_roster_dashboard' %}">
+                <span class="material-symbols-outlined">groups</span>
+                <span>Staff</span>
+            </a>
+            <a class="support-nav__link {% if request.resolver_match.url_name == 'messages_dashboard' %}active{% endif %}" href="{% url 'teacher:support_staff:messages_dashboard' %}">
+                <span class="material-symbols-outlined">mail</span>
+                <span>Messages</span>
+            </a>
+            <a class="support-nav__link {% if request.resolver_match.url_name == 'shift_attendance_list' %}active{% endif %}" href="{% url 'teacher:support_staff:shift_attendance_list' %}">
+                <span class="material-symbols-outlined">calendar_month</span>
+                <span>Attendance</span>
+            </a>
+            <a class="support-nav__link {% if request.resolver_match.url_name == 'payments_dashboard' %}active{% endif %}" href="{% url 'teacher:support_staff:payments_dashboard' %}">
+                <span class="material-symbols-outlined">payments</span>
+                <span>Payments</span>
+            </a>
+        </div>
+
+        <div class="support-nav__actions">
+            <a class="support-nav__logout" href="{% url 'SchoolNowMgt:custom_logout' %}">
+                <span class="material-symbols-outlined">logout</span>
+                <span>Log out</span>
+            </a>
+            <button id="shiftSupervisorMobileToggle" type="button" class="support-nav__mobile-toggle lg:hidden" aria-expanded="false" aria-controls="support-nav-links">
+                <span class="material-symbols-outlined">menu</span>
+                <span>Menu</span>
+            </button>
+        </div>
+    </div>
 </nav>
+
+<script>
+(function() {
+    const toggle = document.getElementById('shiftSupervisorMobileToggle');
+    const nav = document.querySelector('.support-nav');
+    const links = document.getElementById('support-nav-links');
+
+    if (toggle && nav && links) {
+        toggle.addEventListener('click', function () {
+            const expanded = toggle.getAttribute('aria-expanded') === 'true';
+            toggle.setAttribute('aria-expanded', String(!expanded));
+            nav.classList.toggle('mobile-open', !expanded);
+        });
+
+            window.addEventListener('resize', function () {
+            if (window.innerWidth >= 768) {
+                nav.classList.remove('mobile-open');
+                toggle.setAttribute('aria-expanded', 'false');
+            }
+        });
+    }
+})();
+</script>
+
+
+<style>
+.support-nav {
+    width: 100vw;
+    position: relative;
+    left: 50%;
+    right: 50%;
+    margin-left: -50vw;
+    margin-right: -50vw;
+    padding: 0;
+    box-sizing: border-box;
+    background: transparent;
+    z-index: 2;
+}
+
+/* Pull the navbar up to the very top of the viewport to remove any small gap */
+.support-nav {
+    margin-top: -24px;
+}
+
+.support-nav__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    margin: 0;
+    padding: 12px 18px;
+    border-radius: 0;
+    background: linear-gradient(135deg, #0d1b6d 0%, #0a113d 100%);
+    box-shadow: 0 14px 40px rgba(10, 17, 61, 0.25);
+    color: #fff;
+}
+
+.support-nav__logo-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+.support-nav__brand {
+    width: 44px;
+    height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #f6c94b 0%, #f0b600 100%);
+    color: #0a123a;
+    text-decoration: none;
+    flex-shrink: 0;
+}
+
+.support-nav__brand .material-symbols-outlined {
+    font-size: 24px;
+}
+
+.support-nav__title-group {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.support-nav__title {
+    display: block;
+    font-size: 0.92rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.support-nav__subtitle {
+    display: block;
+    font-size: 0.78rem;
+    color: rgba(255,255,255,0.78);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.support-nav__links {
+    display: none;
+    width: 100%;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+.support-nav__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border-radius: 999px;
+    color: rgba(255,255,255,0.88);
+    text-decoration: none;
+    font-size: 0.92rem;
+    font-weight: 600;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.support-nav__link .material-symbols-outlined {
+    font-size: 18px;
+}
+
+.support-nav__link:hover,
+.support-nav__link.active {
+    background: rgba(255,255,255,0.12);
+    border-color: rgba(255,255,255,0.18);
+}
+
+.support-nav__actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.support-nav__logout {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border-radius: 999px;
+    color: rgba(255,255,255,0.95);
+    background: rgba(255,255,255,0.08);
+    text-decoration: none;
+    font-size: 0.92rem;
+    font-weight: 600;
+    transition: background 0.2s ease;
+}
+
+.support-nav__logout:hover {
+    background: rgba(255,255,255,0.16);
+}
+
+.support-nav__mobile-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border: 0;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.12);
+    color: #fff;
+    font-size: 0.92rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+@media (min-width: 768px) {
+    .support-nav__links {
+        display: flex;
+        justify-content: center;
+        margin-top: 0;
+    }
+
+    .support-nav__mobile-toggle {
+        display: none;
+    }
+
+    .support-nav__inner {
+        flex-direction: row;
+        align-items: center;
+        padding: 12px 18px;
+    }
+
+    .support-nav__logo-group {
+        width: auto;
+        justify-content: flex-start;
+    }
+
+    .support-nav__actions {
+        width: auto;
+        justify-content: flex-end;
+    }
+}
+
+@media (max-width: 767px) {
+    .support-nav__inner {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 14px;
+    }
+
+    .support-nav__logo-group {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .support-nav__title-group {
+        display: none;
+    }
+
+    .support-nav__actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .support-nav__mobile-panel {
+        display: none;
+        width: 100%;
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 10px;
+        padding: 14px 16px;
+        border-radius: 18px;
+        background: rgba(255,255,255,0.10);
+        color: #fff;
+    }
+
+    .support-nav.mobile-open .support-nav__mobile-panel {
+        display: flex;
+    }
+
+    .support-nav__mobile-status-card {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .support-nav__mobile-status-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .support-nav__status-label {
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.16em;
+        color: rgba(255,255,255,0.75);
+    }
+
+    .support-nav__status-dot {
+        width: 0.75rem;
+        height: 0.75rem;
+        border-radius: 999px;
+        flex-shrink: 0;
+        background: currentColor;
+    }
+
+    .support-nav__status-badge {
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: #fff;
+    }
+
+    .support-nav__status-title {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 700;
+        line-height: 1.3;
+    }
+
+    .support-nav__status-summary {
+        margin: 0;
+        font-size: 0.85rem;
+        color: rgba(255,255,255,0.72);
+    }
+
+    .support-nav.mobile-open .support-nav__links {
+        display: flex;
+    }
+}
+
+@media (max-width: 640px) {
+    .support-nav {
+        padding: 0;
+    }
+
+    .support-nav__inner {
+        padding: 12px;
+        border-radius: 0;
+    }
+}
+</style>

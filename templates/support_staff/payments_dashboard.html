@@ -1,15 +1,14 @@
 {% extends 'support_staff/dashboard_ethos.html' %}
-{% block title %}Payments Overview{% endblock %}
+{% block title %}Payments{% endblock %}
 
 {% block content %}
-<div class="p-8 space-y-8">
-    {% include 'includes/support_staff_topbar.html' %}
+<div class="space-y-0">
     {% include 'includes/support_staff_shift_supervisor_navbar.html' %}
-    <div class="glass-card rounded-[32px] p-8 shadow-lg">
+    <div class="glass-card rounded-[0px] p-8 shadow-none border-0">
         <div class="flex items-center justify-between mb-8">
             <div>
-                <h2 class="font-headline-lg text-headline-lg text-primary">Payments Overview</h2>
-                <p class="text-body-md text-on-surface-variant">Your payroll and allowance summary.</p>
+                <h2 class="font-headline-lg text-headline-lg text-primary">Payments</h2>
+                <p class="text-body-md text-on-surface-variant">Your payroll, allowance, and balance summary.</p>
             </div>
         </div>
         <div class="grid md:grid-cols-2 gap-6">

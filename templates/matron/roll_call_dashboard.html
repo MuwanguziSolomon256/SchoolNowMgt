@@ -4,10 +4,25 @@
 {% block title %}Dormitory Roll Call | Matron{% endblock %}
 
 {% block matron_content %}
-<header class="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 mb-8">
+<header class="glass-panel inner-glow rounded-[32px] overflow-hidden p-6 lg:p-8 mb-8 flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6">
   <div>
     <h2 class="font-display-lg text-display-lg text-primary">Dormitory Roll Call</h2>
     <p class="text-on-surface-variant mt-1 font-body-lg">Monitor roll call progress and unresolved resident checks.</p>
+  </div>
+  <div class="w-full lg:w-auto">
+    <form method="post" class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+      {% csrf_token %}
+      <label for="hostel_id" class="sr-only">Select Hostel</label>
+      <select id="hostel_id" name="hostel_id" class="w-full sm:w-auto rounded-[24px] border border-surface-variant bg-surface px-4 py-3 text-sm text-on-surface">
+        {% for hostel in hostels %}
+        <option value="{{ hostel.id }}">{{ hostel.name }}</option>
+        {% endfor %}
+      </select>
+      <button type="submit" class="bg-primary text-white px-6 py-3 rounded-full font-label-md flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-primary/20 transition-all">
+        <span class="material-symbols-outlined text-[18px]">add</span>
+        Start New Session
+      </button>
+    </form>
   </div>
 </header>
 
