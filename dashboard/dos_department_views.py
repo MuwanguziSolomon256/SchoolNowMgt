@@ -370,9 +370,8 @@ def department_detail(request, dept_id):
         user__is_active=True
     ).select_related('user').order_by('user__first_name')
     
-    # Subjects are not directly linked to departments in current model
-    # They exist at the global level
-    subjects = Subject.objects.all().order_by('name')
+    # Matching is based on the academic area name, not just teacher assignment.
+    subjects = department.matching_subjects().order_by('name')
     
     # Performance metrics - cannot be calculated without direct department-subject link
     grades = Grade.objects.none()  # Empty queryset
@@ -427,11 +426,8 @@ def department_delete(request, dept_id):
     
     dept_name = department.name
     
-    # Check if department has active subjects
-    active_subjects = Subject.objects.filter(
-        teacher_department=department,
-        is_active=True
-    ).count()
+    # Check if department has active subjects by the same academic area.
+    active_subjects = department.matching_subjects().count()
     
     if active_subjects > 0:
         messages.error(

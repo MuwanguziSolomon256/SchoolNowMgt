@@ -4,6 +4,7 @@ Handles department overview, teacher management, subject management, and perform
 """
 
 from django.shortcuts import render, get_object_or_404, redirect
+from django.http import Http404
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.db.models import Count, Q, Avg
@@ -51,10 +52,7 @@ def dept_dashboard(request):
     school = get_user_school(request)
     staff_profile, department = get_department_head_department(request, school)
 
-    subjects = Subject.objects.filter(
-        teachers__teacher_department=department,
-        teachers__user__school=school
-    ).distinct() if department else Subject.objects.none()
+    subjects = department.matching_subjects() if department else Subject.objects.none()
 
     department_teachers = StaffProfile.objects.filter(
         teacher_department=department,
@@ -222,10 +220,7 @@ def subjects_list(request):
     school = get_user_school(request)
     staff_profile, department = get_department_head_department(request, school)
 
-    subjects = Subject.objects.filter(
-        teachers__teacher_department=department,
-        teachers__user__school=school
-    ).distinct() if department else Subject.objects.none()
+    subjects = department.matching_subjects() if department else Subject.objects.none()
 
     search_term = request.GET.get('search', '')
     if search_term:
@@ -257,9 +252,10 @@ def subject_detail(request, subject_id):
     subject = get_object_or_404(
         Subject,
         id=subject_id,
-        teachers__teacher_department=department,
-        teachers__user__school=school
+        pk=subject_id,
     )
+    if department and subject not in department.matching_subjects():
+        raise Http404()
 
     classes = ClassGrade.objects.filter(
         school=school,
@@ -303,10 +299,7 @@ def classes_list(request):
     school = get_user_school(request)
     staff_profile, department = get_department_head_department(request, school)
 
-    subjects = Subject.objects.filter(
-        teachers__teacher_department=department,
-        teachers__user__school=school
-    ).distinct() if department else Subject.objects.none()
+    subjects = department.matching_subjects() if department else Subject.objects.none()
 
     classes = Timetable.objects.filter(
         school=school,
@@ -347,10 +340,7 @@ def timetable_overview(request):
     school = get_user_school(request)
     staff_profile, department = get_department_head_department(request, school)
 
-    subjects = Subject.objects.filter(
-        teachers__teacher_department=department,
-        teachers__user__school=school
-    ).distinct() if department else Subject.objects.none()
+    subjects = department.matching_subjects() if department else Subject.objects.none()
 
     timetable = Timetable.objects.filter(
         school=school,
@@ -377,10 +367,7 @@ def performance_report(request):
     school = get_user_school(request)
     staff_profile, department = get_department_head_department(request, school)
 
-    subjects = Subject.objects.filter(
-        teachers__teacher_department=department,
-        teachers__user__school=school
-    ).distinct() if department else Subject.objects.none()
+    subjects = department.matching_subjects() if department else Subject.objects.none()
 
     subject_performance = []
     for subject in subjects:

@@ -55,13 +55,13 @@ def get_teacher_staff_profile(request):
 
 
 def get_teacher_classes(staff_profile, school):
-    """Get all active classes where the staff is class_teacher, scoped to school."""
+    """Get all classes where the staff teaches via timetable assignments, scoped to school."""
     if not staff_profile:
         return ClassGrade.objects.none()
     return ClassGrade.objects.filter(
         school=school,
-        class_teacher=staff_profile
-    ).select_related('school').prefetch_related('students')
+        timetable_entries__teacher=staff_profile
+    ).distinct().select_related('school').prefetch_related('students')
 
 
 # ========================
@@ -104,8 +104,8 @@ def grades_dashboard(request):
         
         # Get current term/year
         today = timezone.localdate()
-        current_term = 1  # TODO: Get from settings or calculate
-        current_year = today.year
+        current_term = 'term_1'  # Match the format used in grade_entry (term_1, term_2, term_3)
+        current_year = str(today.year)  # Convert to string to match storage format
         
         # Fetch all grades for this class (school-scoped)
         grades_qs = Grade.objects.filter(
@@ -204,6 +204,7 @@ def grade_entry_interface(request):
             # ===== SINGLE ENTRY HANDLER =====
             student_id = data.get('student_id')
             subject_id = data.get('subject_id')
+            exam_type = data.get('exam_type', 'end_of_term')
             term = data.get('term', '1')
             year = data.get('year', str(timezone.now().year))
             score = data.get('score')
@@ -237,14 +238,14 @@ def grade_entry_interface(request):
                     'error': 'Invalid student or subject'
                 }, status=404)
             
-            # Create or update grade (school-scoped)
+            # Create or update grade with exam_type in semester field
             grade_term = f'term_{term}' if term.isdigit() else term
             grade, created = Grade.objects.update_or_create(
                 student=student,
                 subject=subject_obj,
                 curriculum='national',
                 term=grade_term,
-                semester='',
+                semester=exam_type,  # Store exam_type in semester field
                 academic_year=str(year),
                 defaults={
                     'score': Decimal(str(score)),
@@ -256,7 +257,7 @@ def grade_entry_interface(request):
             ActivityLog.objects.create(
                 teacher=staff,
                 activity_type='grade_entered',
-                description=f'Entered grade for {student.first_name} {student.last_name} in {subject_obj.name}: {score}',
+                description=f'Entered grade for {student.first_name} {student.last_name} in {subject_obj.name}: {score} ({exam_type})',
                 severity='success',
                 icon_name='assignment'
             )
@@ -267,6 +268,7 @@ def grade_entry_interface(request):
                     'student_name': f'{student.first_name} {student.last_name}',
                     'subject': subject_obj.name,
                     'score': score,
+                    'exam_type': exam_type,
                     'grade': grade.id,
                     'created': created,
                 }
@@ -276,6 +278,7 @@ def grade_entry_interface(request):
             # ===== BULK ENTRY HANDLER =====
             class_id = data.get('class_id')
             subject_id = data.get('subject_id')
+            exam_type = data.get('exam_type', 'end_of_term')
             term = data.get('term', '1')
             year = data.get('year', str(timezone.now().year))
             grades_data = data.get('grades', {})  # {student_id: score, ...}
@@ -315,14 +318,14 @@ def grade_entry_interface(request):
                         status='active'
                     )
                     
-                    # Create or update grade (school-scoped)
+                    # Create or update grade with exam_type in semester field
                     grade_term = f'term_{term}' if term.isdigit() else term
                     grade, created = Grade.objects.update_or_create(
                         student=student,
                         subject=subject_obj,
                         curriculum='national',
                         term=grade_term,
-                        semester='',
+                        semester=exam_type,  # Store exam_type in semester field
                         academic_year=str(year),
                         defaults={
                             'score': Decimal(str(score)),
@@ -358,6 +361,52 @@ def grade_entry_interface(request):
                     'failed_entries': failed_entries,
                 }
             })
+
+
+@require_teacher_role('teacher')
+def api_class_students(request, class_id):
+    """
+    API endpoint to fetch students for a class (for bulk grade entry dropdown).
+    
+    Returns JSON with list of students in the class, filtered by teacher's school
+    and timetable assignments.
+    
+    Requires: Teacher role
+    Filters: Only classes taught by this teacher in their school
+    """
+    school = get_user_school(request)
+    staff = get_teacher_staff_profile(request)
+    if not staff:
+        return JsonResponse({'success': False, 'error': 'Unauthorized'}, status=401)
+    
+    try:
+        # Verify teacher has access to this class
+        class_obj = ClassGrade.objects.get(
+            id=class_id,
+            school=school,
+            timetable_entries__teacher=staff
+        )
+        
+        # Get active students in this class
+        students = Student.objects.filter(
+            class_grade=class_obj,
+            status='active'
+        ).order_by('first_name', 'last_name').values('id', 'first_name', 'last_name')
+        
+        return JsonResponse({
+            'success': True,
+            'data': list(students)
+        })
+    except ClassGrade.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'error': 'Class not found or you do not have access to it'
+        }, status=404)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
 
 
 @require_teacher_role('teacher')

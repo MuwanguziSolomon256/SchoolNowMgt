@@ -85,9 +85,11 @@ class AttendanceMarkingForm(forms.Form):
     )
 
     def __init__(self, *args, **kwargs):
+        school = kwargs.pop('school', None)
         super().__init__(*args, **kwargs)
+        if school is not None:
+            self.fields['class_grade'].queryset = ClassGrade.objects.filter(school=school)
         # Set initial date to today
-        from django.utils import timezone
         self.fields['date'].initial = timezone.now().date()
 
 
@@ -252,6 +254,12 @@ class StudentOnboardingForm(forms.Form):
         widget=forms.TextInput(attrs={'placeholder': 'e.g. 0772 123 456', 'class': 'form-input'})
     )
     
+    def __init__(self, *args, **kwargs):
+        school = kwargs.pop('school', None)
+        super().__init__(*args, **kwargs)
+        if school is not None:
+            self.fields['class_grade'].queryset = ClassGrade.objects.filter(school=school)
+
     def clean_parent_phone(self):
         phone = self.cleaned_data['parent_phone'].strip()
         if not phone:
@@ -315,6 +323,53 @@ class BulkStudentUploadForm(forms.Form):
             raise ValidationError(f"Error reading CSV: {str(e)}")
         
         return file
+
+
+class ClassGradeCreateForm(forms.Form):
+    """
+    Form for creating a class in the current admin school.
+    """
+
+    CURRICULUM_CHOICES = [
+        ('national', 'Uganda National Curriculum'),
+        ('international', 'International Curriculum'),
+    ]
+
+    name = forms.CharField(
+        max_length=50,
+        widget=forms.TextInput(attrs={'placeholder': 'e.g. P.1, Grade 1', 'class': 'form-input'})
+    )
+    level = forms.IntegerField(
+        min_value=1,
+        widget=forms.NumberInput(attrs={'placeholder': 'Numeric level', 'class': 'form-input'})
+    )
+    curriculum = forms.ChoiceField(
+        choices=CURRICULUM_CHOICES,
+        widget=forms.Select(attrs={'class': 'form-input'})
+    )
+    capacity = forms.IntegerField(
+        min_value=1,
+        initial=45,
+        widget=forms.NumberInput(attrs={'placeholder': 'Capacity', 'class': 'form-input'})
+    )
+
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+
+    def clean_name(self):
+        name = self.cleaned_data.get('name', '').strip()
+        curriculum = self.cleaned_data.get('curriculum')
+        if name and curriculum and self.user and self.user.school:
+            if ClassGrade.objects.filter(
+                name__iexact=name,
+                curriculum=curriculum,
+                school=self.user.school
+            ).exists():
+                raise ValidationError(
+                    'A class with that name and curriculum already exists in your school.'
+                )
+        return name
 
 
 class AdminMessageForm(forms.Form):

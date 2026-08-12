@@ -158,6 +158,11 @@
                     <span class="material-symbols-outlined text-sm">download</span>
                     <span class="hidden md:inline">Export</span>
                 </a>
+                <button onclick="document.getElementById('classCreateModal').classList.remove('hidden')" 
+                        class="bg-tertiary text-on-tertiary rounded-lg font-bold px-3 md:px-4 py-2 flex items-center gap-2 hover:brightness-110 transition-all text-sm">
+                    <span class="material-symbols-outlined">class</span>
+                    <span>New Class</span>
+                </button>
                 <button onclick="document.getElementById('studentEnrollModal').classList.remove('hidden')" 
                         class="bg-secondary-fixed text-on-secondary-fixed rounded-lg font-bold px-3 md:px-4 py-2 flex items-center gap-2 hover:brightness-110 transition-all text-sm">
                     <span class="material-symbols-outlined">person_add</span>
@@ -370,6 +375,103 @@
 
     </section>
 </div>
+
+<!-- New Class Creation Modal -->
+<div id="classCreateModal" class="hidden fixed inset-0 z-50 overflow-y-auto">
+    <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-black/50 transition-opacity" onclick="document.getElementById('classCreateModal').classList.add('hidden')"></div>
+        <div class="relative inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
+            <button onclick="document.getElementById('classCreateModal').classList.add('hidden')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+            <div class="bg-gradient-to-r from-primary to-primary/80 px-6 py-6 sm:px-8">
+                <h3 class="text-xl sm:text-2xl font-bold text-white">Create New Class</h3>
+                <p class="text-white/80 text-sm mt-1">Add a class for local or international curriculum.</p>
+            </div>
+            <div class="px-6 py-6 sm:px-8">
+                <form id="create-class-form" class="space-y-4">
+                    {% csrf_token %}
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Class Name</label>
+                            <input type="text" name="name" placeholder="e.g. P.1 or Grade 1"
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Level</label>
+                            <input type="number" name="level" min="1" placeholder="1"
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition" required>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Curriculum</label>
+                            <select name="curriculum"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition" required>
+                                <option value="">Select curriculum</option>
+                                <option value="national">Uganda National Curriculum</option>
+                                <option value="international">International Curriculum</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Capacity</label>
+                            <input type="number" name="capacity" min="1" value="45"
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition" required>
+                        </div>
+                    </div>
+                    <div id="class-create-errors" class="hidden bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-800"></div>
+                    <div class="flex gap-3 justify-end pt-4">
+                        <button type="button" onclick="document.getElementById('classCreateModal').classList.add('hidden')" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition">
+                            Cancel
+                        </button>
+                        <button type="submit" class="px-6 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition flex items-center gap-2">
+                            <span class="material-symbols-outlined text-sm">class</span>
+                            Create Class
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('create-class-form')?.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const form = this;
+    const formData = new FormData(form);
+
+    try {
+        const response = await fetch('{% url "SchoolNowMgt:api_class_create" %}', {
+            method: 'POST',
+            body: formData
+        });
+        const data = await response.json();
+
+        const errorsDiv = document.getElementById('class-create-errors');
+        if (!data.success) {
+            errorsDiv.classList.remove('hidden');
+            if (data.errors) {
+                errorsDiv.textContent = Object.entries(data.errors)
+                    .map(([key, msgs]) => `${key}: ${msgs.join(', ')}`)
+                    .join('\n');
+            } else {
+                errorsDiv.textContent = data.message;
+            }
+            return;
+        }
+
+        alert(`Class created: ${data.data.name} (${data.data.curriculum})`);
+        form.reset();
+        document.getElementById('classCreateModal').classList.add('hidden');
+        location.reload();
+    } catch (error) {
+        const errorsDiv = document.getElementById('class-create-errors');
+        errorsDiv.classList.remove('hidden');
+        errorsDiv.textContent = error.message;
+    }
+});
+</script>
 
 <!-- New Student Admission Modal -->
 {% include "includes/student_enroll_modal.html" %}

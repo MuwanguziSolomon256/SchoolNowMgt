@@ -128,7 +128,7 @@ def mark_attendance(request):
 
         else:
             # Step 1: Form submitted with class and date, load students
-            form = AttendanceMarkingForm(request.POST)
+            form = AttendanceMarkingForm(request.POST, school=request.user.school)
             if form.is_valid():
                 class_grade = form.cleaned_data['class_grade']
                 selected_date = form.cleaned_data['date']
@@ -147,7 +147,7 @@ def mark_attendance(request):
                 return render(request, 'SchoolNowMgt/mark_attendance.html', context)
     else:
         # GET request: render empty form
-        form = AttendanceMarkingForm()
+        form = AttendanceMarkingForm(school=request.user.school)
 
     context = {
         'form': form,

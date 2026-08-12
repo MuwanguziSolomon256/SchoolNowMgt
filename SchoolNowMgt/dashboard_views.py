@@ -20,7 +20,7 @@ from .models import (
     StaffBill, TeacherTask, Timetable, Curriculum, StudentParentRelationship
 )
 from .forms import (
-    StaffOnboardingForm, BulkStaffUploadForm,
+    StaffOnboardingForm, BulkStaffUploadForm, ClassGradeCreateForm,
     StudentOnboardingForm, BulkStudentUploadForm,
     AdminMessageForm, StaffPasswordResetForm, ParentMessageForm, StaffMessageForm,
     EventForm, AdminProfileForm, ProfilePictureForm, SubjectForm, TeacherEditForm, SupportStaffEditForm, CurriculumForm
@@ -1399,7 +1399,7 @@ def onboard_student_ajax(request):
     - data: { admission_number, full_name } if successful
     - errors (dict) if validation fails
     """
-    form = StudentOnboardingForm(request.POST)
+    form = StudentOnboardingForm(request.POST, school=request.user.school)
     
     if not form.is_valid():
         return JsonResponse({
@@ -1456,6 +1456,58 @@ def onboard_student_ajax(request):
         return JsonResponse({
             'success': False,
             'message': f'Error creating student: {str(e)}'
+        }, status=500)
+
+
+@require_POST
+@login_required
+@admin_required
+def create_class_grade_ajax(request):
+    """
+    AJAX endpoint to create a new class for the current admin's school.
+    """
+    form = ClassGradeCreateForm(request.POST, user=request.user)
+
+    if not form.is_valid():
+        return JsonResponse({
+            'success': False,
+            'message': 'Form validation failed',
+            'errors': form.errors
+        }, status=400)
+
+    try:
+        class_grade = ClassGrade.objects.create(
+            name=form.cleaned_data['name'].strip(),
+            level=form.cleaned_data['level'],
+            curriculum=form.cleaned_data['curriculum'],
+            capacity=form.cleaned_data['capacity'],
+            school=request.user.school
+        )
+
+        if hasattr(request.user, 'staffprofile'):
+            ActivityLog.objects.create(
+                teacher=request.user.staffprofile,
+                activity_type='class_created',
+                description=f'Created class {class_grade.name} ({class_grade.get_curriculum_display()})',
+                icon_name='school',
+                severity='info'
+            )
+
+        return JsonResponse({
+            'success': True,
+            'message': f'Class {class_grade.name} created successfully.',
+            'data': {
+                'id': class_grade.id,
+                'name': class_grade.name,
+                'level': class_grade.level,
+                'curriculum': class_grade.get_curriculum_display(),
+                'capacity': class_grade.capacity
+            }
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error creating class: {str(e)}'
         }, status=500)
 
 

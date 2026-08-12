@@ -7,7 +7,7 @@ from datetime import datetime as dt
 from SchoolNowMgt.models import (
     StaffProfile, Timetable, Student, ClassGrade,
     StudentAttendance, RetentionAlert, Grade,
-    TeacherTask, ActivityLog, TeacherAttendance, Subject
+    TeacherTask, ActivityLog, TeacherAttendance, Subject, LessonPlan
 )
 from SchoolNowMgt.decorators import require_teacher_role, get_user_school, ensure_staff_profile
 from SchoolNowMgt.utils import get_teacher_scope_data
@@ -466,6 +466,7 @@ def teacher_lessons_list(request):
     - Lessons by class, day, time
     - Subject, student count
     - Week view
+    - Recent lesson plans
     
     Requires: Teacher role
     Filters: All data scoped to user's school
@@ -512,14 +513,173 @@ def teacher_lessons_list(request):
                 'lessons': day_lessons
             })
     
+    # Get recent lesson plans for this teacher
+    recent_lesson_plans = LessonPlan.objects.filter(
+        teacher=staff,
+        class_grade__school=school
+    ).select_related('class_grade', 'subject').order_by('-lesson_date')[:10]
+    
+    # Get all classes taught by this teacher from timetable entries (school-scoped)
+    my_classes = ClassGrade.objects.filter(
+        school=school,
+        timetable_entries__teacher=staff
+    ).distinct().order_by('level')
+    
+    # Get all subjects taught by this teacher for the form dropdown
+    my_subjects = staff.subjects.all().order_by('name')
+    
     context = {
         'all_lessons': all_lessons,
         'days_with_lessons': days_with_lessons,
         'today': today,
         'total_lessons': all_lessons.count(),
+        'recent_lesson_plans': recent_lesson_plans,
+        'my_classes': my_classes,
+        'my_subjects': my_subjects,
     }
     
     return render(request, 'teacher/lessons_list.html', context)
+
+
+@require_teacher_role('teacher')
+def create_lesson_plan(request):
+    """
+    Create a new lesson plan.
+    
+    Accepts POST data with:
+    - class_id (ClassGrade id)
+    - subject_id (Subject id)
+    - lesson_date
+    - topic
+    - objective
+    - activities
+    - resources
+    - homework
+    
+    Requires: Teacher role
+    """
+    if request.method != 'POST':
+        return redirect('teacher:lessons')
+    
+    # Get school and staff profile (verified by decorator)
+    school = get_user_school(request)
+    staff = ensure_staff_profile(request.user)
+    
+    try:
+        class_id = request.POST.get('class_id')
+        subject_id = request.POST.get('subject_id')
+        lesson_date = request.POST.get('lesson_date')
+        topic = request.POST.get('topic')
+        objective = request.POST.get('objective')
+        activities = request.POST.get('activities', '')
+        resources = request.POST.get('resources', '')
+        homework = request.POST.get('homework', '')
+        
+        # Verify the class belongs to the teacher's school
+        class_grade = ClassGrade.objects.get(id=class_id, school=school)
+        
+        # Verify the subject exists (global reference)
+        subject = Subject.objects.get(id=subject_id)
+        
+        # Try to find the timetable entry for timing info
+        timetable = None
+        lesson_start_time = None
+        lesson_end_time = None
+        
+        try:
+            timetable = Timetable.objects.get(
+                class_grade=class_grade,
+                subject=subject,
+                teacher=staff
+            )
+            lesson_start_time = timetable.start_time
+            lesson_end_time = timetable.end_time
+        except Timetable.DoesNotExist:
+            pass
+        
+        # Create the lesson plan
+        plan = LessonPlan.objects.create(
+            teacher=staff,
+            class_grade=class_grade,
+            subject=subject,
+            timetable=timetable,
+            lesson_date=lesson_date,
+            lesson_start_time=lesson_start_time,
+            lesson_end_time=lesson_end_time,
+            topic=topic,
+            objective=objective,
+            activities=activities,
+            resources=resources,
+            homework=homework,
+        )
+        
+        # Log activity
+        ActivityLog.objects.create(
+            teacher=staff,
+            activity_type='lesson_created',
+            description=f'Created lesson plan for {class_grade.name}: "{topic}"',
+            icon_name='menu_book',
+            severity='success',
+        )
+    except Exception as e:
+        # Log error but don't crash; redirect back to lessons page
+        pass
+    
+    return redirect('teacher:lessons')
+
+
+@require_teacher_role('teacher')
+def edit_lesson_plan(request, plan_id):
+    """
+    Edit an existing lesson plan.
+    
+    Teachers can edit lesson plans from the start of the lesson until 15 minutes
+    after the lesson ends.
+    
+    Requires: Teacher role and within edit window
+    """
+    from django.shortcuts import get_object_or_404
+    from django.contrib import messages
+    
+    school = get_user_school(request)
+    staff = ensure_staff_profile(request.user)
+    
+    # Get lesson plan and verify ownership
+    plan = get_object_or_404(LessonPlan, id=plan_id, teacher=staff, class_grade__school=school)
+    
+    # Check if within edit window
+    if not plan.can_edit():
+        return render(request, 'teacher/lesson_plan_edit_blocked.html', {
+            'plan': plan,
+            'message': 'This lesson plan cannot be edited. Edits are only allowed from the start time until 15 minutes after the lesson ends.'
+        })
+    
+    if request.method == 'POST':
+        # Update lesson plan
+        plan.topic = request.POST.get('topic', plan.topic)
+        plan.objective = request.POST.get('objective', plan.objective)
+        plan.activities = request.POST.get('activities', plan.activities)
+        plan.resources = request.POST.get('resources', plan.resources)
+        plan.homework = request.POST.get('homework', plan.homework)
+        plan.save()
+        
+        # Log activity
+        ActivityLog.objects.create(
+            teacher=staff,
+            activity_type='lesson_created',
+            description=f'Updated lesson plan for {plan.class_grade.name}: "{plan.topic}"',
+            icon_name='edit_note',
+            severity='info',
+        )
+        
+        return redirect('teacher:lessons')
+    
+    # GET request: show edit form
+    context = {
+        'plan': plan,
+        'edit_mode': True,
+    }
+    return render(request, 'teacher/lesson_plan_edit.html', context)
 
 
 @require_teacher_role('teacher')

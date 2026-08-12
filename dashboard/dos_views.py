@@ -263,9 +263,9 @@ def timetable_create(request):
                 messages.error(request, 'All fields are required')
                 return redirect('teacher:dos:timetable_create')
             
-            # Get objects with school filtering
+            # Get objects with school filtering. Subject is global and has no school FK.
             class_grade = get_object_or_404(ClassGrade, id=class_id, school=school)
-            subject = get_object_or_404(Subject, id=subject_id, school=school)
+            subject = get_object_or_404(Subject, id=subject_id)
             teacher = get_object_or_404(
                 StaffProfile,
                 id=teacher_id,
@@ -290,8 +290,7 @@ def timetable_create(request):
             
             # Log activity
             ActivityLog.objects.create(
-                staff=staff,
-                school=school,
+                teacher=staff,
                 activity_type='timetable_created',
                 description=f'Created timetable entry: {timetable}',
                 severity='info',
@@ -423,9 +422,9 @@ def timetable_edit(request, timetable_id):
             timetable.start_time = request.POST.get('start_time')
             timetable.end_time = request.POST.get('end_time')
             
-            # Validate with school constraint
+            # Validate with school constraint. Subject is global and has no school FK.
             class_grade = get_object_or_404(ClassGrade, id=timetable.class_grade_id, school=school)
-            subject = get_object_or_404(Subject, id=timetable.subject_id, school=school)
+            subject = get_object_or_404(Subject, id=timetable.subject_id)
             teacher = get_object_or_404(
                 StaffProfile,
                 id=timetable.teacher_id,
@@ -437,8 +436,7 @@ def timetable_edit(request, timetable_id):
             timetable.save()
             
             ActivityLog.objects.create(
-                staff=staff,
-                school=school,
+                teacher=staff,
                 activity_type='timetable_edited',
                 description=f'Edited timetable entry: {timetable}',
                 severity='info',
@@ -498,8 +496,7 @@ def timetable_delete(request, timetable_id):
     timetable.delete()
     
     ActivityLog.objects.create(
-        staff=staff,
-        school=school,
+        teacher=staff,
         activity_type='timetable_deleted',
         description=f'Deleted timetable entry: {timetable_str}',
         severity='warning',

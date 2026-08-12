@@ -242,7 +242,7 @@ def gradebook_detail(request, student_id):
     student = get_object_or_404(
         Student,
         id=student_id,
-        school=school,
+        class_grade__school=school,
         class_grade__class_teacher=staff
     )
     
@@ -250,7 +250,7 @@ def gradebook_detail(request, student_id):
     all_grades = Grade.objects.filter(
         student=student,
         curriculum=student.curriculum,
-        school=school
+        student__class_grade__school=school
     ).select_related('subject').order_by('-academic_year', 'term', 'semester', 'subject__name')
     
     # Group by (academic_year, term/semester) for display
@@ -350,7 +350,6 @@ def grade_report(request):
     # Build grade query (school-scoped)
     grade_filter = Q(
         student__in=students,
-        student__school=school,
         subject__in=subjects,
         curriculum=class_grade.curriculum,
         academic_year=academic_year
@@ -447,14 +446,14 @@ def student_transcript(request, student_id):
     student = get_object_or_404(
         Student,
         id=student_id,
-        school=school,
+        class_grade__school=school,
         class_grade__class_teacher=staff
     )
     
     # Fetch all grades (school-scoped)
     all_grades = Grade.objects.filter(
         student=student,
-        school=school,
+        student__class_grade__school=school,
         curriculum=student.curriculum
     ).select_related('subject').order_by('-academic_year', 'term', 'semester')
     
@@ -472,19 +471,30 @@ def student_transcript(request, student_id):
     all_scores = [float(g.score) for g in all_grades]
     overall_average = sum(all_scores) / len(all_scores) if all_scores else 0
     
+    # Calculate subject averages
+    subject_averages = {}
+    for grade in all_grades:
+        subject_name = grade.subject.name
+        if subject_name not in subject_averages:
+            subject_averages[subject_name] = []
+        subject_averages[subject_name].append(float(grade.score))
+    
+    for subject_name in subject_averages:
+        scores = subject_averages[subject_name]
+        subject_averages[subject_name] = sum(scores) / len(scores) if scores else 0
+    
     curriculum_type = 'Uganda National Curriculum' if student.curriculum == 'national' else 'International Curriculum'
     school_obj = student.class_grade.school
     
     context = {
         'student': student,
-        'school': school_obj,
         'grades_by_period': grades_by_period,
+        'subject_averages': subject_averages,
         'overall_average': round(overall_average, 2),
         'curriculum_type': curriculum_type,
-        'generated_date': datetime.now().strftime('%d %B %Y'),
     }
     
-    return render(request, 'teacher/student_transcript.html', context)
+    return render(request, 'teacher/gradebook_detail.html', context)
 
 
 @require_teacher_role('teacher')
@@ -530,7 +540,6 @@ def export_grades(request):
     # Build grade query (school-scoped)
     grade_filter = Q(
         student__in=students,
-        student__school=school,
         subject__in=subjects,
         curriculum=class_grade.curriculum,
         academic_year=academic_year

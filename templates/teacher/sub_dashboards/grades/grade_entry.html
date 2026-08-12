@@ -57,7 +57,19 @@
                         {% endfor %}
                     </select>
                 </div>
-                
+
+                <div class="form-group">
+                    <label for="exam_type">Exam Type:</label>
+                    <select name="exam_type" id="exam_type" class="form-select" required>
+                        <option value="">-- Select exam --</option>
+                        <option value="beginning_of_term">Beginning of Term</option>
+                        <option value="mid_term">Mid of Term</option>
+                        <option value="end_of_term">End of Term</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-row">
                 <div class="form-group">
                     <label for="term">Term:</label>
                     <select name="term" id="term" class="form-select" required>
@@ -130,7 +142,19 @@
                         {% endfor %}
                     </select>
                 </div>
-                
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="single_exam_type">Exam Type:</label>
+                    <select name="exam_type" id="single_exam_type" class="form-select" required>
+                        <option value="">-- Select exam --</option>
+                        <option value="beginning_of_term">Beginning of Term</option>
+                        <option value="mid_term">Mid of Term</option>
+                        <option value="end_of_term">End of Term</option>
+                    </select>
+                </div>
+
                 <div class="form-group">
                     <label for="single_term">Term:</label>
                     <select name="term" id="single_term" class="form-select" required>
@@ -163,7 +187,7 @@
             <div id="gradeEntrySection" style="display: none;">
                 <h3>Enter Score (0-100)</h3>
                 <div class="single-grade-entry">
-                    <input type="number" id="single_score" min="0" max="100" step="0.5" placeholder="Enter score" class="form-input score-input">
+                    <input type="number" id="single_score" name="score" min="0" max="100" step="0.5" placeholder="Enter score" class="form-input score-input" required>
                     <div id="gradePreview" class="grade-preview"></div>
                 </div>
             </div>
@@ -513,14 +537,70 @@
         const classId = document.getElementById('class_id').value;
         if (!classId) {
             document.getElementById('studentsContainer').style.display = 'none';
+            document.getElementById('submitBtn').style.display = 'none';
             return;
         }
         
-        // Fetch students for this class (would be AJAX in real implementation)
-        // For now, use placeholder logic
+        // Show loading state
         document.getElementById('studentsList').innerHTML = '<tr><td colspan="3" style="text-align:center; padding: 20px; color: #666;">Loading students...</td></tr>';
         document.getElementById('studentsContainer').style.display = 'block';
-        document.getElementById('submitBtn').style.display = 'inline-flex';
+        
+        // Fetch students for this class via API
+        fetch(`/teacher/api/class/${classId}/students/`, {
+            method: 'GET',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            }
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success && data.data.length > 0) {
+                let html = '';
+                data.data.forEach(student => {
+                    html += `
+                        <tr>
+                            <td>${student.first_name} ${student.last_name}</td>
+                            <td style="text-align: center;">
+                                <input type="number" class="score-input" 
+                                       data-student-id="${student.id}" 
+                                       min="0" max="100" step="0.5" 
+                                       placeholder="0-100" 
+                                       style="width: 100px;">
+                            </td>
+                            <td style="text-align: center;">
+                                <div class="grade-badge" data-student-id="${student.id}"></div>
+                            </td>
+                        </tr>
+                    `;
+                });
+                document.getElementById('studentsList').innerHTML = html;
+                
+                // Add event listeners to score inputs for grade preview
+                document.querySelectorAll('.score-input').forEach(input => {
+                    input.addEventListener('input', function() {
+                        const score = parseFloat(this.value);
+                        const gradeCell = document.querySelector(`[data-student-id="${this.dataset.studentId}"][class="grade-badge"]`);
+                        if (!isNaN(score) && score >= 0 && score <= 100) {
+                            const grade = calculateGrade(score);
+                            const gradeClass = 'grade-' + grade.toLowerCase();
+                            gradeCell.innerHTML = `<div class="grade-badge ${gradeClass}">${grade}</div>`;
+                        } else {
+                            gradeCell.innerHTML = '';
+                        }
+                    });
+                });
+                
+                document.getElementById('submitBtn').style.display = 'inline-flex';
+            } else {
+                document.getElementById('studentsList').innerHTML = '<tr><td colspan="3" style="text-align:center; padding: 20px; color: #999;">No students found in this class.</td></tr>';
+                document.getElementById('submitBtn').style.display = 'none';
+            }
+        })
+        .catch(err => {
+            console.error('Error loading students:', err);
+            document.getElementById('studentsList').innerHTML = '<tr><td colspan="3" style="text-align:center; padding: 20px; color: #c33;">Error loading students. Please try again.</td></tr>';
+            document.getElementById('submitBtn').style.display = 'none';
+        });
     }
     
     function calculateGrade(score) {
@@ -538,11 +618,12 @@
         
         const classId = document.getElementById('class_id').value;
         const subjectId = document.getElementById('subject_id').value;
+        const examType = document.getElementById('exam_type').value;
         const term = document.getElementById('term').value;
         const year = document.getElementById('year').value;
         
-        if (!classId || !subjectId) {
-            showMessage('Please select class and subject', 'error');
+        if (!classId || !subjectId || !examType) {
+            showMessage('Please select class, subject, and exam type', 'error');
             return;
         }
         
@@ -579,6 +660,7 @@
             body: JSON.stringify({
                 class_id: classId,
                 subject_id: subjectId,
+                exam_type: examType,
                 term: term,
                 year: year,
                 grades: gradesData,
@@ -652,11 +734,12 @@
         
         const studentId = document.getElementById('single_student_id').value;
         const subjectId = document.getElementById('single_subject_id').value;
+        const examType = document.getElementById('single_exam_type').value;
         const term = document.getElementById('single_term').value;
         const year = document.getElementById('single_year').value;
         const score = document.getElementById('single_score').value.trim();
         
-        if (!studentId || !subjectId || !score) {
+        if (!studentId || !subjectId || !examType || !score) {
             showSingleMessage('Please fill in all required fields', 'error');
             return;
         }
@@ -681,6 +764,7 @@
                 entry_type: 'single',
                 student_id: studentId,
                 subject_id: subjectId,
+                exam_type: examType,
                 term: term,
                 year: year,
                 score: score,
@@ -710,6 +794,7 @@
     function resetSingleEntry() {
         document.getElementById('single_student_id').value = '';
         document.getElementById('single_subject_id').value = '';
+        document.getElementById('single_exam_type').value = '';
         document.getElementById('single_term').value = '1';
         document.getElementById('single_year').value = '{{ current_year }}';
         document.getElementById('single_score').value = '';

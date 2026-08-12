@@ -291,6 +291,46 @@ class TeacherDepartment(models.Model):
     class Meta:
         unique_together = ('school', 'department_type')
         verbose_name_plural = 'Teacher Departments'
+
+    @staticmethod
+    def normalize_academic_name(value):
+        """Normalize names so department-subject matching is consistent."""
+        if not value:
+            return ''
+        normalized = value.strip().lower()
+        normalized = normalized.replace('&', ' and ')
+        normalized = normalized.replace('-', ' ')
+        normalized = normalized.replace('_', ' ')
+        normalized = ' '.join(normalized.split())
+        return normalized
+
+    def matching_subjects(self):
+        """Return subject records that match this department by academic area name."""
+        names_to_match = set()
+
+        for value in [self.name, self.get_department_type_display(), self.department_type]:
+            normalized = self.normalize_academic_name(value)
+            if not normalized:
+                continue
+            names_to_match.add(normalized)
+            if normalized.endswith('s'):
+                names_to_match.add(normalized[:-1])
+            else:
+                names_to_match.add(normalized + 's')
+
+        if not names_to_match:
+            return Subject.objects.none()
+
+        subject_ids = []
+        for subject in Subject.objects.all():
+            normalized_subject = self.normalize_academic_name(subject.name)
+            if normalized_subject in names_to_match:
+                subject_ids.append(subject.id)
+
+        if not subject_ids:
+            return Subject.objects.none()
+
+        return Subject.objects.filter(id__in=subject_ids).distinct()
     
     def __str__(self):
         return f"{self.name} ({self.school.name})"
@@ -672,6 +712,9 @@ class Grade(models.Model):
     SEMESTER_CHOICES = [
         ('semester_1', 'Semester 1'),
         ('semester_2', 'Semester 2'),
+        ('beginning_of_term', 'Beginning of Term'),
+        ('mid_term', 'Mid of Term'),
+        ('end_of_term', 'End of Term'),
     ]
     
     CURRICULUM_CHOICES = [
@@ -703,11 +746,11 @@ class Grade(models.Model):
         help_text="For Uganda National curriculum"
     )
     semester = models.CharField(
-        max_length=10,
+        max_length=20,
         choices=SEMESTER_CHOICES,
         blank=True,
         db_index=True,
-        help_text="For International curriculum"
+        help_text="For International curriculum or exam type"
     )
     academic_year = models.CharField(
         max_length=4,
@@ -743,6 +786,19 @@ class Grade(models.Model):
             return 'D'
         else:
             return 'F'
+    
+    @property
+    def grade_remarks(self):
+        """Generate generic remarks based on letter grade."""
+        grade = self.letter_grade
+        remarks_map = {
+            'A': 'Excellent - Outstanding performance',
+            'B': 'Very Good - Strong performance',
+            'C': 'Satisfactory - Acceptable performance',
+            'D': 'Needs Improvement - Below expected level',
+            'F': 'Poor - Urgent intervention required',
+        }
+        return remarks_map.get(grade, '—')
     
     class Meta:
         unique_together = ('student', 'subject', 'curriculum', 'term', 'semester', 'academic_year')
@@ -2170,3 +2226,111 @@ class BreakSession(models.Model):
         ]
         verbose_name = 'Break Session'
         verbose_name_plural = 'Break Sessions'
+
+
+class LessonPlan(models.Model):
+    """
+    Represents a lesson plan created by a teacher for a specific class and subject.
+    
+    Teachers create lesson plans to document the objectives, activities, resources,
+    and homework for their lessons. Scoped to a teacher, class, subject, and date.
+    
+    Teachers can edit lesson plans from the start of the lesson until 15 minutes
+    after the lesson ends.
+    """
+    
+    teacher = models.ForeignKey(
+        StaffProfile,
+        on_delete=models.CASCADE,
+        related_name='lesson_plans',
+        limit_choices_to={'user__role': 'teacher'}
+    )
+    class_grade = models.ForeignKey(
+        ClassGrade,
+        on_delete=models.CASCADE,
+        related_name='lesson_plans'
+    )
+    subject = models.ForeignKey(
+        Subject,
+        on_delete=models.CASCADE,
+        related_name='lesson_plans'
+    )
+    timetable = models.ForeignKey(
+        Timetable,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='lesson_plans',
+        help_text="Optional link to the scheduled timetable entry"
+    )
+    lesson_date = models.DateField(
+        db_index=True,
+        help_text="Date of the lesson"
+    )
+    lesson_start_time = models.TimeField(
+        null=True,
+        blank=True,
+        help_text="Start time of the lesson (for edit window calculation)"
+    )
+    lesson_end_time = models.TimeField(
+        null=True,
+        blank=True,
+        help_text="End time of the lesson (for edit window calculation)"
+    )
+    topic = models.CharField(
+        max_length=200,
+        help_text="Topic or title of the lesson"
+    )
+    objective = models.TextField(
+        help_text="Learning objectives for this lesson"
+    )
+    activities = models.TextField(
+        blank=True,
+        help_text="Learning activities and exercises"
+    )
+    resources = models.TextField(
+        blank=True,
+        help_text="Materials and resources needed"
+    )
+    homework = models.TextField(
+        blank=True,
+        help_text="Homework assignment if any"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"{self.topic} — {self.class_grade.name} ({self.lesson_date})"
+    
+    def can_edit(self):
+        """
+        Check if this lesson plan is still within the edit window.
+        Edit window: from lesson start time until 15 minutes after lesson end time.
+        Returns True if editable, False otherwise.
+        """
+        from django.utils import timezone
+        from datetime import timedelta, datetime
+        
+        # If no timing info, allow edits (fallback)
+        if not self.lesson_start_time or not self.lesson_end_time:
+            return True
+        
+        now = timezone.localtime()
+        lesson_datetime_start = timezone.make_aware(
+            datetime.combine(self.lesson_date, self.lesson_start_time)
+        )
+        lesson_datetime_end = timezone.make_aware(
+            datetime.combine(self.lesson_date, self.lesson_end_time)
+        )
+        edit_deadline = lesson_datetime_end + timedelta(minutes=15)
+        
+        return lesson_datetime_start <= now <= edit_deadline
+    
+    class Meta:
+        ordering = ['-lesson_date', 'class_grade']
+        indexes = [
+            models.Index(fields=['teacher', '-lesson_date']),
+            models.Index(fields=['lesson_date']),
+        ]
+        verbose_name = 'Lesson Plan'
+        verbose_name_plural = 'Lesson Plans'

@@ -10,14 +10,14 @@ from user_profile.views import teacher_profile
 from dashboard.teacher_views import (
     teacher_dashboard, toggle_task_status, create_task,
     student_search, quick_grade_entry, send_circular,
-    teacher_students_list, teacher_lessons_list,
+    teacher_students_list, teacher_lessons_list, create_lesson_plan, edit_lesson_plan,
     export_teacher_schedule_csv, export_teacher_attendance_csv,
     get_student_info_ajax
 )
 from dashboard.teacher_sub_views import (
     # Grades sub-dashboard
     grades_dashboard, grade_entry_interface, grade_statistics,
-    grade_export, grade_history,
+    grade_export, grade_history, api_class_students,
     # Communication sub-dashboard
     message_inbox, message_detail, send_message_ajax, mark_message_read_ajax,
     # Attendances sub-dashboard
@@ -52,6 +52,8 @@ urlpatterns = [
     # New navigation routes (Phase 3)
     path('students/',    teacher_students_list, name='students'),
     path('lessons/',     teacher_lessons_list,  name='lessons'),
+    path('lessons/plan/create/', create_lesson_plan, name='lesson_plan_create'),
+    path('lessons/plan/<int:plan_id>/edit/', edit_lesson_plan, name='lesson_plan_edit'),
     
     # ===== GRADES SUB-DASHBOARD =====
     path('grades/',                 grades_dashboard,        name='grades_dashboard'),
@@ -88,6 +90,7 @@ urlpatterns = [
     path('api/students/search/', student_search, name='student_search'),
     path('api/student/<int:student_id>/', get_student_info_ajax, name='get_student_info'),
     path('api/grades/quick-add/', quick_grade_entry, name='quick_grade_entry'),
+    path('api/class/<int:class_id>/students/', api_class_students, name='api_class_students'),
     path('api/circulars/send/', send_circular, name='send_circular'),
 
     # ===== SHIFT MANAGEMENT API =====

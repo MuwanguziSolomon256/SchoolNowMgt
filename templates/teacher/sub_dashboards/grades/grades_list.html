@@ -54,10 +54,10 @@
                         <tbody>
                             {% for grade in grades %}
                             <tr>
-                                <td>{{ grade.student.get_full_name }}</td>
+                                <td>{{ grade.student.full_name }}</td>
                                 <td>{{ grade.score }}</td>
-                                <td style="font-weight: 600; color: #080b3a;">{{ grade.get_grade_display }}</td>
-                                <td>{{ grade.remarks|default:"—" }}</td>
+                                <td style="font-weight: 600; color: #080b3a;">{{ grade.letter_grade }}</td>
+                                <td>{{ grade.grade_remarks }}</td>
                             </tr>
                             {% endfor %}
                         </tbody>

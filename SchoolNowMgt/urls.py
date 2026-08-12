@@ -61,6 +61,7 @@ urlpatterns = [
     path('api/staff/reset-password/', dashboard_views.reset_staff_password_ajax, name='api_staff_reset_password'),
     path('api/student/onboard/', dashboard_views.onboard_student_ajax, name='api_student_onboard'),
     path('api/student/bulk-onboard/', dashboard_views.bulk_onboard_student_ajax, name='api_student_bulk_onboard'),
+    path('api/class/create/', dashboard_views.create_class_grade_ajax, name='api_class_create'),
     path('api/staff-message/send/', dashboard_views.staff_send_message_ajax, name='api_staff_message_send'),
     path('api/message/send/', dashboard_views.send_message_ajax, name='api_message_send'),
     path('messages/inbox/', dashboard_views.message_inbox, name='message_inbox'),
