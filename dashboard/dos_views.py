@@ -24,7 +24,7 @@ from django.db import transaction
 
 from SchoolNowMgt.models import (
     Timetable, ClassGrade, StaffProfile, Subject, TeacherDepartment,
-    ClassTeacherAssignment, CustomUser, Student, Grade, ActivityLog
+    ClassTeacherAssignment, CustomUser, Student, Grade, ActivityLog, LessonPlan
 )
 from SchoolNowMgt.decorators import require_dos, get_user_school
 from SchoolNowMgt.utils import get_dos_scope_data
@@ -395,6 +395,125 @@ def pastoral_care(request):
     }
 
     return render(request, 'dos/pastoral_care.html', context)
+
+
+# ============================================================================
+# LESSON PLAN REVIEWS
+# ============================================================================
+
+@require_dos
+def lesson_plan_reviews(request):
+    """
+    List pending lesson plans for DOS review.
+    DOS can filter by status and approve/reject plans for their school.
+    """
+    school = get_user_school(request)
+    staff = get_object_or_404(StaffProfile, user=request.user)
+    
+    # Filter by review status (default: pending)
+    status_filter = request.GET.get('status', 'pending')
+    
+    lesson_plans = LessonPlan.objects.filter(
+        class_grade__school=school,
+        review_status=status_filter
+    ).select_related('teacher__user', 'class_grade', 'subject').order_by('-lesson_date')
+    
+    # Count by status for dashboard
+    pending_count = LessonPlan.objects.filter(
+        class_grade__school=school,
+        review_status='pending'
+    ).count()
+    approved_count = LessonPlan.objects.filter(
+        class_grade__school=school,
+        review_status='approved'
+    ).count()
+    rejected_count = LessonPlan.objects.filter(
+        class_grade__school=school,
+        review_status='rejected'
+    ).count()
+    
+    context = {
+        'school': school,
+        'staff_profile': staff,
+        'lesson_plans': lesson_plans,
+        'status_filter': status_filter,
+        'pending_count': pending_count,
+        'approved_count': approved_count,
+        'rejected_count': rejected_count,
+        'section': 'lesson_plan_reviews',
+    }
+    
+    return render(request, 'dos/lesson_plan_reviews.html', context)
+
+
+@require_dos
+@require_http_methods(['POST'])
+def approve_lesson_plan(request, plan_id):
+    """
+    Approve a lesson plan.
+    """
+    school = get_user_school(request)
+    staff = get_object_or_404(StaffProfile, user=request.user)
+    
+    plan = get_object_or_404(
+        LessonPlan,
+        id=plan_id,
+        class_grade__school=school
+    )
+    
+    review_notes = request.POST.get('review_notes', '')
+    
+    plan.review_status = 'approved'
+    plan.reviewed_by = staff
+    plan.reviewed_at = timezone.now()
+    plan.review_notes = review_notes
+    plan.save()
+    
+    ActivityLog.objects.create(
+        teacher=staff,
+        activity_type='lesson_plan_approved',
+        description=f'Approved lesson plan: {plan.topic} by {plan.teacher.user.get_full_name()}',
+        severity='success',
+        icon_name='check_circle'
+    )
+    
+    messages.success(request, f'Lesson plan approved: {plan.topic}')
+    return redirect('teacher:dos:lesson_plan_reviews')
+
+
+@require_dos
+@require_http_methods(['POST'])
+def reject_lesson_plan(request, plan_id):
+    """
+    Reject a lesson plan.
+    """
+    school = get_user_school(request)
+    staff = get_object_or_404(StaffProfile, user=request.user)
+    
+    plan = get_object_or_404(
+        LessonPlan,
+        id=plan_id,
+        class_grade__school=school
+    )
+    
+    review_notes = request.POST.get('review_notes', 'Plan rejected. Please revise.')
+    
+    plan.review_status = 'rejected'
+    plan.reviewed_by = staff
+    plan.reviewed_at = timezone.now()
+    plan.review_notes = review_notes
+    plan.save()
+    
+    ActivityLog.objects.create(
+        teacher=staff,
+        activity_type='lesson_plan_rejected',
+        description=f'Rejected lesson plan: {plan.topic} by {plan.teacher.user.get_full_name()}',
+        severity='warning',
+        icon_name='cancel'
+    )
+    
+    messages.warning(request, f'Lesson plan rejected: {plan.topic}')
+    return redirect('teacher:dos:lesson_plan_reviews')
 
 
 @require_dos

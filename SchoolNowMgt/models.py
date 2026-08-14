@@ -2299,6 +2299,38 @@ class LessonPlan(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
+    # Review workflow fields
+    REVIEW_STATUS_CHOICES = [
+        ('pending', 'Pending Review'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+    ]
+    review_status = models.CharField(
+        max_length=20,
+        choices=REVIEW_STATUS_CHOICES,
+        default='pending',
+        db_index=True,
+        help_text='Approval status from DOS'
+    )
+    reviewed_by = models.ForeignKey(
+        StaffProfile,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='reviewed_lesson_plans',
+        limit_choices_to={'user__role': 'teacher', 'teacher_admin_role': 'dos'},
+        help_text='DOS staff who reviewed this plan'
+    )
+    reviewed_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text='When the plan was reviewed'
+    )
+    review_notes = models.TextField(
+        blank=True,
+        help_text='DOS feedback or rejection reason'
+    )
+    
     def __str__(self):
         return f"{self.topic} — {self.class_grade.name} ({self.lesson_date})"
     

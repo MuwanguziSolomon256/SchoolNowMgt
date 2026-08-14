@@ -17,6 +17,7 @@ from dashboard.dos_views import (
     academic_reports,
     schemes_of_work,
     pastoral_care,
+    lesson_plan_reviews, approve_lesson_plan, reject_lesson_plan,
 )
 from dashboard.dos_department_views import (
     departments_list, department_create, department_edit, department_detail,
@@ -99,6 +100,19 @@ urlpatterns = [
     path('profile/',
          dos_profile,
          name='profile'),
+
+    # ===== LESSON PLAN REVIEWS =====
+    path('lesson-plans/',
+         lesson_plan_reviews,
+         name='lesson_plan_reviews'),
+    
+    path('lesson-plans/<int:plan_id>/approve/',
+         approve_lesson_plan,
+         name='approve_lesson_plan'),
+    
+    path('lesson-plans/<int:plan_id>/reject/',
+         reject_lesson_plan,
+         name='reject_lesson_plan'),
 
     # ===== NEW DOS PAGES =====
     path('schemes-of-work/',
