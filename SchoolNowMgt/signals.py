@@ -302,3 +302,60 @@ def notify_break_events(sender, instance, created, update_fields, **kwargs):
     # For now, this is intentionally minimal to avoid excessive notifications
     # Uncomment and customize if break notifications are desired
     pass
+
+
+# ============================================================================
+# AUTO-ASSIGN DEPARTMENT HEAD ROLE
+# ============================================================================
+
+from .models import StaffProfile, ActivityLog
+
+
+@receiver(post_save, sender=StaffProfile)
+def auto_assign_department_head_role(sender, instance, created, update_fields, **kwargs):
+    """
+    Automatically assign 'department_head' role when a teacher is assigned to a department.
+    
+    Behavior:
+    - Only applies if: user.role == 'teacher' AND teacher_admin_role == 'teacher'
+    - Preserves existing admin roles (dos, head_teacher, deputy_hm) — does NOT override
+    - Creates ActivityLog entry for audit trail
+    
+    Purpose:
+    Enables seamless department head access when DOS assigns teacher to a department
+    without requiring manual role adjustment in the admin panel.
+    
+    Example:
+    1. DOS creates department and selects a teacher with role='teacher'
+    2. Signal automatically sets teacher_admin_role='department_head'
+    3. Teacher can now login as Department Head immediately
+    
+    Safety:
+    - Signal skips if teacher already has admin role (dos, head_teacher, etc.)
+    - Teachers with role != 'teacher' are not affected
+    - Un-assigning from department does NOT revert the role
+    """
+    # Skip if not a teacher or if no department is assigned
+    if instance.user.role != 'teacher' or instance.teacher_department is None:
+        return
+    
+    # Skip if teacher already has an admin role (preserve existing roles)
+    if instance.teacher_admin_role != 'teacher':
+        return
+    
+    # Update role to department_head
+    instance.teacher_admin_role = 'department_head'
+    instance.save(update_fields=['teacher_admin_role'])
+    
+    # Log the automatic role assignment for audit trail
+    try:
+        ActivityLog.objects.create(
+            teacher=instance,
+            activity_type='role_auto_assigned',
+            description=f'Automatically assigned as Department Head for {instance.teacher_department.name}',
+            severity='info',
+            icon_name='supervised_user_circle'
+        )
+    except Exception as e:
+        # Silently fail if ActivityLog creation fails (shouldn't block the main operation)
+        print(f"Warning: Could not create ActivityLog for auto-role assignment: {str(e)}")
